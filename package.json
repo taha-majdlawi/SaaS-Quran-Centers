@@ -1,0 +1,20 @@
+{
+  "name": "quran-centers-saas",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Multi-tenant SaaS platform for Quran memorization centers, built from the Eqraa (اقرأ) product line.",
+  "workspaces": [
+    "apps/web",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace apps/web",
+    "build:web": "npm run build --workspace apps/web",
+    "db:migrate": "supabase db push",
+    "db:reset": "supabase db reset",
+    "db:diff": "supabase db diff -f"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
