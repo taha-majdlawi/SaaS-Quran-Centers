@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
 const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase();
 
@@ -11,8 +12,12 @@ const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
  *   bustan-alquran.com        -> marketing site               (no rewrite)
  *   admin.bustan-alquran.com  -> platform-owner console        -> /platform/*
  *   {slug}.bustan-alquran.com -> that tenant's admin dashboard -> /{slug}/*
+ *
+ * Also refreshes the Supabase auth session cookie on every request - required
+ * by @supabase/ssr so Server Components always see an up-to-date session
+ * instead of an expired one.
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const hostname = (req.headers.get('host') ?? '').toLowerCase();
   const url = req.nextUrl.clone();
 
@@ -22,25 +27,45 @@ export function middleware(req: NextRequest) {
   const isRootDomain =
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
 
+  let response: NextResponse;
+
   if (isRootDomain) {
-    return NextResponse.next();
+    response = NextResponse.next();
+  } else {
+    const subdomain = bareHost.endsWith(`.${bareRoot}`)
+      ? bareHost.slice(0, -(`.${bareRoot}`.length))
+      : bareHost.split('.')[0]; // e.g. demo.localhost during local dev
+
+    if (subdomain === 'admin') {
+      url.pathname = `/platform${req.nextUrl.pathname}`;
+      response = NextResponse.rewrite(url);
+    } else if (RESERVED_SUBDOMAINS.has(subdomain)) {
+      response = NextResponse.next();
+    } else {
+      url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
+      response = NextResponse.rewrite(url);
+    }
   }
 
-  const subdomain = bareHost.endsWith(`.${bareRoot}`)
-    ? bareHost.slice(0, -(`.${bareRoot}`.length))
-    : bareHost.split('.')[0]; // e.g. demo.localhost during local dev
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        },
+      },
+    },
+  );
 
-  if (subdomain === 'admin') {
-    url.pathname = `/platform${req.nextUrl.pathname}`;
-    return NextResponse.rewrite(url);
-  }
+  // Touching getUser() is what actually triggers the refresh-token exchange
+  // when the access token has expired - a plain getSession() would not.
+  await supabase.auth.getUser();
 
-  if (RESERVED_SUBDOMAINS.has(subdomain)) {
-    return NextResponse.next();
-  }
-
-  url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
-  return NextResponse.rewrite(url);
+  return response;
 }
 
 export const config = {

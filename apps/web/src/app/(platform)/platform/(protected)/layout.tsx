@@ -1,9 +1,18 @@
+import { redirect } from 'next/navigation';
+import { getPlatformContext } from '@/lib/platform/get-platform-context';
+import { signOut } from '@/lib/auth/actions';
+
 // Served on admin.{ROOT_DOMAIN} via middleware.ts. Replaces the legacy
 // wep-eqraa-center/dev/ superadmin panel - now manages every tenant instead
-// of one center's raw data. Real auth guard (must be in `platform_owners`)
-// belongs here once auth is wired up.
+// of one center's raw data.
+export default async function PlatformProtectedLayout({ children }: { children: React.ReactNode }) {
+  const platform = await getPlatformContext();
 
-export default function PlatformLayout({ children }: { children: React.ReactNode }) {
+  // Not authenticated, or authenticated but not in `platform_owners` - RLS
+  // would block every cross-tenant query anyway, so send them to sign in
+  // rather than show an empty shell.
+  if (!platform.isOwner) redirect('/login');
+
   return (
     <div className="flex min-h-screen">
       <aside className="w-64 shrink-0 border-l bg-gray-900 p-4 text-white">
@@ -25,6 +34,11 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
             أعلام الميزات
           </a>
         </nav>
+        <form action={signOut} className="mt-6 border-t border-gray-700 pt-4">
+          <button type="submit" className="text-sm text-gray-400 hover:text-red-400">
+            تسجيل خروج ({platform.email})
+          </button>
+        </form>
       </aside>
       <main className="flex-1 p-8">{children}</main>
     </div>
