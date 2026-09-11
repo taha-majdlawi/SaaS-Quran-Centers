@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'quran-centers.app').toLowerCase();
+const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase();
 
 // Reserved subdomains that must never be treated as a tenant slug.
 const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
@@ -8,9 +8,9 @@ const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
 /**
  * Three hostname shapes, one Next.js app - see docs/ARCHITECTURE.md #4.
  *
- *   quran-centers.app        -> marketing site               (no rewrite)
- *   admin.quran-centers.app  -> platform-owner console        -> /platform/*
- *   {slug}.quran-centers.app -> that tenant's admin dashboard -> /{slug}/*
+ *   bustan-alquran.com        -> marketing site               (no rewrite)
+ *   admin.bustan-alquran.com  -> platform-owner console        -> /platform/*
+ *   {slug}.bustan-alquran.com -> that tenant's admin dashboard -> /{slug}/*
  */
 export function middleware(req: NextRequest) {
   const hostname = (req.headers.get('host') ?? '').toLowerCase();

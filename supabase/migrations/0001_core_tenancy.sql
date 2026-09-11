@@ -25,7 +25,7 @@ create type public.user_role as enum ('student', 'teacher', 'admin', 'guardian')
 create table public.organizations (
   id               uuid primary key default gen_random_uuid(),
   name             text not null,
-  slug             text not null unique,          -- used for subdomain: {slug}.quran-centers.app
+  slug             text not null unique,          -- used for subdomain: {slug}.bustan-alquran.com
   logo_url         text,
   primary_color    text default '#0f766e',
   secondary_color  text default '#f59e0b',

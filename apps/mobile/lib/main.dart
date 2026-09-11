@@ -14,11 +14,11 @@ Future<void> main() async {
     anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
   );
 
-  runApp(const QuranCentersApp());
+  runApp(const BustanAlQuranApp());
 }
 
-class QuranCentersApp extends StatelessWidget {
-  const QuranCentersApp({super.key});
+class BustanAlQuranApp extends StatelessWidget {
+  const BustanAlQuranApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class QuranCentersApp extends StatelessWidget {
           final tenant = context.watch<TenantController>();
           final router = buildAppRouter(tenant: tenant);
           return MaterialApp.router(
-            title: 'Quran Centers',
+            title: 'بستان القرآن',
             routerConfig: router,
           );
         },

@@ -1,4 +1,4 @@
-project_id = "quran-centers-saas"
+project_id = "bustan-alquran"
 
 [api]
 enabled = true
@@ -18,7 +18,7 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://*.quran-centers.app"]
+additional_redirect_urls = ["https://*.bustan-alquran.com"]
 jwt_expiry = 3600
 enable_signup = true
 

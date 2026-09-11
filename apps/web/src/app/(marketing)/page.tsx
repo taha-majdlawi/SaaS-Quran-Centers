@@ -7,10 +7,10 @@
 export default function MarketingHomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-6 p-8 text-center">
-      <h1 className="text-4xl font-bold text-brand">منصة إدارة مراكز تحفيظ القرآن</h1>
+      <h1 className="text-4xl font-bold text-brand">بستان القرآن</h1>
       <p className="text-lg text-gray-600">
-        الحضور، الحلقات، السرد القرآني، النقاط والشارات، والتواصل مع أولياء الأمور - كل ذلك لمركزك،
-        على منصة واحدة.
+        منصة إدارة مراكز تحفيظ القرآن الكريم — الحضور، الحلقات، السرد القرآني، النقاط والشارات،
+        والتواصل مع أولياء الأمور، كل ذلك لمركزك على منصة واحدة.
       </p>
       <a
         href="/signup"

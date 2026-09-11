@@ -1,5 +1,5 @@
-name: quran_centers_app
-description: "Multi-tenant Quran memorization center app - built on the eqraa_app foundations."
+name: bustan_alquran_app
+description: "بستان القرآن (Bustan Al-Quran) - multi-tenant Quran memorization center app, built on the eqraa_app foundations."
 publish_to: 'none'
 version: 0.1.0+1
 
