@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { authCookieDomain } from './lib/supabase/cookie-options';
 
 const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase();
 
@@ -55,7 +56,9 @@ export async function middleware(req: NextRequest) {
         getAll: () => req.cookies.getAll(),
         setAll: (cookiesToSet) => {
           cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, { ...options, domain: authCookieDomain() }),
+          );
         },
       },
     },

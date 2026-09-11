@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { authCookieDomain } from './cookie-options';
 
 /**
  * Browser-side client, anon key only - identical trust model to the legacy
@@ -9,5 +10,6 @@ export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookieOptions: { domain: authCookieDomain() } },
   );
 }
