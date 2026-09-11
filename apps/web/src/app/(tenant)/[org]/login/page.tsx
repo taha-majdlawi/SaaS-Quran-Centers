@@ -1,3 +1,5 @@
+import { AuthCard } from '@/components/auth-card';
+import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
 import { signInToTenant } from './actions';
 
 // Replaces wep-eqraa-center/admin/login - now scoped to one organization by
@@ -14,32 +16,41 @@ export default async function TenantLoginPage({
   const { error } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center p-8">
-      <h1 className="mb-1 text-2xl font-bold text-brand">تسجيل الدخول</h1>
-      <p className="mb-6 text-sm text-gray-500">{org}</p>
-
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-
+    <AuthCard
+      title="تسجيل الدخول"
+      subtitle={`لوحة إدارة "${org}" - للمعلمين والإدارة وأولياء الأمور`}
+      error={error}
+      footer={
+        <div className="flex flex-col gap-1">
+          <span>
+            نسيت رابط مركزك؟{' '}
+            <a href={`https://bustan-alquran.com/login`} className="font-semibold text-brand">
+              دوّر عليه من هنا
+            </a>
+          </span>
+          <span>
+            ليس لديك مركز؟{' '}
+            <a href="https://bustan-alquran.com/signup" className="font-semibold text-brand">
+              سجّل مركزك الآن
+            </a>
+          </span>
+        </div>
+      }
+    >
       <form action={signInToTenant} className="flex flex-col gap-3">
         <input type="hidden" name="orgSlug" value={org} />
-        <input
-          type="email"
-          name="email"
-          placeholder="البريد الإلكتروني"
-          required
-          className="rounded border px-3 py-2 text-sm"
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="كلمة السر"
-          required
-          className="rounded border px-3 py-2 text-sm"
-        />
-        <button type="submit" className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
+        <label className={authLabelClass}>
+          البريد الإلكتروني
+          <input type="email" name="email" required className={`mt-1 ${authInputClass}`} />
+        </label>
+        <label className={authLabelClass}>
+          كلمة السر
+          <input type="password" name="password" required className={`mt-1 ${authInputClass}`} />
+        </label>
+        <button type="submit" className={`mt-2 ${authButtonClass}`}>
           دخول
         </button>
       </form>
-    </main>
+    </AuthCard>
   );
 }
