@@ -28,8 +28,15 @@ interface InvitationRow {
   accepted_at: string | null;
 }
 
-export default async function MembersPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function MembersPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string }>;
+  searchParams: Promise<{ createdEmail?: string; createdPassword?: string }>;
+}) {
   const { org: slug } = await params;
+  const { createdEmail, createdPassword } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
@@ -44,8 +51,27 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
 
   return (
     <div className="flex flex-col gap-8">
+      {createdEmail && createdPassword && (
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
+          <p className="mb-2 font-semibold text-green-800">تم إنشاء حساب المعلم بنجاح - أعطه هذي البيانات الآن:</p>
+          <p dir="ltr" className="font-mono text-green-900">
+            {createdEmail} / {createdPassword}
+          </p>
+          <p className="mt-2 text-xs text-green-700">
+            هذا العرض الوحيد لكلمة السر - انسخها الآن، ما رح تظهر مرة ثانية.
+          </p>
+        </div>
+      )}
+
       <div>
-        <h1 className="mb-4 text-2xl font-bold">الأعضاء والأدوار</h1>
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">الأعضاء والأدوار</h1>
+          {org.myRole === 'admin' && (
+            <a href="/members/new-teacher" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
+              + إضافة معلم يدويًا
+            </a>
+          )}
+        </div>
         <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
           <thead className="bg-gray-50 text-right">
             <tr>
