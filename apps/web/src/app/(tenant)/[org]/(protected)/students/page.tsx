@@ -1,5 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
+import { deleteStudent } from './actions';
 
 const STATUS_LABELS: Record<string, string> = {
   active: 'نشط',
@@ -47,9 +49,21 @@ export default async function StudentsPage({ params }: { params: Promise<{ org: 
               <td className="px-4 py-2">{(s.circles as unknown as { name: string } | null)?.name ?? '—'}</td>
               <td className="px-4 py-2">{STATUS_LABELS[s.status] ?? s.status}</td>
               <td className="px-4 py-2 text-left">
-                <a href={`/students/${s.id}`} className="text-brand hover:underline">
-                  تعديل
-                </a>
+                <div className="flex items-center justify-end gap-3">
+                  <a href={`/students/${s.id}`} className="text-brand hover:underline">
+                    تعديل
+                  </a>
+                  <form action={deleteStudent}>
+                    <input type="hidden" name="id" value={s.id} />
+                    <ConfirmSubmitButton
+                      confirmMessage={`متأكد إنك بدك تحذف "${s.full_name}"؟ رح يتحذف ملفه بالكامل (حضور، تسميع، نقاط...) ولا يمكن التراجع.`}
+                      pendingText="جاري الحذف..."
+                      className="text-red-600 hover:underline"
+                    >
+                      حذف
+                    </ConfirmSubmitButton>
+                  </form>
+                </div>
               </td>
             </tr>
           ))}

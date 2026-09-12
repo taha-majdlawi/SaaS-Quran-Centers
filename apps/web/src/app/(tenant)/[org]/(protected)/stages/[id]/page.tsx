@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
+import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { updateStage, deleteStage } from '../actions';
 
 export default async function EditStagePage({
@@ -73,12 +74,13 @@ export default async function EditStagePage({
 
       <form action={deleteStage} className="mt-3">
         <input type="hidden" name="id" value={stage.id} />
-        <SubmitButton
-          className="rounded border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+        <ConfirmSubmitButton
+          confirmMessage={`متأكد إنك بدك تحذف مرحلة "${stage.name}"؟ لا يمكن التراجع.`}
           pendingText="جاري الحذف..."
+          className="rounded border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
         >
           حذف المرحلة
-        </SubmitButton>
+        </ConfirmSubmitButton>
       </form>
     </div>
   );
