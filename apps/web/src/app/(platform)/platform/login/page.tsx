@@ -1,5 +1,6 @@
 import { AuthCard } from '@/components/auth-card';
 import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
+import { SubmitButton } from '@/components/submit-button';
 import { signInToPlatform } from './actions';
 
 export default async function PlatformLoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -16,9 +17,9 @@ export default async function PlatformLoginPage({ searchParams }: { searchParams
           كلمة السر
           <input type="password" name="password" required className={`mt-1 ${authInputClass}`} />
         </label>
-        <button type="submit" className={`mt-2 ${authButtonClass}`}>
+        <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText="جاري تسجيل الدخول...">
           دخول
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );

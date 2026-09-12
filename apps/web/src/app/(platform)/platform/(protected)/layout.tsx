@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getPlatformContext } from '@/lib/platform/get-platform-context';
+import { SubmitButton } from '@/components/submit-button';
 import { signOut } from '@/lib/auth/actions';
 
 // Served on admin.{ROOT_DOMAIN} via middleware.ts. Replaces the legacy
@@ -35,9 +36,9 @@ export default async function PlatformProtectedLayout({ children }: { children: 
           </a>
         </nav>
         <form action={signOut} className="mt-6 border-t border-gray-700 pt-4">
-          <button type="submit" className="text-sm text-gray-400 hover:text-red-400">
+          <SubmitButton className="text-sm text-gray-400 hover:text-red-400" pendingText="جاري الخروج...">
             تسجيل خروج ({platform.email})
-          </button>
+          </SubmitButton>
         </form>
       </aside>
       <main className="flex-1 p-8">{children}</main>

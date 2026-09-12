@@ -1,5 +1,6 @@
 import { AuthCard } from '@/components/auth-card';
 import { authLabelClass, authButtonClass } from '@/components/auth-styles';
+import { SubmitButton } from '@/components/submit-button';
 import { findOrgLogin } from './actions';
 
 export default async function LoginLookupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
@@ -27,9 +28,9 @@ export default async function LoginLookupPage({ searchParams }: { searchParams: 
             <span className="whitespace-nowrap bg-gray-50 px-3 py-2.5 text-gray-500">.bustan-alquran.com</span>
           </div>
         </label>
-        <button type="submit" className={authButtonClass}>
+        <SubmitButton className={authButtonClass} pendingText="جاري البحث...">
           متابعة لتسجيل الدخول
-        </button>
+        </SubmitButton>
       </form>
 
       <p className="mt-5 text-center text-xs text-gray-400">

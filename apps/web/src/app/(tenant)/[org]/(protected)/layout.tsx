@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { TenantSidebar } from '@/components/tenant-sidebar';
+import { SubmitButton } from '@/components/submit-button';
 import { signOut } from '@/lib/auth/actions';
 
 export default async function TenantProtectedLayout({
@@ -36,9 +37,9 @@ export default async function TenantProtectedLayout({
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <span>{org.myRole}</span>
             <form action={signOut}>
-              <button type="submit" className="hover:text-red-600">
+              <SubmitButton className="hover:text-red-600" pendingText="جاري الخروج...">
                 تسجيل خروج
-              </button>
+              </SubmitButton>
             </form>
           </div>
         </header>

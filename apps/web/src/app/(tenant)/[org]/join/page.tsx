@@ -1,5 +1,6 @@
 import { AuthCard } from '@/components/auth-card';
 import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
+import { SubmitButton } from '@/components/submit-button';
 import { createClient } from '@/lib/supabase/server';
 import { signUpAndAcceptInvitation, acceptInvitationForCurrentUser } from './actions';
 
@@ -54,9 +55,9 @@ export default async function JoinPage({
         <p className="mb-4 text-center text-sm text-gray-500">مسجّل دخول بـ {user.email}. اضغط تأكيد للانضمام.</p>
         <form action={acceptInvitationForCurrentUser}>
           <input type="hidden" name="token" value={token} />
-          <button type="submit" className={authButtonClass}>
+          <SubmitButton className={authButtonClass} pendingText="جاري الانضمام...">
             تأكيد الانضمام
-          </button>
+          </SubmitButton>
         </form>
       </AuthCard>
     );
@@ -85,9 +86,9 @@ export default async function JoinPage({
           كلمة السر
           <input type="password" name="password" required minLength={6} className={`mt-1 ${authInputClass}`} />
         </label>
-        <button type="submit" className={`mt-2 ${authButtonClass}`}>
+        <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText="جاري الإنشاء والانضمام...">
           إنشاء الحساب والانضمام
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );

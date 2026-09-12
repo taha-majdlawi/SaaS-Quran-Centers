@@ -1,5 +1,6 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { SubmitButton } from '@/components/submit-button';
 import { createInvitation } from './actions';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -91,9 +92,12 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
                 <option value="student">طالب</option>
               </select>
             </label>
-            <button type="submit" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
+            <SubmitButton
+              className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              pendingText="جاري الإنشاء..."
+            >
               إنشاء دعوة
-            </button>
+            </SubmitButton>
           </form>
 
           {pendingInvitations.length > 0 && (

@@ -1,5 +1,6 @@
 import { AuthCard } from '@/components/auth-card';
 import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
+import { SubmitButton } from '@/components/submit-button';
 import { signUpAndCreateOrganization } from './actions';
 
 const BENEFITS = [
@@ -72,9 +73,9 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           <input type="password" name="password" required minLength={6} className={`mt-1 ${authInputClass}`} />
         </label>
 
-        <button type="submit" className={`mt-2 ${authButtonClass}`}>
+        <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText="جاري إنشاء المركز...">
           إنشاء المركز
-        </button>
+        </SubmitButton>
       </form>
     </AuthCard>
   );
