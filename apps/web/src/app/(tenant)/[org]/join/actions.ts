@@ -11,9 +11,17 @@ export async function signUpAndAcceptInvitation(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error: signUpError } = await supabase.auth.signUp({ email, password });
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
   if (signUpError) {
     redirect(`/join?token=${token}&error=${encodeURIComponent(signUpError.message)}`);
+  }
+
+  if (!signUpData.session) {
+    // "Confirm email" is on for this project - no session yet, so
+    // accept_invitation (which requires auth.uid()) would fail silently.
+    redirect(
+      `/join?token=${token}&error=${encodeURIComponent('تحقق من بريدك لتأكيد الحساب أولًا، ثم افتح رابط الدعوة من جديد لإكمال الانضمام')}`,
+    );
   }
 
   const { error: acceptError } = await supabase.rpc('accept_invitation', { invite_token: token });
