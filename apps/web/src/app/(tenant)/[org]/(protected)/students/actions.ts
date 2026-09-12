@@ -16,6 +16,10 @@ export async function createStudent(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const fields = readStudentFields(formData);
 
+  if (!fields.circle_id) {
+    redirect(`/students/new?error=${encodeURIComponent('يجب اختيار حلقة للطالب')}` as never);
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.from('students_profile').insert({ organization_id: orgId, ...fields });
 
@@ -31,6 +35,10 @@ export async function updateStudent(formData: FormData) {
   const id = formData.get('id') as string;
   const status = formData.get('status') as string;
   const fields = readStudentFields(formData);
+
+  if (!fields.circle_id) {
+    redirect(`/students/${id}?error=${encodeURIComponent('يجب اختيار حلقة للطالب')}` as never);
+  }
 
   const supabase = await createClient();
   const { error } = await supabase

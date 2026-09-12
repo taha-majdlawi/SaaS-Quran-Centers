@@ -78,10 +78,13 @@ export default async function EditStudentPage({
           الحلقة
           <select
             name="circleId"
+            required
             defaultValue={student.circle_id ?? ''}
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
           >
-            <option value="">بدون حلقة</option>
+            <option value="" disabled>
+              اختر الحلقة
+            </option>
             {(circles ?? []).map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
