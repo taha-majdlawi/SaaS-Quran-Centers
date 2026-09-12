@@ -68,6 +68,14 @@ export async function middleware(req: NextRequest) {
   // when the access token has expired - a plain getSession() would not.
   await supabase.auth.getUser();
 
+  // Baseline security headers on every response - clickjacking, MIME
+  // sniffing, referrer leakage, and forcing HTTPS on repeat visits.
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+
   return response;
 }
 
