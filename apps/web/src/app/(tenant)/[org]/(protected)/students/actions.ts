@@ -1,7 +1,6 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
 function readStudentFields(formData: FormData) {
@@ -25,7 +24,6 @@ export async function createStudent(formData: FormData) {
     redirect(`/students/new?error=${encodeURIComponent(message)}` as never);
   }
 
-  revalidatePath('/students');
   redirect('/students');
 }
 
@@ -45,7 +43,6 @@ export async function updateStudent(formData: FormData) {
     redirect(`/students/${id}?error=${encodeURIComponent(message)}` as never);
   }
 
-  revalidatePath('/students');
   redirect('/students');
 }
 
@@ -55,6 +52,5 @@ export async function deleteStudent(formData: FormData) {
   const supabase = await createClient();
   await supabase.from('students_profile').delete().eq('id', id);
 
-  revalidatePath('/students');
   redirect('/students');
 }

@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
 export async function createInvitation(formData: FormData) {
@@ -11,5 +11,5 @@ export async function createInvitation(formData: FormData) {
   const supabase = await createClient();
   await supabase.rpc('create_invitation', { org_id: orgId, invite_email: email, invite_role: role });
 
-  revalidatePath('/members');
+  redirect('/members');
 }

@@ -1,7 +1,6 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
 function readCircleFields(formData: FormData) {
@@ -25,7 +24,6 @@ export async function createCircle(formData: FormData) {
     redirect(`/circles/new?error=${encodeURIComponent(error.message)}` as never);
   }
 
-  revalidatePath('/circles');
   redirect('/circles');
 }
 
@@ -44,7 +42,6 @@ export async function updateCircle(formData: FormData) {
     redirect(`/circles/${id}?error=${encodeURIComponent(error.message)}` as never);
   }
 
-  revalidatePath('/circles');
   redirect('/circles');
 }
 
@@ -54,6 +51,5 @@ export async function deleteCircle(formData: FormData) {
   const supabase = await createClient();
   await supabase.from('circles').delete().eq('id', id);
 
-  revalidatePath('/circles');
   redirect('/circles');
 }
