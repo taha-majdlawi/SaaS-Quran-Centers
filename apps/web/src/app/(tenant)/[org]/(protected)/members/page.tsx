@@ -40,7 +40,7 @@ export default async function MembersPage({
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
-  const { data: members } = await supabase.rpc('list_org_members', { org_id: org.id });
+  const { data: members, error: membersError } = await supabase.rpc('list_org_members', { org_id: org.id });
   const isAdmin = org.myRole === 'admin';
 
   const { data: invitations } = isAdmin
@@ -64,6 +64,11 @@ export default async function MembersPage({
       )}
 
       <div>
+        {membersError && (
+          <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600" dir="ltr">
+            {membersError.code}: {membersError.message}
+          </p>
+        )}
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">الأعضاء والأدوار</h1>
           {org.myRole === 'admin' && (

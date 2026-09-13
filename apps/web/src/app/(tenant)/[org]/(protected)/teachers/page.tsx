@@ -24,7 +24,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ org: 
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
-  const [{ data: members }, { data: circles }] = await Promise.all([
+  const [{ data: members, error: membersError }, { data: circles }] = await Promise.all([
     supabase.rpc('list_org_members', { org_id: org.id }),
     supabase.from('circles').select('name, teacher_id').eq('organization_id', org.id),
   ]);
@@ -41,6 +41,11 @@ export default async function TeachersPage({ params }: { params: Promise<{ org: 
 
   return (
     <div>
+      {membersError && (
+        <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600" dir="ltr">
+          {membersError.code}: {membersError.message}
+        </p>
+      )}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">المعلمون</h1>
         <a href="/members" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
