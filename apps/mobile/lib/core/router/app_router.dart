@@ -1,47 +1,54 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
-import '../tenant/organization.dart';
+import '../auth/auth_controller.dart';
 import '../tenant/tenant_controller.dart';
+import '../../features/auth/login_screen.dart';
+import '../../features/tenant/org_picker_screen.dart';
+import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/students/students_list_screen.dart';
+import '../../features/students/student_form_screen.dart';
 
-/// Route guard mirrors eqraa_app's role-prefix redirect
-/// (lib/core/router/app_router.dart there), extended with an organization
-/// gate: a signed-in user with zero active memberships is sent to
-/// /select-organization before any role-scoped route is reachable.
-GoRouter buildAppRouter({required TenantController tenant}) {
+/// Deliberately flat for this first pass: every signed-in member (whatever
+/// their role) lands in the same /dashboard, /students, ... routes, same as
+/// apps/web where role differences are handled INSIDE each page rather than
+/// via separate route prefixes per role. Splitting by role can come back
+/// once there's more than one role's worth of screens actually built.
+GoRouter buildAppRouter({required AuthController auth, required TenantController tenant}) {
   return GoRouter(
-    refreshListenable: tenant,
-    initialLocation: '/',
+    refreshListenable: Listenable.merge([auth, tenant]),
+    initialLocation: '/dashboard',
     redirect: (context, state) {
-      final loggingIn = state.matchedLocation == '/login';
-      final selectingOrg = state.matchedLocation == '/select-organization';
+      final path = state.matchedLocation;
 
-      // TODO: wire real auth-session check (mirrors eqraa_app's approach of
-      // caching role/session in SharedPreferences after Supabase sign-in).
-      final isAuthenticated = true;
-      if (!isAuthenticated) return loggingIn ? null : '/login';
+      if (!auth.isAuthenticated) {
+        return path == '/login' ? null : '/login';
+      }
 
-      if (tenant.active == null && !selectingOrg) return '/select-organization';
+      if (tenant.loading) return null;
 
-      final active = tenant.active;
-      if (active != null) {
-        final path = state.matchedLocation;
-        final rolePrefix = switch (active.role) {
-          OrgRole.student => '/student',
-          OrgRole.teacher => '/teacher',
-          OrgRole.admin => '/admin',
-          OrgRole.guardian => '/guardian',
-        };
-        final onForeignRolePrefix = ['/student', '/teacher', '/admin', '/guardian']
-            .where((p) => p != rolePrefix)
-            .any(path.startsWith);
-        if (onForeignRolePrefix) return rolePrefix;
+      if (tenant.active == null) {
+        return path == '/select-organization' ? null : '/select-organization';
+      }
+
+      // "تبديل المركز" in AppDrawer navigates here deliberately even with an
+      // active org already set, so only bounce away from /login.
+      if (path == '/login') {
+        return '/dashboard';
       }
 
       return null;
     },
     routes: [
-      // Feature route builders are registered here, one per lib/features/*
-      // module - see apps/mobile/README.md for the porting checklist.
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
+      GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
+      GoRoute(path: '/students', builder: (context, state) => const StudentsListScreen()),
+      GoRoute(path: '/students/new', builder: (context, state) => const StudentFormScreen()),
+      GoRoute(
+        path: '/students/:id',
+        builder: (context, state) => StudentFormScreen(studentId: state.pathParameters['id']),
+      ),
     ],
   );
 }

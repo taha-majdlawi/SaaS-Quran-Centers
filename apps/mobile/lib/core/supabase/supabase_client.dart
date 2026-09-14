@@ -9,9 +9,9 @@ class AppSupabase {
 
   static Future<void> initialize({
     required String url,
-    required String anonKey,
+    required String publishableKey,
   }) {
-    return Supabase.initialize(url: url, anonKey: anonKey);
+    return Supabase.initialize(url: url, publishableKey: publishableKey);
   }
 
   static SupabaseClient get client => Supabase.instance.client;

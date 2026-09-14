@@ -30,13 +30,16 @@ class TenantController extends ChangeNotifier {
 
     _memberships = await _repository.fetchMyMemberships();
 
-    final prefs = await SharedPreferences.getInstance();
-    final savedOrgId = prefs.getString(_activeOrgPrefKey);
-
-    _active = _memberships.firstWhere(
-      (m) => m.organization.id == savedOrgId,
-      orElse: () => _memberships.isNotEmpty ? _memberships.first : throw StateError('no memberships'),
-    );
+    if (_memberships.isEmpty) {
+      _active = null;
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      final savedOrgId = prefs.getString(_activeOrgPrefKey);
+      _active = _memberships.firstWhere(
+        (m) => m.organization.id == savedOrgId,
+        orElse: () => _memberships.first,
+      );
+    }
 
     _loading = false;
     notifyListeners();

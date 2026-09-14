@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/auth/auth_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
 import 'core/tenant/tenant_controller.dart';
@@ -11,7 +12,7 @@ Future<void> main() async {
 
   await AppSupabase.initialize(
     url: const String.fromEnvironment('SUPABASE_URL'),
-    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+    publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
   );
 
   runApp(const BustanAlQuranApp());
@@ -22,18 +23,48 @@ class BustanAlQuranApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TenantController(TenantRepository(AppSupabase.client))..loadMemberships(),
-      child: Builder(
-        builder: (context) {
-          final tenant = context.watch<TenantController>();
-          final router = buildAppRouter(tenant: tenant);
-          return MaterialApp.router(
-            title: 'بستان القرآن',
-            routerConfig: router,
-          );
-        },
-      ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthController(AppSupabase.client)),
+        ChangeNotifierProvider(create: (_) => TenantController(TenantRepository(AppSupabase.client))),
+      ],
+      child: const _AppRouterHost(),
+    );
+  }
+}
+
+/// Loads the signed-in user's organizations the moment they authenticate,
+/// and clears them on sign-out - the router's redirect logic depends on
+/// `tenant.active` being up to date with the CURRENT auth state.
+class _AppRouterHost extends StatefulWidget {
+  const _AppRouterHost();
+
+  @override
+  State<_AppRouterHost> createState() => _AppRouterHostState();
+}
+
+class _AppRouterHostState extends State<_AppRouterHost> {
+  bool _wasAuthenticated = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthController>();
+    final tenant = context.watch<TenantController>();
+
+    if (auth.isAuthenticated && !_wasAuthenticated) {
+      _wasAuthenticated = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => tenant.loadMemberships());
+    } else if (!auth.isAuthenticated && _wasAuthenticated) {
+      _wasAuthenticated = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => tenant.clear());
+    }
+
+    final router = buildAppRouter(auth: auth, tenant: tenant);
+    return MaterialApp.router(
+      title: 'بستان القرآن',
+      routerConfig: router,
+      locale: const Locale('ar'),
+      builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
     );
   }
 }
