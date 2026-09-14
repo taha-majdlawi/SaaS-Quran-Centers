@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { logAudit } from '@/lib/audit/log';
 
 function readCircleFields(formData: FormData) {
   const capacity = formData.get('capacity') as string;
@@ -49,7 +50,22 @@ export async function deleteCircle(formData: FormData) {
   const id = formData.get('id') as string;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: circle } = await supabase.from('circles').select('organization_id').eq('id', id).maybeSingle();
+
   await supabase.from('circles').delete().eq('id', id);
+
+  if (circle && user) {
+    await logAudit(supabase, {
+      organizationId: circle.organization_id,
+      actorId: user.id,
+      action: 'delete',
+      entityTable: 'circles',
+      entityId: id,
+    });
+  }
 
   redirect('/circles');
 }

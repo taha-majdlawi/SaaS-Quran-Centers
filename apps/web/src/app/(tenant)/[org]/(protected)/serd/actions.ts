@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { logAudit } from '@/lib/audit/log';
 
 export async function createSerdSession(formData: FormData) {
   const orgId = formData.get('orgId') as string;
@@ -58,7 +59,26 @@ export async function deleteSerdSession(formData: FormData) {
   const id = formData.get('id') as string;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: session } = await supabase
+    .from('serd_sessions')
+    .select('organization_id')
+    .eq('id', id)
+    .maybeSingle();
+
   await supabase.from('serd_sessions').delete().eq('id', id);
+
+  if (session && user) {
+    await logAudit(supabase, {
+      organizationId: session.organization_id,
+      actorId: user.id,
+      action: 'delete',
+      entityTable: 'serd_sessions',
+      entityId: id,
+    });
+  }
 
   redirect('/serd');
 }

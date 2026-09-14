@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { logAudit } from '@/lib/audit/log';
 
 function readStageFields(formData: FormData) {
   const sortOrder = formData.get('sortOrder') as string;
@@ -46,7 +47,22 @@ export async function deleteStage(formData: FormData) {
   const id = formData.get('id') as string;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: stage } = await supabase.from('stages').select('organization_id').eq('id', id).maybeSingle();
+
   await supabase.from('stages').delete().eq('id', id);
+
+  if (stage && user) {
+    await logAudit(supabase, {
+      organizationId: stage.organization_id,
+      actorId: user.id,
+      action: 'delete',
+      entityTable: 'stages',
+      entityId: id,
+    });
+  }
 
   redirect('/stages');
 }
