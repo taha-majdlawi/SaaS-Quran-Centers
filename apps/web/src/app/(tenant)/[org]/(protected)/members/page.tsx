@@ -84,6 +84,7 @@ export default async function MembersPage({
               <th className="px-4 py-2">البريد الإلكتروني</th>
               <th className="px-4 py-2">الدور</th>
               <th className="px-4 py-2">الحالة</th>
+              {isAdmin && <th className="px-4 py-2"></th>}
             </tr>
           </thead>
           <tbody>
@@ -93,6 +94,13 @@ export default async function MembersPage({
                 <td className="px-4 py-2">{m.email}</td>
                 <td className="px-4 py-2">{ROLE_LABELS[m.role] ?? m.role}</td>
                 <td className="px-4 py-2">{m.status === 'active' ? 'نشط' : m.status}</td>
+                {isAdmin && (
+                  <td className="px-4 py-2 text-left">
+                    <a href={`/members/${m.id}`} className="text-brand hover:underline">
+                      تعديل
+                    </a>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
