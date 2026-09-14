@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { ALL_MODULE_KEYS, type ModuleKey } from '@/lib/permissions/modules';
 
 export interface OrgContext {
   id: string;
@@ -10,6 +11,13 @@ export interface OrgContext {
   logoUrl: string | null;
   /** Caller's role in THIS organization - null if authenticated but not a member (should redirect). */
   myRole: 'student' | 'teacher' | 'admin' | 'guardian' | null;
+  /**
+   * Dashboard modules the caller may use. Admins always get every module;
+   * teachers get whatever the admin granted them (organization_members.permissions);
+   * students/guardians get none - they use the /my portal instead, which
+   * isn't gated by this list.
+   */
+  myPermissions: ModuleKey[];
 }
 
 /**
@@ -34,15 +42,23 @@ export async function getOrgContext(slug: string): Promise<OrgContext> {
   } = await supabase.auth.getUser();
 
   let myRole: OrgContext['myRole'] = null;
+  let myPermissions: ModuleKey[] = [];
   if (user) {
     const { data: membership } = await supabase
       .from('organization_members')
-      .select('role')
+      .select('role, permissions')
       .eq('organization_id', org.id)
       .eq('user_id', user.id)
       .eq('status', 'active')
       .maybeSingle();
     myRole = (membership?.role as OrgContext['myRole']) ?? null;
+    if (myRole === 'admin') {
+      myPermissions = ALL_MODULE_KEYS;
+    } else if (myRole === 'teacher') {
+      myPermissions = ((membership?.permissions as string[] | null) ?? []).filter(
+        (p): p is ModuleKey => (ALL_MODULE_KEYS as string[]).includes(p),
+      );
+    }
   }
 
   return {
@@ -53,5 +69,6 @@ export async function getOrgContext(slug: string): Promise<OrgContext> {
     secondaryColor: org.secondary_color,
     logoUrl: org.logo_url,
     myRole,
+    myPermissions,
   };
 }

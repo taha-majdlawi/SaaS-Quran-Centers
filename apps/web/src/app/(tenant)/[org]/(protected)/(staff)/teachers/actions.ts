@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
+import { ALL_MODULE_KEYS } from '@/lib/permissions/modules';
 
 /**
  * Full account edit (name, email, password, role, status) - not just the
@@ -20,6 +21,7 @@ export async function updateTeacherAccount(formData: FormData) {
   const password = (formData.get('password') as string)?.trim();
   const role = formData.get('role') as string;
   const status = formData.get('status') as string;
+  const permissions = ALL_MODULE_KEYS.filter((key) => formData.get(`perm_${key}`) === 'on');
 
   const supabase = await createClient();
   const {
@@ -55,7 +57,7 @@ export async function updateTeacherAccount(formData: FormData) {
 
   const { error: memberError } = await admin
     .from('organization_members')
-    .update({ role, status })
+    .update({ role, status, permissions })
     .eq('id', memberId);
 
   if (memberError) {

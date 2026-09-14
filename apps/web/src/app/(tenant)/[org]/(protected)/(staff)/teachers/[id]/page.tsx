@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
+import { MODULE_DEFS } from '@/lib/permissions/modules';
 import { updateTeacherAccount } from '../actions';
 
 const ROLE_OPTIONS = [
@@ -23,6 +24,7 @@ interface MemberRow {
   status: string;
   full_name: string | null;
   email: string | null;
+  permissions: string[] | null;
 }
 
 // Full account edit (name/email/password/role/status) - members/[id] only
@@ -112,6 +114,28 @@ export default async function EditTeacherPage({
             ))}
           </select>
         </label>
+
+        <fieldset className="rounded border p-3">
+          <legend className="px-1 text-sm font-medium text-gray-700">
+            الوحدات التي يمكنه الوصول لها من لوحة التحكم
+          </legend>
+          <p className="mb-2 text-xs text-gray-400">
+            هذا يتحكم بما يظهر له في القائمة الجانبية وما يمكنه فعلاً قراءته أو تعديله - إن غيّرت دوره
+            إلى مدير فلن يكون لهذا أي أثر لأن المدير يرى كل شيء دائمًا.
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {MODULE_DEFS.map((m) => (
+              <label key={m.key} className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  name={`perm_${m.key}`}
+                  defaultChecked={(member.permissions ?? []).includes(m.key)}
+                />
+                {m.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"

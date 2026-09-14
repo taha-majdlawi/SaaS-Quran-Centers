@@ -1,35 +1,58 @@
+import type { ModuleKey } from '@/lib/permissions/modules';
+
 // Single source of truth for the tenant admin nav - the legacy admin/ had
 // this list implicitly, duplicated as 20+ separate <nav> blocks copy-pasted
 // across static HTML files. Here it is written once.
+//
+// `module` is optional: entries without one (dashboard, teachers, stages,
+// members, audit, site, settings) are staff-structural pages every admin
+// and teacher can reach regardless of the admin-configured module list -
+// only entries WITH a module key are gated by it (see get-org-context.ts /
+// migration 0015's member_has_module()).
 export const TENANT_MODULES = [
   { slug: 'dashboard', label: 'لوحة التحكم' },
-  { slug: 'students', label: 'الطلاب' },
-  { slug: 'teachers', label: 'المعلمون' },
-  { slug: 'circles', label: 'الحلقات' },
-  { slug: 'stages', label: 'المراحل' },
-  { slug: 'attendance', label: 'الحضور' },
-  { slug: 'serd', label: 'السرد القرآني' },
-  { slug: 'recitation-requests', label: 'طلبات التسميع' },
-  { slug: 'points', label: 'النقاط' },
-  { slug: 'badges', label: 'الشارات' },
-  { slug: 'market', label: 'سوق النقاط' },
-  { slug: 'circle-challenges', label: 'منافسات الحلقات' },
-  { slug: 'activities', label: 'الأنشطة' },
-  { slug: 'calendar', label: 'التقويم' },
-  { slug: 'announcements', label: 'الإعلانات' },
-  { slug: 'chat', label: 'المحادثات' },
-  { slug: 'notifications', label: 'الإشعارات' },
-  { slug: 'members', label: 'الأعضاء والأدوار' },
-  { slug: 'audit', label: 'سجل العمليات' },
-  { slug: 'site', label: 'الموقع العام' },
-  { slug: 'settings', label: 'إعدادات المركز' },
+  { slug: 'students', label: 'الطلاب', module: 'students' },
+  { slug: 'teachers', label: 'المعلمون', adminOnly: true },
+  { slug: 'circles', label: 'الحلقات', module: 'circles' },
+  { slug: 'stages', label: 'المراحل', adminOnly: true },
+  { slug: 'attendance', label: 'الحضور', module: 'attendance' },
+  { slug: 'serd', label: 'السرد القرآني', module: 'serd' },
+  { slug: 'recitation-requests', label: 'طلبات التسميع', module: 'serd' },
+  { slug: 'points', label: 'النقاط', module: 'points' },
+  { slug: 'badges', label: 'الشارات', module: 'badges' },
+  { slug: 'market', label: 'سوق النقاط', module: 'market' },
+  { slug: 'circle-challenges', label: 'منافسات الحلقات', module: 'circle-challenges' },
+  { slug: 'activities', label: 'الأنشطة', module: 'activities' },
+  { slug: 'calendar', label: 'التقويم', module: 'calendar' },
+  { slug: 'announcements', label: 'الإعلانات', module: 'announcements' },
+  { slug: 'chat', label: 'المحادثات', module: 'chat' },
+  { slug: 'notifications', label: 'الإشعارات', module: 'notifications' },
+  { slug: 'members', label: 'الأعضاء والأدوار', adminOnly: true },
+  { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
+  { slug: 'site', label: 'الموقع العام', adminOnly: true },
+  { slug: 'settings', label: 'إعدادات المركز', adminOnly: true },
 ] as const;
 
-export function TenantSidebar({ activeSlug }: { activeSlug?: string }) {
+export function TenantSidebar({
+  activeSlug,
+  role,
+  permissions,
+}: {
+  activeSlug?: string;
+  role: 'admin' | 'teacher' | 'guardian' | 'student' | null;
+  permissions: ModuleKey[];
+}) {
+  const visible = TENANT_MODULES.filter((m) => {
+    if (role === 'admin') return true;
+    if ('adminOnly' in m && m.adminOnly) return false;
+    if (!('module' in m)) return true; // dashboard
+    return permissions.includes(m.module as ModuleKey);
+  });
+
   return (
     <aside className="w-64 shrink-0 border-l bg-white p-4">
       <nav className="flex flex-col gap-1 text-sm">
-        {TENANT_MODULES.map((m) => (
+        {visible.map((m) => (
           <a
             key={m.slug}
             // Relative to the root domain, not `/[org]` - the browser is

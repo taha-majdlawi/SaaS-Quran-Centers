@@ -15,6 +15,6 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 // not-found page instead of blindly redirecting into a loop.
 export default async function TenantRootPage({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params;
-  await getOrgContext(org);
-  redirect('/dashboard');
+  const ctx = await getOrgContext(org);
+  redirect(ctx.myRole === 'student' || ctx.myRole === 'guardian' ? '/my' : '/dashboard');
 }
