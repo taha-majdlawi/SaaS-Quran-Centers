@@ -132,6 +132,24 @@ class AppDrawer extends StatelessWidget {
                   context.go('/calendar');
                 },
               ),
+            if (tenant.hasModule('chat'))
+              ListTile(
+                leading: const Icon(Icons.chat_bubble_outline),
+                title: const Text('المحادثات'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/chat');
+                },
+              ),
+            if (tenant.hasModule('notifications'))
+              ListTile(
+                leading: const Icon(Icons.notifications_none),
+                title: const Text('الإشعارات'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/notifications');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
