@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../auth/auth_controller.dart';
 import '../tenant/tenant_controller.dart';
+import '../tenant/organization.dart';
 
 /// Same module list as apps/web's TenantSidebar, trimmed to the ones with a
 /// mobile screen so far - add an entry here as each new feature lands.
@@ -14,6 +15,7 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final tenant = context.watch<TenantController>();
     final org = tenant.active?.organization;
+    final isAdmin = tenant.active?.role == OrgRole.admin;
 
     return Drawer(
       child: SafeArea(
@@ -40,6 +42,15 @@ class AppDrawer extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   context.go('/students');
+                },
+              ),
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.stairs),
+                title: const Text('المراحل'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/stages');
                 },
               ),
             if (tenant.hasModule('circles'))

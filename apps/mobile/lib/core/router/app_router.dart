@@ -33,6 +33,8 @@ import '../../features/notifications/notifications_screen.dart';
 import '../../features/chat/chat_list_screen.dart';
 import '../../features/chat/new_chat_screen.dart';
 import '../../features/chat/chat_thread_screen.dart';
+import '../../features/stages/stages_list_screen.dart';
+import '../../features/stages/stage_form_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -142,6 +144,12 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(
         path: '/chat/:id',
         builder: (context, state) => ChatThreadScreen(threadId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/stages', builder: (context, state) => const StagesListScreen()),
+      GoRoute(path: '/stages/new', builder: (context, state) => const StageFormScreen()),
+      GoRoute(
+        path: '/stages/:id',
+        builder: (context, state) => StageFormScreen(stageId: state.pathParameters['id']),
       ),
     ],
   );
