@@ -152,6 +152,15 @@ class AppDrawer extends StatelessWidget {
                   context.go('/chat');
                 },
               ),
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings),
+                title: const Text('الأعضاء والأدوار'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/members');
+                },
+              ),
             if (tenant.hasModule('notifications'))
               ListTile(
                 leading: const Icon(Icons.notifications_none),

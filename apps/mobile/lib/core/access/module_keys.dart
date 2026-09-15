@@ -17,3 +17,20 @@ const List<String> kModuleKeys = [
   'chat',
   'notifications',
 ];
+
+/// Arabic labels for the checkboxes on the member-permission editor.
+const Map<String, String> kModuleLabels = {
+  'students': 'الطلاب',
+  'circles': 'الحلقات',
+  'attendance': 'الحضور',
+  'serd': 'السرد القرآني وطلبات التسميع',
+  'points': 'النقاط',
+  'badges': 'الشارات',
+  'market': 'سوق النقاط',
+  'circle-challenges': 'منافسات الحلقات',
+  'activities': 'الأنشطة',
+  'calendar': 'التقويم',
+  'announcements': 'الإعلانات',
+  'chat': 'المحادثات',
+  'notifications': 'الإشعارات',
+};
