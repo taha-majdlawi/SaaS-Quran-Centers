@@ -51,6 +51,15 @@ class AppDrawer extends StatelessWidget {
                   context.go('/circles');
                 },
               ),
+            if (tenant.hasModule('attendance'))
+              ListTile(
+                leading: const Icon(Icons.checklist),
+                title: const Text('الحضور'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/attendance');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
