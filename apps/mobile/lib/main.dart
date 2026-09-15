@@ -7,15 +7,60 @@ import 'core/supabase/supabase_client.dart';
 import 'core/tenant/tenant_controller.dart';
 import 'core/tenant/tenant_repository.dart';
 
+const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+const _supabasePublishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await AppSupabase.initialize(
-    url: const String.fromEnvironment('SUPABASE_URL'),
-    publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
-  );
+  // Both are compile-time --dart-define values (see .vscode/launch.json or
+  // README.md) - not build-time secrets, this is the same publishable/anon
+  // key already shipped in the web app's client bundle. Missing them used
+  // to crash cryptically deep inside Supabase.initialize; show a screen
+  // that actually explains the fix instead.
+  if (_supabaseUrl.isEmpty || _supabasePublishableKey.isEmpty) {
+    runApp(const _MissingConfigApp());
+    return;
+  }
+
+  await AppSupabase.initialize(url: _supabaseUrl, publishableKey: _supabasePublishableKey);
 
   runApp(const BustanAlQuranApp());
+}
+
+class _MissingConfigApp extends StatelessWidget {
+  const _MissingConfigApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.settings_suggest, size: 48, color: Colors.orange),
+                SizedBox(height: 16),
+                Text(
+                  'إعدادات الاتصال بالخادم مفقودة',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'شغّل التطبيق عبر ملف .vscode/launch.json الجاهز، أو راجع README.md '
+                  'لمعرفة قيمتي --dart-define=SUPABASE_URL و --dart-define=SUPABASE_PUBLISHABLE_KEY.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class BustanAlQuranApp extends StatelessWidget {
