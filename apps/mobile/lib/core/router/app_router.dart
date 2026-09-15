@@ -12,6 +12,8 @@ import '../../features/my_portal/my_portal_screen.dart';
 import '../../features/circles/circles_list_screen.dart';
 import '../../features/circles/circle_form_screen.dart';
 import '../../features/attendance/attendance_screen.dart';
+import '../../features/serd/serd_list_screen.dart';
+import '../../features/serd/serd_form_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -72,6 +74,12 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => CircleFormScreen(circleId: state.pathParameters['id']),
       ),
       GoRoute(path: '/attendance', builder: (context, state) => const AttendanceScreen()),
+      GoRoute(path: '/serd', builder: (context, state) => const SerdListScreen()),
+      GoRoute(path: '/serd/new', builder: (context, state) => const SerdFormScreen()),
+      GoRoute(
+        path: '/serd/:id',
+        builder: (context, state) => SerdFormScreen(sessionId: state.pathParameters['id']),
+      ),
     ],
   );
 }

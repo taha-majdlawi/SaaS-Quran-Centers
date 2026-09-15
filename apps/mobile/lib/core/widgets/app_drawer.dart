@@ -60,6 +60,15 @@ class AppDrawer extends StatelessWidget {
                   context.go('/attendance');
                 },
               ),
+            if (tenant.hasModule('serd'))
+              ListTile(
+                leading: const Icon(Icons.menu_book),
+                title: const Text('السرد القرآني'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/serd');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
