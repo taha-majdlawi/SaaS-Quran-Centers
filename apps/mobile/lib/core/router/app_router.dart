@@ -19,6 +19,9 @@ import '../../features/badges/badges_screen.dart';
 import '../../features/badges/badge_form_screen.dart';
 import '../../features/market/market_screen.dart';
 import '../../features/market/market_item_form_screen.dart';
+import '../../features/circle_challenges/circle_challenges_list_screen.dart';
+import '../../features/circle_challenges/challenge_form_screen.dart';
+import '../../features/circle_challenges/challenge_detail_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -97,6 +100,12 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(
         path: '/market/:id',
         builder: (context, state) => MarketItemFormScreen(itemId: state.pathParameters['id']),
+      ),
+      GoRoute(path: '/circle-challenges', builder: (context, state) => const CircleChallengesListScreen()),
+      GoRoute(path: '/circle-challenges/new', builder: (context, state) => const ChallengeFormScreen()),
+      GoRoute(
+        path: '/circle-challenges/:id',
+        builder: (context, state) => ChallengeDetailScreen(challengeId: state.pathParameters['id']!),
       ),
     ],
   );

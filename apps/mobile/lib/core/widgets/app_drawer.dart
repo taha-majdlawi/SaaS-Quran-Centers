@@ -96,6 +96,15 @@ class AppDrawer extends StatelessWidget {
                   context.go('/market');
                 },
               ),
+            if (tenant.hasModule('circle-challenges'))
+              ListTile(
+                leading: const Icon(Icons.leaderboard),
+                title: const Text('منافسات الحلقات'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/circle-challenges');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
