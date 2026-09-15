@@ -9,6 +9,8 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/students/students_list_screen.dart';
 import '../../features/students/student_form_screen.dart';
 import '../../features/my_portal/my_portal_screen.dart';
+import '../../features/circles/circles_list_screen.dart';
+import '../../features/circles/circle_form_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -61,6 +63,12 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(
         path: '/students/:id',
         builder: (context, state) => StudentFormScreen(studentId: state.pathParameters['id']),
+      ),
+      GoRoute(path: '/circles', builder: (context, state) => const CirclesListScreen()),
+      GoRoute(path: '/circles/new', builder: (context, state) => const CircleFormScreen()),
+      GoRoute(
+        path: '/circles/:id',
+        builder: (context, state) => CircleFormScreen(circleId: state.pathParameters['id']),
       ),
     ],
   );
