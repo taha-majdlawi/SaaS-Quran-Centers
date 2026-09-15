@@ -22,6 +22,10 @@ import '../../features/market/market_item_form_screen.dart';
 import '../../features/circle_challenges/circle_challenges_list_screen.dart';
 import '../../features/circle_challenges/challenge_form_screen.dart';
 import '../../features/circle_challenges/challenge_detail_screen.dart';
+import '../../features/activities/activities_list_screen.dart';
+import '../../features/activities/activity_form_screen.dart';
+import '../../features/announcements/announcements_list_screen.dart';
+import '../../features/announcements/announcement_form_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -106,6 +110,18 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(
         path: '/circle-challenges/:id',
         builder: (context, state) => ChallengeDetailScreen(challengeId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/activities', builder: (context, state) => const ActivitiesListScreen()),
+      GoRoute(path: '/activities/new', builder: (context, state) => const ActivityFormScreen()),
+      GoRoute(
+        path: '/activities/:id',
+        builder: (context, state) => ActivityFormScreen(activityId: state.pathParameters['id']),
+      ),
+      GoRoute(path: '/announcements', builder: (context, state) => const AnnouncementsListScreen()),
+      GoRoute(path: '/announcements/new', builder: (context, state) => const AnnouncementFormScreen()),
+      GoRoute(
+        path: '/announcements/:id',
+        builder: (context, state) => AnnouncementFormScreen(announcementId: state.pathParameters['id']),
       ),
     ],
   );
