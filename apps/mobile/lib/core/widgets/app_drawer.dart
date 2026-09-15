@@ -123,6 +123,15 @@ class AppDrawer extends StatelessWidget {
                   context.go('/announcements');
                 },
               ),
+            if (tenant.hasModule('calendar'))
+              ListTile(
+                leading: const Icon(Icons.calendar_month),
+                title: const Text('التقويم'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/calendar');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),

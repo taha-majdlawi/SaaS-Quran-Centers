@@ -26,6 +26,9 @@ import '../../features/activities/activities_list_screen.dart';
 import '../../features/activities/activity_form_screen.dart';
 import '../../features/announcements/announcements_list_screen.dart';
 import '../../features/announcements/announcement_form_screen.dart';
+import '../../features/calendar/calendar_list_screen.dart';
+import '../../features/calendar/event_form_screen.dart';
+import '../../features/calendar/event_detail_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -122,6 +125,12 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(
         path: '/announcements/:id',
         builder: (context, state) => AnnouncementFormScreen(announcementId: state.pathParameters['id']),
+      ),
+      GoRoute(path: '/calendar', builder: (context, state) => const CalendarListScreen()),
+      GoRoute(path: '/calendar/new', builder: (context, state) => const EventFormScreen()),
+      GoRoute(
+        path: '/calendar/:id',
+        builder: (context, state) => EventDetailScreen(eventId: state.pathParameters['id']!),
       ),
     ],
   );
