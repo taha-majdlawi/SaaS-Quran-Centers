@@ -24,6 +24,10 @@ class TenantController extends ChangeNotifier {
   bool get loading => _loading;
   bool get hasMultipleOrganizations => _memberships.length > 1;
 
+  /// Whether the active membership can use the given module (see
+  /// `core/access/module_keys.dart`) - false with no active org.
+  bool hasModule(String moduleKey) => _active?.hasModule(moduleKey) ?? false;
+
   Future<void> loadMemberships() async {
     _loading = true;
     notifyListeners();

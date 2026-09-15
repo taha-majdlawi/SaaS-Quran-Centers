@@ -8,6 +8,8 @@ import '../../features/tenant/org_picker_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/students/students_list_screen.dart';
 import '../../features/students/student_form_screen.dart';
+import '../../features/my_portal/my_portal_screen.dart';
+import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
 /// their role) lands in the same /dashboard, /students, ... routes, same as
@@ -37,12 +39,23 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         return '/dashboard';
       }
 
+      // Students/guardians never see the staff screens - same boundary as
+      // apps/web's (staff) route group. RLS already blocks the data; this
+      // just sends them straight to their own portal instead of a staff
+      // screen that would render empty for them.
+      final role = tenant.active!.role;
+      final isPortalOnly = role == OrgRole.student || role == OrgRole.guardian;
+      if (isPortalOnly && path != '/my') {
+        return '/my';
+      }
+
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
+      GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),
       GoRoute(path: '/students', builder: (context, state) => const StudentsListScreen()),
       GoRoute(path: '/students/new', builder: (context, state) => const StudentFormScreen()),
       GoRoute(

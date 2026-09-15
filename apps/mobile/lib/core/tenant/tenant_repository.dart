@@ -14,13 +14,14 @@ class TenantRepository {
   Future<List<OrganizationMembership>> fetchMyMemberships() async {
     final rows = await _client
         .from('organization_members')
-        .select('role, organizations(*)')
+        .select('role, permissions, organizations(*)')
         .eq('status', 'active');
 
     return (rows as List).map((row) {
       final org = Organization.fromMap(row['organizations'] as Map<String, dynamic>);
       final role = OrgRole.values.byName(row['role'] as String);
-      return OrganizationMembership(organization: org, role: role);
+      final permissions = ((row['permissions'] as List?) ?? const []).cast<String>();
+      return OrganizationMembership(organization: org, role: role, permissions: permissions);
     }).toList();
   }
 }

@@ -32,8 +32,28 @@ class Organization {
 enum OrgRole { student, teacher, admin, guardian }
 
 class OrganizationMembership {
-  const OrganizationMembership({required this.organization, required this.role});
+  const OrganizationMembership({
+    required this.organization,
+    required this.role,
+    this.permissions = const [],
+  });
 
   final Organization organization;
   final OrgRole role;
+
+  /// Module keys this member was granted (see `core/access/module_keys.dart`).
+  /// Only meaningful for `role == teacher` - admins bypass it entirely via
+  /// [hasModule], students/guardians never carry any (they use the
+  /// dedicated student/guardian dashboards instead of module screens).
+  final List<String> permissions;
+
+  /// Mirrors the SQL `member_has_module()` function (migration 0015): admins
+  /// always pass, teachers need the module in their granted list, students
+  /// and guardians never pass - RLS enforces the same rule server-side, this
+  /// is only so screens can hide controls instead of showing a Postgres error.
+  bool hasModule(String moduleKey) {
+    if (role == OrgRole.admin) return true;
+    if (role == OrgRole.teacher) return permissions.contains(moduleKey);
+    return false;
+  }
 }
