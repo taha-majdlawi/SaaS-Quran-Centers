@@ -69,6 +69,33 @@ class AppDrawer extends StatelessWidget {
                   context.go('/serd');
                 },
               ),
+            if (tenant.hasModule('points'))
+              ListTile(
+                leading: const Icon(Icons.stars),
+                title: const Text('النقاط'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/points');
+                },
+              ),
+            if (tenant.hasModule('badges'))
+              ListTile(
+                leading: const Icon(Icons.emoji_events),
+                title: const Text('الشارات'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/badges');
+                },
+              ),
+            if (tenant.hasModule('market'))
+              ListTile(
+                leading: const Icon(Icons.storefront),
+                title: const Text('سوق النقاط'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/market');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),

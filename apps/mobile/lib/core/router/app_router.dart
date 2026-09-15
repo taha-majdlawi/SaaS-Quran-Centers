@@ -14,6 +14,11 @@ import '../../features/circles/circle_form_screen.dart';
 import '../../features/attendance/attendance_screen.dart';
 import '../../features/serd/serd_list_screen.dart';
 import '../../features/serd/serd_form_screen.dart';
+import '../../features/points/points_screen.dart';
+import '../../features/badges/badges_screen.dart';
+import '../../features/badges/badge_form_screen.dart';
+import '../../features/market/market_screen.dart';
+import '../../features/market/market_item_form_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -79,6 +84,19 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(
         path: '/serd/:id',
         builder: (context, state) => SerdFormScreen(sessionId: state.pathParameters['id']),
+      ),
+      GoRoute(path: '/points', builder: (context, state) => const PointsScreen()),
+      GoRoute(path: '/badges', builder: (context, state) => const BadgesScreen()),
+      GoRoute(path: '/badges/new', builder: (context, state) => const BadgeFormScreen()),
+      GoRoute(
+        path: '/badges/:id',
+        builder: (context, state) => BadgeFormScreen(badgeId: state.pathParameters['id']),
+      ),
+      GoRoute(path: '/market', builder: (context, state) => const MarketScreen()),
+      GoRoute(path: '/market/new', builder: (context, state) => const MarketItemFormScreen()),
+      GoRoute(
+        path: '/market/:id',
+        builder: (context, state) => MarketItemFormScreen(itemId: state.pathParameters['id']),
       ),
     ],
   );
