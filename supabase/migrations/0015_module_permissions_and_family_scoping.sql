@@ -17,7 +17,7 @@
 -- =========================================================================
 
 alter table public.organization_members
-  add column permissions text[] not null default array[
+  add column if not exists permissions text[] not null default array[
     'students', 'circles', 'attendance', 'serd', 'points', 'badges',
     'market', 'circle-challenges', 'activities', 'calendar',
     'announcements', 'chat', 'notifications'
@@ -62,7 +62,12 @@ $$;
 -- list_org_members: surface `permissions` so the teacher-edit UI can show
 -- and edit it (mirrors the ::text cast fix from 0014 for the same reason).
 -- ---------------------------------------------------------------------
-create or replace function public.list_org_members(org_id uuid)
+-- Adding `permissions` to the OUT columns changes the function's row type,
+-- which `create or replace` cannot do for a `returns table` function - the
+-- old signature has to be dropped first.
+drop function if exists public.list_org_members(uuid);
+
+create function public.list_org_members(org_id uuid)
 returns table (
   id uuid, user_id uuid, role public.user_role, status text, full_name text,
   email text, permissions text[], created_at timestamptz
