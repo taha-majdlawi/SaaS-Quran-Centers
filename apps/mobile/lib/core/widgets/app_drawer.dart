@@ -170,6 +170,33 @@ class AppDrawer extends StatelessWidget {
                   context.go('/notifications');
                 },
               ),
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.history),
+                title: const Text('سجل العمليات'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/audit');
+                },
+              ),
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.public),
+                title: const Text('الموقع العام'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/site');
+                },
+              ),
+            if (isAdmin)
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: const Text('إعدادات المركز'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/settings');
+                },
+              ),
             if (tenant.hasMultipleOrganizations)
               ListTile(
                 leading: const Icon(Icons.swap_horiz),

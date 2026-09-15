@@ -37,6 +37,9 @@ import '../../features/stages/stages_list_screen.dart';
 import '../../features/stages/stage_form_screen.dart';
 import '../../features/members/members_list_screen.dart';
 import '../../features/members/member_edit_screen.dart';
+import '../../features/audit/audit_screen.dart';
+import '../../features/settings/settings_screen.dart';
+import '../../features/site/site_screen.dart';
 import '../tenant/organization.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
@@ -158,6 +161,9 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         path: '/members/:id',
         builder: (context, state) => MemberEditScreen(memberId: state.pathParameters['id']!),
       ),
+      GoRoute(path: '/audit', builder: (context, state) => const AuditScreen()),
+      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(path: '/site', builder: (context, state) => const SiteScreen()),
     ],
   );
 }
