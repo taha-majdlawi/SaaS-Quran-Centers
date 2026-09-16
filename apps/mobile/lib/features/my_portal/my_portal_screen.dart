@@ -13,6 +13,15 @@ const _attendanceLabels = {
   'late': 'متأخر',
 };
 
+String _achievementSummary(PortalAchievementEntry a) {
+  final label = kAchievementTypeLabels[a.achievementType] ?? a.achievementType;
+  if (a.surahFrom == null) return label;
+  final range = a.surahFrom == a.surahTo
+      ? 'سورة ${a.surahFrom}: ${a.ayahFrom}-${a.ayahTo}'
+      : 'سورة ${a.surahFrom}:${a.ayahFrom} - سورة ${a.surahTo}:${a.ayahTo}';
+  return '$label · $range';
+}
+
 class _StudentPortalData {
   const _StudentPortalData({
     required this.student,
@@ -20,6 +29,7 @@ class _StudentPortalData {
     required this.badgeCount,
     required this.attendance,
     required this.serdSessions,
+    required this.achievements,
   });
 
   final PortalStudent student;
@@ -27,6 +37,13 @@ class _StudentPortalData {
   final int badgeCount;
   final List<PortalAttendanceEntry> attendance;
   final List<PortalSerdEntry> serdSessions;
+  final List<PortalAchievementEntry> achievements;
+}
+
+class _PortalData {
+  const _PortalData({required this.students, required this.upcomingEvents});
+  final List<_StudentPortalData> students;
+  final List<PortalUpcomingEvent> upcomingEvents;
 }
 
 /// The one screen student/guardian accounts ever see - app_router.dart
@@ -41,27 +58,36 @@ class MyPortalScreen extends StatefulWidget {
 
 class _MyPortalScreenState extends State<MyPortalScreen> {
   final _repository = MyPortalRepository(AppSupabase.client);
-  late Future<List<_StudentPortalData>> _dataFuture;
+  late Future<_PortalData> _dataFuture;
   String? _loadedForOrgId;
 
-  Future<List<_StudentPortalData>> _load(String orgId) async {
-    final students = await _repository.fetchMyStudents(orgId);
+  Future<_PortalData> _load(String orgId) async {
+    final results = await Future.wait([
+      _repository.fetchMyStudents(orgId),
+      _repository.fetchUpcomingEvents(orgId),
+    ]);
+    final students = results[0] as List<PortalStudent>;
+    final upcomingEvents = results[1] as List<PortalUpcomingEvent>;
 
-    return Future.wait(students.map((student) async {
-      final results = await Future.wait([
+    final studentData = await Future.wait(students.map((student) async {
+      final studentResults = await Future.wait([
         _repository.fetchWalletBalance(student.id),
         _repository.fetchBadgeCount(student.id),
         _repository.fetchRecentAttendance(student.id),
         _repository.fetchRecentSerdSessions(student.id),
+        _repository.fetchRecentAchievements(student.id),
       ]);
       return _StudentPortalData(
         student: student,
-        walletBalance: results[0] as int,
-        badgeCount: results[1] as int,
-        attendance: results[2] as List<PortalAttendanceEntry>,
-        serdSessions: results[3] as List<PortalSerdEntry>,
+        walletBalance: studentResults[0] as int,
+        badgeCount: studentResults[1] as int,
+        attendance: studentResults[2] as List<PortalAttendanceEntry>,
+        serdSessions: studentResults[3] as List<PortalSerdEntry>,
+        achievements: studentResults[4] as List<PortalAchievementEntry>,
       );
     }));
+
+    return _PortalData(students: studentData, upcomingEvents: upcomingEvents);
   }
 
   void _reload(String orgId) {
@@ -91,12 +117,12 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
       ),
       body: orgId == null
           ? const SizedBox.shrink()
-          : FutureBuilder<List<_StudentPortalData>>(
+          : FutureBuilder<_PortalData>(
               future: _dataFuture,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 final data = snapshot.data!;
-                if (data.isEmpty) {
+                if (data.students.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(24),
@@ -107,13 +133,61 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                     ),
                   );
                 }
-                return ListView.builder(
+                return ListView(
                   padding: const EdgeInsets.all(12),
-                  itemCount: data.length,
-                  itemBuilder: (context, index) => _StudentCard(data: data[index]),
+                  children: [
+                    if (data.upcomingEvents.isNotEmpty) _UpcomingEventsCard(events: data.upcomingEvents),
+                    ...data.students.map((s) => _StudentCard(data: s)),
+                  ],
                 );
               },
             ),
+    );
+  }
+}
+
+class _UpcomingEventsCard extends StatelessWidget {
+  const _UpcomingEventsCard({required this.events});
+  final List<PortalUpcomingEvent> events;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('الفعاليات القادمة', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ...events.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.event, size: 18, color: Color(0xFF0F766E)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(e.title),
+                          Text(
+                            '${e.startsAt}${e.location != null ? ' · ${e.location}' : ''}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -165,6 +239,27 @@ class _StudentCard extends StatelessWidget {
                     children: [
                       Text(a.sessionDate),
                       Text(_attendanceLabels[a.status] ?? a.status),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+            Text('آخر إنجازات الحفظ', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 4),
+            if (data.achievements.isEmpty)
+              const Text('لا توجد إنجازات مسجلة بعد', style: TextStyle(color: Colors.grey))
+            else
+              ...data.achievements.map(
+                (a) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(child: Text(_achievementSummary(a))),
+                      Text(
+                        '+${a.pointsAwarded}',
+                        style: const TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ),

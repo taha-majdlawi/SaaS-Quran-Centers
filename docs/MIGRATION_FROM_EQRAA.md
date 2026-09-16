@@ -14,9 +14,15 @@
 ## تطبيق الموبايل (`apps/mobile`)
 - [x] هيكل feature-first + طبقة tenant جديدة
 - [ ] `features/auth` — نقل شاشات الدخول (طالب/معلم/أدمن) + إضافة اختيار/دعوة مركز
-- [ ] `features/student_dashboard`, `features/teacher_dashboard`, `features/admin_dashboard`
+- [x] `features/dashboard` (أدمن/معلم، شاشة موحدة) و `features/my_portal` (طالب/ولي أمر، شاشة موحدة) —
+      قرار معماري متعمد (`app_router.dart`): الفروقات بالدور تُعالج داخل الشاشة نفسها بدل مسارات منفصلة لكل
+      دور، فألغى الحاجة لمجلدات `student_dashboard`/`teacher_dashboard`/`admin_dashboard`/`guardian_dashboard`
+      المنفصلة المذكورة بالخطة الأصلية. `my_portal` توسّعت لتشمل إنجازات الحفظ الأخيرة (`daily_achievements`)
+      والفعاليات القادمة (`center_calendar`) فوق النقاط/الشارات/الحضور/جلسات السرد.
+- [ ] موافقة ولي الأمر على فعاليات التقويم التي تتطلبها (`center_calendar.requires_guardian_consent` +
+      `calendar_registrations`) من داخل `my_portal` - يعادل صفحة `trip-consent/` القديمة. لسا ما انبنت:
+      `my_portal` حاليًا يعرض الفعاليات القادمة للقراءة فقط، بدون تسجيل/موافقة.
 - [ ] `features/quran` (قارئ المصحف - لا تغيير جوهري، بيانات عالمية غير مرتبطة بمستأجر)
-- [ ] `features/guardian_dashboard` (جديد بالكامل)
 - [ ] `core/chat`, `core/calendar`, `core/notifications`, `core/offline`, `core/access`
 - [ ] العلامة التجارية الديناميكية: قراءة الشعار/الألوان من `organizations` بدل أصول بناء ثابتة
 
