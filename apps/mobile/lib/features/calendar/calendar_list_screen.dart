@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/calendar/calendar_realtime.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
@@ -18,10 +19,33 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
   final _repository = CalendarRepository(AppSupabase.client);
   late Future<List<CalendarEventSummary>> _eventsFuture;
   String? _loadedForOrgId;
+  CalendarRealtime? _realtime;
+  String? _realtimeOrgId;
 
   void _reload(String orgId) {
     _loadedForOrgId = orgId;
     _eventsFuture = _repository.fetchEvents(orgId);
+  }
+
+  // Separate from _reload (which also runs on every realtime callback) so a
+  // change event doesn't tear down and recreate its own channel - the
+  // subscription is only (re)created when the active org itself changes.
+  void _ensureRealtimeFor(String orgId) {
+    if (_realtimeOrgId == orgId) return;
+    _realtime?.dispose();
+    _realtimeOrgId = orgId;
+    _realtime = CalendarRealtime(
+      organizationId: orgId,
+      onChange: () {
+        if (mounted) setState(() => _reload(orgId));
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _realtime?.dispose();
+    super.dispose();
   }
 
   @override
@@ -30,6 +54,7 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
     if (orgId != null && orgId != _loadedForOrgId) {
       _reload(orgId);
     }
+    if (orgId != null) _ensureRealtimeFor(orgId);
 
     return Scaffold(
       appBar: AppBar(title: const Text('التقويم')),

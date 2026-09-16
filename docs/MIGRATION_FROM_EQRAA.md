@@ -43,8 +43,18 @@
       `supabase_realtime` - بدونها الاشتراك ما كان رح يستقبل أي حدث بصمت. RLS الموجودة أصلًا
       (`chat_messages_select_participant`) تبقى تحكم مين يستقبل التغييرات، تمامًا متل select عادي.
       نفس الفجوة موجودة بالويب (`chat/actions.ts` لسا reload-after-send بس) - ما لمستها هون.
-- [ ] `core/calendar`, `core/notifications`, `core/offline` - **بانتظار توضيح النطاق** (راجع الرد بالمحادثة):
-      كل وحدة منهم إما فيها قرار تصميم حقيقي أو تعتمد مورد خارجي (Firebase لل push، مثلًا) ما بينحسم بتخمين.
+- [x] `core/calendar`: نفس معاملة `core/chat` - `calendar_realtime.dart` يشترك بتغييرات `center_calendar`
+      (إدخال/تعديل/حذف، مش إدخال بس متل الشات) مفلترة بـ `organization_id`، و`calendar_list_screen` يعيد
+      الجلب تلقائيًا عند أي تغيير بدل الاعتماد على pull يدوي فقط. تطلّب migration
+      (`0018_enable_calendar_realtime.sql`): إضافة الجدول لـ publication `supabase_realtime` (متل 0017)،
+      + `REPLICA IDENTITY FULL` على `center_calendar` تحديدًا - لأن فلترة أحداث الحذف بعمود غير العمود
+      الأساسي (`organization_id`) بدون FULL ما بتوصل أصلًا (الـ WAL ما يحمل غير الـ primary key افتراضيًا).
+- [x] `core/offline`: كاش قراءة بسيط (`offline_cache.dart`، جدول sqflite key→JSON) كبداية - مش عمل offline-first
+      كامل: الشاشة تحاول القراءة الحيّة أولًا وتخزّنها بالكاش عند النجاح، وترجع لآخر نسخة محفوظة بس لو
+      القراءة الحيّة فشلت (مافي اتصال). طبّقتها كمرجع على `dashboard_screen` (أول شاشة يشوفها أي موظف) مع
+      بانر "غير متصل" لما البيانات من الكاش. باقي الشاشات ممكن تتبع نفس النمط لاحقًا لو احتجنا.
+- [ ] `core/notifications` - **مؤجّلة عمدًا**: push حقيقي (يوصل والتطبيق مسكّر) بيحتاج مشروع Firebase فعلي
+      (`google-services.json`/`GoogleService-Info.plist`) مش موجودين بالريبو - رح نرجعلها لما يجهز.
 - [x] العلامة التجارية الديناميكية: `Organization.primaryColorValue`/`.secondaryColorValue` (يحوّلوا الـ hex
       المخزّن بـ`organizations` إلى `Color`) يغذّوا `ThemeData` كامل التطبيق (`core/theme/app_theme.dart`،
       مبني بـ`ColorScheme.fromSeed` مع تثبيت `primary`/`secondary` الحرفيين)، فبيرجع يشتغل تلقائيًا بكل
