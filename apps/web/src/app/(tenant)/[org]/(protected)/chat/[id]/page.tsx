@@ -27,7 +27,7 @@ export default async function ChatThreadPage({ params }: { params: Promise<{ org
   if (!messages) notFound();
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
+    <div className="flex max-w-2xl flex-col gap-4 p-6">
       <a href="/chat" className="text-sm text-brand hover:underline">
         ← رجوع للمحادثات
       </a>

@@ -146,7 +146,12 @@
 ## تطبيق الويب (`apps/web`)
 - [x] Middleware توجيه المستأجرين بالنطاق الفرعي
 - [x] `dashboard`, `students` (أمثلة حقيقية تجلب بيانات فعلية)
-- [ ] باقي الموديولات الـ19 (راجع `src/components/tenant-sidebar.tsx` للقائمة الكاملة) - كل صفحة حاليًا `ModulePlaceholder` يذكر مسارها القديم
+- [x] **تصحيح: باقي الموديولات الـ19 كانت أصلًا مبنية بالكامل** - هاي النقطة كانت متأخرة (stale) بهاي الوثيقة:
+      بالفحص الفعلي (`git log` + قراءة كل صفحة) طلعت كل الموديولات (activities, announcements, attendance,
+      badges, calendar, chat, circle-challenges, circles, market, notifications, points,
+      recitation-requests, serd, stages, teachers, members, audit, site, settings) مبنية فعليًا باستعلامات
+      Supabase حقيقية منذ commits سابقة بهاي الريبو - `ModulePlaceholder` مو مستخدم بأي صفحة حاليًا.
+      `next build` كامل يبني كل الـ~54 route بدون أخطاء.
 - [x] مصادقة فعلية - **الوصف الأصلي هون كان غير دقيق**. تحقّقت بالتفصيل (تتبّع فعلي لكود `middleware.ts`،
       `get-org-context.ts`، وكل `layout.tsx` محمي): `middleware.ts` أصلًا ما كان بيعمل أي تفويض إطلاقًا (ولا
       حتى فحص شكل الرابط) - بس تحويل نطاق فرعي لمسار + تحديث كوكي الجلسة. الحماية الحقيقية كانت (ولسا)
@@ -174,9 +179,60 @@
       بدون إعادة اشتقاقها server-side (لا حد منهم بينادي `getOrgContext()`) - الحماية الوحيدة إلها هي سياسات
       RLS على الجدول المستهدف (مُتحقق منها سابقًا وسليمة). يعني ما في طبقة دفاع ثانية زي الـ layouts - نقطة
       فشل وحيدة لو أي سياسة RLS طلعت ناقصة بالمستقبل، بس مو ثغرة قائمة حاليًا.
-- [ ] صفحة عامة لكل مركز مبنية على `site_settings` (تعادل الموقع التسويقي القديم، لكن لكل عميل)
-- [ ] صفحات الموافقات القانونية (`privacy`, `parent-consent`, `trip-consent`, `delete-account`, `support`) - يمكن أن تبقى صفحات ثابتة عامة على نطاق المنصة نفسه، أو تُخصَّص لكل مركز عبر `site_settings`
+- [x] إضافة حقل الشعار (`logo_url`) لصفحة `/settings` بالويب - كان موجود بالموبايل بس، صار متماثل الآن، وصار
+      يظهر بهيدر `(protected)/layout.tsx` المشترك (تينانت وبورتال الطلاب/أولياء الأمور الاثنين).
+- [x] موافقة ولي الأمر على فعاليات التقويم صارت موجودة على الويب كمان (`(protected)/my/page.tsx` +
+      `my/actions.ts`) - نفس تدفق الموبايل بالضبط: فعاليات عامة تُعرض مرة وحدة فوق، وفعاليات تحتاج موافقة
+      تظهر داخل بطاقة كل طالب مع زر موافقة/سحب موافقة لولي الأمر (الطالب نفسه يشوفها للقراءة فقط). نفس RLS
+      المستخدمة بالموبايل (migrations 0006/0016) بدون أي تعديل عليها.
+- [x] **فتحت `/chat` على الويب لتصل لها حسابات الطلاب/أولياء الأمور** - كانت بالكامل تحت `(staff)` اللي
+      يحجب هالأدوار قبل ما توصل لأي صفحة شات. نقلت مجلد `chat/` برّا `(staff)` (سيبلينغ لـ `my/`) - نفس
+      الرابط `/chat` بالضبط لأن route groups ما بتأثر على الـ URL. أضفت رابط "المحادثات" بصفحة `/my`.
+      خلال هالنقل لقيت وصلّحت **نفس صنف الأخطاء اللي كانت موجودة بالموبايل قبل migration 0020**، وما كانت
+      انصلحت على الويب لأن الشات هناك ما انلمس وقتها (موثّق بالنقطة الأصلية فوق):
+      - `chat/new/page.tsx` كانت تعرض **كل** أعضاء المركز كخيارات محادثة بدون أي تصفية حسب `chat_contacts` -
+        اختيار أي اسم مو ضمن جهات الاتصال المسموحة كان رح يفشل بصمت عند `chat_participants_insert`'s RLS.
+        صار فيها نفس تقسيمة الموبايل: أدمن يشوف كل الأعضاء، غيره يشوف جهات اتصاله بس (أو رسالة واضحة لو ما
+        عنده جهات اتصال بعد).
+      - `chat/actions.ts`'s `createThread` ما كانت تنضف الـ thread الفاضي لو إضافة الطرف الثاني فشلت RLS -
+        نفس الإصلاح اللي صار على الموبايل (حذف الـ thread عند فشل الإضافة) صار هون كمان.
+- [x] **صفحة عامة لكل مركز مبنية على `site_settings`** - كانت البنية جاهزة (الجدول + محرر الأدمن بـ`/site`
+      + سياسة RLS `site_settings_select_public_or_member` اللي أصلًا بتسمح لقراءة anon لما `public_site_enabled`
+      تكون true + `organizations_select_public` من migration 0008)، بس ما كان في صفحة فعلية تعرضها. `[org]/page.tsx`
+      (جذر التينانت) صار: لو المستخدم عضو، نفس التوجيه القديم لـ `/dashboard` أو `/my`؛ ولو زائر غير مسجّل
+      (أو مسجّل بدون عضوية)، يعرض صفحة عامة (عنوان/نص/بريد تواصل) لو `public_site_enabled` مفعّلة، وإلا
+      `redirect('/login')` متل قبل. أضفت `/` للائحة `PUBLIC_TENANT_PATHS` بـ`middleware.ts` حتى ما يوقف
+      الحاجز الأمني الزائر قبل ما توصل الصفحة أصلًا.
+- [x] **صفحات الموافقات القانونية** (`privacy`, `parent-consent`, `trip-consent`, `delete-account`, `support`) -
+      بنيتها **مخصصة لكل مركز** (مو على نطاق المنصة العام) لأنها تقدر تسحب بريد التواصل الحقيقي من
+      `site_settings.contact_email` وتربط لصفحة تسجيل الدخول الصحيحة لكل مركز. محتوى عام مبدئي (لا يغني عن
+      مراجعة قانونية حقيقية قبل الإطلاق الفعلي) عبر مكوّن مشترك `components/legal-page.tsx`. أضفت الخمس
+      مسارات للائحة `PUBLIC_TENANT_PATHS` بالميدل وير. ملاحظة: `deletion_requests` (الجدول الموجود أصلًا)
+      لسا ما إلها أي واجهة تقديم فعلية - صفحة `delete-account` حاليًا معلومات + بريد تواصل بس، مو نموذج تقديم
+      طلب حقيقي داخل التطبيق (يحتاج واجهة إدارية لمراجعة الطلبات كمان، خارج نطاق "صفحات ثابتة").
 
 ## الفوترة
 - [x] جداول `plans` / `subscriptions` (سكيلتون)
-- [ ] تكامل Stripe فعلي (checkout, webhooks, تحديث `subscriptions.status`)
+- [x] **تكامل Stripe فعلي** (checkout, webhook, تحديث `subscriptions.status`):
+      - صفحة `(staff)/billing` جديدة (أضيفت لـ `TENANT_MODULES` بـ`tenant-sidebar.tsx`، أدمن فقط): تعرض
+        الاشتراك الحالي وأزرار اشتراك لكل خطة فعّالة من جدول `plans`.
+      - `billing/actions.ts`'s `startCheckout`: نفس نمط إعادة الاشتقاق server-side من `teachers/actions.ts`
+        (يتحقق من صلاحية الأدمن ومن الخطة عبر العميل المحمي بـ RLS، مش من الفورم مباشرة) قبل ما ينشئ Stripe
+        Checkout Session بسعر الخطة الحقيقي من قاعدة البيانات (`price_data` inline، مش Stripe Price ID محفوظ
+        مسبقًا - أبسط وما يحتاج migration إضافية لتخزين IDs).
+      - `/api/stripe/webhook` (خارج أي route group تينانت/منصة تمامًا - `middleware.ts`'s matcher أصلًا يستثني
+        `/api` بالكامل، فما في أي تعارض مع الحاجز الأمني أو إعادة كتابة النطاق الفرعي): يتحقق من توقيع
+        `Stripe-Signature` عبر `constructEventAsync` (نسخة async تستخدم SubtleCrypto - تشتغل صح تحت Cloudflare
+        Workers، عكس النسخة المتزامنة اللي بتعتمد `crypto` الخاص بـ Node) قبل أي ثقة بمحتوى الحدث. يكتب لجدول
+        `subscriptions` عبر **العميل service-role** (`admin.ts`) - وهاد صحيح معماريًا هون، مو ثغرة: سياسة RLS
+        الوحيدة للكتابة على `subscriptions` هي `is_platform_owner()` (migration 0001) عن قصد، فمدير مركز ما
+        يقدر يغيّر حالة اشتراكه بنفسه - الـ webhook هو المكان الوحيد المفروض يتجاوز هاد القيد، بعد التحقق من
+        التوقيع.
+      - migration جديدة (`0021_stripe_billing.sql`): قيد `unique (organization_id)` على `subscriptions` -
+        يحتاجه الـ upsert بالـ webhook (صف اشتراك وحيد لكل مركز).
+      - **حدود التحقق**: `tsc --noEmit` نظيف و`next build` نجح كامل (شامل `/billing` و`/api/stripe/webhook`
+        الجديدين). ما قدرت أعمل اختبار فعلي بمفاتيح Stripe حقيقية (test keys) ولا Stripe CLI لمحاكاة webhook
+        events - نفس القيد المتكرر بهاي الوثيقة (ما في بيانات اعتماد خارجية بهاي البيئة). قبل التفعيل الفعلي:
+        لازم `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` بمتغيرات البيئة، وربط webhook بلوحة Stripe لـ
+        `https://bustan-alquran.com/api/stripe/webhook` مع أحداث `checkout.session.completed`،
+        `customer.subscription.updated`، `customer.subscription.deleted`.

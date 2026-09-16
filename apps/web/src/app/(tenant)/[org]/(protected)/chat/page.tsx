@@ -42,8 +42,13 @@ export default async function ChatPage({ params }: { params: Promise<{ org: stri
     ((members ?? []) as MemberRow[]).map((m) => [m.user_id, m.full_name ?? m.email ?? '—']),
   );
 
+  const backHref = org.myRole === 'student' || org.myRole === 'guardian' ? '/my' : '/dashboard';
+
   return (
-    <div>
+    <div className="p-6">
+      <a href={backHref} className="mb-4 inline-block text-sm text-brand hover:underline">
+        ← رجوع
+      </a>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">المحادثات</h1>
         <a href="/chat/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">

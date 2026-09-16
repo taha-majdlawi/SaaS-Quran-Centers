@@ -41,7 +41,15 @@ export default async function TenantProtectedLayout({
     >
       <div className="flex-1">
         <header className="flex items-center justify-between border-b bg-white px-6 py-4">
-          <span className="font-bold text-brand">{org.name}</span>
+          <div className="flex items-center gap-2">
+            {org.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element -- arbitrary
+              // admin-supplied URL, not a build-time-known local/remote asset
+              // next/image could optimize.
+              <img src={org.logoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+            )}
+            <span className="font-bold text-brand">{org.name}</span>
+          </div>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <span>{ROLE_LABELS[org.myRole] ?? org.myRole}</span>
             <form action={signOut}>

@@ -24,10 +24,19 @@ export async function createThread(formData: FormData) {
     redirect(`/chat/new?error=${encodeURIComponent(error?.message ?? 'فشل إنشاء المحادثة')}` as never);
   }
 
-  await supabase.from('chat_thread_participants').insert([
+  // chat_participants_insert (migration 0020) rejects the second row unless
+  // otherUserId is an admin or a chat_contacts match for the caller - clean
+  // up the now-orphaned thread rather than leaving an empty one behind, same
+  // as apps/mobile's ChatRepository.createThread.
+  const { error: participantsError } = await supabase.from('chat_thread_participants').insert([
     { thread_id: thread.id, user_id: user.id },
     { thread_id: thread.id, user_id: otherUserId },
   ]);
+
+  if (participantsError) {
+    await supabase.from('chat_threads').delete().eq('id', thread.id);
+    redirect(`/chat/new?error=${encodeURIComponent('لا يمكنك مراسلة هذا العضو')}` as never);
+  }
 
   redirect(`/chat/${thread.id}` as never);
 }

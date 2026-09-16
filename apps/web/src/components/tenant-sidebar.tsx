@@ -30,6 +30,7 @@ export const TENANT_MODULES = [
   { slug: 'members', label: 'الأعضاء والأدوار', adminOnly: true },
   { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
   { slug: 'site', label: 'الموقع العام', adminOnly: true },
+  { slug: 'billing', label: 'الفوترة والاشتراك', adminOnly: true },
   { slug: 'settings', label: 'إعدادات المركز', adminOnly: true },
 ] as const;
 

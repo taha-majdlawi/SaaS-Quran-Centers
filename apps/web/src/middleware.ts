@@ -10,7 +10,7 @@ const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
 // Paths reachable pre-auth, as the BROWSER sees them (i.e. before the
 // subdomain->path rewrite below adds the /{slug} or /platform prefix back
 // on) - everything else in that scope requires a session.
-const PUBLIC_TENANT_PATHS = new Set(['/login', '/join']);
+const PUBLIC_TENANT_PATHS = new Set(['/', '/login', '/join', '/privacy', '/parent-consent', '/trip-consent', '/delete-account', '/support']);
 const PUBLIC_PLATFORM_PATHS = new Set(['/login']);
 
 /**

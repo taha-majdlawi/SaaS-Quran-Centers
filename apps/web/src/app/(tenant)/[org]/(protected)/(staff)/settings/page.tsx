@@ -31,6 +31,18 @@ export default async function SettingsPage({
           </label>
 
           <label className="text-sm font-medium text-gray-700">
+            رابط الشعار
+            <input
+              name="logoUrl"
+              type="url"
+              dir="ltr"
+              placeholder="https://..."
+              defaultValue={org.logoUrl ?? ''}
+              className="mt-1 w-full rounded border px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="text-sm font-medium text-gray-700">
             اللون الأساسي
             <input
               type="color"
