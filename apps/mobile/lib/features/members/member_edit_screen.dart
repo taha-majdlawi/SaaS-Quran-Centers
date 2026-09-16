@@ -40,6 +40,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
   Set<String> _contactUserIds = {};
   bool _loading = true;
   bool _submitting = false;
+  bool _notFound = false;
   String? _error;
 
   @override
@@ -58,7 +59,20 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
     ]);
     final members = results[0] as List<MemberRow>;
     final allChatMembers = results[1] as List<ChatMemberOption>;
-    final member = members.firstWhere((m) => m.id == widget.memberId);
+    MemberRow? member;
+    for (final m in members) {
+      if (m.id == widget.memberId) {
+        member = m;
+        break;
+      }
+    }
+    if (member == null) {
+      // Not in this org's member list - e.g. a stale/foreign memberId in
+      // the route. Show a clear message instead of hanging on the spinner
+      // (RLS already guarantees `members` only ever contains this org's rows).
+      if (mounted) setState(() { _notFound = true; _loading = false; });
+      return;
+    }
     _member = member;
     _isSelf = member.userId == myUserId;
     _role = member.role;
@@ -115,7 +129,12 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       appBar: AppBar(title: const Text('تعديل عضو')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _isSelf
+          : _notFound
+              ? const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: Text('تعذر العثور على هذا العضو.')),
+                )
+              : _isSelf
               ? const Padding(
                   padding: EdgeInsets.all(24),
                   child: Center(
