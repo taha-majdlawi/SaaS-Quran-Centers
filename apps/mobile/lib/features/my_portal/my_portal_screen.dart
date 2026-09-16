@@ -260,7 +260,7 @@ class _UpcomingEventsCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.event, size: 18, color: Color(0xFF0F766E)),
+                    Icon(Icons.event, size: 18, color: Theme.of(context).colorScheme.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -359,7 +359,7 @@ class _StudentCard extends StatelessWidget {
                       Expanded(child: Text(_achievementSummary(a))),
                       Text(
                         '+${a.pointsAwarded}',
-                        style: const TextStyle(color: Color(0xFF0F766E), fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

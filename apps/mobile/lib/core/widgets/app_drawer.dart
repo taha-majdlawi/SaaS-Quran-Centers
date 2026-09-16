@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../auth/auth_controller.dart';
 import '../tenant/tenant_controller.dart';
 import '../tenant/organization.dart';
+import 'org_avatar.dart';
 
 /// Same module list as apps/web's TenantSidebar, trimmed to the ones with a
 /// mobile screen so far - add an entry here as each new feature lands.
@@ -22,9 +23,17 @@ class AppDrawer extends StatelessWidget {
         child: Column(
           children: [
             DrawerHeader(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text(org?.name ?? 'بستان القرآن', style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      org?.name ?? 'بستان القرآن',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  if (org != null) ...[const SizedBox(width: 12), OrgAvatar(organization: org, size: 48)],
+                ],
               ),
             ),
             ListTile(

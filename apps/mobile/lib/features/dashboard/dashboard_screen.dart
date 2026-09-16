@@ -90,7 +90,10 @@ class _StatCard extends StatelessWidget {
           children: [
             Text(label, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
-            Text('$value', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0F766E))),
+            Text(
+              '$value',
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+            ),
           ],
         ),
       ),

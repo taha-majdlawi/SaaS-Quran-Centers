@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F766E),
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     alignment: Alignment.center,

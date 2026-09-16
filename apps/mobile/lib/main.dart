@@ -6,6 +6,7 @@ import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
 import 'core/tenant/tenant_controller.dart';
 import 'core/tenant/tenant_repository.dart';
+import 'core/theme/app_theme.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const _supabasePublishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
@@ -107,6 +108,7 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     final router = buildAppRouter(auth: auth, tenant: tenant);
     return MaterialApp.router(
       title: 'بستان القرآن',
+      theme: buildAppTheme(tenant.active?.organization),
       routerConfig: router,
       locale: const Locale('ar'),
       builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),

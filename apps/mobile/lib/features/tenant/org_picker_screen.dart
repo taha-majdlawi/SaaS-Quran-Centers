@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../../core/widgets/org_avatar.dart';
 
 /// Shown when the signed-in user has zero or more than one active
 /// organization membership - picking one sets TenantController.active,
@@ -33,6 +34,7 @@ class OrgPickerScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final membership = tenant.memberships[index];
                     return ListTile(
+                      leading: OrgAvatar(organization: membership.organization),
                       title: Text(membership.organization.name),
                       subtitle: Text(membership.role.name),
                       onTap: () => tenant.switchTo(membership),

@@ -5,11 +5,13 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/widgets/app_drawer.dart';
+import '../../core/widgets/org_avatar.dart';
 import 'settings_repository.dart';
 
-/// Mirrors apps/web's /settings page - admin-editable org name, branding
-/// colors (as hex text - no color-picker package in this app yet), and
-/// timezone.
+/// Admin-editable org name, logo URL, branding colors (as hex text - no
+/// color-picker package in this app yet), and timezone. Goes further than
+/// apps/web's /settings page, which has no logo field at all yet - see
+/// docs/MIGRATION_FROM_EQRAA.md.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -20,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _repository = SettingsRepository(AppSupabase.client);
   final _nameController = TextEditingController();
+  final _logoUrlController = TextEditingController();
   final _primaryColorController = TextEditingController();
   final _secondaryColorController = TextEditingController();
   final _timezoneController = TextEditingController(text: 'Asia/Amman');
@@ -32,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _logoUrlController.dispose();
     _primaryColorController.dispose();
     _secondaryColorController.dispose();
     _timezoneController.dispose();
@@ -41,6 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _initializeFrom(Organization org) {
     if (_initialized) return;
     _nameController.text = org.name;
+    _logoUrlController.text = org.logoUrl ?? '';
     _primaryColorController.text = org.primaryColor;
     _secondaryColorController.text = org.secondaryColor;
     _initialized = true;
@@ -55,6 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _repository.updateOrgSettings(
         organizationId: orgId,
         name: _nameController.text.trim(),
+        logoUrl: _logoUrlController.text.trim(),
         primaryColor: _primaryColorController.text.trim(),
         secondaryColor: _secondaryColorController.text.trim(),
         timezone: _timezoneController.text.trim(),
@@ -107,6 +113,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _nameController,
                     enabled: isAdmin,
                     decoration: const InputDecoration(labelText: 'اسم المركز', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      OrgAvatar(organization: org, size: 48),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _logoUrlController,
+                          enabled: isAdmin,
+                          decoration: const InputDecoration(labelText: 'رابط الشعار (URL)', border: OutlineInputBorder()),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   TextField(
