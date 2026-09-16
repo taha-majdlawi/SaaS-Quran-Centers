@@ -7,6 +7,12 @@ const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com'
 // Reserved subdomains that must never be treated as a tenant slug.
 const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
 
+// Paths reachable pre-auth, as the BROWSER sees them (i.e. before the
+// subdomain->path rewrite below adds the /{slug} or /platform prefix back
+// on) - everything else in that scope requires a session.
+const PUBLIC_TENANT_PATHS = new Set(['/login', '/join']);
+const PUBLIC_PLATFORM_PATHS = new Set(['/login']);
+
 /**
  * Three hostname shapes, one Next.js app - see docs/ARCHITECTURE.md #4.
  *
@@ -29,6 +35,10 @@ export async function middleware(req: NextRequest) {
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
 
   let response: NextResponse;
+  // Which public-path allowlist applies, if any - null for the marketing
+  // site and the 'api'/'app' reserved subdomains, neither of which this
+  // backstop touches.
+  let scope: 'platform' | 'tenant' | null = null;
 
   if (isRootDomain) {
     response = NextResponse.next();
@@ -38,11 +48,13 @@ export async function middleware(req: NextRequest) {
       : bareHost.split('.')[0]; // e.g. demo.localhost during local dev
 
     if (subdomain === 'admin') {
+      scope = 'platform';
       url.pathname = `/platform${req.nextUrl.pathname}`;
       response = NextResponse.rewrite(url);
     } else if (RESERVED_SUBDOMAINS.has(subdomain)) {
       response = NextResponse.next();
     } else {
+      scope = 'tenant';
       url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
       response = NextResponse.rewrite(url);
     }
@@ -66,7 +78,38 @@ export async function middleware(req: NextRequest) {
 
   // Touching getUser() is what actually triggers the refresh-token exchange
   // when the access token has expired - a plain getSession() would not.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Defense-in-depth, not the real gate: (protected)/layout.tsx and
+  // platform/(protected)/layout.tsx already independently re-verify both
+  // session AND org membership/role on every request via
+  // getOrgContext()/getPlatformContext(), regardless of what happens here -
+  // that's what actually decides access. This only catches "no session at
+  // all" one layer earlier for the small, fixed set of paths that are
+  // always public, so a future route accidentally added outside
+  // (protected) fails closed (redirected) instead of silently rendering
+  // for a signed-out visitor. It deliberately does NOT check org
+  // membership itself - that needs the DB round trip the layouts already
+  // do correctly.
+  if (!user && scope) {
+    const isPublicPath =
+      scope === 'platform'
+        ? PUBLIC_PLATFORM_PATHS.has(req.nextUrl.pathname)
+        : PUBLIC_TENANT_PATHS.has(req.nextUrl.pathname);
+    if (!isPublicPath) {
+      // Relative to the root domain the browser is actually on, same as
+      // every in-app redirect to /login - see (tenant)/[org]/page.tsx's
+      // comment for why this can't be `/${subdomain}/login` here.
+      const redirectResponse = NextResponse.redirect(new URL('/login', req.url));
+      // Carry over whatever getUser() just refreshed on `response` (e.g. a
+      // cleared/rotated cookie) - returning a fresh response here would
+      // otherwise drop it.
+      response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+      return redirectResponse;
+    }
+  }
 
   // Baseline security headers on every response - clickjacking, MIME
   // sniffing, referrer leakage, and forcing HTTPS on repeat visits.
