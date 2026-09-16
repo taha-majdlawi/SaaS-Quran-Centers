@@ -14,7 +14,6 @@ import { ALL_MODULE_KEYS } from '@/lib/permissions/modules';
  */
 export async function updateTeacherAccount(formData: FormData) {
   const memberId = formData.get('memberId') as string;
-  const userId = formData.get('userId') as string;
   const orgId = formData.get('orgId') as string;
   const fullName = (formData.get('fullName') as string)?.trim();
   const email = (formData.get('email') as string)?.trim().toLowerCase();
@@ -39,6 +38,28 @@ export async function updateTeacherAccount(formData: FormData) {
   if (callerMembership?.role !== 'admin') {
     redirect(`/teachers/${memberId}?error=${encodeURIComponent('غير مصرح لك بهذا الإجراء')}` as never);
   }
+
+  // Never trust a client-submitted userId, and never trust memberId's org
+  // without checking it server-side: this form only proved the caller is
+  // admin of `orgId`, and everything below runs through the service-role
+  // client, which bypasses RLS entirely - so re-deriving user_id here,
+  // through the RLS-protected user-scoped client, is what stops a caller
+  // from pointing memberId at a member of a DIFFERENT organization and
+  // having the admin client act on them anyway. This select returns no row
+  // unless the target member's organization_id is one the caller can
+  // actually see under organization_members' own RLS policy, which is a
+  // second, independent check beyond the explicit org.id comparison below.
+  const { data: targetMember } = await supabase
+    .from('organization_members')
+    .select('user_id, organization_id')
+    .eq('id', memberId)
+    .maybeSingle();
+
+  if (!targetMember || targetMember.organization_id !== orgId) {
+    redirect(`/teachers?error=${encodeURIComponent('عضو غير موجود بهذا المركز')}` as never);
+  }
+
+  const userId = targetMember.user_id;
 
   const admin = createAdminClient();
 

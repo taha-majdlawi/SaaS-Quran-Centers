@@ -57,7 +57,6 @@ export default async function EditTeacherPage({
 
       <form action={updateTeacherAccount} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="memberId" value={member.id} />
-        <input type="hidden" name="userId" value={member.user_id} />
         <input type="hidden" name="orgId" value={org.id} />
 
         <label className="text-sm font-medium text-gray-700">
