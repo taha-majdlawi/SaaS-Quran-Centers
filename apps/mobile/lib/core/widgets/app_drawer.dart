@@ -215,6 +215,14 @@ class AppDrawer extends StatelessWidget {
                   context.go('/select-organization');
                 },
               ),
+            ListTile(
+              leading: const Icon(Icons.group_add_outlined),
+              title: const Text('الانضمام لمركز بكود دعوة'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/join');
+              },
+            ),
             const Spacer(),
             ListTile(
               leading: const Icon(Icons.logout),

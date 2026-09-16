@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
@@ -107,6 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             )
                           : const Text('دخول'),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () => context.push('/signup'),
+                    child: const Text('ما عندك حساب؟ سجّل مركزك'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/join'),
+                    child: const Text('عندك دعوة من مركز؟ انضم بالكود'),
                   ),
                 ],
               ),

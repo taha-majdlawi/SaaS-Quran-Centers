@@ -18,6 +18,13 @@ class AuthController extends ChangeNotifier {
     return _client.auth.signInWithPassword(email: email, password: password);
   }
 
+  /// Response's `.session` is null when the project has "confirm email" on -
+  /// the caller (signup_screen.dart / join_screen.dart) has to check that
+  /// before doing anything that needs auth.uid(), same as apps/web does.
+  Future<AuthResponse> signUp({required String email, required String password}) {
+    return _client.auth.signUp(email: email, password: password);
+  }
+
   Future<void> signOut() {
     return _client.auth.signOut();
   }

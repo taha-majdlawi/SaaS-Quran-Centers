@@ -13,7 +13,13 @@
 
 ## تطبيق الموبايل (`apps/mobile`)
 - [x] هيكل feature-first + طبقة tenant جديدة
-- [ ] `features/auth` — نقل شاشات الدخول (طالب/معلم/أدمن) + إضافة اختيار/دعوة مركز
+- [x] `features/auth` — تسجيل الدخول (شاشة موحدة لكل الأدوار، كباقي التطبيق) + `/signup` (تسجيل مركز جديد،
+      يعادل `(marketing)/signup` بالويب: `auth.signUp` ثم `create_organization_with_owner` RPC بخطوة وحدة)
+      + `/join` (قبول دعوة عبر كود). `/join` يختلف عمدًا عن `[org]/join` بالويب: الموبايل ما عنده توجيه
+      نطاقات فرعية ولا deep links مُعدّة بعد، فبدل رابط قابل للنقر، الأدمن يشارك الـ token الخام كـ"كود دعوة"
+      (زر مشاركة جديد بكل دعوة معلّقة بـ `members_list_screen` عبر `share_plus`) والمدعو يدخله يدويًا.
+      نفس RPCs الويب (`get_invitation`/`accept_invitation`، migration 0011) بالضبط، بدون تغيير بقاعدة البيانات.
+      ناقص لاحقًا: deep link حقيقي (`bustan-alquran://join?token=...`) بدل الإدخال اليدوي.
 - [x] `features/dashboard` (أدمن/معلم، شاشة موحدة) و `features/my_portal` (طالب/ولي أمر، شاشة موحدة) —
       قرار معماري متعمد (`app_router.dart`): الفروقات بالدور تُعالج داخل الشاشة نفسها بدل مسارات منفصلة لكل
       دور، فألغى الحاجة لمجلدات `student_dashboard`/`teacher_dashboard`/`admin_dashboard`/`guardian_dashboard`

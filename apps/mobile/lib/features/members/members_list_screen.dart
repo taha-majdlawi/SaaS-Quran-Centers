@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -8,7 +9,10 @@ import '../../core/widgets/app_drawer.dart';
 import 'members_repository.dart';
 
 /// Mirrors apps/web's /members page: the member table (with edit links),
-/// an invite-by-email form, and the pending-invitation list.
+/// an invite-by-email form, and the pending-invitation list (each with a
+/// share button - see _shareInvitation - so the admin can actually hand the
+/// join code to the invitee, which apps/web doesn't need since its invite
+/// link is directly clickable).
 class MembersListScreen extends StatefulWidget {
   const MembersListScreen({super.key});
 
@@ -48,6 +52,22 @@ class _MembersListScreenState extends State<MembersListScreen> {
   void dispose() {
     _emailController.dispose();
     super.dispose();
+  }
+
+  /// The app has no deep-link/subdomain routing (unlike apps/web, where the
+  /// invite link IS the join UI at {slug}.bustan-alquran.com/join?token=...)
+  /// - so mobile shares the raw token as a join code for join_screen.dart's
+  /// manual entry field instead of a clickable link.
+  Future<void> _shareInvitation(PendingInvitation invitation) async {
+    final orgName = context.read<TenantController>().active?.organization.name ?? 'المركز';
+    final roleLabel = kMemberRoleLabels[invitation.role] ?? invitation.role;
+    await SharePlus.instance.share(
+      ShareParams(
+        text: 'دعوة للانضمام إلى $orgName كـ $roleLabel على تطبيق بستان القرآن.\n'
+            'افتح التطبيق، اختر "عندك دعوة من مركز؟ انضم بالكود"، وأدخل هذا الكود:\n'
+            '${invitation.token}',
+      ),
+    );
   }
 
   Future<void> _invite() async {
@@ -150,7 +170,15 @@ class _MembersListScreenState extends State<MembersListScreen> {
                       const SizedBox(height: 16),
                       Text('دعوات لسه ما انضمّت', style: Theme.of(context).textTheme.titleSmall),
                       const SizedBox(height: 8),
-                      ..._invitations.map((i) => Text('${i.email} — ${kMemberRoleLabels[i.role] ?? i.role}')),
+                      ..._invitations.map((i) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text('${i.email} — ${kMemberRoleLabels[i.role] ?? i.role}'),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.share_outlined),
+                              tooltip: 'مشاركة كود الدعوة',
+                              onPressed: () => _shareInvitation(i),
+                            ),
+                          )),
                     ],
                   ],
                 );

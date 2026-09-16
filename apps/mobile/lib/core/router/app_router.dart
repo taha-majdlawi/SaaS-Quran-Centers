@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../auth/auth_controller.dart';
 import '../tenant/tenant_controller.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/signup_screen.dart';
+import '../../features/auth/join_screen.dart';
 import '../../features/tenant/org_picker_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/students/students_list_screen.dart';
@@ -54,29 +56,33 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
     redirect: (context, state) {
       final path = state.matchedLocation;
 
+      // /join is reachable either way - an unauthenticated invitee signs up
+      // as part of accepting, an already-authenticated one (invited to a
+      // second org) just confirms. /signup only makes sense signed out.
       if (!auth.isAuthenticated) {
-        return path == '/login' ? null : '/login';
+        return (path == '/login' || path == '/signup' || path == '/join') ? null : '/login';
       }
 
       if (tenant.loading) return null;
 
       if (tenant.active == null) {
-        return path == '/select-organization' ? null : '/select-organization';
+        return (path == '/select-organization' || path == '/join') ? null : '/select-organization';
       }
 
       // "تبديل المركز" in AppDrawer navigates here deliberately even with an
-      // active org already set, so only bounce away from /login.
-      if (path == '/login') {
+      // active org already set, so only bounce away from /login and /signup.
+      if (path == '/login' || path == '/signup') {
         return '/dashboard';
       }
 
       // Students/guardians never see the staff screens - same boundary as
       // apps/web's (staff) route group. RLS already blocks the data; this
       // just sends them straight to their own portal instead of a staff
-      // screen that would render empty for them.
+      // screen that would render empty for them. /join stays reachable so
+      // a portal-only member can accept a second org's invitation.
       final role = tenant.active!.role;
       final isPortalOnly = role == OrgRole.student || role == OrgRole.guardian;
-      if (isPortalOnly && path != '/my') {
+      if (isPortalOnly && path != '/my' && path != '/join') {
         return '/my';
       }
 
@@ -84,6 +90,8 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
+      GoRoute(path: '/join', builder: (context, state) => const JoinScreen()),
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),
