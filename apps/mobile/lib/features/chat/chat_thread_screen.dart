@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
+import '../../core/chat/chat_realtime.dart';
 import '../../core/supabase/supabase_client.dart';
 import 'chat_repository.dart';
 
@@ -17,17 +18,35 @@ class ChatThreadScreen extends StatefulWidget {
 class _ChatThreadScreenState extends State<ChatThreadScreen> {
   final _repository = ChatRepository(AppSupabase.client);
   final _bodyController = TextEditingController();
-  late Future<List<ChatMessage>> _messagesFuture;
+  late final ChatThreadRealtime _realtime;
+  List<ChatMessage>? _messages;
   bool _sending = false;
 
   @override
   void initState() {
     super.initState();
-    _messagesFuture = _repository.fetchMessages(widget.threadId);
+    _load();
+    // Delivers messages from the OTHER participant live - my own sends are
+    // appended locally the moment the insert succeeds (below), so this only
+    // needs to dedupe by id in case the broadcast for my own message arrives
+    // too (it will, harmlessly - see _onIncomingMessage).
+    _realtime = ChatThreadRealtime(threadId: widget.threadId, onMessage: _onIncomingMessage);
+  }
+
+  Future<void> _load() async {
+    final messages = await _repository.fetchMessages(widget.threadId);
+    if (mounted) setState(() => _messages = messages);
+  }
+
+  void _onIncomingMessage(ChatMessage message) {
+    final current = _messages;
+    if (current == null || current.any((m) => m.id == message.id)) return;
+    setState(() => _messages = [...current, message]);
   }
 
   @override
   void dispose() {
+    _realtime.dispose();
     _bodyController.dispose();
     super.dispose();
   }
@@ -37,13 +56,16 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     if (body.isEmpty) return;
     setState(() => _sending = true);
     final myUserId = context.read<AuthController>().currentUser!.id;
-    await _repository.sendMessage(threadId: widget.threadId, senderId: myUserId, body: body);
-    _bodyController.clear();
-    if (mounted) {
-      setState(() {
-        _messagesFuture = _repository.fetchMessages(widget.threadId);
-        _sending = false;
-      });
+    try {
+      final sent = await _repository.sendMessage(threadId: widget.threadId, senderId: myUserId, body: body);
+      _bodyController.clear();
+      if (mounted) {
+        setState(() {
+          _messages = [...?_messages, sent];
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 
@@ -56,40 +78,34 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       body: Column(
         children: [
           Expanded(
-            child: FutureBuilder<List<ChatMessage>>(
-              future: _messagesFuture,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                final messages = snapshot.data!;
-                if (messages.isEmpty) {
-                  return const Center(child: Text('لا يوجد رسائل بعد'));
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final m = messages[index];
-                    final mine = m.senderId == myUserId;
-                    return Align(
-                      alignment: mine ? Alignment.centerLeft : Alignment.centerRight,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        constraints: const BoxConstraints(maxWidth: 280),
-                        decoration: BoxDecoration(
-                          color: mine ? Theme.of(context).colorScheme.primary : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          m.body,
-                          style: TextStyle(color: mine ? Colors.white : Colors.black87),
-                        ),
+            child: _messages == null
+                ? const Center(child: CircularProgressIndicator())
+                : _messages!.isEmpty
+                    ? const Center(child: Text('لا يوجد رسائل بعد'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: _messages!.length,
+                        itemBuilder: (context, index) {
+                          final m = _messages![index];
+                          final mine = m.senderId == myUserId;
+                          return Align(
+                            alignment: mine ? Alignment.centerLeft : Alignment.centerRight,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              constraints: const BoxConstraints(maxWidth: 280),
+                              decoration: BoxDecoration(
+                                color: mine ? Theme.of(context).colorScheme.primary : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                m.body,
+                                style: TextStyle(color: mine ? Colors.white : Colors.black87),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                );
-              },
-            ),
           ),
           SafeArea(
             child: Padding(

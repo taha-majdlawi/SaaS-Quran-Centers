@@ -36,7 +36,15 @@
 - [ ] `features/quran` (قارئ المصحف - لا تغيير جوهري، بيانات عالمية غير مرتبطة بمستأجر) - **مؤجّلة عمدًا**:
       عندنا بيانات نص/تلاوة جاهزة بقاعدة بيانات منفصلة، رح نرجعلها ونحدد مصدر البيانات (حزمة جاهزة أو API أو
       نقل من القاعدة الحالية) لما تجهز.
-- [ ] `core/chat`, `core/calendar`, `core/notifications`, `core/offline`
+- [x] `core/chat`: تسليم رسائل فوري عبر Supabase Realtime (`core/chat/chat_realtime.dart`، Postgres Changes
+      على `chat_messages` مفلترة بـ `thread_id`) بدل الاعتماد على إعادة الجلب بعد كل إرسال فقط. رسالتي أنا
+      تُضاف محليًا فور نجاح الإدخال (استجابة فورية بالواجهة)، ورسائل الطرف التاني توصل عبر الاشتراك مباشرة.
+      تطلّب migration (`0017_enable_chat_realtime.sql`) لإضافة `chat_messages` لـ publication
+      `supabase_realtime` - بدونها الاشتراك ما كان رح يستقبل أي حدث بصمت. RLS الموجودة أصلًا
+      (`chat_messages_select_participant`) تبقى تحكم مين يستقبل التغييرات، تمامًا متل select عادي.
+      نفس الفجوة موجودة بالويب (`chat/actions.ts` لسا reload-after-send بس) - ما لمستها هون.
+- [ ] `core/calendar`, `core/notifications`, `core/offline` - **بانتظار توضيح النطاق** (راجع الرد بالمحادثة):
+      كل وحدة منهم إما فيها قرار تصميم حقيقي أو تعتمد مورد خارجي (Firebase لل push، مثلًا) ما بينحسم بتخمين.
 - [x] العلامة التجارية الديناميكية: `Organization.primaryColorValue`/`.secondaryColorValue` (يحوّلوا الـ hex
       المخزّن بـ`organizations` إلى `Color`) يغذّوا `ThemeData` كامل التطبيق (`core/theme/app_theme.dart`،
       مبني بـ`ColorScheme.fromSeed` مع تثبيت `primary`/`secondary` الحرفيين)، فبيرجع يشتغل تلقائيًا بكل

@@ -19,10 +19,24 @@ class ChatMessage {
   final String senderId;
   final String body;
   final String createdAt;
+
+  /// Builds from a raw row map - shared by the plain select above and by
+  /// core/chat/chat_realtime.dart's Postgres Changes payload, which hands
+  /// back the same column shape.
+  factory ChatMessage.fromRecord(Map<String, dynamic> r) {
+    return ChatMessage(
+      id: r['id'] as String,
+      senderId: r['sender_id'] as String,
+      body: (r['body'] as String?) ?? '',
+      createdAt: r['created_at'] as String,
+    );
+  }
 }
 
-/// Mirrors apps/web's chat/actions.ts - 1:1 threads, no realtime
-/// subscription yet on either platform, just reload after sending.
+/// Mirrors apps/web's chat/actions.ts - 1:1 threads. Realtime message
+/// delivery (core/chat/chat_realtime.dart) is mobile-only so far; apps/web
+/// still just reloads after sending, same as this repository's messages
+/// used to work before that.
 class ChatRepository {
   ChatRepository(this._client);
 
@@ -98,17 +112,15 @@ class ChatRepository {
         .select('id, sender_id, body, created_at')
         .eq('thread_id', threadId)
         .order('created_at');
-    return (rows as List)
-        .map((r) => ChatMessage(
-              id: r['id'] as String,
-              senderId: r['sender_id'] as String,
-              body: (r['body'] as String?) ?? '',
-              createdAt: r['created_at'] as String,
-            ))
-        .toList();
+    return (rows as List).map((r) => ChatMessage.fromRecord(r as Map<String, dynamic>)).toList();
   }
 
-  Future<void> sendMessage({required String threadId, required String senderId, required String body}) {
-    return _client.from('chat_messages').insert({'thread_id': threadId, 'sender_id': senderId, 'body': body});
+  Future<ChatMessage> sendMessage({required String threadId, required String senderId, required String body}) async {
+    final row = await _client
+        .from('chat_messages')
+        .insert({'thread_id': threadId, 'sender_id': senderId, 'body': body})
+        .select('id, sender_id, body, created_at')
+        .single();
+    return ChatMessage.fromRecord(row);
   }
 }
