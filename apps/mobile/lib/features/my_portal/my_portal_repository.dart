@@ -55,11 +55,28 @@ class PortalAchievementEntry {
 /// Center-wide, not per-student - upcoming trips/events shown once above the
 /// student cards (mirrors apps/web having no equivalent yet; this is new UI).
 class PortalUpcomingEvent {
-  const PortalUpcomingEvent({required this.id, required this.title, required this.startsAt, this.location});
+  const PortalUpcomingEvent({
+    required this.id,
+    required this.title,
+    required this.startsAt,
+    required this.requiresGuardianConsent,
+    this.location,
+  });
   final String id;
   final String title;
   final String startsAt;
+  final bool requiresGuardianConsent;
   final String? location;
+}
+
+/// A student's registration on an event - its existence IS the guardian's
+/// consent for events that require it (see 0006/0016's RLS: only a guardian
+/// of the student, or staff, can create one).
+class PortalRegistration {
+  const PortalRegistration({required this.id, required this.eventId, required this.studentId});
+  final String id;
+  final String eventId;
+  final String studentId;
 }
 
 /// Mirrors apps/web's /my portal page - every table read here is already
@@ -153,7 +170,7 @@ class MyPortalRepository {
   Future<List<PortalUpcomingEvent>> fetchUpcomingEvents(String organizationId) async {
     final rows = await _client
         .from('center_calendar')
-        .select('id, title, starts_at, location')
+        .select('id, title, starts_at, location, requires_guardian_consent')
         .eq('organization_id', organizationId)
         .gte('starts_at', DateTime.now().toUtc().toIso8601String())
         .order('starts_at')
@@ -164,8 +181,59 @@ class MyPortalRepository {
               id: r['id'] as String,
               title: r['title'] as String,
               startsAt: r['starts_at'] as String,
+              requiresGuardianConsent: r['requires_guardian_consent'] as bool,
               location: r['location'] as String?,
             ))
         .toList();
+  }
+
+  /// This guardian/student's own linked-student registrations across the
+  /// given events - used to show which upcoming events already have consent.
+  Future<List<PortalRegistration>> fetchRegistrations({
+    required List<String> studentIds,
+    required List<String> eventIds,
+  }) async {
+    if (studentIds.isEmpty || eventIds.isEmpty) return [];
+    final rows = await _client
+        .from('calendar_registrations')
+        .select('id, event_id, student_id')
+        .inFilter('student_id', studentIds)
+        .inFilter('event_id', eventIds);
+
+    return (rows as List)
+        .map((r) => PortalRegistration(
+              id: r['id'] as String,
+              eventId: r['event_id'] as String,
+              studentId: r['student_id'] as String,
+            ))
+        .toList();
+  }
+
+  /// The caller's own organization_members.id - recorded as consented_by so
+  /// staff can see which guardian gave consent for a trip.
+  Future<String?> fetchMyMemberId(String organizationId) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return null;
+    final row = await _client
+        .from('organization_members')
+        .select('id')
+        .eq('organization_id', organizationId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    return row?['id'] as String?;
+  }
+
+  /// Throws a PostgrestException with code 23505 if already consented.
+  Future<void> giveConsent({required String eventId, required String studentId, String? guardianMemberId}) {
+    return _client.from('calendar_registrations').insert({
+      'event_id': eventId,
+      'student_id': studentId,
+      'status': 'registered',
+      'consented_by': guardianMemberId,
+    });
+  }
+
+  Future<void> withdrawConsent(String registrationId) {
+    return _client.from('calendar_registrations').delete().eq('id', registrationId);
   }
 }

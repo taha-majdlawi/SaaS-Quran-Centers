@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'my_portal_repository.dart';
 
@@ -12,6 +13,13 @@ const _attendanceLabels = {
   'excused': 'معذور',
   'late': 'متأخر',
 };
+
+String? _registrationIdFor(List<PortalRegistration> registrations, String eventId, String studentId) {
+  for (final r in registrations) {
+    if (r.eventId == eventId && r.studentId == studentId) return r.id;
+  }
+  return null;
+}
 
 String _achievementSummary(PortalAchievementEntry a) {
   final label = kAchievementTypeLabels[a.achievementType] ?? a.achievementType;
@@ -30,6 +38,7 @@ class _StudentPortalData {
     required this.attendance,
     required this.serdSessions,
     required this.achievements,
+    required this.consentEvents,
   });
 
   final PortalStudent student;
@@ -38,12 +47,22 @@ class _StudentPortalData {
   final List<PortalAttendanceEntry> attendance;
   final List<PortalSerdEntry> serdSessions;
   final List<PortalAchievementEntry> achievements;
+  final List<_ConsentEvent> consentEvents;
+}
+
+/// An upcoming event that requires guardian consent, paired with this
+/// student's registration id if consent was already given (null = pending).
+class _ConsentEvent {
+  const _ConsentEvent({required this.event, this.registrationId});
+  final PortalUpcomingEvent event;
+  final String? registrationId;
 }
 
 class _PortalData {
-  const _PortalData({required this.students, required this.upcomingEvents});
+  const _PortalData({required this.students, required this.upcomingEvents, this.myMemberId});
   final List<_StudentPortalData> students;
   final List<PortalUpcomingEvent> upcomingEvents;
+  final String? myMemberId;
 }
 
 /// The one screen student/guardian accounts ever see - app_router.dart
@@ -60,14 +79,33 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
   final _repository = MyPortalRepository(AppSupabase.client);
   late Future<_PortalData> _dataFuture;
   String? _loadedForOrgId;
+  String? _error;
+  bool _consentBusy = false;
 
-  Future<_PortalData> _load(String orgId) async {
+  Future<_PortalData> _load(String orgId, OrgRole role) async {
     final results = await Future.wait([
       _repository.fetchMyStudents(orgId),
       _repository.fetchUpcomingEvents(orgId),
     ]);
     final students = results[0] as List<PortalStudent>;
     final upcomingEvents = results[1] as List<PortalUpcomingEvent>;
+
+    // Only a guardian acts on consent - a student's own login sees the
+    // events (below, read-only) but can't give consent for themselves.
+    final isGuardian = role == OrgRole.guardian;
+    final consentRequiredEvents = upcomingEvents.where((e) => e.requiresGuardianConsent).toList();
+
+    final results2 = await Future.wait([
+      isGuardian && consentRequiredEvents.isNotEmpty
+          ? _repository.fetchRegistrations(
+              studentIds: students.map((s) => s.id).toList(),
+              eventIds: consentRequiredEvents.map((e) => e.id).toList(),
+            )
+          : Future.value(const <PortalRegistration>[]),
+      isGuardian ? _repository.fetchMyMemberId(orgId) : Future<String?>.value(null),
+    ]);
+    final registrations = results2[0] as List<PortalRegistration>;
+    final myMemberId = results2[1] as String?;
 
     final studentData = await Future.wait(students.map((student) async {
       final studentResults = await Future.wait([
@@ -77,6 +115,11 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
         _repository.fetchRecentSerdSessions(student.id),
         _repository.fetchRecentAchievements(student.id),
       ]);
+      final consentEvents = isGuardian
+          ? consentRequiredEvents
+              .map((e) => _ConsentEvent(event: e, registrationId: _registrationIdFor(registrations, e.id, student.id)))
+              .toList()
+          : const <_ConsentEvent>[];
       return _StudentPortalData(
         student: student,
         walletBalance: studentResults[0] as int,
@@ -84,15 +127,46 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
         attendance: studentResults[2] as List<PortalAttendanceEntry>,
         serdSessions: studentResults[3] as List<PortalSerdEntry>,
         achievements: studentResults[4] as List<PortalAchievementEntry>,
+        consentEvents: consentEvents,
       );
     }));
 
-    return _PortalData(students: studentData, upcomingEvents: upcomingEvents);
+    return _PortalData(students: studentData, upcomingEvents: upcomingEvents, myMemberId: myMemberId);
   }
 
-  void _reload(String orgId) {
+  void _reload(String orgId, OrgRole role) {
     _loadedForOrgId = orgId;
-    _dataFuture = _load(orgId);
+    _dataFuture = _load(orgId, role);
+  }
+
+  Future<void> _giveConsent(String orgId, OrgRole role, String eventId, String studentId, String? myMemberId) async {
+    setState(() {
+      _consentBusy = true;
+      _error = null;
+    });
+    try {
+      await _repository.giveConsent(eventId: eventId, studentId: studentId, guardianMemberId: myMemberId);
+      if (mounted) setState(() => _reload(orgId, role));
+    } catch (e) {
+      if (mounted) setState(() => _error = 'حدث خطأ أثناء تسجيل الموافقة - حاول مرة أخرى');
+    } finally {
+      if (mounted) setState(() => _consentBusy = false);
+    }
+  }
+
+  Future<void> _withdrawConsent(String orgId, OrgRole role, String registrationId) async {
+    setState(() {
+      _consentBusy = true;
+      _error = null;
+    });
+    try {
+      await _repository.withdrawConsent(registrationId);
+      if (mounted) setState(() => _reload(orgId, role));
+    } catch (e) {
+      if (mounted) setState(() => _error = 'حدث خطأ أثناء إلغاء الموافقة - حاول مرة أخرى');
+    } finally {
+      if (mounted) setState(() => _consentBusy = false);
+    }
   }
 
   @override
@@ -100,9 +174,11 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
     final tenant = context.watch<TenantController>();
     final org = tenant.active?.organization;
     final orgId = org?.id;
-    if (orgId != null && orgId != _loadedForOrgId) {
-      _reload(orgId);
+    final role = tenant.active?.role;
+    if (orgId != null && role != null && orgId != _loadedForOrgId) {
+      _reload(orgId, role);
     }
+    final isGuardian = role == OrgRole.guardian;
 
     return Scaffold(
       appBar: AppBar(
@@ -115,7 +191,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
           ),
         ],
       ),
-      body: orgId == null
+      body: orgId == null || role == null
           ? const SizedBox.shrink()
           : FutureBuilder<_PortalData>(
               future: _dataFuture,
@@ -133,11 +209,28 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                     ),
                   );
                 }
+                // Consent-required events already get an actionable per-student
+                // slot in _StudentCard below - showing them again here too would
+                // just be noise for the guardian who's the one who can act on them.
+                final generalEvents =
+                    isGuardian ? data.upcomingEvents.where((e) => !e.requiresGuardianConsent).toList() : data.upcomingEvents;
                 return ListView(
                   padding: const EdgeInsets.all(12),
                   children: [
-                    if (data.upcomingEvents.isNotEmpty) _UpcomingEventsCard(events: data.upcomingEvents),
-                    ...data.students.map((s) => _StudentCard(data: s)),
+                    if (_error != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+                        child: Text(_error!, style: TextStyle(color: Colors.red.shade700)),
+                      ),
+                    if (generalEvents.isNotEmpty) _UpcomingEventsCard(events: generalEvents),
+                    ...data.students.map((s) => _StudentCard(
+                          data: s,
+                          busy: _consentBusy,
+                          onGiveConsent: (eventId) => _giveConsent(orgId, role, eventId, s.student.id, data.myMemberId),
+                          onWithdrawConsent: (registrationId) => _withdrawConsent(orgId, role, registrationId),
+                        )),
                   ],
                 );
               },
@@ -193,8 +286,16 @@ class _UpcomingEventsCard extends StatelessWidget {
 }
 
 class _StudentCard extends StatelessWidget {
-  const _StudentCard({required this.data});
+  const _StudentCard({
+    required this.data,
+    required this.busy,
+    required this.onGiveConsent,
+    required this.onWithdrawConsent,
+  });
   final _StudentPortalData data;
+  final bool busy;
+  final void Function(String eventId) onGiveConsent;
+  final void Function(String registrationId) onWithdrawConsent;
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +365,42 @@ class _StudentCard extends StatelessWidget {
                   ),
                 ),
               ),
+            if (data.consentEvents.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text('فعاليات تحتاج موافقتك', style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: 4),
+              ...data.consentEvents.map(
+                (c) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(c.event.title),
+                            Text(
+                              c.event.startsAt,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (c.registrationId != null)
+                        TextButton(
+                          onPressed: busy ? null : () => onWithdrawConsent(c.registrationId!),
+                          child: const Text('إلغاء الموافقة', style: TextStyle(color: Colors.red)),
+                        )
+                      else
+                        FilledButton(
+                          onPressed: busy ? null : () => onGiveConsent(c.event.id),
+                          child: const Text('الموافقة على الحضور'),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             Text('جلسات السرد', style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 4),

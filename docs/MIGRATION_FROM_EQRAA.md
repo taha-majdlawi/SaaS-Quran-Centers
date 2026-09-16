@@ -7,7 +7,7 @@
 هذه القائمة تتبع حالة كل ميزة أثناء النقل إلى `apps/mobile` و `apps/web`. البنية (schema, routing, RLS) جاهزة لكل هذه الميزات؛ ما تبقى هو نقل منطق الواجهة والاستعلامات الفعلية.
 
 ## قاعدة البيانات
-- [x] مخطط متعدد المستأجرين كامل (7 ملفات ترحيل، `supabase/migrations/`)
+- [x] مخطط متعدد المستأجرين كامل (16 ملف ترحيل، `supabase/migrations/`)
 - [ ] تصدير بيانات حقيقية من مشروع Supabase الحالي وتحويلها لتناسب المخطط الجديد (سكربت ETL - غير مطلوب الآن)
 - [ ] Custom Access Token Hook لوضع `organization_id` النشط داخل الـ JWT (تحسين أداء مستقبلي)
 
@@ -19,9 +19,14 @@
       دور، فألغى الحاجة لمجلدات `student_dashboard`/`teacher_dashboard`/`admin_dashboard`/`guardian_dashboard`
       المنفصلة المذكورة بالخطة الأصلية. `my_portal` توسّعت لتشمل إنجازات الحفظ الأخيرة (`daily_achievements`)
       والفعاليات القادمة (`center_calendar`) فوق النقاط/الشارات/الحضور/جلسات السرد.
-- [ ] موافقة ولي الأمر على فعاليات التقويم التي تتطلبها (`center_calendar.requires_guardian_consent` +
-      `calendar_registrations`) من داخل `my_portal` - يعادل صفحة `trip-consent/` القديمة. لسا ما انبنت:
-      `my_portal` حاليًا يعرض الفعاليات القادمة للقراءة فقط، بدون تسجيل/موافقة.
+- [x] موافقة ولي الأمر على فعاليات التقويم التي تتطلبها (`center_calendar.requires_guardian_consent` +
+      `calendar_registrations`) من داخل `my_portal` - يعادل صفحة `trip-consent/` القديمة. ولي الأمر (مش
+      الطالب نفسه) يوافق/يلغي الموافقة لكل ابن على حدة؛ الموافقة/الإلغاء = إدخال/حذف صف بـ
+      `calendar_registrations` (`consented_by` يسجّل عضوية ولي الأمر). تطلّب migration جديدة
+      (`0016_guardian_calendar_consent.sql`): سياسة SELECT كانت لسا `is_org_member` بدون تحديد نطاق العائلة
+      (نفس فئة الثغرة اللي صلّحتها 0015 لجداول ثانية بس فاتت على هاد الجدول)، وأضفنا سياسة DELETE لولي
+      الأمر ليقدر يسحب موافقته على تسجيله هو فقط.
+      ما زال ناقص: نفس التدفق على تطبيق الويب (`/my` هناك للقراءة فقط بعد).
 - [ ] `features/quran` (قارئ المصحف - لا تغيير جوهري، بيانات عالمية غير مرتبطة بمستأجر)
 - [ ] `core/chat`, `core/calendar`, `core/notifications`, `core/offline`, `core/access`
 - [ ] العلامة التجارية الديناميكية: قراءة الشعار/الألوان من `organizations` بدل أصول بناء ثابتة
