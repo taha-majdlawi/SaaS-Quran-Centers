@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
@@ -245,6 +246,11 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
       appBar: AppBar(
         title: Text(org?.name ?? 'بستان القرآن'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'المحادثات',
+            onPressed: () => context.push('/chat'),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'تسجيل خروج',

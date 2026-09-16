@@ -48,6 +48,10 @@ class ChatRepository {
 
   final SupabaseClient _client;
 
+  /// Every active org member - only an admin should offer this as the "new
+  /// chat" picker source (admins can message anyone); everyone else should
+  /// use [fetchMyContacts] instead. Also the source list for the admin's
+  /// contact picker in member_edit_screen.dart.
   Future<List<ChatMemberOption>> fetchMembers(String organizationId) async {
     final rows = await _client.rpc('list_org_members', params: {'org_id': organizationId});
     return (rows as List)
@@ -56,6 +60,84 @@ class ChatRepository {
               label: (r['full_name'] as String?) ?? (r['email'] as String?) ?? '—',
             ))
         .toList();
+  }
+
+  /// Who [myUserId] is allowed to message, per the admin-curated
+  /// chat_contacts list (migration 0020) - this is what new_chat_screen.dart
+  /// shows a non-admin, instead of every org member.
+  Future<List<ChatMemberOption>> fetchMyContacts(String organizationId, String myUserId) async {
+    final results = await Future.wait<dynamic>([
+      _client.from('chat_contacts').select('contact_user_id').eq('organization_id', organizationId).eq('user_id', myUserId),
+      _client.rpc('list_org_members', params: {'org_id': organizationId}),
+    ]);
+    final contactRows = results[0] as List;
+    final members = results[1] as List;
+    final contactIds = contactRows.map((r) => r['contact_user_id'] as String).toSet();
+    return members
+        .where((m) => contactIds.contains(m['user_id']))
+        .map((m) => ChatMemberOption(
+              userId: m['user_id'] as String,
+              label: (m['full_name'] as String?) ?? (m['email'] as String?) ?? '—',
+            ))
+        .toList();
+  }
+
+  /// Admin-only (enforced by RLS) - the set of user ids [userId] is
+  /// currently allowed to message, for member_edit_screen.dart's picker.
+  Future<Set<String>> fetchContactUserIds(String organizationId, String userId) async {
+    final rows = await _client
+        .from('chat_contacts')
+        .select('contact_user_id')
+        .eq('organization_id', organizationId)
+        .eq('user_id', userId);
+    return (rows as List).map((r) => r['contact_user_id'] as String).toSet();
+  }
+
+  /// Admin-only (enforced by RLS) - replaces [userId]'s allowed contacts
+  /// with exactly [contactUserIds], both directions (so the other side can
+  /// message back without a second, separate grant).
+  Future<void> setContacts({
+    required String organizationId,
+    required String userId,
+    required Set<String> contactUserIds,
+  }) async {
+    final current = await fetchContactUserIds(organizationId, userId);
+    final toAdd = contactUserIds.difference(current);
+    final toRemove = current.difference(contactUserIds);
+
+    if (toRemove.isNotEmpty) {
+      await _client
+          .from('chat_contacts')
+          .delete()
+          .eq('organization_id', organizationId)
+          .eq('user_id', userId)
+          .inFilter('contact_user_id', toRemove.toList());
+      await _client
+          .from('chat_contacts')
+          .delete()
+          .eq('organization_id', organizationId)
+          .inFilter('user_id', toRemove.toList())
+          .eq('contact_user_id', userId);
+    }
+
+    if (toAdd.isNotEmpty) {
+      final me = _client.auth.currentUser?.id;
+      // upsert + ignoreDuplicates rather than insert: the reverse-direction
+      // row (contactId -> userId) may already exist independently (e.g. if
+      // contactId is an admin, who has everyone as a contact from the 0020
+      // seed already) - a plain insert would hit the unique constraint and
+      // fail the whole batch.
+      await _client.from('chat_contacts').upsert(
+        [
+          for (final contactId in toAdd) ...[
+            {'organization_id': organizationId, 'user_id': userId, 'contact_user_id': contactId, 'created_by': me},
+            {'organization_id': organizationId, 'user_id': contactId, 'contact_user_id': userId, 'created_by': me},
+          ],
+        ],
+        onConflict: 'organization_id,user_id,contact_user_id',
+        ignoreDuplicates: true,
+      );
+    }
   }
 
   Future<List<ChatThreadSummary>> fetchMyThreads(String myUserId) async {
@@ -136,6 +218,10 @@ class ChatRepository {
     return row['organization_id'] as String;
   }
 
+  /// Throws if [otherUserId] isn't in my contact list and I'm not an admin
+  /// (chat_participants_insert, migration 0020) - cleans up the otherwise-
+  /// orphaned empty thread it just created before rethrowing, rather than
+  /// leaving a stray single-participant thread behind.
   Future<String> createThread({required String organizationId, required String myUserId, required String otherUserId}) async {
     final thread = await _client
         .from('chat_threads')
@@ -144,10 +230,15 @@ class ChatRepository {
         .single();
     final threadId = thread['id'] as String;
 
-    await _client.from('chat_thread_participants').insert([
-      {'thread_id': threadId, 'user_id': myUserId},
-      {'thread_id': threadId, 'user_id': otherUserId},
-    ]);
+    try {
+      await _client.from('chat_thread_participants').insert([
+        {'thread_id': threadId, 'user_id': myUserId},
+        {'thread_id': threadId, 'user_id': otherUserId},
+      ]);
+    } catch (e) {
+      await _client.from('chat_threads').delete().eq('id', threadId);
+      rethrow;
+    }
 
     return threadId;
   }

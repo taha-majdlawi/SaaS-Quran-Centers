@@ -79,10 +79,14 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       // apps/web's (staff) route group. RLS already blocks the data; this
       // just sends them straight to their own portal instead of a staff
       // screen that would render empty for them. /join stays reachable so
-      // a portal-only member can accept a second org's invitation.
+      // a portal-only member can accept a second org's invitation. /chat is
+      // the one staff-area exception: migration 0020 lets a student/guardian
+      // message their admin-granted contacts (their circle's teacher etc.),
+      // gated by chat_contacts RLS same as everyone else - not by role.
       final role = tenant.active!.role;
       final isPortalOnly = role == OrgRole.student || role == OrgRole.guardian;
-      if (isPortalOnly && path != '/my' && path != '/join') {
+      final isChatPath = path == '/chat' || path.startsWith('/chat/');
+      if (isPortalOnly && path != '/my' && path != '/join' && !isChatPath) {
         return '/my';
       }
 

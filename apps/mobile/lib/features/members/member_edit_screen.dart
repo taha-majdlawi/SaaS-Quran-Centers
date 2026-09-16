@@ -6,6 +6,7 @@ import '../../core/auth/auth_controller.dart';
 import '../../core/access/module_keys.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../chat/chat_repository.dart';
 import 'members_repository.dart';
 
 /// Mirrors apps/web's members/[id] page: edit role/status/permissions,
@@ -13,6 +14,10 @@ import 'members_repository.dart';
 /// Full account edits (email/password) live only on the web's Teachers
 /// page - see members_repository.dart's comment on why that can't move
 /// to mobile.
+///
+/// Also owns the chat contact picker (migration 0020's chat_contacts) -
+/// there's no dedicated "chat permissions" screen, this is the one place an
+/// admin edits any per-member setting, so it's the natural home for it too.
 class MemberEditScreen extends StatefulWidget {
   const MemberEditScreen({super.key, required this.memberId});
 
@@ -24,11 +29,15 @@ class MemberEditScreen extends StatefulWidget {
 
 class _MemberEditScreenState extends State<MemberEditScreen> {
   final _repository = MembersRepository(AppSupabase.client);
+  final _chatRepository = ChatRepository(AppSupabase.client);
   MemberRow? _member;
   bool _isSelf = false;
   String _role = 'teacher';
   String _status = 'active';
   Set<String> _permissions = {};
+  String? _orgId;
+  List<ChatMemberOption> _otherMembers = [];
+  Set<String> _contactUserIds = {};
   bool _loading = true;
   bool _submitting = false;
   String? _error;
@@ -41,14 +50,22 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
 
   Future<void> _load() async {
     final orgId = context.read<TenantController>().active!.organization.id;
+    _orgId = orgId;
     final myUserId = context.read<AuthController>().currentUser?.id;
-    final members = await _repository.fetchMembers(orgId);
+    final results = await Future.wait<dynamic>([
+      _repository.fetchMembers(orgId),
+      _chatRepository.fetchMembers(orgId),
+    ]);
+    final members = results[0] as List<MemberRow>;
+    final allChatMembers = results[1] as List<ChatMemberOption>;
     final member = members.firstWhere((m) => m.id == widget.memberId);
     _member = member;
     _isSelf = member.userId == myUserId;
     _role = member.role;
     _status = member.status;
     _permissions = member.permissions.toSet();
+    _otherMembers = allChatMembers.where((m) => m.userId != member.userId).toList();
+    _contactUserIds = await _chatRepository.fetchContactUserIds(orgId, member.userId);
     if (mounted) setState(() => _loading = false);
   }
 
@@ -58,12 +75,15 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       _error = null;
     });
     try {
-      await _repository.updateMember(
-        id: widget.memberId,
-        role: _role,
-        status: _status,
-        permissions: _permissions.toList(),
-      );
+      await Future.wait([
+        _repository.updateMember(
+          id: widget.memberId,
+          role: _role,
+          status: _status,
+          permissions: _permissions.toList(),
+        ),
+        _chatRepository.setContacts(organizationId: _orgId!, userId: _member!.userId, contactUserIds: _contactUserIds),
+      ]);
       if (mounted) context.pop();
     } catch (e) {
       setState(() => _error = 'حدث خطأ أثناء الحفظ');
@@ -145,6 +165,35 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                                 _permissions.add(key);
                               } else {
                                 _permissions.remove(key);
+                              }
+                            }),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    // Admins bypass chat_contacts entirely (RLS lets them
+                    // message anyone) - showing this picker for an admin
+                    // member would just be a confusing no-op.
+                    if (_role != 'admin') ...[
+                      const SizedBox(height: 16),
+                      Text('يقدر يحكي مع (محادثات)', style: Theme.of(context).textTheme.titleSmall),
+                      const SizedBox(height: 4),
+                      Text(
+                        'قائمة يدوية - هاي هي الوحيدة اللي تتحكم مين يقدر يبدأ محادثة مع مين.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 4,
+                        children: _otherMembers.map((m) {
+                          return FilterChip(
+                            label: Text(m.label),
+                            selected: _contactUserIds.contains(m.userId),
+                            onSelected: (selected) => setState(() {
+                              if (selected) {
+                                _contactUserIds.add(m.userId);
+                              } else {
+                                _contactUserIds.remove(m.userId);
                               }
                             }),
                           );

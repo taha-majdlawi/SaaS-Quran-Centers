@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'chat_repository.dart';
 
@@ -29,9 +30,16 @@ class _NewChatScreenState extends State<NewChatScreen> {
   }
 
   Future<void> _load() async {
-    final orgId = context.read<TenantController>().active!.organization.id;
+    final tenant = context.read<TenantController>().active!;
+    final orgId = tenant.organization.id;
     final myUserId = context.read<AuthController>().currentUser!.id;
-    final members = await _repository.fetchMembers(orgId);
+    // Admins can start a chat with anyone; everyone else only sees the
+    // contacts an admin actually granted them (migration 0020's
+    // chat_contacts) - matches chat_participants_insert's RLS exactly, so
+    // this never offers someone the picker can't actually reach.
+    final members = tenant.role == OrgRole.admin
+        ? await _repository.fetchMembers(orgId)
+        : await _repository.fetchMyContacts(orgId, myUserId);
     _members = members.where((m) => m.userId != myUserId).toList();
     if (mounted) setState(() => _loading = false);
   }
@@ -64,7 +72,17 @@ class _NewChatScreenState extends State<NewChatScreen> {
       appBar: AppBar(title: const Text('محادثة جديدة')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
+          : _members.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'ما في حد مسموح تحكي معه حاليًا - اطلب من مدير المركز يضيفك كجهة اتصال.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
