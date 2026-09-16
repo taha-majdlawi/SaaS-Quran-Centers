@@ -18,18 +18,39 @@ class PortalStudent {
   final String studentCode;
   final String fullName;
   final String status;
+
+  /// Serialization is only for core/offline/offline_cache.dart's read-through
+  /// fallback (see my_portal_screen.dart) - not used on the live-fetch path.
+  Map<String, dynamic> toJson() => {'id': id, 'student_code': studentCode, 'full_name': fullName, 'status': status};
+
+  factory PortalStudent.fromJson(Map<String, dynamic> j) => PortalStudent(
+        id: j['id'] as String,
+        studentCode: j['student_code'] as String,
+        fullName: j['full_name'] as String,
+        status: j['status'] as String,
+      );
 }
 
 class PortalAttendanceEntry {
   const PortalAttendanceEntry({required this.sessionDate, required this.status});
   final String sessionDate;
   final String status;
+
+  Map<String, dynamic> toJson() => {'session_date': sessionDate, 'status': status};
+
+  factory PortalAttendanceEntry.fromJson(Map<String, dynamic> j) =>
+      PortalAttendanceEntry(sessionDate: j['session_date'] as String, status: j['status'] as String);
 }
 
 class PortalSerdEntry {
   const PortalSerdEntry({required this.sessionType, required this.status});
   final String sessionType;
   final String status;
+
+  Map<String, dynamic> toJson() => {'session_type': sessionType, 'status': status};
+
+  factory PortalSerdEntry.fromJson(Map<String, dynamic> j) =>
+      PortalSerdEntry(sessionType: j['session_type'] as String, status: j['status'] as String);
 }
 
 class PortalAchievementEntry {
@@ -50,6 +71,26 @@ class PortalAchievementEntry {
   final int? surahTo;
   final int? ayahTo;
   final num? grade;
+
+  Map<String, dynamic> toJson() => {
+        'achievement_type': achievementType,
+        'points_awarded': pointsAwarded,
+        'surah_from': surahFrom,
+        'ayah_from': ayahFrom,
+        'surah_to': surahTo,
+        'ayah_to': ayahTo,
+        'grade': grade,
+      };
+
+  factory PortalAchievementEntry.fromJson(Map<String, dynamic> j) => PortalAchievementEntry(
+        achievementType: j['achievement_type'] as String,
+        pointsAwarded: j['points_awarded'] as int,
+        surahFrom: j['surah_from'] as int?,
+        ayahFrom: j['ayah_from'] as int?,
+        surahTo: j['surah_to'] as int?,
+        ayahTo: j['ayah_to'] as int?,
+        grade: j['grade'] as num?,
+      );
 }
 
 /// Center-wide, not per-student - upcoming trips/events shown once above the
@@ -67,6 +108,17 @@ class PortalUpcomingEvent {
   final String startsAt;
   final bool requiresGuardianConsent;
   final String? location;
+
+  Map<String, dynamic> toJson() =>
+      {'id': id, 'title': title, 'starts_at': startsAt, 'requires_guardian_consent': requiresGuardianConsent, 'location': location};
+
+  factory PortalUpcomingEvent.fromJson(Map<String, dynamic> j) => PortalUpcomingEvent(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        startsAt: j['starts_at'] as String,
+        requiresGuardianConsent: j['requires_guardian_consent'] as bool,
+        location: j['location'] as String?,
+      );
 }
 
 /// A student's registration on an event - its existence IS the guardian's

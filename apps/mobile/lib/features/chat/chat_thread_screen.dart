@@ -18,6 +18,7 @@ class ChatThreadScreen extends StatefulWidget {
 class _ChatThreadScreenState extends State<ChatThreadScreen> {
   final _repository = ChatRepository(AppSupabase.client);
   final _bodyController = TextEditingController();
+  late final String _myUserId;
   late final ChatThreadRealtime _realtime;
   List<ChatMessage>? _messages;
   bool _sending = false;
@@ -25,7 +26,9 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   @override
   void initState() {
     super.initState();
+    _myUserId = context.read<AuthController>().currentUser!.id;
     _load();
+    _markRead();
     // Delivers messages from the OTHER participant live - my own sends are
     // appended locally the moment the insert succeeds (below), so this only
     // needs to dedupe by id in case the broadcast for my own message arrives
@@ -38,10 +41,19 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     if (mounted) setState(() => _messages = messages);
   }
 
+  // "Read" means "seen while this screen is open" - called on open and
+  // again for every message that arrives while it stays open, not just
+  // once, so chat_list_screen.dart's unread dot doesn't relight for a
+  // message the viewer was already looking at live.
+  void _markRead() {
+    _repository.markThreadRead(threadId: widget.threadId, userId: _myUserId);
+  }
+
   void _onIncomingMessage(ChatMessage message) {
     final current = _messages;
     if (current == null || current.any((m) => m.id == message.id)) return;
     setState(() => _messages = [...current, message]);
+    _markRead();
   }
 
   @override
@@ -55,15 +67,17 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final body = _bodyController.text.trim();
     if (body.isEmpty) return;
     setState(() => _sending = true);
-    final myUserId = context.read<AuthController>().currentUser!.id;
     try {
-      final sent = await _repository.sendMessage(threadId: widget.threadId, senderId: myUserId, body: body);
+      final sent = await _repository.sendMessage(threadId: widget.threadId, senderId: _myUserId, body: body);
       _bodyController.clear();
       if (mounted) {
         setState(() {
           _messages = [...?_messages, sent];
         });
       }
+      // Otherwise my own send would push last message time past my own
+      // last_read_at, and this thread would show as unread in my own list.
+      _markRead();
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -71,8 +85,6 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myUserId = context.read<AuthController>().currentUser!.id;
-
     return Scaffold(
       appBar: AppBar(title: const Text('محادثة')),
       body: Column(
@@ -87,7 +99,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                         itemCount: _messages!.length,
                         itemBuilder: (context, index) {
                           final m = _messages![index];
-                          final mine = m.senderId == myUserId;
+                          final mine = m.senderId == _myUserId;
                           return Align(
                             alignment: mine ? Alignment.centerLeft : Alignment.centerRight,
                             child: Container(

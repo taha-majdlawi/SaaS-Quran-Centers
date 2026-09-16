@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
+import '../../core/offline/offline_cache.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -48,6 +49,28 @@ class _StudentPortalData {
   final List<PortalSerdEntry> serdSessions;
   final List<PortalAchievementEntry> achievements;
   final List<_ConsentEvent> consentEvents;
+
+  // Consent isn't cached - see _PortalData.toJson's comment - so this
+  // always round-trips with an empty consentEvents, same as fromJson below.
+  Map<String, dynamic> toJson() => {
+        'student': student.toJson(),
+        'wallet_balance': walletBalance,
+        'badge_count': badgeCount,
+        'attendance': attendance.map((a) => a.toJson()).toList(),
+        'serd_sessions': serdSessions.map((s) => s.toJson()).toList(),
+        'achievements': achievements.map((a) => a.toJson()).toList(),
+      };
+
+  factory _StudentPortalData.fromJson(Map<String, dynamic> j) => _StudentPortalData(
+        student: PortalStudent.fromJson(j['student'] as Map<String, dynamic>),
+        walletBalance: j['wallet_balance'] as int,
+        badgeCount: j['badge_count'] as int,
+        attendance: (j['attendance'] as List).map((a) => PortalAttendanceEntry.fromJson(a as Map<String, dynamic>)).toList(),
+        serdSessions: (j['serd_sessions'] as List).map((s) => PortalSerdEntry.fromJson(s as Map<String, dynamic>)).toList(),
+        achievements:
+            (j['achievements'] as List).map((a) => PortalAchievementEntry.fromJson(a as Map<String, dynamic>)).toList(),
+        consentEvents: const [],
+      );
 }
 
 /// An upcoming event that requires guardian consent, paired with this
@@ -59,10 +82,32 @@ class _ConsentEvent {
 }
 
 class _PortalData {
-  const _PortalData({required this.students, required this.upcomingEvents, this.myMemberId});
+  const _PortalData({
+    required this.students,
+    required this.upcomingEvents,
+    this.myMemberId,
+    this.fromCache = false,
+  });
   final List<_StudentPortalData> students;
   final List<PortalUpcomingEvent> upcomingEvents;
   final String? myMemberId;
+  final bool fromCache;
+
+  // No consent state (registrations, myMemberId) cached - it's only ever
+  // useful live anyway, since giving/withdrawing consent needs a connection
+  // regardless, so a cached "already consented" button would just be a
+  // convincing lie while offline. Guardians still see everything else.
+  Map<String, dynamic> toJson() => {
+        'students': students.map((s) => s.toJson()).toList(),
+        'upcoming_events': upcomingEvents.map((e) => e.toJson()).toList(),
+      };
+
+  factory _PortalData.fromJson(Map<String, dynamic> j) => _PortalData(
+        students: (j['students'] as List).map((s) => _StudentPortalData.fromJson(s as Map<String, dynamic>)).toList(),
+        upcomingEvents:
+            (j['upcoming_events'] as List).map((e) => PortalUpcomingEvent.fromJson(e as Map<String, dynamic>)).toList(),
+        fromCache: true,
+      );
 }
 
 /// The one screen student/guardian accounts ever see - app_router.dart
@@ -82,7 +127,23 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
   String? _error;
   bool _consentBusy = false;
 
+  // Same read-through pattern as dashboard_screen.dart: try live, cache on
+  // success, fall back to the last cached value only if the live fetch
+  // itself throws.
   Future<_PortalData> _load(String orgId, OrgRole role) async {
+    final cacheKey = 'my_portal:$orgId';
+    try {
+      final data = await _loadLive(orgId, role);
+      await OfflineCache.put(cacheKey, data.toJson());
+      return data;
+    } catch (e) {
+      final cached = await OfflineCache.get(cacheKey);
+      if (cached != null) return _PortalData.fromJson(cached as Map<String, dynamic>);
+      rethrow;
+    }
+  }
+
+  Future<_PortalData> _loadLive(String orgId, OrgRole role) async {
     final results = await Future.wait([
       _repository.fetchMyStudents(orgId),
       _repository.fetchUpcomingEvents(orgId),
@@ -217,6 +278,17 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                 return ListView(
                   padding: const EdgeInsets.all(12),
                   children: [
+                    if (data.fromCache)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(8)),
+                        child: const Text(
+                          'غير متصل - هاي آخر بيانات محفوظة',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
                     if (_error != null)
                       Container(
                         margin: const EdgeInsets.only(bottom: 12),

@@ -1,10 +1,16 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatThreadSummary {
-  const ChatThreadSummary({required this.id, required this.otherLabel, required this.createdAt});
+  const ChatThreadSummary({
+    required this.id,
+    required this.otherLabel,
+    required this.createdAt,
+    required this.hasUnread,
+  });
   final String id;
   final String otherLabel;
   final String createdAt;
+  final bool hasUnread;
 }
 
 class ChatMemberOption {
@@ -53,9 +59,14 @@ class ChatRepository {
   }
 
   Future<List<ChatThreadSummary>> fetchMyThreads(String myUserId) async {
-    final myThreadIds = await _client.from('chat_thread_participants').select('thread_id').eq('user_id', myUserId);
-    final threadIds = (myThreadIds as List).map((r) => r['thread_id'] as String).toList();
+    final myParticipantRows = await _client
+        .from('chat_thread_participants')
+        .select('thread_id, last_read_at')
+        .eq('user_id', myUserId);
+    final myRows = myParticipantRows as List;
+    final threadIds = myRows.map((r) => r['thread_id'] as String).toList();
     if (threadIds.isEmpty) return [];
+    final lastReadByThread = {for (final r in myRows) r['thread_id'] as String: r['last_read_at'] as String?};
 
     final organizationId = await _orgIdForThread(threadIds.first);
     final results = await Future.wait<dynamic>([
@@ -65,24 +76,59 @@ class ChatRepository {
           .inFilter('id', threadIds)
           .order('created_at', ascending: false),
       _client.rpc('list_org_members', params: {'org_id': organizationId}),
+      // Cheap columns only, across every message in every one of my threads -
+      // this app is 1:1 chat with no group threads yet, so volume stays low
+      // enough that reducing "latest per thread" client-side (below) is
+      // simpler than a per-thread-LIMIT-1 query PostgREST can't express in
+      // one call anyway.
+      _client.from('chat_messages').select('thread_id, created_at').inFilter('thread_id', threadIds).order(
+        'created_at',
+        ascending: false,
+      ),
     ]);
     final threads = results[0] as List;
     final members = results[1] as List;
+    final messages = results[2] as List;
     final nameByUserId = {
       for (final m in members)
         m['user_id'] as String: (m['full_name'] as String?) ?? (m['email'] as String?) ?? '—',
     };
 
+    final latestMessageByThread = <String, String>{};
+    for (final m in messages) {
+      latestMessageByThread.putIfAbsent(m['thread_id'] as String, () => m['created_at'] as String);
+    }
+
     return threads.map((t) {
+      final id = t['id'] as String;
       final participants = (t['chat_thread_participants'] as List)
           .map((p) => p['user_id'] as String)
-          .where((id) => id != myUserId)
+          .where((pid) => pid != myUserId)
           .toList();
       final otherLabel = participants.isNotEmpty
-          ? participants.map((id) => nameByUserId[id] ?? '—').join('، ')
+          ? participants.map((pid) => nameByUserId[pid] ?? '—').join('، ')
           : ((t['title'] as String?) ?? 'محادثة');
-      return ChatThreadSummary(id: t['id'] as String, otherLabel: otherLabel, createdAt: t['created_at'] as String);
+
+      final lastRead = lastReadByThread[id];
+      final latestMessage = latestMessageByThread[id];
+      final hasUnread = latestMessage != null &&
+          (lastRead == null || DateTime.parse(latestMessage).isAfter(DateTime.parse(lastRead)));
+
+      return ChatThreadSummary(
+        id: id,
+        otherLabel: otherLabel,
+        createdAt: t['created_at'] as String,
+        hasUnread: hasUnread,
+      );
     }).toList();
+  }
+
+  Future<void> markThreadRead({required String threadId, required String userId}) {
+    return _client
+        .from('chat_thread_participants')
+        .update({'last_read_at': DateTime.now().toUtc().toIso8601String()})
+        .eq('thread_id', threadId)
+        .eq('user_id', userId);
   }
 
   Future<String> _orgIdForThread(String threadId) async {

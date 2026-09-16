@@ -57,7 +57,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
             itemBuilder: (context, index) {
               final t = threads[index];
               return ListTile(
-                title: Text(t.otherLabel),
+                leading: t.hasUnread
+                    ? CircleAvatar(
+                        radius: 5,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      )
+                    : const SizedBox(width: 10),
+                title: Text(
+                  t.otherLabel,
+                  style: TextStyle(fontWeight: t.hasUnread ? FontWeight.bold : FontWeight.normal),
+                ),
                 trailing: Text(t.createdAt.split('T').first, style: const TextStyle(fontSize: 12)),
                 onTap: () async {
                   await context.push('/chat/${t.id}');
