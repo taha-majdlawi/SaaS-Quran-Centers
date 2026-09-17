@@ -84,7 +84,6 @@ export default async function BillingPage({
               className="flex items-center justify-between rounded-lg border bg-white p-4"
             >
               <input type="hidden" name="orgId" value={org.id} />
-              <input type="hidden" name="orgSlug" value={org.slug} />
               <input type="hidden" name="planId" value={plan.id} />
               <div>
                 <p className="font-semibold">{plan.name}</p>

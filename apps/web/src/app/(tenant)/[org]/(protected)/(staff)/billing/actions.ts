@@ -11,7 +11,6 @@ import { createStripeClient } from '@/lib/stripe/client';
 // since this ultimately decides what a real card gets charged.
 export async function startCheckout(formData: FormData) {
   const orgId = formData.get('orgId') as string;
-  const orgSlug = formData.get('orgSlug') as string;
   const planId = formData.get('planId') as string;
 
   const supabase = await createClient();
@@ -29,6 +28,16 @@ export async function startCheckout(formData: FormData) {
 
   if (membership?.role !== 'admin') {
     redirect(`/billing?error=${encodeURIComponent('غير مصرح لك بهذا الإجراء')}` as never);
+  }
+
+  // The slug drives success_url/cancel_url below - re-derived from orgId
+  // (already proven to be an org the caller admins, above) rather than
+  // trusted from a hidden form field, so it can't be tampered with to
+  // point the post-checkout redirect at a different subdomain.
+  const { data: orgRow } = await supabase.from('organizations').select('slug').eq('id', orgId).maybeSingle();
+  const orgSlug = orgRow?.slug;
+  if (!orgSlug) {
+    redirect(`/billing?error=${encodeURIComponent('مركز غير موجود')}` as never);
   }
 
   const { data: plan } = await supabase
