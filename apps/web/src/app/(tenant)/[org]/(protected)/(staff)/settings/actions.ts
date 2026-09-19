@@ -2,18 +2,25 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { safeLogoUrl } from '@/lib/tenant/public-site';
 
 export async function updateOrgSettings(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const name = (formData.get('name') as string)?.trim();
+  const rawLogo = ((formData.get('logoUrl') as string) ?? '').trim();
+  const logoUrl = safeLogoUrl(rawLogo);
   const primaryColor = formData.get('primaryColor') as string;
   const secondaryColor = formData.get('secondaryColor') as string;
   const timezone = (formData.get('timezone') as string)?.trim();
 
+  if (rawLogo && !logoUrl) {
+    redirect(`/settings?error=${encodeURIComponent('رابط الشعار يجب أن يبدأ بـ https')}` as never);
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from('organizations')
-    .update({ name, primary_color: primaryColor, secondary_color: secondaryColor, timezone })
+    .update({ name, logo_url: logoUrl, primary_color: primaryColor, secondary_color: secondaryColor, timezone })
     .eq('id', orgId);
 
   if (error) {

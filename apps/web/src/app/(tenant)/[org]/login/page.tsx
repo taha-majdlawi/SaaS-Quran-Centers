@@ -1,6 +1,7 @@
 import { AuthCard } from '@/components/auth-card';
 import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
 import { SubmitButton } from '@/components/submit-button';
+import { getPublicSite } from '@/lib/tenant/public-site';
 import { signInToTenant } from './actions';
 
 // Replaces wep-eqraa-center/admin/login - now scoped to one organization by
@@ -15,11 +16,13 @@ export default async function TenantLoginPage({
 }) {
   const { org } = await params;
   const { error } = await searchParams;
+  const site = await getPublicSite(org);
 
   return (
     <AuthCard
       title="تسجيل الدخول"
-      subtitle={`لوحة إدارة "${org}" - للمعلمين والإدارة وأولياء الأمور`}
+      brand={site ? { name: site.name, logoUrl: site.logo_url } : undefined}
+      subtitle="للمعلمين والإدارة والطلاب وأولياء الأمور"
       error={error}
       footer={
         <div className="flex flex-col gap-1">

@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { SubmitButton } from '@/components/submit-button';
+import { OrgLogo } from '@/components/org-logo';
 import { signOut } from '@/lib/auth/actions';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -41,7 +42,10 @@ export default async function TenantProtectedLayout({
     >
       <div className="flex-1">
         <header className="flex items-center justify-between border-b bg-white px-6 py-4">
-          <span className="font-bold text-brand">{org.name}</span>
+          <span className="flex items-center gap-2 font-bold text-brand">
+            <OrgLogo name={org.name} logoUrl={org.logoUrl} size={32} />
+            {org.name}
+          </span>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <span>{ROLE_LABELS[org.myRole] ?? org.myRole}</span>
             <form action={signOut}>

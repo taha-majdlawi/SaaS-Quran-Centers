@@ -7,6 +7,13 @@ const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com'
 // Reserved subdomains that must never be treated as a tenant slug.
 const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
 
+// Paths a signed-out visitor may open, as the BROWSER sees them (before the
+// subdomain -> /{slug} rewrite). Defense-in-depth only: (protected)/layout.tsx
+// re-verifies session AND membership on every request; this just makes a future
+// route added outside (protected) fail closed instead of rendering for anyone.
+const PUBLIC_TENANT_PATHS = new Set(['/', '/login', '/join', '/privacy', '/support', '/delete-account']);
+const PUBLIC_PLATFORM_PATHS = new Set(['/login']);
+
 /**
  * Three hostname shapes, one Next.js app - see docs/ARCHITECTURE.md #4.
  *
@@ -29,6 +36,7 @@ export async function middleware(req: NextRequest) {
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
 
   let response: NextResponse;
+  let scope: 'platform' | 'tenant' | null = null;
 
   if (isRootDomain) {
     response = NextResponse.next();
@@ -38,11 +46,13 @@ export async function middleware(req: NextRequest) {
       : bareHost.split('.')[0]; // e.g. demo.localhost during local dev
 
     if (subdomain === 'admin') {
+      scope = 'platform';
       url.pathname = `/platform${req.nextUrl.pathname}`;
       response = NextResponse.rewrite(url);
     } else if (RESERVED_SUBDOMAINS.has(subdomain)) {
       response = NextResponse.next();
     } else {
+      scope = 'tenant';
       url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
       response = NextResponse.rewrite(url);
     }
@@ -66,7 +76,20 @@ export async function middleware(req: NextRequest) {
 
   // Touching getUser() is what actually triggers the refresh-token exchange
   // when the access token has expired - a plain getSession() would not.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && scope) {
+    const isPublic =
+      scope === 'platform' ? PUBLIC_PLATFORM_PATHS.has(req.nextUrl.pathname) : PUBLIC_TENANT_PATHS.has(req.nextUrl.pathname);
+    if (!isPublic) {
+      const redirectResponse = NextResponse.redirect(new URL('/login', req.url));
+      // keep whatever getUser() just refreshed (a rotated / cleared cookie)
+      response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+      return redirectResponse;
+    }
+  }
 
   // Baseline security headers on every response - clickjacking, MIME
   // sniffing, referrer leakage, and forcing HTTPS on repeat visits.

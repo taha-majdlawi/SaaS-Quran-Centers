@@ -67,6 +67,10 @@ export default async function SettingsPage({
               <input name="name" required defaultValue={org.name} className={input} />
             </label>
             <label className={label}>
+              رابط الشعار (https)
+              <input name="logoUrl" type="url" dir="ltr" placeholder="https://..." defaultValue={org.logoUrl ?? ''} className={input} />
+            </label>
+            <label className={label}>
               اللون الأساسي
               <input type="color" name="primaryColor" defaultValue={org.primaryColor} className="mt-1 h-10 w-full rounded border" />
             </label>
