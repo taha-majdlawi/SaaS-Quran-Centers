@@ -36,6 +36,7 @@ import '../../features/announcements/announcement_form_screen.dart';
 import '../../features/calendar/calendar_list_screen.dart';
 import '../../features/calendar/event_form_screen.dart';
 import '../../features/calendar/event_detail_screen.dart';
+import '../../features/calendar/calendar_types_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/chat/chat_list_screen.dart';
 import '../../features/chat/new_chat_screen.dart';
@@ -86,7 +87,13 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       // screen that would render empty for them.
       final role = tenant.active!.role;
       final isPortalOnly = role == OrgRole.student || role == OrgRole.guardian;
-      if (isPortalOnly && path != '/my') {
+      // Portal users may also open the calendar and one entry of it (register /
+      // cancel); new/edit/types are admin screens and stay closed to them.
+      final segments = Uri.parse(path).pathSegments;
+      final calendarOk = segments.isNotEmpty &&
+          segments.first == 'calendar' &&
+          (segments.length == 1 || (segments.length == 2 && segments[1] != 'new' && segments[1] != 'types'));
+      if (isPortalOnly && path != '/my' && !calendarOk) {
         return '/my';
       }
 
@@ -163,7 +170,15 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => AnnouncementFormScreen(announcementId: state.pathParameters['id']),
       ),
       GoRoute(path: '/calendar', builder: (context, state) => const CalendarListScreen()),
-      GoRoute(path: '/calendar/new', builder: (context, state) => const EventFormScreen()),
+      GoRoute(
+        path: '/calendar/new',
+        builder: (context, state) => EventFormScreen(initialDate: state.uri.queryParameters['date']),
+      ),
+      GoRoute(path: '/calendar/types', builder: (context, state) => const CalendarTypesScreen()),
+      GoRoute(
+        path: '/calendar/:id/edit',
+        builder: (context, state) => EventFormScreen(entryId: state.pathParameters['id']),
+      ),
       GoRoute(
         path: '/calendar/:id',
         builder: (context, state) => EventDetailScreen(eventId: state.pathParameters['id']!),

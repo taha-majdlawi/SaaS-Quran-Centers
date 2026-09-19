@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
@@ -269,6 +270,16 @@ class _HomeTab extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.calendar_month_rounded),
+            title: const Text('التقويم والفعاليات', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text('الإجازات والرحلات والمسابقات والتسجيل فيها'),
+            trailing: const Icon(Icons.chevron_left_rounded),
+            onTap: () => context.push('/calendar'),
           ),
         ),
         const SectionTitle('السرد القرآني'),
