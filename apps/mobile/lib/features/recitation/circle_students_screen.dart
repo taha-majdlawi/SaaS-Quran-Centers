@@ -193,6 +193,10 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
               child: Card(
                 child: ListTile(
                   contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                  onTap: () async {
+                    await context.push('/students/${s.id}/file');
+                    if (mounted) _reload();
+                  },
                   leading: InitialAvatar(s.fullName),
                   title: Text(s.fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Padding(

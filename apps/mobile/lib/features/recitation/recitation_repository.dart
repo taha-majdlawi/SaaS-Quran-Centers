@@ -51,6 +51,54 @@ class SurahPart {
   final int ayahTo;
 }
 
+class RecitationEntry {
+  const RecitationEntry({
+    required this.id,
+    required this.type,
+    required this.surah,
+    required this.ayahFrom,
+    required this.ayahTo,
+    required this.grade,
+    required this.points,
+    required this.createdAt,
+    this.notes,
+  });
+
+  final String id;
+  final String type;
+  final int surah;
+  final int ayahFrom;
+  final int ayahTo;
+  final String? grade;
+  final int points;
+  final String createdAt;
+  final String? notes;
+}
+
+class TodayCircle {
+  const TodayCircle({
+    required this.id,
+    required this.name,
+    required this.students,
+    required this.recited,
+    required this.present,
+    required this.absent,
+  });
+
+  final String id;
+  final String name;
+  final int students;
+  final int recited;
+  final int present;
+  final int absent;
+}
+
+class TeacherToday {
+  const TeacherToday({required this.isWorkingDay, required this.circles});
+  final bool isWorkingDay;
+  final List<TodayCircle> circles;
+}
+
 class RecitationResult {
   const RecitationResult({required this.pointsAwarded, required this.newTotalPoints, required this.wasDuplicate});
   final int pointsAwarded;
@@ -180,5 +228,69 @@ class RecitationRepository {
       'session_date': today,
       'status': status,
     }, onConflict: 'student_id,session_date');
+  }
+
+  Future<List<RecitationEntry>> fetchStudentRecitations(String studentId, {int limit = 60}) async {
+    final rows = await _client
+        .from('daily_achievements')
+        .select('id, achievement_type, surah_from, ayah_from, ayah_to, grade, points_awarded, notes, created_at')
+        .eq('student_id', studentId)
+        .order('created_at', ascending: false)
+        .limit(limit);
+    return (rows as List)
+        .map((r) => RecitationEntry(
+              id: r['id'] as String,
+              type: r['achievement_type'] as String,
+              surah: r['surah_from'] as int,
+              ayahFrom: r['ayah_from'] as int,
+              ayahTo: r['ayah_to'] as int,
+              grade: r['grade'] as String?,
+              points: (r['points_awarded'] as num?)?.toInt() ?? 0,
+              createdAt: r['created_at'] as String,
+              notes: r['notes'] as String?,
+            ))
+        .toList();
+  }
+
+  Future<void> updateRecitation({
+    required String id,
+    required String type,
+    required SurahPart part,
+    required String grade,
+    String? notes,
+  }) {
+    return _client.rpc('update_recitation', params: {
+      'p_id': id,
+      'p_type': type,
+      'p_surah': part.surah,
+      'p_ayah_from': part.ayahFrom,
+      'p_ayah_to': part.ayahTo,
+      'p_grade': grade,
+      'p_notes': notes,
+    });
+  }
+
+  Future<void> deleteRecitation(String id) => _client.rpc('delete_recitation', params: {'p_id': id});
+
+  Future<void> setStudentPlan({required String orgId, required String studentId, required String? plan}) {
+    return _client.rpc('set_student_plan', params: {'p_org': orgId, 'p_student': studentId, 'p_next_plan': plan});
+  }
+
+  Future<TeacherToday> fetchTeacherToday(String orgId) async {
+    final data = await _client.rpc('get_teacher_today', params: {'p_org': orgId}) as Map<String, dynamic>;
+    return TeacherToday(
+      isWorkingDay: data['is_working_day'] as bool? ?? true,
+      circles: [
+        for (final c in data['circles'] as List)
+          TodayCircle(
+            id: c['id'] as String,
+            name: c['name'] as String,
+            students: (c['students'] as num).toInt(),
+            recited: (c['recited'] as num).toInt(),
+            present: (c['present'] as num).toInt(),
+            absent: (c['absent'] as num).toInt(),
+          ),
+      ],
+    );
   }
 }

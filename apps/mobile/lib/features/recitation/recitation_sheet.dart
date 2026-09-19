@@ -15,6 +15,7 @@ Future<int?> showRecitationSheet(
   required String studentId,
   required String studentName,
   required List<GradeOption> grades,
+  RecitationEntry? editing,
 }) {
   return showModalBottomSheet<int>(
     context: context,
@@ -22,7 +23,7 @@ Future<int?> showRecitationSheet(
     useSafeArea: true,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-    builder: (context) => _RecitationSheet(studentId: studentId, studentName: studentName, grades: grades),
+    builder: (context) => _RecitationSheet(studentId: studentId, studentName: studentName, grades: grades, editing: editing),
   );
 }
 
@@ -38,11 +39,14 @@ class _PartInput {
 }
 
 class _RecitationSheet extends StatefulWidget {
-  const _RecitationSheet({required this.studentId, required this.studentName, required this.grades});
+  const _RecitationSheet({required this.studentId, required this.studentName, required this.grades, this.editing});
 
   final String studentId;
   final String studentName;
   final List<GradeOption> grades;
+
+  /// Set when correcting an existing recitation instead of logging a new one.
+  final RecitationEntry? editing;
 
   @override
   State<_RecitationSheet> createState() => _RecitationSheetState();
@@ -57,6 +61,21 @@ class _RecitationSheetState extends State<_RecitationSheet> {
   DateTime _date = DateTime.now();
   bool _saving = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.editing;
+    if (e != null) {
+      _type = e.type;
+      _grade = e.grade;
+      _notes.text = e.notes ?? '';
+      _parts.first
+        ..surah = e.surah
+        ..from.text = '${e.ayahFrom}'
+        ..to.text = '${e.ayahTo}';
+    }
+  }
 
   @override
   void dispose() {
@@ -113,6 +132,27 @@ class _RecitationSheetState extends State<_RecitationSheet> {
     });
 
     final orgId = context.read<TenantController>().active!.organization.id;
+    final editing = widget.editing;
+    if (editing != null) {
+      try {
+        final p = _parts.first;
+        await _repository.updateRecitation(
+          id: editing.id,
+          type: _type,
+          part: SurahPart(surah: p.surah!, ayahFrom: int.parse(p.from.text.trim()), ayahTo: int.parse(p.to.text.trim())),
+          grade: _grade!,
+          notes: _notes.text,
+        );
+        if (mounted) Navigator.pop(context, 0);
+      } on PostgrestException catch (e) {
+        setState(() => _error = e.message);
+      } catch (_) {
+        setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
+      } finally {
+        if (mounted) setState(() => _saving = false);
+      }
+      return;
+    }
     final group = _parts.length > 1 ? _repository.newSessionGroupId() : null;
     var total = 0;
     var saved = 0;
@@ -167,15 +207,16 @@ class _RecitationSheetState extends State<_RecitationSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('تسجيل إنجاز يومي', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text(widget.editing == null ? 'تسجيل إنجاز يومي' : 'تعديل التسميع', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             Text(widget.studentName, style: TextStyle(color: Colors.grey.shade600)),
             const SizedBox(height: 16),
             if (_error != null) MessageBanner(message: _error!),
-            OutlinedButton.icon(
-              onPressed: _pickDate,
-              icon: const Icon(Icons.event_rounded, size: 18),
-              label: Text(isToday ? 'تاريخ التسميع: اليوم' : 'تاريخ التسميع: ${_date.year}/${_date.month}/${_date.day}'),
-            ),
+            if (widget.editing == null)
+              OutlinedButton.icon(
+                onPressed: _pickDate,
+                icon: const Icon(Icons.event_rounded, size: 18),
+                label: Text(isToday ? 'تاريخ التسميع: اليوم' : 'تاريخ التسميع: ${_date.year}/${_date.month}/${_date.day}'),
+              ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _type,
@@ -205,11 +246,12 @@ class _RecitationSheetState extends State<_RecitationSheet> {
                 }),
               ),
             ],
-            TextButton.icon(
-              onPressed: () => setState(() => _parts.add(_PartInput())),
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text('إضافة سورة أخرى لنفس الجلسة'),
-            ),
+            if (widget.editing == null)
+              TextButton.icon(
+                onPressed: () => setState(() => _parts.add(_PartInput())),
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('إضافة سورة أخرى لنفس الجلسة'),
+              ),
             const SectionTitle('تقييم التلاوة'),
             Wrap(
               spacing: 8,
@@ -230,7 +272,7 @@ class _RecitationSheetState extends State<_RecitationSheet> {
               decoration: const InputDecoration(labelText: 'ملاحظات الشيخ (اختياري)', prefixIcon: Icon(Icons.edit_note_rounded)),
             ),
             const SizedBox(height: 20),
-            LoadingButton(label: 'حفظ التسميع', icon: Icons.check_rounded, loading: _saving, onPressed: _save),
+            LoadingButton(label: widget.editing == null ? 'حفظ التسميع' : 'حفظ التعديل', icon: Icons.check_rounded, loading: _saving, onPressed: _save),
           ],
         ),
       ),

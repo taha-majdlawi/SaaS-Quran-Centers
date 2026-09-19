@@ -9,6 +9,7 @@ import '../../features/tenant/org_picker_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/students/students_list_screen.dart';
 import '../../features/students/student_form_screen.dart';
+import '../../features/students/student_file_screen.dart';
 import '../../features/my_portal/my_portal_screen.dart';
 import '../../features/recitation/circle_students_screen.dart';
 import '../../features/recitation/lesson_mode_screen.dart';
@@ -104,6 +105,10 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       ),
       GoRoute(path: '/students', builder: (context, state) => const StudentsListScreen()),
       GoRoute(path: '/students/new', builder: (context, state) => const StudentFormScreen()),
+      GoRoute(
+        path: '/students/:id/file',
+        builder: (context, state) => StudentFileScreen(studentId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: '/students/:id',
         builder: (context, state) => StudentFormScreen(studentId: state.pathParameters['id']),

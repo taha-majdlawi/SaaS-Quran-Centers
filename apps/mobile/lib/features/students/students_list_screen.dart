@@ -124,7 +124,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                       final s = students[index];
                       return Card(
                         child: ListTile(
-                          onTap: () => _open('/students/${s.id}'),
+                          onTap: () => _open('/students/${s.id}/file'),
                           leading: InitialAvatar(s.fullName),
                           title: Text(s.fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: Padding(
@@ -141,7 +141,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                               PopupMenuButton<String>(
                                 onSelected: (v) => v == 'delete' ? _delete(s) : _open('/students/${s.id}'),
                                 itemBuilder: (context) => const [
-                                  PopupMenuItem(value: 'edit', child: Text('تعديل')),
+                                  PopupMenuItem(value: 'edit', child: Text('تعديل البيانات')),
                                   PopupMenuItem(value: 'delete', child: Text('حذف الطالب وملفه')),
                                 ],
                               ),

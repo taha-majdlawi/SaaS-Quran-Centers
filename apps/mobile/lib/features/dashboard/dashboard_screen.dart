@@ -27,7 +27,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Future<_DashboardStats>? _statsFuture;
-  Future<List<MyCircle>>? _circlesFuture;
+  Future<TeacherToday>? _circlesFuture;
   String? _loadedForOrgId;
 
   @override
@@ -45,8 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final membership = context.read<TenantController>().active;
     final userId = context.read<AuthController>().currentUser?.id;
     if (membership != null && userId != null && membership.hasModule('students')) {
-      _circlesFuture = RecitationRepository(AppSupabase.client)
-          .fetchMyCircles(orgId, userId: userId, isAdmin: membership.role == OrgRole.admin);
+      _circlesFuture = RecitationRepository(AppSupabase.client).fetchTeacherToday(orgId);
     }
   }
 
@@ -131,12 +130,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             if (_circlesFuture != null) ...[
-              const SectionTitle('حلقاتك'),
-              AsyncBody<List<MyCircle>>(
+              const SectionTitle('حلقاتك اليوم'),
+              AsyncBody<TeacherToday>(
                 future: _circlesFuture!,
                 onRetry: () => setState(() => _reload(_loadedForOrgId!)),
-                builder: (context, circles) {
-                  if (circles.isEmpty) {
+                builder: (context, today) {
+                  if (today.circles.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text('لم يتم تعيينك لأي حلقة بعد - اطلب من المشرف إضافتك.'),
@@ -144,7 +143,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }
                   return Column(
                     children: [
-                      for (final c in circles)
+                      if (!today.isWorkingDay)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: MessageBanner(message: 'اليوم ليس من أيام الدوام في مركزك', isError: false),
+                        ),
+                      for (final c in today.circles)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: Card(
@@ -152,7 +156,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               leading: const Icon(Icons.groups_rounded),
                               title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                              subtitle: Text('${c.stageName ?? 'بدون مرحلة'}  ·  ${c.studentCount} طالب'),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: [
+                                    StatusChip(label: '${c.students} طالب', color: Colors.blue),
+                                    StatusChip(label: 'سمّع ${c.recited}', color: Colors.green),
+                                    StatusChip(label: 'حاضر ${c.present}', color: Colors.teal),
+                                    if (c.absent > 0) StatusChip(label: 'غائب ${c.absent}', color: Colors.red),
+                                  ],
+                                ),
+                              ),
                               trailing: const Icon(Icons.chevron_left_rounded),
                               onTap: () => context.push('/circle/${c.id}'),
                             ),
