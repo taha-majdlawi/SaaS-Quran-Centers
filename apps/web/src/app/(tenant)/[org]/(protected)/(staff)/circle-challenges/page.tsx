@@ -1,59 +1,57 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { CHALLENGE_STATUS, METRIC_LABELS, fmtDate } from '@/lib/engagement/format';
 
-export default async function CircleChallengesPage({ params }: { params: Promise<{ org: string }> }) {
+interface Challenge {
+  id: string;
+  title: string;
+  description: string | null;
+  metric: string;
+  starts_on: string;
+  ends_on: string;
+  status: string;
+}
+
+export default async function ChallengesPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string }>;
+  searchParams: Promise<{ ok?: string }>;
+}) {
   const { org: slug } = await params;
+  const { ok } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
-
-  const { data: challenges } = await supabase
-    .from('circle_challenges')
-    .select('id, title, metric, starts_on, ends_on')
-    .eq('organization_id', org.id)
-    .order('starts_on', { ascending: false });
+  const { data } = await supabase.rpc('list_challenges', { p_org: org.id });
+  const challenges = (data ?? []) as Challenge[];
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-3xl">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">منافسات الحلقات</h1>
-        <a href="/circle-challenges/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-          + منافسة جديدة
-        </a>
+        {org.myRole === 'admin' && (
+          <a href="/circle-challenges/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
+            + منافسة جديدة
+          </a>
+        )}
       </div>
-
-      <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
-        <thead className="bg-gray-50 text-right">
-          <tr>
-            <th className="px-4 py-2">العنوان</th>
-            <th className="px-4 py-2">المعيار</th>
-            <th className="px-4 py-2">الفترة</th>
-            <th className="px-4 py-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {(challenges ?? []).map((c) => (
-            <tr key={c.id} className="border-t">
-              <td className="px-4 py-2">{c.title}</td>
-              <td className="px-4 py-2">{c.metric}</td>
-              <td className="px-4 py-2">
-                {c.starts_on} — {c.ends_on}
-              </td>
-              <td className="px-4 py-2 text-left">
-                <a href={`/circle-challenges/${c.id}`} className="text-brand hover:underline">
-                  النتائج
-                </a>
-              </td>
-            </tr>
-          ))}
-          {!challenges?.length && (
-            <tr>
-              <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
-                لا يوجد منافسات بعد
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      {ok === 'deleted' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحذف</p>}
+      <p className="mb-4 text-sm text-gray-500">تُرتَّب الحلقات بمتوسط ما حققه الطالب الواحد لا بالمجموع، فلا تخسر حلقة صغيرة لمجرد صغرها.</p>
+      <div className="flex flex-col gap-2">
+        {challenges.map((c) => (
+          <a key={c.id} href={`/circle-challenges/${c.id}` as never} className="rounded-lg border bg-white p-4 text-sm hover:bg-gray-50">
+            <div className="flex items-center justify-between">
+              <b>{c.title}</b>
+              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs">{CHALLENGE_STATUS[c.status]}</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              {METRIC_LABELS[c.metric]} · {fmtDate(c.starts_on)} — {fmtDate(c.ends_on)}
+            </p>
+          </a>
+        ))}
+        {!challenges.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد منافسات</p>}
+      </div>
     </div>
   );
 }

@@ -1,133 +1,86 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
-import { awardBadge } from './actions';
+import { ruleText } from '@/lib/engagement/format';
+import { evaluateAll } from './actions';
+
+interface Badge {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  color: string;
+  rule_type: string;
+  threshold: number;
+  param: string | null;
+  duration_days: number | null;
+  is_active: boolean;
+}
+
+const OK: Record<string, string> = { deleted: 'تم حذف الشارة', evaluated: 'أُعيد تقييم الشارات لكل الطلاب ✓' };
 
 export default async function BadgesPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ error?: string; awarded?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const { org: slug } = await params;
-  const { error, awarded } = await searchParams;
+  const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
+  const isAdmin = org.myRole === 'admin';
 
-  const [{ data: badges }, { data: students }, { data: recentAwards }] = await Promise.all([
-    supabase.from('badges').select('id, name, description').eq('organization_id', org.id).order('name'),
-    supabase
-      .from('students_profile')
-      .select('id, full_name')
-      .eq('organization_id', org.id)
-      .eq('status', 'active')
-      .order('full_name'),
-    supabase
-      .from('student_badges')
-      .select('id, awarded_at, badges!inner(name, organization_id), students_profile(full_name)')
-      .eq('badges.organization_id', org.id)
-      .order('awarded_at', { ascending: false })
-      .limit(10),
+  const [{ data: badges }, { data: grades }] = await Promise.all([
+    supabase.from('badges').select('*').eq('organization_id', org.id).order('sort_order').order('name'),
+    supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id),
   ]);
+  const labels = new Map((grades ?? []).map((g) => [g.key as string, g.label as string]));
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">الشارات</h1>
-          <a href="/badges/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-            + إضافة شارة
-          </a>
-        </div>
-
-        {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-        {awarded && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم منح الشارة بنجاح</p>}
-
-        <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
-          <thead className="bg-gray-50 text-right">
-            <tr>
-              <th className="px-4 py-2">الاسم</th>
-              <th className="px-4 py-2">الوصف</th>
-              <th className="px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(badges ?? []).map((b) => (
-              <tr key={b.id} className="border-t">
-                <td className="px-4 py-2">{b.name}</td>
-                <td className="px-4 py-2 text-gray-500">{b.description ?? '—'}</td>
-                <td className="px-4 py-2 text-left">
-                  <a href={`/badges/${b.id}`} className="text-brand hover:underline">
-                    تعديل
-                  </a>
-                </td>
-              </tr>
-            ))}
-            {!badges?.length && (
-              <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-gray-400">
-                  لا يوجد شارات بعد
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+    <div className="max-w-4xl">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">الشارات</h1>
+        {isAdmin && (
+          <div className="flex gap-2">
+            <form action={evaluateAll}>
+              <input type="hidden" name="orgId" value={org.id} />
+              <SubmitButton className="rounded border px-4 py-2 text-sm text-brand" pendingText="جاري التقييم...">
+                إعادة تقييم الكل
+              </SubmitButton>
+            </form>
+            <a href="/badges/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
+              + شارة جديدة
+            </a>
+          </div>
+        )}
       </div>
+      {ok && OK[ok] && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{OK[ok]}</p>}
+      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      <p className="mb-4 text-sm text-gray-500">
+        الشارات التلقائية تُمنح فور تحقق شرطها (تسميع، حضور، اعتماد سرد). اليدوية يمنحها المشرف، أو المعلم لطلاب حلقته.
+      </p>
 
-      {Boolean(badges?.length) && Boolean(students?.length) && (
-        <div>
-          <h2 className="mb-4 text-lg font-bold">منح شارة لطالب</h2>
-          <form action={awardBadge} className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4 text-sm">
-            <label>
-              الطالب
-              <select name="studentId" required className="mt-1 block rounded border px-3 py-2">
-                <option value="" disabled>
-                  اختر الطالب
-                </option>
-                {(students ?? []).map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.full_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              الشارة
-              <select name="badgeId" required className="mt-1 block rounded border px-3 py-2">
-                <option value="" disabled>
-                  اختر الشارة
-                </option>
-                {(badges ?? []).map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <SubmitButton
-              className="rounded bg-brand px-4 py-2 font-semibold text-white disabled:opacity-50"
-              pendingText="جاري المنح..."
-            >
-              منح الشارة
-            </SubmitButton>
-          </form>
-        </div>
-      )}
-
-      {Boolean(recentAwards?.length) && (
-        <div>
-          <h2 className="mb-4 text-lg font-bold">آخر الشارات الممنوحة</h2>
-          <ul className="flex flex-col gap-1 text-sm text-gray-600">
-            {(recentAwards ?? []).map((a) => (
-              <li key={a.id}>
-                {(a.students_profile as unknown as { full_name: string } | null)?.full_name} —{' '}
-                {(a.badges as unknown as { name: string } | null)?.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {((badges ?? []) as Badge[]).map((b) => (
+          <a key={b.id} href={`/badges/${b.id}` as never} className={`flex items-start gap-3 rounded-lg border bg-white p-4 hover:bg-gray-50 ${b.is_active ? '' : 'opacity-60'}`}>
+            <span className="flex h-12 w-12 items-center justify-center rounded-full text-2xl" style={{ backgroundColor: `${b.color}22`, border: `2px solid ${b.color}` }}>
+              {b.icon}
+            </span>
+            <div className="text-sm">
+              <b>{b.name}</b>
+              {b.description && <p className="text-xs text-gray-500">{b.description}</p>}
+              <p className="mt-1 text-xs text-gray-600">
+                {ruleText(b, labels)}
+                {b.duration_days && ` · تنتهي بعد ${b.duration_days} يوم`}
+                {!b.is_active && ' · غير فعّالة'}
+              </p>
+            </div>
+          </a>
+        ))}
+        {!badges?.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد شارات بعد</p>}
+      </div>
     </div>
   );
 }

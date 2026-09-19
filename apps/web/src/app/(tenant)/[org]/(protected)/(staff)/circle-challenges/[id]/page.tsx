@@ -1,102 +1,96 @@
 import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
-import { SubmitButton } from '@/components/submit-button';
+import { ChallengeForm } from '@/components/challenge-form';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { saveScores, deleteChallenge } from '../actions';
+import { CHALLENGE_STATUS, METRIC_LABELS, fmtDate } from '@/lib/engagement/format';
+import { deleteChallenge } from '../actions';
 
-export default async function ChallengeDetailPage({
+interface Board {
+  id: string;
+  title: string;
+  metric: string;
+  starts_on: string;
+  ends_on: string;
+  status: string;
+  rows: { rank: number; circle_id: string; circle_name: string; students: number; total: number; average: number; mine: boolean }[];
+}
+
+export default async function ChallengePage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string; id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
 }) {
   const { org: slug, id } = await params;
-  const { error, saved } = await searchParams;
+  const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
-  const [{ data: challenge }, { data: circles }, { data: entries }] = await Promise.all([
-    supabase
-      .from('circle_challenges')
-      .select('id, title, metric, starts_on, ends_on')
-      .eq('organization_id', org.id)
-      .eq('id', id)
-      .maybeSingle(),
-    supabase.from('circles').select('id, name').eq('organization_id', org.id).order('name'),
-    supabase.from('circle_challenge_entries').select('circle_id, score').eq('challenge_id', id),
+  const [{ data: boardData }, { data: raw }] = await Promise.all([
+    supabase.rpc('challenge_board', { p_org: org.id, p_challenge: id }),
+    supabase.from('circle_challenges').select('id, title, description, metric, starts_on, ends_on').eq('id', id).maybeSingle(),
   ]);
-
-  if (!challenge) notFound();
-
-  const scoreByCircle = new Map((entries ?? []).map((e) => [e.circle_id, e.score]));
+  const board = boardData as Board | null;
+  if (!board || !raw) notFound();
 
   return (
-    <div>
-      <div className="mb-1 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{challenge.title}</h1>
-        <form action={deleteChallenge}>
-          <input type="hidden" name="id" value={challenge.id} />
-          <ConfirmSubmitButton
-            confirmMessage={`متأكد إنك بدك تحذف منافسة "${challenge.title}"؟`}
-            pendingText="جاري الحذف..."
-            className="text-sm text-red-600 hover:underline"
-          >
-            حذف المنافسة
-          </ConfirmSubmitButton>
-        </form>
-      </div>
-      <p className="mb-6 text-sm text-gray-500">
-        المعيار: {challenge.metric} — {challenge.starts_on} إلى {challenge.ends_on}
+    <div className="max-w-2xl">
+      <a href="/circle-challenges" className="text-sm text-brand hover:underline">
+        ← المنافسات
+      </a>
+      <h1 className="mb-1 mt-2 text-2xl font-bold">{board.title}</h1>
+      <p className="mb-4 text-sm text-gray-500">
+        {METRIC_LABELS[board.metric]} · {fmtDate(board.starts_on)} — {fmtDate(board.ends_on)} · {CHALLENGE_STATUS[board.status]}
       </p>
-
+      {ok === 'saved' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحفظ ✓</p>}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ النتائج</p>}
 
-      <form action={saveScores} className="rounded-lg border bg-white">
-        <input type="hidden" name="challengeId" value={challenge.id} />
+      <div className="mb-8 overflow-hidden rounded-lg border bg-white">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-right">
             <tr>
+              <th className="px-4 py-2">#</th>
               <th className="px-4 py-2">الحلقة</th>
-              <th className="px-4 py-2">النقاط</th>
+              <th className="px-4 py-2">الطلاب</th>
+              <th className="px-4 py-2">المجموع</th>
+              <th className="px-4 py-2">المتوسط</th>
             </tr>
           </thead>
           <tbody>
-            {(circles ?? []).map((c) => (
-              <tr key={c.id} className="border-t">
-                <td className="px-4 py-2">{c.name}</td>
-                <td className="px-4 py-2">
-                  <input
-                    type="number"
-                    name={`score_${c.id}`}
-                    defaultValue={scoreByCircle.get(c.id) ?? 0}
-                    className="w-24 rounded border px-2 py-1"
-                  />
-                </td>
+            {board.rows.map((r) => (
+              <tr key={r.circle_id} className={`border-t ${r.mine ? 'bg-green-50' : ''}`}>
+                <td className="px-4 py-2 font-bold">{r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : r.rank}</td>
+                <td className="px-4 py-2">{r.circle_name}</td>
+                <td className="px-4 py-2">{r.students}</td>
+                <td className="px-4 py-2">{r.total}</td>
+                <td className="px-4 py-2 font-semibold text-brand">{r.average}</td>
               </tr>
             ))}
-            {!circles?.length && (
+            {!board.rows.length && (
               <tr>
-                <td colSpan={2} className="px-4 py-6 text-center text-gray-400">
-                  لا يوجد حلقات بعد
+                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                  لا توجد حلقات فيها طلاب بعد
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-        {Boolean(circles?.length) && (
-          <div className="p-4">
-            <SubmitButton
-              className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              pendingText="جاري الحفظ..."
-            >
-              حفظ النتائج
-            </SubmitButton>
-          </div>
-        )}
-      </form>
+      </div>
+
+      {org.myRole === 'admin' && (
+        <>
+          <ChallengeForm orgId={org.id} challenge={raw} />
+          <form action={deleteChallenge} className="mt-4">
+            <input type="hidden" name="orgId" value={org.id} />
+            <input type="hidden" name="id" value={id} />
+            <ConfirmSubmitButton confirmMessage="حذف المنافسة؟" pendingText="..." className="rounded border border-red-200 px-4 py-2 text-sm text-red-600">
+              حذف
+            </ConfirmSubmitButton>
+          </form>
+        </>
+      )}
     </div>
   );
 }

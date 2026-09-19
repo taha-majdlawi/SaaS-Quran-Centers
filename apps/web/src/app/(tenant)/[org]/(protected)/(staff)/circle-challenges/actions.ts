@@ -2,55 +2,27 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { runRpc, withParam } from '@/lib/calendar/actions-shared';
 
-export async function createChallenge(formData: FormData) {
-  const orgId = formData.get('orgId') as string;
-  const title = (formData.get('title') as string)?.trim();
-  const metric = (formData.get('metric') as string)?.trim();
-  const startsOn = formData.get('startsOn') as string;
-  const endsOn = formData.get('endsOn') as string;
+const s = (formData: FormData, key: string) => ((formData.get(key) as string) ?? '').trim();
 
+export async function saveChallenge(formData: FormData) {
+  const id = s(formData, 'id') || null;
+  const back = id ? `/circle-challenges/${id}` : '/circle-challenges/new';
   const supabase = await createClient();
-  const { error } = await supabase
-    .from('circle_challenges')
-    .insert({ organization_id: orgId, title, metric, starts_on: startsOn, ends_on: endsOn });
-
-  if (error) {
-    redirect(`/circle-challenges/new?error=${encodeURIComponent(error.message)}` as never);
-  }
-
-  redirect('/circle-challenges');
+  const { data, error } = await supabase.rpc('admin_save_challenge', {
+    p_org: s(formData, 'orgId'),
+    p_id: id,
+    p_title: s(formData, 'title'),
+    p_description: s(formData, 'description') || null,
+    p_metric: s(formData, 'metric'),
+    p_starts: s(formData, 'startsOn') || null,
+    p_ends: s(formData, 'endsOn') || null,
+  });
+  if (error) redirect(withParam(back, 'error', error.message) as never);
+  redirect(`/circle-challenges/${data as string}?ok=saved` as never);
 }
 
 export async function deleteChallenge(formData: FormData) {
-  const id = formData.get('id') as string;
-
-  const supabase = await createClient();
-  await supabase.from('circle_challenges').delete().eq('id', id);
-
-  redirect('/circle-challenges');
-}
-
-export async function saveScores(formData: FormData) {
-  const challengeId = formData.get('challengeId') as string;
-
-  const rows: { challenge_id: string; circle_id: string; score: number }[] = [];
-  for (const [key, value] of formData.entries()) {
-    if (!key.startsWith('score_')) continue;
-    const circleId = key.slice('score_'.length);
-    rows.push({ challenge_id: challengeId, circle_id: circleId, score: Number(value || 0) });
-  }
-
-  if (rows.length) {
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from('circle_challenge_entries')
-      .upsert(rows, { onConflict: 'challenge_id,circle_id' });
-
-    if (error) {
-      redirect(`/circle-challenges/${challengeId}?error=${encodeURIComponent(error.message)}` as never);
-    }
-  }
-
-  redirect(`/circle-challenges/${challengeId}?saved=1` as never);
+  return runRpc('admin_delete_challenge', { p_org: s(formData, 'orgId'), p_id: s(formData, 'id') }, '/circle-challenges', 'deleted');
 }
