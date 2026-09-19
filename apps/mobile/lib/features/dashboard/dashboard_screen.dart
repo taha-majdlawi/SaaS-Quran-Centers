@@ -8,6 +8,8 @@ import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
+import '../../core/auth/auth_controller.dart';
+import '../recitation/recitation_repository.dart';
 
 const _roleGreeting = {
   OrgRole.admin: 'مدير المركز',
@@ -25,6 +27,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Future<_DashboardStats>? _statsFuture;
+  Future<List<MyCircle>>? _circlesFuture;
   String? _loadedForOrgId;
 
   @override
@@ -39,6 +42,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _reload(String orgId) {
     _loadedForOrgId = orgId;
     _statsFuture = _loadStats(orgId);
+    final membership = context.read<TenantController>().active;
+    final userId = context.read<AuthController>().currentUser?.id;
+    if (membership != null && userId != null && membership.hasModule('students')) {
+      _circlesFuture = RecitationRepository(AppSupabase.client)
+          .fetchMyCircles(orgId, userId: userId, isAdmin: membership.role == OrgRole.admin);
+    }
   }
 
   Future<_DashboardStats> _loadStats(String orgId) async {
@@ -121,6 +130,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
+            if (_circlesFuture != null) ...[
+              const SectionTitle('حلقاتك'),
+              AsyncBody<List<MyCircle>>(
+                future: _circlesFuture!,
+                onRetry: () => setState(() => _reload(_loadedForOrgId!)),
+                builder: (context, circles) {
+                  if (circles.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text('لم يتم تعيينك لأي حلقة بعد - اطلب من المشرف إضافتك.'),
+                    );
+                  }
+                  return Column(
+                    children: [
+                      for (final c in circles)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Card(
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: const Icon(Icons.groups_rounded),
+                              title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                              subtitle: Text('${c.stageName ?? 'بدون مرحلة'}  ·  ${c.studentCount} طالب'),
+                              trailing: const Icon(Icons.chevron_left_rounded),
+                              onTap: () => context.push('/circle/${c.id}'),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
             const SizedBox(height: 20),
             if (_statsFuture == null)
               const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
