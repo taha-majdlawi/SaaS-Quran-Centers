@@ -97,9 +97,14 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
-      <h1 className="text-2xl font-bold">
-        {org.myRole === 'guardian' ? 'أبناؤك في' : 'ملفك في'} {org.name}
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">
+          {org.myRole === 'guardian' ? 'أبناؤك في' : 'ملفك في'} {org.name}
+        </h1>
+        <a href="/my/calendar" className="rounded border px-4 py-2 text-sm text-brand">
+          التقويم والفعاليات
+        </a>
+      </div>
 
       {dashboards.map((d, idx) => {
         if (!d || !d.linked) return null;

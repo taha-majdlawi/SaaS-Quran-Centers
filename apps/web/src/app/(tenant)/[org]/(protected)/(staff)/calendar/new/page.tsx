@@ -1,64 +1,42 @@
+import { redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
-import { SubmitButton } from '@/components/submit-button';
-import { createEvent } from '../actions';
+import { createClient } from '@/lib/supabase/server';
+import { CalendarEntryForm } from '@/components/calendar-entry-form';
+import type { CalType } from '@/lib/calendar/format';
 
-export default async function NewEventPage({
+export default async function NewCalendarEntryPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; date?: string }>;
 }) {
   const { org: slug } = await params;
-  const { error } = await searchParams;
+  const { error, date } = await searchParams;
   const org = await getOrgContext(slug);
+  if (org.myRole !== 'admin') redirect('/calendar' as never);
+  const supabase = await createClient();
+
+  const [{ data: types }, { data: circles }, { data: stages }] = await Promise.all([
+    supabase.from('calendar_entry_types').select('*').eq('organization_id', org.id).order('sort_order'),
+    supabase.from('circles').select('id, name').eq('organization_id', org.id).order('name'),
+    supabase.from('stages').select('id, name').eq('organization_id', org.id).order('name'),
+  ]);
 
   return (
-    <div className="max-w-lg">
-      <h1 className="mb-6 text-2xl font-bold">فعالية جديدة</h1>
-
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-
-      <form action={createEvent} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
-        <input type="hidden" name="orgId" value={org.id} />
-
-        <label className="text-sm font-medium text-gray-700">
-          العنوان
-          <input name="title" required className="mt-1 w-full rounded border px-3 py-2 text-sm" />
-        </label>
-
-        <label className="text-sm font-medium text-gray-700">
-          الوصف
-          <textarea name="description" rows={3} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
-        </label>
-
-        <label className="text-sm font-medium text-gray-700">
-          التاريخ والوقت
-          <input
-            type="datetime-local"
-            name="startsAt"
-            required
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          />
-        </label>
-
-        <label className="text-sm font-medium text-gray-700">
-          المكان
-          <input name="location" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
-        </label>
-
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-          <input type="checkbox" name="requiresConsent" />
-          تحتاج موافقة ولي الأمر (رحلة مثلًا)
-        </label>
-
-        <SubmitButton
-          className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الإضافة..."
-        >
-          إضافة الفعالية
-        </SubmitButton>
-      </form>
+    <div>
+      <a href="/calendar" className="text-sm text-brand hover:underline">
+        ← التقويم
+      </a>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">إضافة إلى التقويم</h1>
+      <CalendarEntryForm
+        orgId={org.id}
+        types={(types ?? []) as CalType[]}
+        circles={circles ?? []}
+        stages={stages ?? []}
+        defaultDate={date}
+        error={error}
+      />
     </div>
   );
 }
