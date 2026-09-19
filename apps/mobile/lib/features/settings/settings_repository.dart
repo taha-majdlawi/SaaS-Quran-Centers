@@ -32,12 +32,14 @@ class SettingsRepository {
   Future<void> updateOrgSettings({
     required String organizationId,
     required String name,
+    String? logoUrl,
     required String primaryColor,
     required String secondaryColor,
     required String timezone,
   }) {
     return _client.from('organizations').update({
       'name': name,
+      'logo_url': logoUrl,
       'primary_color': primaryColor,
       'secondary_color': secondaryColor,
       'timezone': timezone,

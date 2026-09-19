@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'org_avatar.dart';
+
 import '../auth/auth_controller.dart';
 import '../tenant/organization.dart';
 import '../tenant/tenant_controller.dart';
@@ -98,16 +100,7 @@ class AppDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                  alignment: Alignment.center,
-                  child: Text(
-                    (org?.name.isNotEmpty ?? false) ? org!.name.characters.first : 'ب',
-                    style: TextStyle(color: scheme.primary, fontSize: 26, fontWeight: FontWeight.w800),
-                  ),
-                ),
+                OrgAvatar(name: org?.name ?? 'ب', logoUrl: org?.logoUrl, brandColor: org?.primaryColor, size: 56, onDark: true),
                 const SizedBox(height: 14),
                 Text(org?.name ?? 'بستان القرآن',
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),

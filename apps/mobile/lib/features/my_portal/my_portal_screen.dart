@@ -8,6 +8,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/format.dart';
+import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
 import '../recitation/recitation_repository.dart' show kAchievementTypes;
 import '../serd/serd_widgets.dart';
@@ -68,7 +69,11 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(org?.name ?? 'بستان القرآن'),
+        title: Row(children: [
+          if (org != null) OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34),
+          const SizedBox(width: 10),
+          Flexible(child: Text(org?.name ?? 'بستان القرآن', overflow: TextOverflow.ellipsis)),
+        ]),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),

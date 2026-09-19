@@ -13,12 +13,13 @@ String toLoginEmail(String centerSlug, String identifier) {
 }
 
 class CenterInfo {
-  const CenterInfo({required this.id, required this.name, required this.slug, this.primaryColor});
+  const CenterInfo({required this.id, required this.name, required this.slug, this.primaryColor, this.logoUrl});
 
   final String id;
   final String name;
   final String slug;
   final String? primaryColor;
+  final String? logoUrl;
 }
 
 class WrongCredentialsException implements Exception {
@@ -50,7 +51,7 @@ class LoginRepository {
   Future<CenterInfo?> findCenter(String slug) async {
     final row = await _client
         .from('organizations')
-        .select('id, name, slug, primary_color')
+        .select('id, name, slug, primary_color, logo_url')
         .eq('slug', slug.trim().toLowerCase())
         .maybeSingle();
     if (row == null) return null;
@@ -59,6 +60,7 @@ class LoginRepository {
       name: row['name'] as String,
       slug: row['slug'] as String,
       primaryColor: row['primary_color'] as String?,
+      logoUrl: row['logo_url'] as String?,
     );
   }
 

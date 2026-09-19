@@ -21,6 +21,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _repository = SettingsRepository(AppSupabase.client);
   final _nameController = TextEditingController();
+  final _logoController = TextEditingController();
   final _primaryColorController = TextEditingController();
   final _secondaryColorController = TextEditingController();
   final _timezoneController = TextEditingController(text: 'Asia/Amman');
@@ -36,6 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _logoController.dispose();
     _primaryColorController.dispose();
     _secondaryColorController.dispose();
     _timezoneController.dispose();
@@ -48,6 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _load(Organization org) async {
     _loadedForOrgId = org.id;
     _nameController.text = org.name;
+    _logoController.text = org.logoUrl ?? '';
     _primaryColorController.text = org.primaryColor;
     _secondaryColorController.text = org.secondaryColor;
     try {
@@ -85,15 +88,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _saveOrg(String orgId) => _run('org', () {
+  Future<void> _saveOrg(String orgId) async {
+    final logo = _logoController.text.trim();
+    if (logo.isNotEmpty && !(Uri.tryParse(logo)?.scheme == 'https')) {
+      setState(() {
+        _message = 'رابط الشعار يجب أن يبدأ بـ https';
+        _isError = true;
+      });
+      return;
+    }
+    await _run('org', () {
         return _repository.updateOrgSettings(
           organizationId: orgId,
           name: _nameController.text.trim(),
+          logoUrl: logo.isEmpty ? null : logo,
           primaryColor: _primaryColorController.text.trim(),
           secondaryColor: _secondaryColorController.text.trim(),
           timezone: _timezoneController.text.trim(),
         );
       });
+    if (mounted && _isError == false) await context.read<TenantController>().refreshSilently();
+  }
 
   Future<void> _saveDays(String orgId) => _run('days', () => _repository.saveWeekdays(orgId, _weekdays));
 
@@ -151,6 +166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (_message != null) MessageBanner(message: _message!, isError: _isError),
                   const SectionTitle('الهوية'),
                   _field('اسم المركز', _nameController, isAdmin),
+                  _field('رابط الشعار (https)', _logoController, isAdmin, ltr: true),
                   _field('اللون الأساسي (hex)', _primaryColorController, isAdmin, ltr: true),
                   _field('اللون الثانوي (hex)', _secondaryColorController, isAdmin, ltr: true),
                   Padding(

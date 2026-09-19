@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
 import 'login_repository.dart';
 
@@ -129,22 +130,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Once the center is known, its own identity (logo + name) replaces the platform mark.
                     Center(
                       child: Container(
-                        width: 76,
-                        height: 76,
                         decoration: BoxDecoration(
-                          color: brand,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(24),
                           boxShadow: [BoxShadow(color: brand.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
                         ),
-                        alignment: Alignment.center,
-                        child: const Text('ب', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                        child: OrgAvatar(
+                          name: _center?.name ?? 'ب',
+                          logoUrl: _center?.logoUrl,
+                          brandColor: _center?.primaryColor,
+                          size: 76,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text('بستان القرآن',
-                        textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+                    Text(_center?.name ?? 'بستان القرآن',
+                        textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 6),
                     Text('سجّل دخولك إلى مركزك',
                         textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Colors.grey.shade600)),

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
 
 const _roleLabels = {
@@ -51,19 +51,14 @@ class OrgPickerScreen extends StatelessWidget {
                       separatorBuilder: (context, index) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final membership = tenant.memberships[index];
-                        final brand = parseBrandColor(membership.organization.primaryColor);
                         return Card(
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            leading: Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(color: brand, borderRadius: BorderRadius.circular(14)),
-                              alignment: Alignment.center,
-                              child: Text(
-                                membership.organization.name.characters.first,
-                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800),
-                              ),
+                            leading: OrgAvatar(
+                              name: membership.organization.name,
+                              logoUrl: membership.organization.logoUrl,
+                              brandColor: membership.organization.primaryColor,
+                              size: 46,
                             ),
                             title: Text(membership.organization.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                             subtitle: Padding(

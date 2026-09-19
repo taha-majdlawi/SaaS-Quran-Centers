@@ -64,6 +64,22 @@ class TenantController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Re-reads the memberships without the splash flash - used after the admin
+  /// edits the center's identity, so the new name / logo / colours show at once.
+  Future<void> refreshSilently() async {
+    try {
+      final list = await _repository.fetchMyMemberships();
+      final id = _active?.organization.id;
+      if (list.isNotEmpty) {
+        _memberships = list;
+        _active = list.firstWhere((m) => m.organization.id == id, orElse: () => list.first);
+      }
+    } catch (_) {
+      // keep what we had
+    }
+    notifyListeners();
+  }
+
   Future<void> switchTo(OrganizationMembership membership) async {
     _active = membership;
     final prefs = await SharedPreferences.getInstance();
