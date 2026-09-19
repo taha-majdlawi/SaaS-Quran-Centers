@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -110,20 +111,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
-                if (_message != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: _isError ? Colors.red.shade50 : Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _message!,
-                      style: TextStyle(color: _isError ? Colors.red.shade700 : Colors.green.shade700),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                if (_message != null) MessageBanner(message: _message!, isError: _isError),
                 if (_scores.isEmpty)
                   const Center(child: Text('لا يوجد حلقات بعد'))
                 else

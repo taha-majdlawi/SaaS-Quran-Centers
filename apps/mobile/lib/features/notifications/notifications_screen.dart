@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/supabase/supabase_client.dart';
@@ -103,20 +104,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: [
                     Text('إرسال إشعار', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
-                    if (_message != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: _isError ? Colors.red.shade50 : Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _message!,
-                          style: TextStyle(color: _isError ? Colors.red.shade700 : Colors.green.shade700),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+                    if (_message != null) MessageBanner(message: _message!, isError: _isError),
                     DropdownButtonFormField<String>(
                       initialValue: _recipientId,
                       decoration: const InputDecoration(labelText: 'المستلم'),

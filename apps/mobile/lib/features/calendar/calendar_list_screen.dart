@@ -1,71 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../core/supabase/supabase_client.dart';
-import '../../core/tenant/tenant_controller.dart';
-import '../../core/widgets/app_drawer.dart';
+import '../../core/widgets/entity_list.dart';
+import '../../core/widgets/format.dart';
+import '../../core/widgets/ui.dart';
 import 'calendar_repository.dart';
 
-class CalendarListScreen extends StatefulWidget {
+class CalendarListScreen extends StatelessWidget {
   const CalendarListScreen({super.key});
 
   @override
-  State<CalendarListScreen> createState() => _CalendarListScreenState();
-}
-
-class _CalendarListScreenState extends State<CalendarListScreen> {
-  final _repository = CalendarRepository(AppSupabase.client);
-  late Future<List<CalendarEventSummary>> _eventsFuture;
-  String? _loadedForOrgId;
-
-  void _reload(String orgId) {
-    _loadedForOrgId = orgId;
-    _eventsFuture = _repository.fetchEvents(orgId);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final orgId = context.watch<TenantController>().active?.organization.id;
-    if (orgId != null && orgId != _loadedForOrgId) {
-      _reload(orgId);
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('التقويم')),
-      drawer: const AppDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await context.push('/calendar/new');
-          if (orgId != null && mounted) setState(() => _reload(orgId));
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: FutureBuilder<List<CalendarEventSummary>>(
-        future: _eventsFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          final events = snapshot.data!;
-          if (events.isEmpty) {
-            return const Center(child: Text('لا يوجد فعاليات بعد'));
-          }
-          return ListView.separated(
-            itemCount: events.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final e = events[index];
-              return ListTile(
-                title: Text(e.title),
-                subtitle: Text('${e.startsAt} · ${e.location ?? "—"}'),
-                trailing: e.requiresGuardianConsent ? const Icon(Icons.family_restroom, size: 18) : null,
-                onTap: () async {
-                  await context.push('/calendar/${e.id}');
-                  if (orgId != null && mounted) setState(() => _reload(orgId));
-                },
-              );
-            },
-          );
-        },
+    final repository = CalendarRepository(AppSupabase.client);
+    return EntityListScreen<CalendarEventSummary>(
+      title: 'التقويم',
+      loader: repository.fetchEvents,
+      searchable: true,
+      addPath: '/calendar/new',
+      addLabel: 'فعالية جديدة',
+      emptyIcon: Icons.calendar_month_outlined,
+      emptyTitle: 'لا يوجد فعاليات بعد',
+      emptySubtitle: 'أضف رحلات وفعاليات المركز وسجّل الطلاب فيها',
+      tileBuilder: (context, e) => EntityTile(
+        title: e.title,
+        subtitle: '${formatDateTime(e.startsAt)}  ·  ${e.location ?? "بدون مكان"}',
+        leading: const TileIcon(Icons.calendar_month_rounded, color: Colors.teal),
+        trailing: e.requiresGuardianConsent ? const StatusChip(label: 'موافقة ولي أمر', color: Colors.orange) : null,
+        path: '/calendar/${e.id}',
+        searchText: e.location,
       ),
     );
   }

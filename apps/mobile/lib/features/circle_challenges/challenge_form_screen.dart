@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -85,14 +86,7 @@ class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (_error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
-                  child: Text(_error!, style: TextStyle(color: Colors.red.shade700)),
-                ),
-                const SizedBox(height: 16),
-              ],
+              if (_error != null) MessageBanner(message: _error!),
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
