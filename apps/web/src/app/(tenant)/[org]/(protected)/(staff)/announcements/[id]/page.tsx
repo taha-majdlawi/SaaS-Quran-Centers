@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
-import { SubmitButton } from '@/components/submit-button';
+import { AnnouncementForm } from '@/components/announcement-form';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { updateAnnouncement, deleteAnnouncement } from '../actions';
+import type { AnnouncementRow } from '@/components/announcements-view';
+import { deleteAnnouncement } from '@/lib/comms/actions';
 
 export default async function EditAnnouncementPage({
   params,
@@ -16,76 +17,33 @@ export default async function EditAnnouncementPage({
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
+  const isAdmin = org.myRole === 'admin';
 
-  const { data: announcement } = await supabase
-    .from('announcements')
-    .select('id, title, body, audience')
-    .eq('organization_id', org.id)
-    .eq('id', id)
-    .maybeSingle();
+  const { data } = await supabase.rpc('list_announcements', { p_org: org.id });
+  const item = ((data ?? []) as AnnouncementRow[]).find((a) => a.id === id);
+  if (!item || !item.can_edit) notFound();
 
-  if (!announcement) notFound();
+  let query = supabase.from('circles').select('id, name').eq('organization_id', org.id).order('name');
+  if (!isAdmin) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    query = query.eq('teacher_id', user?.id ?? '');
+  }
+  const { data: circles } = await query;
 
   return (
-    <div className="max-w-lg">
-      <h1 className="mb-6 text-2xl font-bold">تعديل إعلان</h1>
-
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-
-      <form action={updateAnnouncement} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
-        <input type="hidden" name="id" value={announcement.id} />
-
-        <label className="text-sm font-medium text-gray-700">
-          العنوان
-          <input
-            name="title"
-            required
-            defaultValue={announcement.title}
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          />
-        </label>
-
-        <label className="text-sm font-medium text-gray-700">
-          النص
-          <textarea
-            name="body"
-            required
-            rows={5}
-            defaultValue={announcement.body}
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          />
-        </label>
-
-        <label className="text-sm font-medium text-gray-700">
-          الجمهور
-          <select
-            name="audience"
-            defaultValue={announcement.audience}
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          >
-            <option value="all">الكل</option>
-            <option value="teachers">المعلمون</option>
-            <option value="students">الطلاب</option>
-            <option value="guardians">أولياء الأمور</option>
-          </select>
-        </label>
-
-        <SubmitButton
-          className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الحفظ..."
-        >
-          حفظ التعديلات
-        </SubmitButton>
-      </form>
-
-      <form action={deleteAnnouncement} className="mt-3">
-        <input type="hidden" name="id" value={announcement.id} />
-        <ConfirmSubmitButton
-          confirmMessage="متأكد إنك بدك تحذف هذا الإعلان؟"
-          pendingText="جاري الحذف..."
-          className="rounded border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-        >
-          حذف الإعلان
+    <div>
+      <a href="/announcements" className="text-sm text-brand hover:underline">
+        ← الإعلانات
+      </a>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">تعديل إعلان</h1>
+      <AnnouncementForm orgId={org.id} circles={circles ?? []} isAdmin={isAdmin} item={item} error={error} />
+      <form action={deleteAnnouncement} className="mt-4">
+        <input type="hidden" name="orgId" value={org.id} />
+        <input type="hidden" name="id" value={id} />
+        <ConfirmSubmitButton confirmMessage="حذف الإعلان؟" pendingText="..." className="rounded border border-red-200 px-4 py-2 text-sm text-red-600">
+          حذف
         </ConfirmSubmitButton>
       </form>
     </div>

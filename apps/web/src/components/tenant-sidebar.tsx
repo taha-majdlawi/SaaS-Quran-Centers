@@ -25,7 +25,7 @@ export const TENANT_MODULES = [
   { slug: 'calendar', label: 'التقويم', module: 'calendar' },
   { slug: 'announcements', label: 'الإعلانات', module: 'announcements' },
   { slug: 'chat', label: 'المحادثات', module: 'chat' },
-  { slug: 'notifications', label: 'الإشعارات', module: 'notifications' },
+  { slug: 'notifications', label: 'الإشعارات' },
   { slug: 'members', label: 'الأعضاء والأدوار', adminOnly: true },
   { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
   { slug: 'site', label: 'الموقع العام', adminOnly: true },

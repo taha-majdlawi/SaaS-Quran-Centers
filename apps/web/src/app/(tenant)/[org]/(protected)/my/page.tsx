@@ -102,6 +102,15 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
           {org.myRole === 'guardian' ? 'أبناؤك في' : 'ملفك في'} {org.name}
         </h1>
         <div className="flex flex-wrap gap-2">
+          <a href="/my/announcements" className="rounded border px-4 py-2 text-sm text-brand">
+            الإعلانات
+          </a>
+          <a href="/my/chat" className="rounded border px-4 py-2 text-sm text-brand">
+            المحادثات
+          </a>
+          <a href="/my/notifications" className="rounded border px-4 py-2 text-sm text-brand">
+            الإشعارات
+          </a>
           <a href="/my/badges" className="rounded border px-4 py-2 text-sm text-brand">
             الشارات
           </a>
