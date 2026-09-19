@@ -9,6 +9,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import '../recitation/recitation_repository.dart' show kAchievementTypes;
+import '../serd/serd_widgets.dart';
 import 'my_portal_repository.dart';
 
 /// The student's (or guardian's) whole app: home, record, account. Students
@@ -270,6 +271,8 @@ class _HomeTab extends StatelessWidget {
             ),
           ),
         ),
+        const SectionTitle('السرد القرآني'),
+        SerdSummaryCard(summary: data.serd),
         const SectionTitle('آخر التسميعات'),
         if (data.recent.isEmpty)
           const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))

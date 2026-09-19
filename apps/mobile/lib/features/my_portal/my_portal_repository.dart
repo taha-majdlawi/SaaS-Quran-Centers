@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../serd/serd_models.dart';
+
 class PortalStudent {
   const PortalStudent({required this.id, required this.fullName, required this.studentCode});
   final String id;
@@ -54,8 +56,10 @@ class PortalDashboard {
     this.lastRecitationAt,
     this.phone,
     this.address,
+    this.serd,
   });
 
+  final SerdSummary? serd;
   final String fullName;
   final String studentCode;
   final int totalPoints;
@@ -114,7 +118,18 @@ class MyPortalRepository {
     final circle = data['circle'] as Map<String, dynamic>?;
     final stats = data['stats'] as Map<String, dynamic>;
 
+    // Serd is a separate module: a failure here must not blank the home.
+    SerdSummary? serd;
+    try {
+      serd = SerdSummary.fromJson(
+        await _client.rpc('serd_student_summary', params: {'p_org': organizationId, 'p_student': studentId}) as Map<String, dynamic>,
+      );
+    } catch (_) {
+      serd = null;
+    }
+
     return PortalDashboard(
+      serd: serd,
       fullName: student['full_name'] as String,
       studentCode: student['student_code'] as String,
       totalPoints: (student['total_points'] as num).toInt(),

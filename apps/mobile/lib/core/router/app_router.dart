@@ -17,7 +17,10 @@ import '../../features/circles/circles_list_screen.dart';
 import '../../features/circles/circle_form_screen.dart';
 import '../../features/attendance/attendance_screen.dart';
 import '../../features/serd/serd_list_screen.dart';
-import '../../features/serd/serd_form_screen.dart';
+import '../../features/serd/serd_entry_screen.dart';
+import '../../features/serd/serd_report_screen.dart';
+import '../../features/serd/serd_schedule_screen.dart';
+import '../../features/serd/serd_settings_screen.dart';
 import '../../features/points/points_screen.dart';
 import '../../features/badges/badges_screen.dart';
 import '../../features/badges/badge_form_screen.dart';
@@ -121,11 +124,13 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       ),
       GoRoute(path: '/attendance', builder: (context, state) => const AttendanceScreen()),
       GoRoute(path: '/serd', builder: (context, state) => const SerdListScreen()),
-      GoRoute(path: '/serd/new', builder: (context, state) => const SerdFormScreen()),
       GoRoute(
-        path: '/serd/:id',
-        builder: (context, state) => SerdFormScreen(sessionId: state.pathParameters['id']),
+        path: '/serd/new',
+        builder: (context, state) => SerdEntryScreen(sessionId: state.uri.queryParameters['session']),
       ),
+      GoRoute(path: '/serd/schedule', builder: (context, state) => const SerdScheduleScreen()),
+      GoRoute(path: '/serd/settings', builder: (context, state) => const SerdSettingsScreen()),
+      GoRoute(path: '/serd/report', builder: (context, state) => const SerdReportScreen()),
       GoRoute(path: '/points', builder: (context, state) => const PointsScreen()),
       GoRoute(path: '/badges', builder: (context, state) => const BadgesScreen()),
       GoRoute(path: '/badges/new', builder: (context, state) => const BadgeFormScreen()),

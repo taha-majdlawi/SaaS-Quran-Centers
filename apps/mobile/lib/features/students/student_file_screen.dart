@@ -15,6 +15,9 @@ import '../members/members_repository.dart';
 import '../my_portal/my_portal_repository.dart';
 import '../recitation/recitation_repository.dart';
 import '../recitation/recitation_sheet.dart';
+import '../serd/serd_models.dart';
+import '../serd/serd_repository.dart';
+import '../serd/serd_widgets.dart';
 
 class _FileData {
   const _FileData({
@@ -23,6 +26,7 @@ class _FileData {
     required this.grades,
     required this.guardians,
     this.guardianMemberId,
+    this.serd,
   });
   final PortalDashboard dashboard;
   final List<RecitationEntry> entries;
@@ -31,6 +35,7 @@ class _FileData {
   /// Guardian accounts of the center (loaded for admins only).
   final List<MemberRow> guardians;
   final String? guardianMemberId;
+  final SerdSummary? serd;
 }
 
 /// The teacher's / admin's view of one student (eqraa's student file):
@@ -67,6 +72,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       _recitations.fetchGrades(orgId),
       AppSupabase.client.from('students_profile').select('guardian_member_id').eq('id', widget.studentId).maybeSingle(),
       isAdmin ? MembersRepository(AppSupabase.client).fetchMembers(orgId) : Future.value(<MemberRow>[]),
+      // The serd module may be off for this teacher; the file must still open.
+      SerdRepository(AppSupabase.client).studentSummary(orgId, widget.studentId).then<SerdSummary?>((v) => v).catchError((_) => null),
     ]);
     final dashboard = results[0] as PortalDashboard?;
     if (dashboard == null) throw StateError('student not found');
@@ -76,6 +83,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       grades: results[2] as List<GradeOption>,
       guardianMemberId: (results[3] as Map<String, dynamic>?)?['guardian_member_id'] as String?,
       guardians: (results[4] as List<MemberRow>).where((m) => m.role == 'guardian').toList(),
+      serd: results[5] as SerdSummary?,
     );
   }
 
@@ -439,6 +447,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
               ),
             ),
           ],
+          const SectionTitle('السرد القرآني'),
+          SerdSummaryCard(summary: data.serd),
           const SectionTitle('سجل التسميع'),
           if (data.entries.isEmpty)
             const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))
