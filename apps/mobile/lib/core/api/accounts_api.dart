@@ -98,6 +98,36 @@ class AccountsApi {
     return CreatedAccount(loginId: identifier, studentId: result['userId'] as String?);
   }
 
+  Future<CreatedAccount> createGuardian({
+    required String orgId,
+    required String studentId,
+    required String fullName,
+    required String identifier,
+    required String password,
+    String? phone,
+  }) async {
+    await _post({
+      'action': 'create_guardian',
+      'orgId': orgId,
+      'studentId': studentId,
+      'fullName': fullName,
+      'identifier': identifier,
+      'password': password,
+      'phone': phone,
+    });
+    return CreatedAccount(loginId: identifier);
+  }
+
+  /// Links an existing guardian to a student; a null [guardianMemberId] unlinks.
+  Future<void> linkGuardian({required String orgId, required String studentId, String? guardianMemberId}) async {
+    await _post({
+      'action': 'link_guardian',
+      'orgId': orgId,
+      'studentId': studentId,
+      'guardianMemberId': guardianMemberId,
+    });
+  }
+
   Future<void> resetPassword({required String orgId, required String memberId, required String password}) async {
     await _post({'action': 'reset_password', 'orgId': orgId, 'memberId': memberId, 'password': password});
   }

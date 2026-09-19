@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { updateStudent, deleteStudent } from '../actions';
+import { createGuardianForStudent, setStudentGuardian } from './guardian-actions';
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'نشط' },
@@ -17,22 +18,34 @@ export default async function EditStudentPage({
   searchParams,
 }: {
   params: Promise<{ org: string; id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    guardianCreated?: string;
+    guardianPassword?: string;
+    guardianLinked?: string;
+  }>;
 }) {
   const { org: slug, id } = await params;
-  const { error } = await searchParams;
+  const { error, guardianCreated, guardianPassword, guardianLinked } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
-  const [{ data: student }, { data: circles }] = await Promise.all([
+  const isAdmin = org.myRole === 'admin';
+
+  const [{ data: student }, { data: circles }, { data: members }] = await Promise.all([
     supabase
       .from('students_profile')
-      .select('id, full_name, student_code, birth_date, circle_id, status')
+      .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address, guardian_member_id')
       .eq('organization_id', org.id)
       .eq('id', id)
       .maybeSingle(),
     supabase.from('circles').select('id, name').eq('organization_id', org.id).order('name'),
+    isAdmin ? supabase.rpc('list_org_members', { org_id: org.id }) : Promise.resolve({ data: [] }),
   ]);
+  const guardians = ((members ?? []) as { id: string; role: string; full_name: string | null; email: string | null }[])
+    .filter((m) => m.role === 'guardian');
+  const currentGuardian = guardians.find((g) => g.id === student?.guardian_member_id);
+  const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
 
   if (!student) notFound();
 
@@ -76,6 +89,19 @@ export default async function EditStudentPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
+          الجوال
+          <input name="phone" defaultValue={student.phone ?? ''} dir="ltr" className={field} />
+        </label>
+        <label className="text-sm font-medium text-gray-700">
+          واتساب
+          <input name="whatsapp" defaultValue={student.whatsapp ?? ''} dir="ltr" className={field} />
+        </label>
+        <label className="text-sm font-medium text-gray-700">
+          العنوان
+          <input name="address" defaultValue={student.address ?? ''} className={field} />
+        </label>
+
+        <label className="text-sm font-medium text-gray-700">
           الحلقة
           <select
             name="circleId"
@@ -116,6 +142,63 @@ export default async function EditStudentPage({
           حفظ التعديلات
         </SubmitButton>
       </form>
+
+      {isAdmin && (
+        <section className="mt-6 rounded-lg border bg-white p-6">
+          <h2 className="mb-1 font-semibold">ولي الأمر</h2>
+          <p className="mb-3 text-sm text-gray-500">
+            {currentGuardian
+              ? `المرتبط حاليًا: ${currentGuardian.full_name ?? currentGuardian.email ?? '—'}`
+              : 'لا يوجد ولي أمر مرتبط بهذا الطالب.'}
+          </p>
+
+          {guardianCreated && (
+            <p className="mb-3 rounded bg-green-50 px-3 py-2 text-sm text-green-700">
+              تم إنشاء حساب ولي الأمر — رمز المركز: {slug} · الدخول: {guardianCreated} · كلمة السر: {guardianPassword}
+              <br />
+              <span className="text-xs">هذا العرض الوحيد لكلمة السر، سلّمها الآن.</span>
+            </p>
+          )}
+          {guardianLinked && <p className="mb-3 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم تحديث الربط ✓</p>}
+
+          <form action={setStudentGuardian} className="mb-4 flex items-end gap-2">
+            <input type="hidden" name="orgId" value={org.id} />
+            <input type="hidden" name="studentId" value={student.id} />
+            <label className="flex-1 text-sm font-medium text-gray-700">
+              ربط بولي أمر موجود
+              <select name="guardianMemberId" defaultValue={student.guardian_member_id ?? ''} className={field}>
+                <option value="">— بدون —</option>
+                {guardians.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.full_name ?? g.email}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <SubmitButton className="rounded border px-4 py-2 text-sm font-semibold text-brand" pendingText="...">
+              حفظ الربط
+            </SubmitButton>
+          </form>
+
+          {!student.guardian_member_id && (
+            <form action={createGuardianForStudent} className="flex flex-col gap-2 border-t pt-4">
+              <input type="hidden" name="orgId" value={org.id} />
+              <input type="hidden" name="studentId" value={student.id} />
+              <p className="text-sm font-medium text-gray-700">أو أنشئ حساب ولي أمر جديد</p>
+              <input name="fullName" required placeholder="اسم ولي الأمر" className={field} />
+              <input name="identifier" required placeholder="رقم الدخول أو البريد" dir="ltr" className={field} />
+              <input name="phone" placeholder="الجوال (اختياري)" dir="ltr" className={field} />
+              <input name="password" required minLength={6} placeholder="كلمة السر" className={field} />
+              <SubmitButton
+                className="self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white"
+                pendingText="جاري الإنشاء..."
+              >
+                إنشاء حساب ولي الأمر
+              </SubmitButton>
+            </form>
+          )}
+        </section>
+      )}
 
       <form action={deleteStudent} className="mt-3">
         <input type="hidden" name="id" value={student.id} />

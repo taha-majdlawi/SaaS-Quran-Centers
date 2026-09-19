@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { AccountError, provisionStudent, provisionTeacher, resetMemberPassword } from '@/lib/accounts/provision';
+import {
+  AccountError,
+  linkGuardian,
+  provisionGuardian,
+  provisionStudent,
+  provisionTeacher,
+  resetMemberPassword,
+} from '@/lib/accounts/provision';
 
 // Account management for CLIENTS THAT CANNOT HOLD THE SERVICE KEY (the mobile
 // app). The caller proves who they are with their own Supabase access token;
@@ -29,6 +36,11 @@ export async function POST(request: Request) {
         return NextResponse.json(await provisionStudent(admin, user.id, body as never));
       case 'create_teacher':
         return NextResponse.json(await provisionTeacher(admin, user.id, body as never));
+      case 'create_guardian':
+        return NextResponse.json(await provisionGuardian(admin, user.id, body as never));
+      case 'link_guardian':
+        await linkGuardian(admin, user.id, body as never);
+        return NextResponse.json({ ok: true });
       case 'reset_password':
         await resetMemberPassword(admin, user.id, body as never);
         return NextResponse.json({ ok: true });

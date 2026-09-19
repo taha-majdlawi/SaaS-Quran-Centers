@@ -77,10 +77,16 @@ export async function updateStudent(formData: FormData) {
     redirect(`/students/${id}?error=${encodeURIComponent('يجب اختيار حلقة للطالب')}` as never);
   }
 
+  // Contact fields are only touched when the form actually carries them.
+  const contact: Record<string, string | null> = {};
+  for (const key of ['phone', 'whatsapp', 'address'] as const) {
+    if (formData.has(key)) contact[key] = (formData.get(key) as string)?.trim() || null;
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from('students_profile')
-    .update({ ...fields, status })
+    .update({ ...fields, ...contact, status })
     .eq('id', id);
 
   if (error) {

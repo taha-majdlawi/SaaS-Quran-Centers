@@ -3,20 +3,34 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/api/accounts_api.dart';
 import '../../core/data/quran_data.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../../core/widgets/credentials_dialog.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
+import '../members/members_repository.dart';
 import '../my_portal/my_portal_repository.dart';
 import '../recitation/recitation_repository.dart';
 import '../recitation/recitation_sheet.dart';
 
 class _FileData {
-  const _FileData({required this.dashboard, required this.entries, required this.grades});
+  const _FileData({
+    required this.dashboard,
+    required this.entries,
+    required this.grades,
+    required this.guardians,
+    this.guardianMemberId,
+  });
   final PortalDashboard dashboard;
   final List<RecitationEntry> entries;
   final List<GradeOption> grades;
+
+  /// Guardian accounts of the center (loaded for admins only).
+  final List<MemberRow> guardians;
+  final String? guardianMemberId;
 }
 
 /// The teacher's / admin's view of one student (eqraa's student file):
@@ -46,10 +60,13 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
 
   Future<_FileData> _load() async {
     final orgId = _orgId;
+    final isAdmin = context.read<TenantController>().active?.role == OrgRole.admin;
     final results = await Future.wait<dynamic>([
       _portal.fetchDashboard(orgId, widget.studentId),
       _recitations.fetchStudentRecitations(widget.studentId),
       _recitations.fetchGrades(orgId),
+      AppSupabase.client.from('students_profile').select('guardian_member_id').eq('id', widget.studentId).maybeSingle(),
+      isAdmin ? MembersRepository(AppSupabase.client).fetchMembers(orgId) : Future.value(<MemberRow>[]),
     ]);
     final dashboard = results[0] as PortalDashboard?;
     if (dashboard == null) throw StateError('student not found');
@@ -57,6 +74,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       dashboard: dashboard,
       entries: results[1] as List<RecitationEntry>,
       grades: results[2] as List<GradeOption>,
+      guardianMemberId: (results[3] as Map<String, dynamic>?)?['guardian_member_id'] as String?,
+      guardians: (results[4] as List<MemberRow>).where((m) => m.role == 'guardian').toList(),
     );
   }
 
@@ -145,6 +164,111 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
         _reload();
       }
     } on PostgrestException catch (e) {
+      if (mounted) _toast(e.message);
+    }
+  }
+
+  Future<void> _linkGuardian(String? memberId) async {
+    try {
+      await AccountsApi().linkGuardian(orgId: _orgId, studentId: widget.studentId, guardianMemberId: memberId);
+      if (mounted) {
+        _toast('تم تحديث الربط');
+        _reload();
+      }
+    } on AccountsApiException catch (e) {
+      if (mounted) _toast(e.message);
+    }
+  }
+
+  Future<void> _pickGuardian(_FileData data) async {
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('اختر ولي الأمر'),
+        children: [
+          for (final g in data.guardians)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, g.id),
+              child: Text(g.fullName ?? g.email ?? '—'),
+            ),
+          if (data.guardians.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لا يوجد أولياء أمور بعد')),
+        ],
+      ),
+    );
+    if (picked != null) await _linkGuardian(picked);
+  }
+
+  Future<void> _createGuardian() async {
+    final name = TextEditingController();
+    final identifier = TextEditingController();
+    final phone = TextEditingController();
+    final password = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('حساب ولي أمر جديد'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: name, decoration: const InputDecoration(labelText: 'اسم ولي الأمر')),
+              const SizedBox(height: 10),
+              TextField(
+                controller: identifier,
+                textDirection: TextDirection.ltr,
+                decoration: const InputDecoration(labelText: 'رقم الدخول أو البريد'),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: phone,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'الجوال (اختياري)'),
+              ),
+              const SizedBox(height: 10),
+              TextField(controller: password, decoration: const InputDecoration(labelText: 'كلمة السر (8 أحرف على الأقل)')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
+            child: const Text('إنشاء'),
+          ),
+        ],
+      ),
+    );
+    final values = (name.text.trim(), identifier.text.trim(), phone.text.trim(), password.text.trim());
+    name.dispose();
+    identifier.dispose();
+    phone.dispose();
+    password.dispose();
+    if (ok != true || !mounted) return;
+    if (values.$1.isEmpty || values.$2.isEmpty || values.$4.length < 8) {
+      _toast('أكمل الاسم ورقم الدخول وكلمة سر من 8 أحرف على الأقل');
+      return;
+    }
+    try {
+      final org = context.read<TenantController>().active!.organization;
+      final created = await AccountsApi().createGuardian(
+        orgId: org.id,
+        studentId: widget.studentId,
+        fullName: values.$1,
+        identifier: values.$2,
+        password: values.$4,
+        phone: values.$3.isEmpty ? null : values.$3,
+      );
+      if (!mounted) return;
+      _reload();
+      await showCredentialsDialog(
+        context,
+        title: 'تم إنشاء حساب ولي الأمر',
+        centerCode: org.slug,
+        loginId: created.loginId,
+        password: values.$4,
+      );
+    } on AccountsApiException catch (e) {
       if (mounted) _toast(e.message);
     }
   }
@@ -276,6 +400,45 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
               ],
             ),
           ),
+          if (context.read<TenantController>().active?.role == OrgRole.admin) ...[
+            const SectionTitle('ولي الأمر'),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data.guardianMemberId == null
+                          ? 'لا يوجد ولي أمر مرتبط'
+                          : 'المرتبط: ${data.guardians.where((g) => g.id == data.guardianMemberId).map((g) => g.fullName ?? g.email).firstOrNull ?? '—'}',
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (data.guardianMemberId == null)
+                          FilledButton.tonalIcon(
+                            onPressed: _createGuardian,
+                            icon: const Icon(Icons.person_add_alt_1_rounded),
+                            label: const Text('حساب جديد'),
+                          ),
+                        OutlinedButton.icon(
+                          onPressed: () => _pickGuardian(data),
+                          icon: const Icon(Icons.link_rounded),
+                          label: const Text('ربط بموجود'),
+                        ),
+                        if (data.guardianMemberId != null)
+                          TextButton(onPressed: () => _linkGuardian(null), child: const Text('فك الربط')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SectionTitle('سجل التسميع'),
           if (data.entries.isEmpty)
             const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))
