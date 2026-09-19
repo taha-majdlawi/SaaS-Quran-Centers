@@ -2,36 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
+import '../../core/data/quran_data.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../../core/widgets/format.dart';
+import '../../core/widgets/ui.dart';
+import '../recitation/recitation_repository.dart' show kAchievementTypes;
 import 'my_portal_repository.dart';
 
-const _attendanceLabels = {
-  'present': 'حاضر',
-  'absent': 'غائب',
-  'excused': 'معذور',
-  'late': 'متأخر',
-};
-
-class _StudentPortalData {
-  const _StudentPortalData({
-    required this.student,
-    required this.walletBalance,
-    required this.badgeCount,
-    required this.attendance,
-    required this.serdSessions,
-  });
-
-  final PortalStudent student;
-  final int walletBalance;
-  final int badgeCount;
-  final List<PortalAttendanceEntry> attendance;
-  final List<PortalSerdEntry> serdSessions;
-}
-
-/// The one screen student/guardian accounts ever see - app_router.dart
-/// bounces them here for every other path. Mirrors apps/web's /my page:
-/// their own linked student(s) only, nothing org-wide, no staff drawer.
+/// The student's (or guardian's) whole app: home, record, account. Students
+/// and guardians never reach the staff screens - the router sends them here.
 class MyPortalScreen extends StatefulWidget {
   const MyPortalScreen({super.key});
 
@@ -41,152 +22,295 @@ class MyPortalScreen extends StatefulWidget {
 
 class _MyPortalScreenState extends State<MyPortalScreen> {
   final _repository = MyPortalRepository(AppSupabase.client);
-  late Future<List<_StudentPortalData>> _dataFuture;
+  int _tab = 0;
   String? _loadedForOrgId;
+  List<PortalStudent> _students = [];
+  String? _studentId;
+  Future<PortalDashboard?>? _dashboard;
+  Object? _error;
+  bool _loadingStudents = true;
 
-  Future<List<_StudentPortalData>> _load(String orgId) async {
-    final students = await _repository.fetchMyStudents(orgId);
-
-    return Future.wait(students.map((student) async {
-      final results = await Future.wait([
-        _repository.fetchWalletBalance(student.id),
-        _repository.fetchBadgeCount(student.id),
-        _repository.fetchRecentAttendance(student.id),
-        _repository.fetchRecentSerdSessions(student.id),
-      ]);
-      return _StudentPortalData(
-        student: student,
-        walletBalance: results[0] as int,
-        badgeCount: results[1] as int,
-        attendance: results[2] as List<PortalAttendanceEntry>,
-        serdSessions: results[3] as List<PortalSerdEntry>,
-      );
-    }));
+  Future<void> _loadStudents(String orgId) async {
+    _loadedForOrgId = orgId;
+    setState(() {
+      _loadingStudents = true;
+      _error = null;
+    });
+    try {
+      final students = await _repository.fetchMyStudents(orgId);
+      _students = students;
+      _studentId = students.isEmpty ? null : students.first.id;
+      if (_studentId != null) _dashboard = _repository.fetchDashboard(orgId, _studentId!);
+    } catch (e) {
+      _error = e;
+    } finally {
+      if (mounted) setState(() => _loadingStudents = false);
+    }
   }
 
-  void _reload(String orgId) {
-    _loadedForOrgId = orgId;
-    _dataFuture = _load(orgId);
+  void _reload() {
+    final orgId = _loadedForOrgId;
+    if (orgId != null && _studentId != null) {
+      setState(() => _dashboard = _repository.fetchDashboard(orgId, _studentId!));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final tenant = context.watch<TenantController>();
     final org = tenant.active?.organization;
-    final orgId = org?.id;
-    if (orgId != null && orgId != _loadedForOrgId) {
-      _reload(orgId);
+    if (org != null && org.id != _loadedForOrgId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadStudents(org.id));
     }
+    final isGuardian = tenant.active?.role == OrgRole.guardian;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(org?.name ?? 'بستان القرآن'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded),
             tooltip: 'تسجيل خروج',
             onPressed: () => context.read<AuthController>().signOut(),
           ),
         ],
       ),
-      body: orgId == null
-          ? const SizedBox.shrink()
-          : FutureBuilder<List<_StudentPortalData>>(
-              future: _dataFuture,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                final data = snapshot.data!;
-                if (data.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        'لا يوجد ملف طالب مرتبط بحسابك حاليًا.\nتواصل مع إدارة المركز إذا كنت تتوقع رؤية بيانات هنا.',
-                        textAlign: TextAlign.center,
-                      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'الرئيسية'),
+          NavigationDestination(icon: Icon(Icons.history_edu_outlined), selectedIcon: Icon(Icons.history_edu_rounded), label: 'سجلّي'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_rounded), label: 'حسابي'),
+        ],
+      ),
+      body: _loadingStudents
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? ErrorState(onRetry: () => _loadStudents(org!.id))
+              : _students.isEmpty
+                  ? EmptyState(
+                      icon: Icons.link_off_rounded,
+                      title: isGuardian ? 'لا يوجد أبناء مرتبطون بحسابك' : 'حسابك غير مرتبط بملف طالب',
+                      subtitle: 'تواصل مع إدارة المركز لربط الحساب',
+                    )
+                  : Column(
+                      children: [
+                        if (_students.length > 1)
+                          SizedBox(
+                            height: 56,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              children: [
+                                for (final s in _students)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: ChoiceChip(
+                                      label: Text(s.fullName),
+                                      selected: s.id == _studentId,
+                                      onSelected: (_) => setState(() {
+                                        _studentId = s.id;
+                                        _dashboard = _repository.fetchDashboard(org!.id, s.id);
+                                      }),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        Expanded(
+                          child: AsyncBody<PortalDashboard?>(
+                            future: _dashboard!,
+                            onRetry: _reload,
+                            builder: (context, data) {
+                              if (data == null) {
+                                return const EmptyState(icon: Icons.link_off_rounded, title: 'تعذّر إيجاد ملف الطالب');
+                              }
+                              return RefreshIndicator(
+                                onRefresh: () async => _reload(),
+                                child: switch (_tab) {
+                                  0 => _HomeTab(data: data),
+                                  1 => _RecordTab(data: data),
+                                  _ => _AccountTab(data: data),
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: data.length,
-                  itemBuilder: (context, index) => _StudentCard(data: data[index]),
-                );
-              },
-            ),
     );
   }
 }
 
-class _StudentCard extends StatelessWidget {
-  const _StudentCard({required this.data});
-  final _StudentPortalData data;
+class _HomeTab extends StatelessWidget {
+  const _HomeTab({required this.data});
+  final PortalDashboard data;
 
   @override
   Widget build(BuildContext context) {
-    final s = data.student;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+    final scheme = Theme.of(context).colorScheme;
+    final firstName = data.fullName.split(' ').first;
+    final change = data.thisWeek - data.lastWeek;
+    final weekText = change > 0
+        ? 'أفضل من الأسبوع الماضي (+$change)'
+        : change < 0
+            ? 'أقل من الأسبوع الماضي ($change)'
+            : 'ثابت مقارنة بالأسبوع الماضي';
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, 0.35)!],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s.fullName, style: Theme.of(context).textTheme.titleMedium),
-                    Text(s.studentCode, style: Theme.of(context).textTheme.bodySmall),
+                    Text('مرحبًا، $firstName', style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 6),
+                    Text(
+                      data.circleName == null
+                          ? 'لم تُسند إلى حلقة بعد'
+                          : '${data.circleName}${data.teacherName == null ? '' : '  ·  الشيخ ${data.teacherName}'}',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
+                    ),
                   ],
                 ),
+              ),
+              Column(
+                children: [
+                  Text('${data.totalPoints}', style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),
+                  Text('نقطة', style: TextStyle(color: Colors.white.withValues(alpha: 0.85))),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SectionTitle('تقدّم الحفظ'),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${data.totalParts} من 30 جزءًا', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text('${data.progress.toStringAsFixed(data.progress % 1 == 0 ? 0 : 1)}%'),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(value: (data.totalParts / 30).clamp(0.0, 1.0).toDouble(), minHeight: 10),
+                ),
+                if (data.nextPlan != null && data.nextPlan!.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(12)),
+                    child: Text('خطتك القادمة: ${data.nextPlan}'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SectionTitle('إحصائياتك'),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          childAspectRatio: 1.7,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          children: [
+            _Stat(icon: Icons.menu_book_rounded, label: 'آيات هذا الأسبوع', value: '${data.ayahsThisWeek}', color: Colors.blue),
+            _Stat(
+              icon: Icons.how_to_reg_rounded,
+              label: 'الحضور الأسبوعي',
+              value: data.weeklyAttendance == null ? '—' : '${data.weeklyAttendance}%',
+              color: Colors.green,
+            ),
+            _Stat(icon: Icons.mic_rounded, label: 'إجمالي التسميعات', value: '${data.totalRecitations}', color: Colors.purple),
+            _Stat(icon: Icons.schedule_rounded, label: 'آخر تسميع', value: formatDate(data.lastRecitationAt), color: Colors.orange),
+          ],
+        ),
+        const SectionTitle('أسبوعك'),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${data.thisWeek} تسميعات هذا الأسبوع', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(weekText, style: TextStyle(color: Colors.grey.shade600)),
+                const Divider(height: 24),
                 Row(
                   children: [
-                    _StatChip(label: 'نقاط', value: '${data.walletBalance}'),
+                    Icon(Icons.local_fire_department_rounded, color: Colors.deepOrange.shade400),
                     const SizedBox(width: 8),
-                    _StatChip(label: 'شارات', value: '${data.badgeCount}'),
+                    Text('سلسلتك الحالية: ${data.currentStreak} يوم  ·  أطول سلسلة: ${data.longestStreak}'),
                   ],
                 ),
               ],
             ),
-            const Divider(height: 24),
-            Text('آخر الحضور', style: Theme.of(context).textTheme.labelLarge),
-            const SizedBox(height: 4),
-            if (data.attendance.isEmpty)
-              const Text('لا يوجد سجل حضور بعد', style: TextStyle(color: Colors.grey))
-            else
-              ...data.attendance.map(
-                (a) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(a.sessionDate),
-                      Text(_attendanceLabels[a.status] ?? a.status),
-                    ],
-                  ),
-                ),
+          ),
+        ),
+        const SectionTitle('آخر التسميعات'),
+        if (data.recent.isEmpty)
+          const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))
+        else
+          for (final r in data.recent.take(5)) _RecitationTile(r: r),
+      ],
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.icon, required this.label, required this.value, required this.color});
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final MaterialColor color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.shade50, borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: color.shade700, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 11.5)),
+                ],
               ),
-            const SizedBox(height: 16),
-            Text('جلسات السرد', style: Theme.of(context).textTheme.labelLarge),
-            const SizedBox(height: 4),
-            if (data.serdSessions.isEmpty)
-              const Text('لا توجد جلسات سرد بعد', style: TextStyle(color: Colors.grey))
-            else
-              ...data.serdSessions.map(
-                (se) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(se.sessionType == 'full' ? 'سرد كامل' : 'سرد جزئي'),
-                      Text(se.status),
-                    ],
-                  ),
-                ),
-              ),
+            ),
           ],
         ),
       ),
@@ -194,17 +318,125 @@ class _StudentCard extends StatelessWidget {
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.label, required this.value});
+class _RecitationTile extends StatelessWidget {
+  const _RecitationTile({required this.r});
+  final PortalRecitation r;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Card(
+        child: ListTile(
+          leading: const TileBadge(),
+          title: Text('${surahName(r.surah)}  (${r.ayahFrom}–${r.ayahTo})', style: const TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              '${kAchievementTypes[r.type] ?? r.type}  ·  ${r.gradeLabel}  ·  ${formatDate(r.createdAt)}'
+              '${r.notes == null ? '' : '\n${r.notes}'}',
+            ),
+          ),
+          isThreeLine: r.notes != null,
+          trailing: StatusChip(label: '+${r.points}', color: Colors.green),
+        ),
+      ),
+    );
+  }
+}
+
+class TileBadge extends StatelessWidget {
+  const TileBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme.primary;
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(color: c.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+      child: Icon(Icons.menu_book_rounded, color: c, size: 22),
+    );
+  }
+}
+
+class _RecordTab extends StatelessWidget {
+  const _RecordTab({required this.data});
+  final PortalDashboard data;
+
+  @override
+  Widget build(BuildContext context) {
+    if (data.recent.isEmpty) {
+      return ListView(children: const [SizedBox(height: 80), EmptyState(icon: Icons.history_edu_outlined, title: 'لا يوجد تسميعات بعد')]);
+    }
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _Mini(label: 'تسميعات', value: '${data.totalRecitations}'),
+                _Mini(label: 'الأسبوع', value: '${data.thisWeek}'),
+                _Mini(label: 'نقاط', value: '${data.totalPoints}'),
+              ],
+            ),
+          ),
+        ),
+        const SectionTitle('سجل التسميع'),
+        for (final r in data.recent) _RecitationTile(r: r),
+      ],
+    );
+  }
+}
+
+class _Mini extends StatelessWidget {
+  const _Mini({required this.label, required this.value});
   final String label;
   final String value;
 
   @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          Text(label, style: TextStyle(color: Colors.grey.shade600)),
+        ],
+      );
+}
+
+class _AccountTab extends StatelessWidget {
+  const _AccountTab({required this.data});
+  final PortalDashboard data;
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
+    Widget row(IconData icon, String label, String? value) => ListTile(
+          leading: Icon(icon),
+          title: Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+          subtitle: Text(value == null || value.isEmpty ? '—' : value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+        );
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
       children: [
-        Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Center(child: InitialAvatar(data.fullName, radius: 38)),
+        const SizedBox(height: 12),
+        Text(data.fullName, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 16),
+        Card(
+          child: Column(
+            children: [
+              row(Icons.tag_rounded, 'رقم الطالب', data.studentCode),
+              row(Icons.groups_rounded, 'الحلقة', data.circleName),
+              row(Icons.stairs_rounded, 'المرحلة', data.stageName),
+              row(Icons.school_rounded, 'الشيخ', data.teacherName),
+              row(Icons.phone_outlined, 'الجوال', data.phone),
+              row(Icons.home_outlined, 'العنوان', data.address),
+            ],
+          ),
+        ),
       ],
     );
   }

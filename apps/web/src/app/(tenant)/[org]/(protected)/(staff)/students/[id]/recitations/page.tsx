@@ -1,0 +1,171 @@
+import { notFound } from 'next/navigation';
+import { getOrgContext } from '@/lib/tenant/get-org-context';
+import { createClient } from '@/lib/supabase/server';
+import { SubmitButton } from '@/components/submit-button';
+import { SURAH_NAMES, AYAH_COUNTS } from '@/lib/quran/data';
+import { logRecitation } from './actions';
+
+const TYPES: [string, string][] = [
+  ['new_memorization', 'حفظ جديد'],
+  ['recent_review', 'مراجعة قريبة'],
+  ['distant_review', 'مراجعة بعيدة'],
+];
+
+const input = 'mt-1 w-full rounded border px-3 py-2 text-sm';
+
+interface Recitation {
+  id: string;
+  achievement_type: string;
+  surah_from: number;
+  ayah_from: number;
+  ayah_to: number;
+  grade: string | null;
+  points_awarded: number;
+  notes: string | null;
+  created_at: string;
+}
+
+export default async function StudentRecitationsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string; id: string }>;
+  searchParams: Promise<{ error?: string; saved?: string }>;
+}) {
+  const { org: slug, id } = await params;
+  const { error, saved } = await searchParams;
+  const org = await getOrgContext(slug);
+  const supabase = await createClient();
+
+  const [{ data: student }, { data: grades }, { data: recent }] = await Promise.all([
+    supabase
+      .from('students_profile')
+      .select('id, full_name, student_code, total_points')
+      .eq('id', id)
+      .eq('organization_id', org.id)
+      .maybeSingle(),
+    supabase
+      .from('recitation_grades')
+      .select('key, label, points')
+      .eq('organization_id', org.id)
+      .eq('is_active', true)
+      .order('sort_order'),
+    supabase
+      .from('daily_achievements')
+      .select('id, achievement_type, surah_from, ayah_from, ayah_to, grade, points_awarded, notes, created_at')
+      .eq('student_id', id)
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
+
+  if (!student) notFound();
+
+  const gradeLabel = new Map((grades ?? []).map((g) => [g.key as string, g.label as string]));
+  const typeLabel = new Map(TYPES);
+  const today = new Date().toISOString().slice(0, 10);
+
+  return (
+    <div className="max-w-2xl">
+      <a href="/students" className="text-sm text-brand hover:underline">
+        ← الطلاب
+      </a>
+      <h1 className="mb-1 mt-2 text-2xl font-bold">{student.full_name}</h1>
+      <p className="mb-6 text-sm text-gray-500">
+        {student.student_code} · {student.total_points} نقطة
+      </p>
+
+      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحفظ ✓ +{saved} نقطة</p>}
+
+      <form action={logRecitation} className="mb-8 flex flex-col gap-3 rounded-lg border bg-white p-6">
+        <input type="hidden" name="orgId" value={org.id} />
+        <input type="hidden" name="studentId" value={student.id} />
+        <h2 className="font-semibold">تسجيل إنجاز يومي</h2>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="text-sm font-medium text-gray-700">
+            تاريخ التسميع
+            <input type="date" name="date" defaultValue={today} max={today} className={input} />
+          </label>
+          <label className="text-sm font-medium text-gray-700">
+            نوع الإنجاز
+            <select name="type" className={input}>
+              {TYPES.map(([value, text]) => (
+                <option key={value} value={value}>
+                  {text}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="grid grid-cols-[1fr_5rem_5rem] items-end gap-3 rounded bg-gray-50 p-3">
+            <label className="text-sm font-medium text-gray-700">
+              {i === 0 ? 'السورة' : `سورة إضافية (${i})`}
+              <select name="surah" defaultValue="" className={input}>
+                <option value="">{i === 0 ? 'اختر السورة' : '—'}</option>
+                {SURAH_NAMES.map((n, idx) => (
+                  <option key={idx + 1} value={idx + 1}>
+                    {idx + 1}. {n} ({AYAH_COUNTS[idx]} آية)
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-gray-700">
+              من آية
+              <input type="number" name="ayahFrom" min={1} defaultValue={1} className={input} />
+            </label>
+            <label className="text-sm font-medium text-gray-700">
+              إلى آية
+              <input type="number" name="ayahTo" min={1} className={input} />
+            </label>
+          </div>
+        ))}
+
+        <fieldset className="text-sm font-medium text-gray-700">
+          <legend className="mb-1">تقييم التلاوة</legend>
+          <div className="flex flex-wrap gap-3">
+            {(grades ?? []).map((g) => (
+              <label key={g.key} className="flex items-center gap-1 rounded border px-3 py-2">
+                <input type="radio" name="grade" value={g.key} required /> {g.label} · {g.points}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <label className="text-sm font-medium text-gray-700">
+          ملاحظات الشيخ (اختياري)
+          <textarea name="notes" rows={2} className={input} />
+        </label>
+
+        <SubmitButton
+          className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          pendingText="جاري الحفظ..."
+        >
+          حفظ التسميع
+        </SubmitButton>
+      </form>
+
+      <h2 className="mb-3 font-semibold">آخر التسميعات</h2>
+      <div className="flex flex-col gap-2">
+        {((recent ?? []) as Recitation[]).map((r) => (
+          <div key={r.id} className="rounded-lg border bg-white p-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">
+                {SURAH_NAMES[r.surah_from - 1]} ({r.ayah_from}–{r.ayah_to})
+              </span>
+              <span className="text-brand">+{r.points_awarded}</span>
+            </div>
+            <p className="text-xs text-gray-500">
+              {typeLabel.get(r.achievement_type)} · {gradeLabel.get(r.grade ?? '') ?? r.grade ?? '—'} ·{' '}
+              {new Date(r.created_at).toLocaleDateString('ar')}
+            </p>
+            {r.notes && <p className="mt-1 text-xs text-gray-600">{r.notes}</p>}
+          </div>
+        ))}
+        {!recent?.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا يوجد تسميعات بعد</p>}
+      </div>
+    </div>
+  );
+}

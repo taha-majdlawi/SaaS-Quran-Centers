@@ -1,95 +1,153 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PortalStudent {
-  const PortalStudent({
-    required this.id,
-    required this.studentCode,
-    required this.fullName,
-    required this.status,
+  const PortalStudent({required this.id, required this.fullName, required this.studentCode});
+  final String id;
+  final String fullName;
+  final String studentCode;
+}
+
+class PortalRecitation {
+  const PortalRecitation({
+    required this.type,
+    required this.surah,
+    required this.ayahFrom,
+    required this.ayahTo,
+    required this.gradeLabel,
+    required this.points,
+    required this.createdAt,
+    this.notes,
+    this.sessionGroupId,
   });
 
-  final String id;
-  final String studentCode;
+  final String type;
+  final int surah;
+  final int ayahFrom;
+  final int ayahTo;
+  final String gradeLabel;
+  final int points;
+  final String createdAt;
+  final String? notes;
+  final String? sessionGroupId;
+}
+
+class PortalDashboard {
+  const PortalDashboard({
+    required this.fullName,
+    required this.studentCode,
+    required this.totalPoints,
+    required this.totalParts,
+    required this.progress,
+    required this.recent,
+    required this.totalRecitations,
+    required this.thisWeek,
+    required this.lastWeek,
+    required this.ayahsThisWeek,
+    required this.currentStreak,
+    required this.longestStreak,
+    this.circleName,
+    this.teacherName,
+    this.stageName,
+    this.nextPlan,
+    this.weeklyAttendance,
+    this.monthlyAttendance,
+    this.lastRecitationAt,
+    this.phone,
+    this.address,
+  });
+
   final String fullName;
-  final String status;
+  final String studentCode;
+  final int totalPoints;
+  final int totalParts;
+  final num progress;
+  final String? circleName;
+  final String? teacherName;
+  final String? stageName;
+  final String? nextPlan;
+  final int totalRecitations;
+  final int thisWeek;
+  final int lastWeek;
+  final int ayahsThisWeek;
+  final int currentStreak;
+  final int longestStreak;
+  final num? weeklyAttendance;
+  final num? monthlyAttendance;
+  final String? lastRecitationAt;
+  final String? phone;
+  final String? address;
+  final List<PortalRecitation> recent;
 }
 
-class PortalAttendanceEntry {
-  const PortalAttendanceEntry({required this.sessionDate, required this.status});
-  final String sessionDate;
-  final String status;
-}
-
-class PortalSerdEntry {
-  const PortalSerdEntry({required this.sessionType, required this.status});
-  final String sessionType;
-  final String status;
-}
-
-/// Mirrors apps/web's /my portal page - every table read here is already
-/// scoped by RLS to the caller's own linked student(s) (migration 0015's
-/// linked_student_ids()), so a plain select is enough, same as on web.
+/// Everything on the student's home comes from ONE server call
+/// (get_student_dashboard) - the same shape eqraa's home uses - so the phone
+/// never re-derives points, streaks or attendance rates.
 class MyPortalRepository {
   MyPortalRepository(this._client);
 
   final SupabaseClient _client;
 
+  /// Own record for a student, or every linked child for a guardian (RLS).
   Future<List<PortalStudent>> fetchMyStudents(String organizationId) async {
     final rows = await _client
         .from('students_profile')
-        .select('id, student_code, full_name, status')
-        .eq('organization_id', organizationId);
-
+        .select('id, student_code, full_name')
+        .eq('organization_id', organizationId)
+        .order('full_name');
     return (rows as List)
         .map((r) => PortalStudent(
               id: r['id'] as String,
-              studentCode: r['student_code'] as String,
               fullName: r['full_name'] as String,
-              status: r['status'] as String,
+              studentCode: r['student_code'] as String,
             ))
         .toList();
   }
 
-  Future<int> fetchWalletBalance(String studentId) async {
-    final row = await _client
-        .from('student_wallets')
-        .select('balance')
-        .eq('student_id', studentId)
-        .maybeSingle();
-    return (row?['balance'] as int?) ?? 0;
-  }
+  Future<PortalDashboard?> fetchDashboard(String organizationId, String studentId) async {
+    final data = await _client.rpc('get_student_dashboard', params: {
+      'p_org': organizationId,
+      'p_student_id': studentId,
+    }) as Map<String, dynamic>;
+    if (data['linked'] != true) return null;
 
-  Future<int> fetchBadgeCount(String studentId) async {
-    final rows = await _client.from('student_badges').select('id').eq('student_id', studentId);
-    return (rows as List).length;
-  }
+    final student = data['student'] as Map<String, dynamic>;
+    final circle = data['circle'] as Map<String, dynamic>?;
+    final stats = data['stats'] as Map<String, dynamic>;
 
-  Future<List<PortalAttendanceEntry>> fetchRecentAttendance(String studentId) async {
-    final rows = await _client
-        .from('attendance')
-        .select('session_date, status')
-        .eq('student_id', studentId)
-        .order('session_date', ascending: false)
-        .limit(8);
-
-    return (rows as List)
-        .map((r) => PortalAttendanceEntry(
-              sessionDate: r['session_date'] as String,
-              status: r['status'] as String,
-            ))
-        .toList();
-  }
-
-  Future<List<PortalSerdEntry>> fetchRecentSerdSessions(String studentId) async {
-    final rows = await _client
-        .from('serd_sessions')
-        .select('session_type, status, scheduled_at')
-        .eq('student_id', studentId)
-        .order('scheduled_at', ascending: false)
-        .limit(5);
-
-    return (rows as List)
-        .map((r) => PortalSerdEntry(sessionType: r['session_type'] as String, status: r['status'] as String))
-        .toList();
+    return PortalDashboard(
+      fullName: student['full_name'] as String,
+      studentCode: student['student_code'] as String,
+      totalPoints: (student['total_points'] as num).toInt(),
+      totalParts: (student['total_parts_count'] as num).toInt(),
+      progress: student['total_progress'] as num,
+      nextPlan: student['next_plan'] as String?,
+      phone: student['phone'] as String?,
+      address: student['address'] as String?,
+      circleName: circle?['name'] as String?,
+      teacherName: circle?['teacher'] as String?,
+      stageName: circle?['stage'] as String?,
+      totalRecitations: (stats['total_recitations'] as num).toInt(),
+      thisWeek: (stats['recitations_this_week'] as num).toInt(),
+      lastWeek: (stats['recitations_last_week'] as num).toInt(),
+      ayahsThisWeek: (stats['ayahs_this_week'] as num).toInt(),
+      currentStreak: (stats['current_streak'] as num).toInt(),
+      longestStreak: (stats['longest_streak'] as num).toInt(),
+      weeklyAttendance: stats['weekly_attendance_rate'] as num?,
+      monthlyAttendance: stats['monthly_attendance_rate'] as num?,
+      lastRecitationAt: stats['last_recitation_at'] as String?,
+      recent: (data['recent'] as List)
+          .map((r) => PortalRecitation(
+                type: r['type'] as String,
+                surah: (r['surah'] as num).toInt(),
+                ayahFrom: (r['ayah_from'] as num).toInt(),
+                ayahTo: (r['ayah_to'] as num).toInt(),
+                gradeLabel: (r['grade_label'] as String?) ?? '',
+                points: (r['points_awarded'] as num).toInt(),
+                createdAt: r['created_at'] as String,
+                notes: r['notes'] as String?,
+                sessionGroupId: r['session_group_id'] as String?,
+              ))
+          .toList(),
+    );
   }
 }

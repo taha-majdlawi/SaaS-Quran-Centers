@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/supabase/supabase_client.dart';
-import '../../core/tenant/tenant_controller.dart';
 import '../../core/tenant/organization.dart';
+import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
+import '../../core/widgets/ui.dart';
 import 'points_repository.dart';
 
-/// Mirrors apps/web's /points page - only the admin can actually edit;
-/// a teacher with the 'points' module granted can view it read-only.
+/// Recitation grades + points. Only the admin edits; a teacher with the
+/// 'points' module can look. Editing never rewrites past recitations.
 class PointsScreen extends StatefulWidget {
   const PointsScreen({super.key});
 
@@ -19,10 +19,11 @@ class PointsScreen extends StatefulWidget {
 
 class _PointsScreenState extends State<PointsScreen> {
   final _repository = PointsRepository(AppSupabase.client);
-  final _newMemorizationController = TextEditingController();
-  final _recentReviewController = TextEditingController();
-  final _distantReviewController = TextEditingController();
-  final _currencyNameController = TextEditingController();
+  List<GradeRow> _grades = [];
+  final _controllers = <String, (TextEditingController, TextEditingController)>{};
+  final _newKey = TextEditingController();
+  final _newLabel = TextEditingController();
+  final _newPoints = TextEditingController();
 
   bool _loading = true;
   bool _saving = false;
@@ -35,41 +36,81 @@ class _PointsScreenState extends State<PointsScreen> {
     _load();
   }
 
+  void _disposeControllers() {
+    for (final c in _controllers.values) {
+      c.$1.dispose();
+      c.$2.dispose();
+    }
+    _controllers.clear();
+  }
+
   Future<void> _load() async {
-    final orgId = context.read<TenantController>().active!.organization.id;
-    final config = await _repository.fetchConfig(orgId);
-    _newMemorizationController.text = config.newMemorization.toString();
-    _recentReviewController.text = config.recentReview.toString();
-    _distantReviewController.text = config.distantReview.toString();
-    _currencyNameController.text = config.currencyName;
+    try {
+      final orgId = context.read<TenantController>().active!.organization.id;
+      _disposeControllers();
+      _grades = await _repository.fetchGrades(orgId);
+      for (final g in _grades) {
+        _controllers[g.key] = (TextEditingController(text: g.label), TextEditingController(text: '${g.points}'));
+      }
+    } catch (_) {
+      _message = 'تعذّر تحميل التقديرات';
+      _isError = true;
+    }
     if (mounted) setState(() => _loading = false);
   }
 
   @override
   void dispose() {
-    _newMemorizationController.dispose();
-    _recentReviewController.dispose();
-    _distantReviewController.dispose();
-    _currencyNameController.dispose();
+    _disposeControllers();
+    _newKey.dispose();
+    _newLabel.dispose();
+    _newPoints.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
+    final newKey = _newKey.text.trim().toLowerCase();
+    final newLabel = _newLabel.text.trim();
+    if ((newKey.isNotEmpty || newLabel.isNotEmpty) &&
+        (!RegExp(r'^[a-z0-9_]{1,40}$').hasMatch(newKey) || newLabel.isEmpty)) {
+      setState(() {
+        _message = 'المفتاح حروف إنجليزية صغيرة/أرقام/_ فقط، والاسم مطلوب';
+        _isError = true;
+      });
+      return;
+    }
+
     setState(() {
       _saving = true;
       _message = null;
     });
     try {
       final orgId = context.read<TenantController>().active!.organization.id;
-      await _repository.saveConfig(
-        organizationId: orgId,
-        newMemorization: int.tryParse(_newMemorizationController.text.trim()) ?? 0,
-        recentReview: int.tryParse(_recentReviewController.text.trim()) ?? 0,
-        distantReview: int.tryParse(_distantReviewController.text.trim()) ?? 0,
-        currencyName: _currencyNameController.text.trim().isEmpty ? 'نقاط' : _currencyNameController.text.trim(),
-      );
-      if (mounted) setState(() { _message = 'تم حفظ الإعدادات'; _isError = false; });
-    } catch (e) {
+      final rows = [
+        for (final g in _grades)
+          GradeRow(
+            key: g.key,
+            label: _controllers[g.key]!.$1.text,
+            points: int.tryParse(_controllers[g.key]!.$2.text.trim()) ?? 0,
+            sortOrder: g.sortOrder,
+            isActive: g.isActive,
+          ),
+        if (newKey.isNotEmpty)
+          GradeRow(
+            key: newKey,
+            label: newLabel,
+            points: int.tryParse(_newPoints.text.trim()) ?? 0,
+            sortOrder: _grades.length + 1,
+            isActive: true,
+          ),
+      ];
+      await _repository.saveGrades(orgId, rows);
+      _newKey.clear();
+      _newLabel.clear();
+      _newPoints.clear();
+      await _load();
+      if (mounted) setState(() { _message = 'تم حفظ التقديرات'; _isError = false; });
+    } catch (_) {
       if (mounted) setState(() { _message = 'حدث خطأ أثناء الحفظ'; _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -81,65 +122,90 @@ class _PointsScreenState extends State<PointsScreen> {
     final isAdmin = context.watch<TenantController>().active?.role == OrgRole.admin;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('النقاط')),
+      appBar: AppBar(title: const Text('تقديرات التسميع والنقاط')),
       drawer: const AppDrawer(),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+          : ListView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'عدد النقاط الممنوحة لكل نوع تسميع، واسم عملة النقاط بالمركز.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 16),
-                  if (_message != null) MessageBanner(message: _message!, isError: _isError),
-                  TextField(
-                    controller: _newMemorizationController,
-                    enabled: isAdmin,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'نقاط الحفظ الجديد'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _recentReviewController,
-                    enabled: isAdmin,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'نقاط المراجعة القريبة'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _distantReviewController,
-                    enabled: isAdmin,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'نقاط المراجعة البعيدة'),
-                  ),
-                  const Divider(height: 32),
-                  TextField(
-                    controller: _currencyNameController,
-                    enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'اسم عملة النقاط'),
-                  ),
-                  if (isAdmin) ...[
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      onPressed: _saving ? null : _save,
-                      child: _saving
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text('حفظ الإعدادات'),
+              children: [
+                Text(
+                  'أسماء التقديرات وعدد النقاط لكل تقدير. تُحفظ النقاط على كل تسميع لحظة تسجيله، فتغييرها يسري على التسميعات القادمة فقط.',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                if (_message != null) MessageBanner(message: _message!, isError: _isError),
+                for (final g in _grades)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: TextField(
+                                controller: _controllers[g.key]!.$1,
+                                enabled: isAdmin,
+                                decoration: const InputDecoration(labelText: 'الاسم'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              flex: 2,
+                              child: TextField(
+                                controller: _controllers[g.key]!.$2,
+                                enabled: isAdmin,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(labelText: 'النقاط'),
+                              ),
+                            ),
+                            Switch(
+                              value: g.isActive,
+                              onChanged: isAdmin ? (v) => setState(() => g.isActive = v) : null,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ] else ...[
-                    const SizedBox(height: 12),
-                    Text('بس المدير يقدر يعدّل إعدادات النقاط.', style: Theme.of(context).textTheme.bodySmall),
-                  ],
-                ],
-              ),
+                  ),
+                if (isAdmin) ...[
+                  const SectionTitle('إضافة تقدير جديد'),
+                  TextField(
+                    controller: _newKey,
+                    textDirection: TextDirection.ltr,
+                    decoration: const InputDecoration(labelText: 'المفتاح (مثل outstanding)'),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: _newLabel,
+                          decoration: const InputDecoration(labelText: 'الاسم (مثل متميز)'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: TextField(
+                          controller: _newPoints,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'النقاط'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  LoadingButton(label: 'حفظ التقديرات', loading: _saving, onPressed: _save),
+                ] else
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text('بس المدير يقدر يعدّل التقديرات والنقاط.', style: TextStyle(color: Colors.grey.shade600)),
+                  ),
+              ],
             ),
     );
   }

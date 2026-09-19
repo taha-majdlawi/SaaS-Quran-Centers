@@ -1,67 +1,60 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class PointsConfigData {
-  const PointsConfigData({
-    required this.newMemorization,
-    required this.recentReview,
-    required this.distantReview,
-    required this.currencyName,
+class GradeRow {
+  GradeRow({
+    required this.key,
+    required this.label,
+    required this.points,
+    required this.sortOrder,
+    required this.isActive,
+    this.isNew = false,
   });
 
-  final int newMemorization;
-  final int recentReview;
-  final int distantReview;
-  final String currencyName;
+  final String key;
+  String label;
+  int points;
+  final int sortOrder;
+  bool isActive;
+  final bool isNew;
 }
 
-/// Mirrors apps/web's points/actions.ts - one row per org in each of
-/// points_config and currency_config, upserted together.
+/// The center's recitation grades (name + points). Mirrors apps/web's /points
+/// page: eqraa hard-codes these; here each center owns them, and points are
+/// frozen on every recitation when it is logged.
 class PointsRepository {
   PointsRepository(this._client);
 
   final SupabaseClient _client;
 
-  Future<PointsConfigData> fetchConfig(String organizationId) async {
-    final results = await Future.wait([
-      _client.from('points_config').select('rules').eq('organization_id', organizationId).maybeSingle(),
-      _client
-          .from('currency_config')
-          .select('currency_name')
-          .eq('organization_id', organizationId)
-          .maybeSingle(),
-    ]);
-    final rules = (results[0]?['rules'] as Map<String, dynamic>?) ?? const {};
-    return PointsConfigData(
-      newMemorization: (rules['new_memorization'] as num?)?.toInt() ?? 10,
-      recentReview: (rules['recent_review'] as num?)?.toInt() ?? 5,
-      distantReview: (rules['distant_review'] as num?)?.toInt() ?? 3,
-      currencyName: (results[1]?['currency_name'] as String?) ?? 'نقاط',
-    );
+  Future<List<GradeRow>> fetchGrades(String organizationId) async {
+    final rows = await _client
+        .from('recitation_grades')
+        .select('key, label, points, sort_order, is_active')
+        .eq('organization_id', organizationId)
+        .order('sort_order');
+    return (rows as List)
+        .map((r) => GradeRow(
+              key: r['key'] as String,
+              label: r['label'] as String,
+              points: r['points'] as int,
+              sortOrder: r['sort_order'] as int,
+              isActive: r['is_active'] as bool,
+            ))
+        .toList();
   }
 
-  Future<void> saveConfig({
-    required String organizationId,
-    required int newMemorization,
-    required int recentReview,
-    required int distantReview,
-    required String currencyName,
-  }) async {
-    final now = DateTime.now().toIso8601String();
-    await Future.wait([
-      _client.from('points_config').upsert({
-        'organization_id': organizationId,
-        'rules': {
-          'new_memorization': newMemorization,
-          'recent_review': recentReview,
-          'distant_review': distantReview,
+  Future<void> saveGrades(String organizationId, List<GradeRow> grades) {
+    final rows = [
+      for (final g in grades)
+        {
+          'organization_id': organizationId,
+          'key': g.key,
+          'label': g.label.trim(),
+          'points': g.points,
+          'sort_order': g.sortOrder,
+          'is_active': g.isActive,
         },
-        'updated_at': now,
-      }),
-      _client.from('currency_config').upsert({
-        'organization_id': organizationId,
-        'currency_name': currencyName,
-        'updated_at': now,
-      }),
-    ]);
+    ];
+    return _client.from('recitation_grades').upsert(rows, onConflict: 'organization_id,key');
   }
 }
