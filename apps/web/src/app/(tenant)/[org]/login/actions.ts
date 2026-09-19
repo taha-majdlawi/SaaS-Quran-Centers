@@ -2,10 +2,11 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { toLoginEmail } from '@/lib/accounts/login-id';
 
 export async function signInToTenant(formData: FormData) {
   const orgSlug = formData.get('orgSlug') as string;
-  const email = formData.get('email') as string;
+  const identifier = (formData.get('identifier') as string) ?? '';
   const password = formData.get('password') as string;
 
   const supabase = await createClient();
@@ -16,7 +17,10 @@ export async function signInToTenant(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent('المركز غير موجود')}`);
   }
 
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+    email: toLoginEmail(orgSlug, identifier),
+    password,
+  });
 
   if (signInError || !signInData.user) {
     redirect(`/login?error=${encodeURIComponent('البريد الإلكتروني أو كلمة السر غير صحيحة')}`);

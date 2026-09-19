@@ -3,6 +3,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit } from '@/lib/audit/log';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { AccountError, provisionStudent } from '@/lib/accounts/provision';
 
 function readStudentFields(formData: FormData) {
   return {
@@ -16,13 +18,47 @@ function readStudentFields(formData: FormData) {
 export async function createStudent(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const fields = readStudentFields(formData);
+  const password = ((formData.get('password') as string) ?? '').trim();
+  const contact = {
+    phone: (formData.get('phone') as string)?.trim() || null,
+    whatsapp: (formData.get('whatsapp') as string)?.trim() || null,
+    address: (formData.get('address') as string)?.trim() || null,
+  };
 
   if (!fields.circle_id) {
     redirect(`/students/new?error=${encodeURIComponent('يجب اختيار حلقة للطالب')}` as never);
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from('students_profile').insert({ organization_id: orgId, ...fields });
+
+  // With a password the student gets a working login in the same step
+  // (eqraa always does this); without one only the record is created.
+  if (password) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect('/login' as never);
+    try {
+      const created = await provisionStudent(createAdminClient(), user.id, {
+        orgId,
+        fullName: fields.full_name,
+        studentCode: fields.student_code,
+        circleId: fields.circle_id!,
+        password,
+        email: (formData.get('email') as string) || null,
+        birthDate: fields.birth_date,
+        ...contact,
+      });
+      redirect(
+        `/students?createdId=${encodeURIComponent(created.loginId)}&createdPassword=${encodeURIComponent(password)}` as never,
+      );
+    } catch (e) {
+      if (!(e instanceof AccountError)) throw e;
+      redirect(`/students/new?error=${encodeURIComponent(e.message)}` as never);
+    }
+  }
+
+  const { error } = await supabase.from('students_profile').insert({ organization_id: orgId, ...fields, ...contact });
 
   if (error) {
     const message = error.code === '23505' ? 'رقم الطالب مستخدم من قبل بهذا المركز' : error.message;

@@ -1,6 +1,17 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+const _loginDomain = 'id.bustan-alquran.com';
+
+/// Same rule as apps/web/src/lib/accounts/login-id.ts: a number-style login
+/// becomes a virtual email that carries the center code, so the same number
+/// can exist in two centers; a real email is used as typed.
+String toLoginEmail(String centerSlug, String identifier) {
+  final id = identifier.trim().toLowerCase();
+  if (id.contains('@')) return id;
+  return '$id@${centerSlug.trim().toLowerCase()}.$_loginDomain';
+}
+
 class CenterInfo {
   const CenterInfo({required this.id, required this.name, required this.slug, this.primaryColor});
 
@@ -51,13 +62,13 @@ class LoginRepository {
     );
   }
 
-  Future<void> signInToCenter({required CenterInfo center, required String email, required String password}) async {
+  Future<void> signInToCenter({required CenterInfo center, required String identifier, required String password}) async {
     final prefs = await SharedPreferences.getInstance();
     // Set before signing in so TenantController opens THIS center first.
     await prefs.setString(_activeOrgPrefKey, center.id);
 
     try {
-      await _client.auth.signInWithPassword(email: email, password: password);
+      await _client.auth.signInWithPassword(email: toLoginEmail(center.slug, identifier), password: password);
     } on AuthException {
       throw const WrongCredentialsException();
     }

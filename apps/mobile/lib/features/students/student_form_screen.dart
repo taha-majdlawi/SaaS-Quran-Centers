@@ -3,13 +3,21 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:provider/provider.dart';
 
+import '../../core/api/accounts_api.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/widgets/credentials_dialog.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'students_list_screen.dart' show kStudentStatusLabels;
 import 'students_repository.dart';
 
 final _dateFormat = DateFormat('yyyy-MM-dd');
+
+String _generatePassword() {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  final seed = DateTime.now().microsecondsSinceEpoch;
+  return List.generate(8, (i) => chars[((seed >> (i * 3)) + i * 7) % chars.length]).join();
+}
 
 /// One screen for both add and edit - mirrors apps/web's students/new and
 /// students/[id]: pick a stage, then one of ITS circles (required), and the
@@ -30,6 +38,11 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _studentCodeController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController(text: _generatePassword());
 
   List<StageChoice> _stages = [];
   List<CircleOption> _circles = [];
@@ -65,6 +78,9 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
       if (student != null) {
         _fullNameController.text = student.fullName;
         _studentCodeController.text = student.studentCode;
+        _phoneController.text = student.phone ?? '';
+        _whatsappController.text = student.whatsapp ?? '';
+        _addressController.text = student.address ?? '';
         _circleId = student.circleId;
         _status = student.status;
         _birthDate = student.birthDate != null ? DateTime.tryParse(student.birthDate!) : null;
@@ -79,6 +95,11 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   void dispose() {
     _fullNameController.dispose();
     _studentCodeController.dispose();
+    _phoneController.dispose();
+    _whatsappController.dispose();
+    _addressController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -111,6 +132,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     if (picked != null) setState(() => _birthDate = picked);
   }
 
+  String? _nullIfEmpty(String v) => v.trim().isEmpty ? null : v.trim();
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_circleId == null) {
@@ -134,7 +157,34 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           circleId: _circleId!,
           status: _status,
           birthDate: birth,
+          phone: _nullIfEmpty(_phoneController.text),
+          whatsapp: _nullIfEmpty(_whatsappController.text),
+          address: _nullIfEmpty(_addressController.text),
         );
+      } else if (_passwordController.text.trim().isNotEmpty) {
+        // Login + record in one step, through the server (it holds the service key).
+        final created = await AccountsApi().createStudent(
+          orgId: orgId,
+          fullName: _fullNameController.text.trim(),
+          studentCode: _studentCodeController.text.trim(),
+          circleId: _circleId!,
+          password: _passwordController.text.trim(),
+          email: _nullIfEmpty(_emailController.text),
+          birthDate: birth,
+          phone: _nullIfEmpty(_phoneController.text),
+          whatsapp: _nullIfEmpty(_whatsappController.text),
+          address: _nullIfEmpty(_addressController.text),
+        );
+        if (mounted) {
+          final slug = context.read<TenantController>().active!.organization.slug;
+          await showCredentialsDialog(
+            context,
+            title: 'تم إنشاء حساب الطالب',
+            centerCode: slug,
+            loginId: created.loginId,
+            password: _passwordController.text.trim(),
+          );
+        }
       } else {
         await _repository.createStudent(
           organizationId: orgId,
@@ -142,9 +192,14 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           studentCode: _studentCodeController.text.trim(),
           circleId: _circleId!,
           birthDate: birth,
+          phone: _nullIfEmpty(_phoneController.text),
+          whatsapp: _nullIfEmpty(_whatsappController.text),
+          address: _nullIfEmpty(_addressController.text),
         );
       }
       if (mounted) context.pop();
+    } on AccountsApiException catch (e) {
+      setState(() => _error = e.message);
     } catch (e) {
       setState(() => _error = 'رقم الطالب مستخدم من قبل، أو حدث خطأ آخر');
     } finally {
@@ -256,6 +311,49 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل رقم الطالب' : null,
                     ),
+                    const SectionTitle('بيانات التواصل'),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      textDirection: TextDirection.ltr,
+                      decoration: const InputDecoration(labelText: 'رقم الجوال (اختياري)', prefixIcon: Icon(Icons.phone_outlined)),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _whatsappController,
+                      keyboardType: TextInputType.phone,
+                      textDirection: TextDirection.ltr,
+                      decoration: const InputDecoration(labelText: 'رقم الواتساب (اختياري)', prefixIcon: Icon(Icons.chat_outlined)),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: const InputDecoration(labelText: 'العنوان (اختياري)', prefixIcon: Icon(Icons.home_outlined)),
+                    ),
+                    if (!widget.isEditing) ...[
+                      const SectionTitle('حساب دخول الطالب'),
+                      TextFormField(
+                        controller: _passwordController,
+                        textDirection: TextDirection.ltr,
+                        decoration: const InputDecoration(
+                          labelText: 'كلمة السر',
+                          helperText: 'اتركها فارغة لإنشاء الملف بدون حساب دخول',
+                          prefixIcon: Icon(Icons.lock_outline),
+                        ),
+                        validator: (v) => (v != null && v.trim().isNotEmpty && v.trim().length < 6) ? '6 خانات على الأقل' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textDirection: TextDirection.ltr,
+                        decoration: const InputDecoration(
+                          labelText: 'بريد إلكتروني حقيقي (اختياري)',
+                          helperText: 'بدونه يدخل الطالب برقمه مع رمز المركز',
+                          prefixIcon: Icon(Icons.mail_outline),
+                        ),
+                      ),
+                    ],
                     if (widget.isEditing) ...[
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(

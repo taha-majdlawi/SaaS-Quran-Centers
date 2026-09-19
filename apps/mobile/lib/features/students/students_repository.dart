@@ -37,6 +37,9 @@ class StudentDetail {
     required this.circleId,
     required this.status,
     this.birthDate,
+    this.phone,
+    this.whatsapp,
+    this.address,
   });
 
   final String id;
@@ -45,6 +48,9 @@ class StudentDetail {
   final String? circleId;
   final String status;
   final String? birthDate;
+  final String? phone;
+  final String? whatsapp;
+  final String? address;
 }
 
 /// Mirrors apps/web's students/actions.ts - same table, same organization_id
@@ -104,7 +110,7 @@ class StudentsRepository {
   Future<StudentDetail?> fetchStudent(String id) async {
     final row = await _client
         .from('students_profile')
-        .select('id, full_name, student_code, birth_date, circle_id, status')
+        .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address')
         .eq('id', id)
         .maybeSingle();
 
@@ -117,6 +123,9 @@ class StudentsRepository {
       circleId: row['circle_id'] as String?,
       status: row['status'] as String,
       birthDate: row['birth_date'] as String?,
+      phone: row['phone'] as String?,
+      whatsapp: row['whatsapp'] as String?,
+      address: row['address'] as String?,
     );
   }
 
@@ -126,8 +135,14 @@ class StudentsRepository {
     required String studentCode,
     required String circleId,
     String? birthDate,
+    String? phone,
+    String? whatsapp,
+    String? address,
   }) {
     return _client.from('students_profile').insert({
+      'phone': phone,
+      'whatsapp': whatsapp,
+      'address': address,
       'organization_id': organizationId,
       'full_name': fullName,
       'student_code': studentCode,
@@ -143,8 +158,14 @@ class StudentsRepository {
     required String circleId,
     required String status,
     String? birthDate,
+    String? phone,
+    String? whatsapp,
+    String? address,
   }) {
     return _client.from('students_profile').update({
+      'phone': phone,
+      'whatsapp': whatsapp,
+      'address': address,
       'full_name': fullName,
       'student_code': studentCode,
       'circle_id': circleId,

@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       await _repository.signInToCenter(
         center: center,
-        email: _emailController.text.trim(),
+        identifier: _emailController.text.trim(),
         password: _passwordController.text,
       );
     } on WrongCredentialsException {
@@ -217,15 +217,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.next,
-                      autofillHints: const [AutofillHints.email],
+                      autofillHints: const [AutofillHints.username],
                       textDirection: TextDirection.ltr,
                       decoration: const InputDecoration(
-                        labelText: 'البريد الإلكتروني',
-                        prefixIcon: Icon(Icons.mail_outline),
+                        labelText: 'رقم الهوية / الطالب أو البريد',
+                        prefixIcon: Icon(Icons.badge_outlined),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل البريد الإلكتروني' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل رقمك أو بريدك' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(

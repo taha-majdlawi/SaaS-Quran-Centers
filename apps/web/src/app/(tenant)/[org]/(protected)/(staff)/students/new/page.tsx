@@ -4,6 +4,10 @@ import { SubmitButton } from '@/components/submit-button';
 import { StudentFormFields } from './student-form-fields';
 import { createStudent } from '../actions';
 
+function generatePassword() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+}
+
 export default async function NewStudentPage({
   params,
   searchParams,
@@ -49,6 +53,42 @@ export default async function NewStudentPage({
           تاريخ الميلاد
           <input type="date" name="birthDate" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
+
+        <label className="text-sm font-medium text-gray-700">
+          رقم الجوال
+          <input name="phone" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+        </label>
+
+        <label className="text-sm font-medium text-gray-700">
+          رقم الواتساب
+          <input name="whatsapp" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+        </label>
+
+        <label className="text-sm font-medium text-gray-700">
+          العنوان
+          <input name="address" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+        </label>
+
+        <div className="rounded-lg border border-dashed p-4">
+          <p className="mb-2 text-sm font-semibold text-gray-700">حساب دخول الطالب</p>
+          <label className="text-sm font-medium text-gray-700">
+            كلمة السر (مقترحة، اتركها فارغة لإنشاء الملف بدون حساب)
+            <input
+              name="password"
+              minLength={6}
+              defaultValue={generatePassword()}
+              dir="ltr"
+              className="mt-1 w-full rounded border px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="mt-3 block text-sm font-medium text-gray-700">
+            بريد إلكتروني حقيقي (اختياري)
+            <input type="email" name="email" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          </label>
+          <p className="mt-2 text-xs text-gray-400">
+            يدخل الطالب برمز المركز ({org.slug}) ورقمه وكلمة السر، أو ببريده إن أضفته.
+          </p>
+        </div>
 
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"

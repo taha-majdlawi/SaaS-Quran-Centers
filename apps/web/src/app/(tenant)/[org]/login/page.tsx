@@ -41,8 +41,8 @@ export default async function TenantLoginPage({
       <form action={signInToTenant} className="flex flex-col gap-3">
         <input type="hidden" name="orgSlug" value={org} />
         <label className={authLabelClass}>
-          البريد الإلكتروني
-          <input type="email" name="email" required className={`mt-1 ${authInputClass}`} />
+          رقم الهوية / رقم الطالب أو البريد الإلكتروني
+          <input name="identifier" required dir="ltr" autoComplete="username" className={`mt-1 ${authInputClass}`} />
         </label>
         <label className={authLabelClass}>
           كلمة السر

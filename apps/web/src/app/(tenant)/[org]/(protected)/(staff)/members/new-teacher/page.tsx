@@ -21,7 +21,7 @@ export default async function NewTeacherPage({
     <div className="max-w-lg">
       <h1 className="mb-1 text-2xl font-bold">إضافة معلم يدويًا</h1>
       <p className="mb-6 text-sm text-gray-500">
-        بينشئ حساب دخول جاهز فورًا - بلّغ المعلم الإيميل وكلمة السر مباشرة، بدون رابط دعوة.
+        ينشئ حساب دخول جاهزًا فورًا - بلّغ المعلم رمز المركز ورقم هويته (أو بريده) وكلمة السر، بدون رابط دعوة.
       </p>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
@@ -35,8 +35,16 @@ export default async function NewTeacherPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          البريد الإلكتروني
-          <input type="email" name="email" required className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          رقم الهوية (أو البريد الإلكتروني)
+          <input name="identifier" required dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          <span className="mt-1 block text-xs text-gray-400">
+            يدخل بهذا الرقم مع رمز المركز ({org.slug}). إن كتبت بريدًا حقيقيًا يدخل به مباشرة.
+          </span>
+        </label>
+
+        <label className="text-sm font-medium text-gray-700">
+          رقم الجوال (اختياري)
+          <input name="phone" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
 
         <label className="text-sm font-medium text-gray-700">

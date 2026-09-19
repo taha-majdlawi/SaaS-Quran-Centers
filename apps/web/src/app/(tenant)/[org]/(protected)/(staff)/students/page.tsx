@@ -12,8 +12,15 @@ const STATUS_LABELS: Record<string, string> = {
 
 // Replaces wep-eqraa-center/admin/students - list + real add/edit/delete
 // (see actions.ts, new/page.tsx, [id]/page.tsx).
-export default async function StudentsPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function StudentsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string }>;
+  searchParams: Promise<{ createdId?: string; createdPassword?: string }>;
+}) {
   const { org: slug } = await params;
+  const { createdId, createdPassword } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
@@ -25,6 +32,17 @@ export default async function StudentsPage({ params }: { params: Promise<{ org: 
 
   return (
     <div>
+      {createdId && createdPassword && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
+          <p className="mb-2 font-semibold text-green-800">تم إنشاء حساب الطالب - أعطه بيانات الدخول الآن:</p>
+          <p dir="ltr" className="font-mono text-green-900">
+            {org.slug} / {createdId} / {createdPassword}
+          </p>
+          <p className="mt-2 text-xs text-green-700">
+            رمز المركز، ثم رقم الطالب، ثم كلمة السر. هذا العرض الوحيد لكلمة السر - انسخها الآن.
+          </p>
+        </div>
+      )}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">الطلاب</h1>
         <a href="/students/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
