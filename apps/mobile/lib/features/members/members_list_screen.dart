@@ -82,6 +82,14 @@ class _MembersListScreenState extends State<MembersListScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('الأعضاء والأدوار')),
       drawer: const AppDrawer(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await context.push('/members/new-teacher');
+          if (mounted && orgId != null) setState(() => _reload(orgId));
+        },
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        label: const Text('معلم جديد'),
+      ),
       body: orgId == null
           ? const SizedBox.shrink()
           : FutureBuilder<void>(

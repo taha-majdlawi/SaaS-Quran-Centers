@@ -3,6 +3,7 @@ import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/api/accounts_api.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/access/module_keys.dart';
 import '../../core/supabase/supabase_client.dart';
@@ -70,6 +71,39 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       setState(() => _error = 'حدث خطأ أثناء الحفظ');
     } finally {
       if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  final _newPassword = TextEditingController();
+  bool _resetting = false;
+
+  @override
+  void dispose() {
+    _newPassword.dispose();
+    super.dispose();
+  }
+
+  Future<void> _resetPassword() async {
+    final password = _newPassword.text.trim();
+    if (password.length < 8) {
+      setState(() => _error = 'كلمة السر 8 أحرف على الأقل');
+      return;
+    }
+    setState(() {
+      _resetting = true;
+      _error = null;
+    });
+    try {
+      final org = context.read<TenantController>().active!.organization;
+      await AccountsApi().resetPassword(orgId: org.id, memberId: widget.memberId, password: password);
+      _newPassword.clear();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تغيير كلمة السر')));
+      }
+    } on AccountsApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _resetting = false);
     }
   }
 
@@ -152,6 +186,13 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                           : const Text('حفظ التعديلات'),
                     ),
+                    const SectionTitle('تغيير كلمة السر'),
+                    TextField(
+                      controller: _newPassword,
+                      decoration: const InputDecoration(labelText: 'كلمة سر جديدة (8 أحرف على الأقل)'),
+                    ),
+                    const SizedBox(height: 10),
+                    LoadingButton(label: 'تغيير كلمة السر', loading: _resetting, onPressed: _resetPassword),
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: _remove,

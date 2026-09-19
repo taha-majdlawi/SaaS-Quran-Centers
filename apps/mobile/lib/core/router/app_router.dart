@@ -40,6 +40,7 @@ import '../../features/stages/stages_list_screen.dart';
 import '../../features/stages/stage_form_screen.dart';
 import '../../features/members/members_list_screen.dart';
 import '../../features/members/member_edit_screen.dart';
+import '../../features/members/teacher_form_screen.dart';
 import '../../features/audit/audit_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/site/site_screen.dart';
@@ -171,6 +172,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => StageFormScreen(stageId: state.pathParameters['id']),
       ),
       GoRoute(path: '/members', builder: (context, state) => const MembersListScreen()),
+      GoRoute(path: '/members/new-teacher', builder: (context, state) => const TeacherFormScreen()),
       GoRoute(
         path: '/members/:id',
         builder: (context, state) => MemberEditScreen(memberId: state.pathParameters['id']!),
