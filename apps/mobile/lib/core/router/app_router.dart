@@ -31,17 +31,15 @@ import '../../features/circle_challenges/challenge_form_screen.dart';
 import '../../features/circle_challenges/challenge_detail_screen.dart';
 import '../../features/activities/activities_list_screen.dart';
 import '../../features/activities/activity_form_screen.dart';
-import '../../features/announcements/announcements_list_screen.dart';
-import '../../features/announcements/announcement_form_screen.dart';
 import '../../features/calendar/calendar_list_screen.dart';
 import '../../features/calendar/event_form_screen.dart';
 import '../../features/calendar/event_detail_screen.dart';
 import '../../features/calendar/calendar_types_screen.dart';
+import '../../features/comms/announcements_screens.dart';
+import '../../features/comms/chat_screens.dart';
+import '../../features/comms/notifications_screen.dart';
+import '../../features/comms/comms_repository.dart' show Announcement;
 import '../../features/my_portal/portal_engagement_screens.dart';
-import '../../features/notifications/notifications_screen.dart';
-import '../../features/chat/chat_list_screen.dart';
-import '../../features/chat/new_chat_screen.dart';
-import '../../features/chat/chat_thread_screen.dart';
 import '../../features/stages/stages_list_screen.dart';
 import '../../features/stages/stage_form_screen.dart';
 import '../../features/members/members_list_screen.dart';
@@ -94,7 +92,9 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       final calendarOk = segments.isNotEmpty &&
           segments.first == 'calendar' &&
           (segments.length == 1 || (segments.length == 2 && segments[1] != 'new' && segments[1] != 'types'));
-      if (isPortalOnly && path != '/my' && !path.startsWith('/my/') && !calendarOk) {
+      final portalOk = path == '/chat' || path == '/chat/new' || (segments.length == 2 && segments.first == 'chat') ||
+          path == '/announcements' || path == '/notifications';
+      if (isPortalOnly && path != '/my' && !path.startsWith('/my/') && !calendarOk && !portalOk) {
         return '/my';
       }
 
@@ -170,7 +170,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/announcements/new', builder: (context, state) => const AnnouncementFormScreen()),
       GoRoute(
         path: '/announcements/:id',
-        builder: (context, state) => AnnouncementFormScreen(announcementId: state.pathParameters['id']),
+        builder: (context, state) => AnnouncementFormScreen(announcement: state.extra as Announcement?),
       ),
       GoRoute(path: '/calendar', builder: (context, state) => const CalendarListScreen()),
       GoRoute(
@@ -191,7 +191,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/chat/new', builder: (context, state) => const NewChatScreen()),
       GoRoute(
         path: '/chat/:id',
-        builder: (context, state) => ChatThreadScreen(threadId: state.pathParameters['id']!),
+        builder: (context, state) => ChatThreadScreen(otherId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/stages', builder: (context, state) => const StagesListScreen()),
       GoRoute(path: '/stages/new', builder: (context, state) => const StageFormScreen()),

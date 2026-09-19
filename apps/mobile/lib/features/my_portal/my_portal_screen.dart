@@ -286,6 +286,33 @@ class _HomeTab extends StatelessWidget {
           Expanded(
             child: Card(
               child: ListTile(
+                leading: const Icon(Icons.chat_bubble_rounded),
+                title: const Text('المحادثات', style: TextStyle(fontWeight: FontWeight.w700)),
+                onTap: () => context.push('/chat'),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Card(
+              child: ListTile(
+                leading: const Icon(Icons.campaign_rounded),
+                title: const Text('الإعلانات', style: TextStyle(fontWeight: FontWeight.w700)),
+                onTap: () => context.push('/announcements'),
+              ),
+            ),
+          ),
+        ]),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.notifications_rounded),
+            title: const Text('الإشعارات', style: TextStyle(fontWeight: FontWeight.w700)),
+            onTap: () => context.push('/notifications'),
+          ),
+        ),
+        Row(children: [
+          Expanded(
+            child: Card(
+              child: ListTile(
                 leading: const Icon(Icons.emoji_events_rounded),
                 title: const Text('الشارات', style: TextStyle(fontWeight: FontWeight.w700)),
                 onTap: () => context.push('/my/badges'),
