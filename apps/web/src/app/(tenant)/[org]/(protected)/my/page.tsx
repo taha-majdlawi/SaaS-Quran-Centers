@@ -1,6 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SURAH_NAMES } from '@/lib/quran/data';
+import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
 
 const TYPE_LABELS: Record<string, string> = {
   new_memorization: 'حفظ جديد',
@@ -87,6 +88,13 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
     }),
   );
 
+  const serdSummaries = await Promise.all(
+    rows.map(async (s) => {
+      const { data } = await supabase.rpc('serd_student_summary', { p_org: org.id, p_student: s.id });
+      return data as SerdSummary | null;
+    }),
+  );
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
       <h1 className="text-2xl font-bold">
@@ -152,6 +160,11 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
               {stats.recitations_this_week} تسميعات هذا الأسبوع — {weekText} · 🔥 سلسلتك {stats.current_streak} يوم
               (أطول سلسلة {stats.longest_streak})
             </p>
+
+            <div>
+              <h3 className="mb-2 text-sm font-semibold text-gray-600">السرد القرآني</h3>
+              <SerdSummaryCard summary={serdSummaries[idx]} />
+            </div>
 
             <div>
               <h3 className="mb-2 text-sm font-semibold text-gray-600">سجل التسميع</h3>

@@ -3,6 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { SURAH_NAMES, AYAH_COUNTS } from '@/lib/quran/data';
+import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
 import { logRecitation, setStudentPlan, deleteRecitation } from './actions';
 
 const TYPES: [string, string][] = [
@@ -37,7 +38,7 @@ export default async function StudentRecitationsPage({
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
-  const [{ data: student }, { data: grades }, { data: recent }] = await Promise.all([
+  const [{ data: student }, { data: grades }, { data: recent }, { data: serdData }] = await Promise.all([
     supabase
       .from('students_profile')
       .select('id, full_name, student_code, total_points, next_plan')
@@ -56,6 +57,7 @@ export default async function StudentRecitationsPage({
       .eq('student_id', id)
       .order('created_at', { ascending: false })
       .limit(20),
+    supabase.rpc('serd_student_summary', { p_org: org.id, p_student: id }),
   ]);
 
   if (!student) notFound();
@@ -170,6 +172,11 @@ export default async function StudentRecitationsPage({
           حفظ التسميع
         </SubmitButton>
       </form>
+
+      <h2 className="mb-3 font-semibold">السرد القرآني</h2>
+      <div className="mb-8">
+        <SerdSummaryCard summary={serdData as SerdSummary | null} />
+      </div>
 
       <h2 className="mb-3 font-semibold">آخر التسميعات</h2>
       <div className="flex flex-col gap-2">
