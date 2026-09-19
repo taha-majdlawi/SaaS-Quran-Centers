@@ -3,7 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { SURAH_NAMES, AYAH_COUNTS } from '@/lib/quran/data';
-import { logRecitation } from './actions';
+import { logRecitation, setStudentPlan, deleteRecitation } from './actions';
 
 const TYPES: [string, string][] = [
   ['new_memorization', 'حفظ جديد'],
@@ -30,17 +30,17 @@ export default async function StudentRecitationsPage({
   searchParams,
 }: {
   params: Promise<{ org: string; id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; planSaved?: string; deleted?: string; updated?: string }>;
 }) {
   const { org: slug, id } = await params;
-  const { error, saved } = await searchParams;
+  const { error, saved, planSaved, deleted, updated } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
   const [{ data: student }, { data: grades }, { data: recent }] = await Promise.all([
     supabase
       .from('students_profile')
-      .select('id, full_name, student_code, total_points')
+      .select('id, full_name, student_code, total_points, next_plan')
       .eq('id', id)
       .eq('organization_id', org.id)
       .maybeSingle(),
@@ -76,6 +76,30 @@ export default async function StudentRecitationsPage({
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحفظ ✓ +{saved} نقطة</p>}
+      {planSaved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ الخطة ✓</p>}
+      {updated && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم تعديل التسميع ✓</p>}
+      {deleted && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حذف التسميع</p>}
+
+      <form action={setStudentPlan} className="mb-6 flex flex-col gap-2 rounded-lg border bg-white p-4">
+        <input type="hidden" name="orgId" value={org.id} />
+        <input type="hidden" name="studentId" value={student.id} />
+        <label className="text-sm font-medium text-gray-700">
+          الخطة القادمة
+          <textarea
+            name="plan"
+            rows={2}
+            defaultValue={student.next_plan ?? ''}
+            placeholder="مثال: حفظ سورة الملك من الآية 1 إلى 15"
+            className={input}
+          />
+        </label>
+        <SubmitButton
+          className="self-start rounded border px-4 py-1.5 text-sm font-semibold text-brand disabled:opacity-50"
+          pendingText="جاري الحفظ..."
+        >
+          حفظ الخطة
+        </SubmitButton>
+      </form>
 
       <form action={logRecitation} className="mb-8 flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="orgId" value={org.id} />
@@ -156,6 +180,16 @@ export default async function StudentRecitationsPage({
                 {SURAH_NAMES[r.surah_from - 1]} ({r.ayah_from}–{r.ayah_to})
               </span>
               <span className="text-brand">+{r.points_awarded}</span>
+            </div>
+            <div className="mt-1 flex items-center gap-3 text-xs">
+              <a href={`/students/${student.id}/recitations/${r.id}`} className="text-brand hover:underline">
+                تعديل
+              </a>
+              <form action={deleteRecitation}>
+                <input type="hidden" name="id" value={r.id} />
+                <input type="hidden" name="studentId" value={student.id} />
+                <button className="text-red-600 hover:underline">حذف</button>
+              </form>
             </div>
             <p className="text-xs text-gray-500">
               {typeLabel.get(r.achievement_type)} · {gradeLabel.get(r.grade ?? '') ?? r.grade ?? '—'} ·{' '}

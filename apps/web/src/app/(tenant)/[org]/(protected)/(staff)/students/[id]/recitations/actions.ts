@@ -54,3 +54,51 @@ export async function logRecitation(formData: FormData) {
 
   redirect(`${back}?saved=${total}` as never);
 }
+
+export async function setStudentPlan(formData: FormData) {
+  const orgId = formData.get('orgId') as string;
+  const studentId = formData.get('studentId') as string;
+  const plan = ((formData.get('plan') as string) ?? '').trim();
+  const back = `/students/${studentId}/recitations`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('set_student_plan', {
+    p_org: orgId,
+    p_student: studentId,
+    p_next_plan: plan,
+  });
+  if (error) redirect(`${back}?error=${encodeURIComponent(error.message)}` as never);
+  redirect(`${back}?planSaved=1` as never);
+}
+
+export async function deleteRecitation(formData: FormData) {
+  const id = formData.get('id') as string;
+  const studentId = formData.get('studentId') as string;
+  const back = `/students/${studentId}/recitations`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('delete_recitation', { p_id: id });
+  if (error) redirect(`${back}?error=${encodeURIComponent(error.message)}` as never);
+  redirect(`${back}?deleted=1` as never);
+}
+
+export async function updateRecitation(formData: FormData) {
+  const id = formData.get('id') as string;
+  const studentId = formData.get('studentId') as string;
+  const back = `/students/${studentId}/recitations`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('update_recitation', {
+    p_id: id,
+    p_type: formData.get('type') as string,
+    p_surah: Number(formData.get('surah')),
+    p_ayah_from: Number(formData.get('ayahFrom')),
+    p_ayah_to: Number(formData.get('ayahTo')),
+    p_grade: formData.get('grade') as string,
+    p_notes: ((formData.get('notes') as string) ?? '').trim() || null,
+  });
+  if (error) {
+    redirect(`${back}/${id}?error=${encodeURIComponent(error.message)}` as never);
+  }
+  redirect(`${back}?updated=1` as never);
+}

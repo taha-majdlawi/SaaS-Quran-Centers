@@ -21,6 +21,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ org:
     supabase.from('circles').select('*', { count: 'exact', head: true }).eq('organization_id', org.id),
   ]);
 
+  const { data: todayData } = await supabase.rpc('get_teacher_today', { p_org: org.id });
+  const today = todayData as {
+    is_working_day: boolean;
+    circles: { id: string; name: string; students: number; recited: number; present: number; absent: number }[];
+  } | null;
+
   const stats = [
     { label: 'الطلاب', value: studentCount ?? 0 },
     { label: 'المعلمون', value: teacherCount ?? 0 },
@@ -38,6 +44,26 @@ export default async function DashboardPage({ params }: { params: Promise<{ org:
           </div>
         ))}
       </div>
+
+      {today && today.circles.length > 0 && (
+        <div className="mt-8">
+          <h2 className="mb-3 font-semibold">حلقاتك اليوم</h2>
+          {!today.is_working_day && (
+            <p className="mb-3 rounded bg-amber-50 px-3 py-2 text-sm text-amber-800">اليوم ليس من أيام الدوام في مركزك</p>
+          )}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {today.circles.map((c) => (
+              <div key={c.id} className="rounded-lg border bg-white p-4">
+                <p className="font-semibold">{c.name}</p>
+                <p className="mt-1 text-sm text-gray-600">
+                  {c.students} طالب · سمّع {c.recited} · حاضر {c.present}
+                  {c.absent > 0 && ` · غائب ${c.absent}`}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
