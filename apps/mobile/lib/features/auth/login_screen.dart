@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
     } on WrongCredentialsException {
-      setState(() => _error = 'البريد الإلكتروني أو كلمة السر غير صحيحة');
+      setState(() => _error = 'رقم الدخول / البريد أو كلمة السر غير صحيحة');
     } on NotCenterMemberException {
       setState(() => _error = 'هذا الحساب غير مسجّل في ${_center?.name ?? 'هذا المركز'}');
     } catch (_) {
