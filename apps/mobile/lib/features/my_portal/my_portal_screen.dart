@@ -282,6 +282,26 @@ class _HomeTab extends StatelessWidget {
             onTap: () => context.push('/calendar'),
           ),
         ),
+        Row(children: [
+          Expanded(
+            child: Card(
+              child: ListTile(
+                leading: const Icon(Icons.emoji_events_rounded),
+                title: const Text('الشارات', style: TextStyle(fontWeight: FontWeight.w700)),
+                onTap: () => context.push('/my/badges'),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Card(
+              child: ListTile(
+                leading: const Icon(Icons.storefront_rounded),
+                title: const Text('السوق', style: TextStyle(fontWeight: FontWeight.w700)),
+                onTap: () => context.push('/my/market'),
+              ),
+            ),
+          ),
+        ]),
         const SectionTitle('السرد القرآني'),
         SerdSummaryCard(summary: data.serd),
         const SectionTitle('آخر التسميعات'),

@@ -1,30 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/supabase/supabase_client.dart';
-import '../../core/widgets/entity_list.dart';
+import '../../core/tenant/organization.dart';
+import '../../core/tenant/tenant_controller.dart';
+import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/format.dart';
-import 'circle_challenges_repository.dart';
+import '../../core/widgets/ui.dart';
+import '../engagement/engagement_models.dart';
+import '../engagement/engagement_repository.dart';
 
-class CircleChallengesListScreen extends StatelessWidget {
+/// Circle-vs-circle challenges. Circles are ranked by the AVERAGE PER STUDENT
+/// (never a raw sum), so a small circle is not beaten by its size alone.
+class CircleChallengesListScreen extends StatefulWidget {
   const CircleChallengesListScreen({super.key});
 
   @override
+  State<CircleChallengesListScreen> createState() => _CircleChallengesListScreenState();
+}
+
+class _CircleChallengesListScreenState extends State<CircleChallengesListScreen> {
+  final _repository = EngagementRepository(AppSupabase.client);
+  Future<List<Challenge>>? _future;
+  String? _orgId;
+
+  @override
   Widget build(BuildContext context) {
-    final repository = CircleChallengesRepository(AppSupabase.client);
-    return EntityListScreen<ChallengeSummary>(
-      title: 'منافسات الحلقات',
-      loader: repository.fetchChallenges,
-      addPath: '/circle-challenges/new',
-      addLabel: 'منافسة جديدة',
-      emptyIcon: Icons.leaderboard_outlined,
-      emptyTitle: 'لا يوجد منافسات بعد',
-      emptySubtitle: 'أنشئ منافسة لتحفيز الحلقات',
-      tileBuilder: (context, c) => EntityTile(
-        title: c.title,
-        subtitle: '${c.metric}  ·  ${formatDate(c.startsOn)} — ${formatDate(c.endsOn)}',
-        leading: const TileIcon(Icons.leaderboard_rounded, color: Colors.orange),
-        path: '/circle-challenges/${c.id}',
-      ),
+    final membership = context.watch<TenantController>().active;
+    final orgId = membership?.organization.id;
+    if (orgId != null && orgId != _orgId) {
+      _orgId = orgId;
+      _future = _repository.challenges(orgId);
+    }
+    final isAdmin = membership?.role == OrgRole.admin;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('منافسات الحلقات')),
+      drawer: const AppDrawer(),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await context.push('/circle-challenges/new');
+                if (mounted) setState(() => _future = _repository.challenges(_orgId!));
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('منافسة جديدة'),
+            )
+          : null,
+      body: _future == null
+          ? const SizedBox.shrink()
+          : AsyncBody<List<Challenge>>(
+              future: _future!,
+              onRetry: () => setState(() => _future = _repository.challenges(_orgId!)),
+              builder: (context, list) => list.isEmpty
+                  ? const EmptyState(icon: Icons.leaderboard_outlined, title: 'لا توجد منافسات')
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+                      children: [
+                        for (final c in list)
+                          Card(
+                            child: ListTile(
+                              onTap: () async {
+                                await context.push('/circle-challenges/${c.id}');
+                                if (mounted) setState(() => _future = _repository.challenges(_orgId!));
+                              },
+                              title: Text(c.title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                              subtitle: Text('${kMetricLabels[c.metric]}\n${formatDate(c.startsOn)} — ${formatDate(c.endsOn)}'),
+                              isThreeLine: true,
+                              trailing: StatusChip(label: kChallengeStatus[c.status] ?? c.status, color: c.status == 'active' ? Colors.green : (c.status == 'ended' ? Colors.grey : Colors.blue)),
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
     );
   }
 }

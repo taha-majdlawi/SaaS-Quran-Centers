@@ -1,172 +1,142 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
-import 'market_repository.dart';
+import '../../core/widgets/ui.dart';
+import '../engagement/engagement_models.dart';
+import '../engagement/engagement_repository.dart';
 
+/// Admin: create / edit one market item (priced in the center's currency).
 class MarketItemFormScreen extends StatefulWidget {
   const MarketItemFormScreen({super.key, this.itemId});
 
   final String? itemId;
-
-  bool get isEditing => itemId != null;
 
   @override
   State<MarketItemFormScreen> createState() => _MarketItemFormScreenState();
 }
 
 class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
-  final _repository = MarketRepository(AppSupabase.client);
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _costController = TextEditingController();
-  final _stockController = TextEditingController();
-  bool _isActive = true;
-
-  bool _loading = true;
-  bool _submitting = false;
+  final _repository = EngagementRepository(AppSupabase.client);
+  late final Future<MarketOverview> _future = _load();
+  final _name = TextEditingController();
+  final _description = TextEditingController();
+  final _image = TextEditingController();
+  final _price = TextEditingController();
+  final _stock = TextEditingController();
+  bool _active = true;
+  bool _saving = false;
   String? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+  String get _orgId => context.read<TenantController>().active!.organization.id;
 
-  Future<void> _load() async {
-    if (widget.isEditing) {
-      final item = await _repository.fetchItem(widget.itemId!);
-      if (item != null) {
-        _nameController.text = item.name;
-        _costController.text = item.cost.toString();
-        _stockController.text = item.stock?.toString() ?? '';
-        _isActive = item.isActive;
-      }
+  Future<MarketOverview> _load() async {
+    final o = await _repository.marketOverview(_orgId);
+    final item = o.items.where((i) => i.id == widget.itemId).firstOrNull;
+    if (item != null) {
+      _name.text = item.name;
+      _description.text = item.description ?? '';
+      _image.text = item.imageUrl ?? '';
+      _price.text = '${item.price}';
+      _stock.text = item.stock?.toString() ?? '';
+      _active = item.isActive;
     }
-    if (mounted) setState(() => _loading = false);
+    return o;
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _costController.dispose();
-    _stockController.dispose();
+    _name.dispose();
+    _description.dispose();
+    _image.dispose();
+    _price.dispose();
+    _stock.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+  Future<void> _save() async {
+    final price = num.tryParse(_price.text.trim());
+    if (_name.text.trim().isEmpty || price == null) {
+      setState(() => _error = 'الاسم والسعر مطلوبان');
+      return;
+    }
     setState(() {
-      _submitting = true;
+      _saving = true;
       _error = null;
     });
-    final cost = int.tryParse(_costController.text.trim()) ?? 0;
-    final stock = _stockController.text.trim().isEmpty ? null : int.tryParse(_stockController.text.trim());
-
     try {
-      if (widget.isEditing) {
-        await _repository.updateItem(
-          id: widget.itemId!,
-          name: _nameController.text.trim(),
-          cost: cost,
-          stock: stock,
-          isActive: _isActive,
-        );
-      } else {
-        final orgId = context.read<TenantController>().active!.organization.id;
-        await _repository.createItem(organizationId: orgId, name: _nameController.text.trim(), cost: cost, stock: stock);
-      }
+      await _repository.saveItem(
+        _orgId,
+        id: widget.itemId,
+        name: _name.text.trim(),
+        description: _description.text.trim().isEmpty ? null : _description.text.trim(),
+        imageUrl: _image.text.trim().isEmpty ? null : _image.text.trim(),
+        price: price,
+        stock: int.tryParse(_stock.text.trim()),
+        isActive: _active,
+      );
       if (mounted) context.pop();
-    } catch (e) {
-      setState(() => _error = 'حدث خطأ أثناء الحفظ - حاول مرة أخرى');
+    } on PostgrestException catch (e) {
+      setState(() => _error = e.message);
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   Future<void> _delete() async {
-    final confirmed = await showDialog<bool>(
+    final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('حذف العنصر'),
-        content: const Text('متأكد إنك بدك تحذف هذا العنصر؟ لا يمكن التراجع.'),
+        content: const Text('الطلبات السابقة تحتفظ باسمه وسعره. متأكد؟'),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => context.pop(true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
         ],
       ),
     );
-    if (confirmed != true) return;
-    await _repository.deleteItem(widget.itemId!);
-    if (mounted) context.pop();
+    if (ok != true) return;
+    try {
+      await _repository.deleteItem(_orgId, widget.itemId!);
+      if (mounted) context.pop();
+    } on PostgrestException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'تعديل العنصر' : 'إضافة عنصر'),
-        actions: [
-          if (widget.isEditing) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
-        ],
+        title: Text(widget.itemId == null ? 'عنصر جديد' : 'تعديل عنصر'),
+        actions: [if (widget.itemId != null) IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: _delete)],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (_error != null) MessageBanner(message: _error!),
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'اسم العنصر'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _costController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'التكلفة (نقاط)'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _stockController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'المخزون (اتركه فاضي لغير محدود)',
-                      ),
-                    ),
-                    if (widget.isEditing) ...[
-                      const SizedBox(height: 8),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('مفعّل'),
-                        value: _isActive,
-                        onChanged: (v) => setState(() => _isActive = v),
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      onPressed: _submitting ? null : _submit,
-                      child: _submitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : Text(widget.isEditing ? 'حفظ التعديلات' : 'إضافة العنصر'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+      body: AsyncBody<MarketOverview>(
+        future: _future,
+        builder: (context, o) => ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (_error != null) MessageBanner(message: _error!),
+            TextField(controller: _name, decoration: const InputDecoration(labelText: 'الاسم')),
+            const SizedBox(height: 12),
+            TextField(controller: _description, maxLines: 2, decoration: const InputDecoration(labelText: 'الوصف')),
+            const SizedBox(height: 12),
+            TextField(controller: _image, textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'رابط الصورة (اختياري)')),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: TextField(controller: _price, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'السعر (${o.symbol})'))),
+              const SizedBox(width: 10),
+              Expanded(child: TextField(controller: _stock, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'المخزون (فارغ = بلا حد)'))),
+            ]),
+            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('فعّال (يظهر للطلاب)'), value: _active, onChanged: (v) => setState(() => _active = v)),
+            const SizedBox(height: 12),
+            LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+          ],
+        ),
+      ),
     );
   }
 }

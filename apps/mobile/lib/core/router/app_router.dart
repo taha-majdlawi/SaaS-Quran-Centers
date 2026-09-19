@@ -37,6 +37,7 @@ import '../../features/calendar/calendar_list_screen.dart';
 import '../../features/calendar/event_form_screen.dart';
 import '../../features/calendar/event_detail_screen.dart';
 import '../../features/calendar/calendar_types_screen.dart';
+import '../../features/my_portal/portal_engagement_screens.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/chat/chat_list_screen.dart';
 import '../../features/chat/new_chat_screen.dart';
@@ -93,7 +94,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       final calendarOk = segments.isNotEmpty &&
           segments.first == 'calendar' &&
           (segments.length == 1 || (segments.length == 2 && segments[1] != 'new' && segments[1] != 'types'));
-      if (isPortalOnly && path != '/my' && !calendarOk) {
+      if (isPortalOnly && path != '/my' && !path.startsWith('/my/') && !calendarOk) {
         return '/my';
       }
 
@@ -105,6 +106,8 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),
+      GoRoute(path: '/my/market', builder: (context, state) => const PortalMarketScreen()),
+      GoRoute(path: '/my/badges', builder: (context, state) => const PortalBadgesScreen()),
       GoRoute(
         path: '/circle/:id',
         builder: (context, state) => CircleStudentsScreen(circleId: state.pathParameters['id']!),

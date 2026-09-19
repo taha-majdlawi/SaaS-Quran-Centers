@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
+import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
-import 'market_repository.dart';
+import '../../core/widgets/format.dart';
+import '../../core/widgets/ui.dart';
+import '../engagement/engagement_models.dart';
+import '../engagement/engagement_repository.dart';
 
-/// Mirrors apps/web's /market page: item catalog + edit links, a purchase
-/// form, and a manual balance-adjustment form.
+/// Admin: the points market. Items, orders (deliver / cancel - a cancel refunds
+/// the balance and restores stock), student wallets, and the points -> currency
+/// rate (which only affects points converted AFTER a change).
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
 
@@ -18,211 +23,220 @@ class MarketScreen extends StatefulWidget {
 }
 
 class _MarketScreenState extends State<MarketScreen> {
-  final _repository = MarketRepository(AppSupabase.client);
-  String? _loadedForOrgId;
-  late Future<void> _dataFuture;
+  final _repository = EngagementRepository(AppSupabase.client);
+  Future<MarketOverview>? _future;
+  Future<List<WalletRow>>? _wallets;
+  String? _orgId;
+  int _tab = 0;
 
-  List<MarketItemSummary> _items = [];
-  List<MarketStudentOption> _students = [];
-
-  String? _purchaseStudentId;
-  String? _purchaseItemId;
-  bool _purchasing = false;
-
-  String? _adjustStudentId;
-  final _amountController = TextEditingController(text: '10');
-  bool _adjusting = false;
-
-  String? _message;
-  bool _isError = false;
-
-  Future<void> _load(String orgId) async {
-    final results = await Future.wait([
-      _repository.fetchItems(orgId),
-      _repository.fetchActiveStudentsWithBalance(orgId),
-    ]);
-    _items = results[0] as List<MarketItemSummary>;
-    _students = results[1] as List<MarketStudentOption>;
+  void _load(String orgId) {
+    _orgId = orgId;
+    _future = _repository.marketOverview(orgId);
+    _wallets = null;
   }
 
-  void _reload(String orgId) {
-    _loadedForOrgId = orgId;
-    _dataFuture = _load(orgId);
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _purchase() async {
-    if (_purchaseStudentId == null || _purchaseItemId == null) return;
-    setState(() {
-      _purchasing = true;
-      _message = null;
-    });
+  Future<void> _run(Future<void> Function() action, String done) async {
     try {
-      await _repository.recordPurchase(
-        organizationId: _loadedForOrgId!,
-        studentId: _purchaseStudentId!,
-        itemId: _purchaseItemId!,
-      );
+      await action();
       if (mounted) {
-        setState(() { _message = 'تم تسجيل الشراء'; _isError = false; });
-        _reload(_loadedForOrgId!);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
+        setState(() => _load(_orgId!));
       }
-    } catch (e) {
-      final isInsufficient = e is InsufficientBalanceException;
-      if (mounted) {
-        setState(() {
-          _message = isInsufficient ? 'رصيد الطالب غير كافٍ لهذا العنصر' : 'حدث خطأ أثناء تسجيل الشراء';
-          _isError = true;
-        });
-      }
-    } finally {
-      if (mounted) setState(() => _purchasing = false);
+    } on PostgrestException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
-  Future<void> _adjust() async {
-    if (_adjustStudentId == null) return;
-    final amount = int.tryParse(_amountController.text.trim());
-    if (amount == null) return;
-    setState(() {
-      _adjusting = true;
-      _message = null;
-    });
-    try {
-      await _repository.adjustPoints(organizationId: _loadedForOrgId!, studentId: _adjustStudentId!, amount: amount);
-      if (mounted) {
-        setState(() { _message = 'تم تعديل الرصيد'; _isError = false; });
-        _reload(_loadedForOrgId!);
-      }
-    } catch (e) {
-      if (mounted) setState(() { _message = 'حدث خطأ أثناء التعديل'; _isError = true; });
-    } finally {
-      if (mounted) setState(() => _adjusting = false);
+  Future<void> _editConfig(MarketOverview o) async {
+    final ppu = TextEditingController(text: '${o.pointsPerUnit}');
+    final value = TextEditingController(text: '${o.unitValue}');
+    final symbol = TextEditingController(text: o.symbol);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('سعر تحويل النقاط'),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(controller: ppu, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'كل (نقطة)')),
+            const SizedBox(height: 10),
+            TextField(controller: value, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '= (قيمة)')),
+            const SizedBox(height: 10),
+            TextField(controller: symbol, maxLength: 8, decoration: const InputDecoration(labelText: 'رمز العملة')),
+            const SizedBox(height: 4),
+            Text('يسري التغيير على النقاط التي تُحوَّل بعده فقط؛ ما تحوّل سابقًا يبقى بقيمته.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+        ],
+      ),
+    );
+    final v = (int.tryParse(ppu.text.trim()), num.tryParse(value.text.trim()), symbol.text.trim());
+    ppu.dispose();
+    value.dispose();
+    symbol.dispose();
+    if (ok != true) return;
+    if (v.$1 == null || v.$2 == null || v.$3.isEmpty) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أدخل أرقامًا صحيحة ورمز العملة')));
+      return;
     }
+    await _run(() => _repository.saveConfig(_orgId!, pointsPerUnit: v.$1!, unitValue: v.$2!, symbol: v.$3), 'تم حفظ السعر');
+  }
+
+  Future<void> _confirmCancel(Purchase p) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('إلغاء الطلب'),
+        content: const Text('يُعاد الرصيد والمخزون. متأكد؟'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('لا')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('نعم')),
+        ],
+      ),
+    );
+    if (ok == true) await _run(() => _repository.setPurchaseStatus(p.id, 'cancelled'), 'أُلغي الطلب');
   }
 
   @override
   Widget build(BuildContext context) {
-    final orgId = context.watch<TenantController>().active?.organization.id;
-    if (orgId != null && orgId != _loadedForOrgId) {
-      _reload(orgId);
-    }
+    final membership = context.watch<TenantController>().active;
+    final orgId = membership?.organization.id;
+    if (orgId != null && orgId != _orgId) _load(orgId);
+    final isAdmin = membership?.role == OrgRole.admin;
 
     return Scaffold(
       appBar: AppBar(title: const Text('سوق النقاط')),
       drawer: const AppDrawer(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await context.push('/market/new');
-          if (orgId != null && mounted) setState(() => _reload(orgId));
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: orgId == null
-          ? const SizedBox.shrink()
-          : FutureBuilder<void>(
-              future: _dataFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState != ConnectionState.done) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final activeItems = _items.where((i) => i.isActive).toList();
-                return ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (_message != null) MessageBanner(message: _message!, isError: _isError),
-                    if (_items.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: Text('لا يوجد عناصر بعد')),
-                      )
-                    else
-                      ..._items.map((i) => Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
-                              title: Text(i.name),
-                              subtitle: Text('${i.cost} نقطة · ${i.stock?.toString() ?? "غير محدود"} · ${i.isActive ? "مفعّل" : "متوقف"}'),
-                              trailing: TextButton(
-                                onPressed: () async {
-                                  await context.push('/market/${i.id}');
-                                  if (mounted) setState(() => _reload(orgId));
-                                },
-                                child: const Text('تعديل'),
-                              ),
-                            ),
-                          )),
-                    if (activeItems.isNotEmpty && _students.isNotEmpty) ...[
-                      const Divider(height: 32),
-                      Text('تسجيل عملية شراء', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _purchaseStudentId,
-                        decoration: const InputDecoration(labelText: 'الطالب'),
-                        items: _students
-                            .map((s) => DropdownMenuItem(value: s.id, child: Text('${s.fullName} (${s.balance} نقطة)')))
-                            .toList(),
-                        onChanged: (v) => setState(() => _purchaseStudentId = v),
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _purchaseItemId,
-                        decoration: const InputDecoration(labelText: 'العنصر'),
-                        items: activeItems
-                            .map((i) => DropdownMenuItem(value: i.id, child: Text('${i.name} (${i.cost} نقطة)')))
-                            .toList(),
-                        onChanged: (v) => setState(() => _purchaseItemId = v),
-                      ),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: _purchasing ? null : _purchase,
-                        child: _purchasing
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text('تسجيل الشراء'),
-                      ),
-                    ],
-                    if (_students.isNotEmpty) ...[
-                      const Divider(height: 32),
-                      Text('تعديل رصيد يدويًا', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _adjustStudentId,
-                        decoration: const InputDecoration(labelText: 'الطالب'),
-                        items: _students
-                            .map((s) => DropdownMenuItem(value: s.id, child: Text('${s.fullName} (${s.balance} نقطة)')))
-                            .toList(),
-                        onChanged: (v) => setState(() => _adjustStudentId = v),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(signed: true),
-                        decoration: const InputDecoration(labelText: 'الكمية (بالسالب للخصم)'),
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton(
-                        onPressed: _adjusting ? null : _adjust,
-                        child: _adjusting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text('تعديل الرصيد'),
-                      ),
-                    ],
-                  ],
-                );
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await context.push('/market/new');
+                if (mounted) setState(() => _load(_orgId!));
               },
-            ),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('عنصر جديد'),
+            )
+          : null,
+      body: !isAdmin
+          ? const EmptyState(icon: Icons.lock_outline_rounded, title: 'إدارة السوق للمدير فقط')
+          : _future == null
+              ? const SizedBox.shrink()
+              : AsyncBody<MarketOverview>(
+                  future: _future!,
+                  onRetry: () => setState(() => _load(_orgId!)),
+                  builder: (context, o) {
+                    final pending = o.purchases.where((p) => p.status == 'pending').length;
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                          child: SegmentedButton<int>(
+                            segments: [
+                              const ButtonSegment(value: 0, label: Text('العناصر')),
+                              ButtonSegment(value: 1, label: Text(pending > 0 ? 'الطلبات ($pending)' : 'الطلبات')),
+                              const ButtonSegment(value: 2, label: Text('الأرصدة')),
+                            ],
+                            selected: {_tab},
+                            onSelectionChanged: (s) => setState(() {
+                              _tab = s.first;
+                              if (_tab == 2) _wallets ??= _repository.marketWallets(_orgId!);
+                            }),
+                          ),
+                        ),
+                        Expanded(child: RefreshIndicator(onRefresh: () async => setState(() => _load(_orgId!)), child: _body(o))),
+                      ],
+                    );
+                  },
+                ),
     );
+  }
+
+  Widget _body(MarketOverview o) {
+    switch (_tab) {
+      case 1:
+        return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [
+          if (o.purchases.isEmpty) const Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.receipt_long_outlined, title: 'لا توجد طلبات')),
+          for (final p in o.purchases)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Expanded(child: Text('${p.itemName} — ${p.studentName ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800))),
+                    StatusChip(label: kPurchaseLabels[p.status] ?? p.status, color: kPurchaseColors[p.status] ?? Colors.grey),
+                  ]),
+                  const SizedBox(height: 4),
+                  Text('${money(p.spent, o.symbol)}  ·  ${formatDate(p.createdAt)}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
+                  if (p.status != 'cancelled')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Wrap(spacing: 8, children: [
+                        if (p.status == 'pending')
+                          FilledButton(
+                            onPressed: () => _run(() => _repository.setPurchaseStatus(p.id, 'fulfilled'), 'تم التسليم'),
+                            style: FilledButton.styleFrom(minimumSize: const Size(0, 38)),
+                            child: const Text('تم التسليم'),
+                          ),
+                        OutlinedButton(
+                          onPressed: () => _confirmCancel(p),
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red, minimumSize: const Size(0, 38)),
+                          child: const Text('إلغاء'),
+                        ),
+                      ]),
+                    ),
+                ]),
+              ),
+            ),
+        ]);
+      case 2:
+        return FutureBuilder<List<WalletRow>>(
+          future: _wallets,
+          builder: (context, snap) {
+            if (snap.hasError) return ErrorState(onRetry: () => setState(() => _wallets = _repository.marketWallets(_orgId!)));
+            final rows = snap.data;
+            if (rows == null) return const Center(child: CircularProgressIndicator());
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [
+              for (final w in rows)
+                Card(
+                  child: ListTile(
+                    leading: InitialAvatar(w.name),
+                    title: Text(w.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text('${w.wallet.earnedPoints} نقطة  ·  المصروف ${money(w.wallet.spent, o.symbol)}'),
+                    trailing: Text(money(w.wallet.balance, o.symbol), style: const TextStyle(fontWeight: FontWeight.w800)),
+                  ),
+                ),
+            ]);
+          },
+        );
+      default:
+        return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [
+          if (!o.enabled) const MessageBanner(message: 'السوق معطّل حاليًا (يُفعَّل من إعدادات المركز)', isError: false),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.currency_exchange_rounded),
+              title: Text('كل ${o.pointsPerUnit} نقطة = ${money(o.unitValue, o.symbol)}', style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: const Text('سعر تحويل النقاط إلى عملة'),
+              trailing: const Icon(Icons.edit_outlined),
+              onTap: () => _editConfig(o),
+            ),
+          ),
+          const SectionTitle('العناصر'),
+          if (o.items.isEmpty) const Padding(padding: EdgeInsets.all(20), child: Center(child: Text('لا توجد عناصر بعد'))),
+          for (final i in o.items)
+            Card(
+              child: ListTile(
+                onTap: () async {
+                  await context.push('/market/${i.id}');
+                  if (mounted) setState(() => _load(_orgId!));
+                },
+                title: Text(i.name, style: TextStyle(fontWeight: FontWeight.w700, color: i.isActive ? null : Colors.grey)),
+                subtitle: Text('${i.stock == null ? 'مخزون غير محدود' : 'المخزون: ${i.stock}'}${i.isActive ? '' : '  ·  غير فعّال'}'),
+                trailing: Text(money(i.price, o.symbol), style: const TextStyle(fontWeight: FontWeight.w800)),
+              ),
+            ),
+        ]);
+    }
   }
 }

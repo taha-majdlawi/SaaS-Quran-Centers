@@ -1,131 +1,107 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
-import 'circle_challenges_repository.dart';
+import '../../core/widgets/ui.dart';
+import '../engagement/engagement_models.dart';
+import '../engagement/engagement_repository.dart';
 
-final _dateFormat = DateFormat('yyyy-MM-dd');
-
+/// Admin: create / edit a challenge.
 class ChallengeFormScreen extends StatefulWidget {
-  const ChallengeFormScreen({super.key});
+  const ChallengeFormScreen({super.key, this.challenge});
+
+  final Challenge? challenge;
 
   @override
   State<ChallengeFormScreen> createState() => _ChallengeFormScreenState();
 }
 
 class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
-  final _repository = CircleChallengesRepository(AppSupabase.client);
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _metricController = TextEditingController();
-  DateTime? _startsOn;
-  DateTime? _endsOn;
-  bool _submitting = false;
+  final _repository = EngagementRepository(AppSupabase.client);
+  late final _title = TextEditingController(text: widget.challenge?.title ?? '');
+  late final _description = TextEditingController(text: widget.challenge?.description ?? '');
+  late String _metric = widget.challenge?.metric ?? 'points';
+  late DateTime _start = widget.challenge == null ? DateTime.now() : DateTime.parse(widget.challenge!.startsOn);
+  late DateTime _end = widget.challenge == null ? DateTime.now().add(const Duration(days: 7)) : DateTime.parse(widget.challenge!.endsOn);
+  bool _saving = false;
   String? _error;
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _metricController.dispose();
+    _title.dispose();
+    _description.dispose();
     super.dispose();
   }
 
-  Future<void> _pickDate(bool isStart) async {
-    final picked = await showDatePicker(
+  Future<void> _pick(bool start) async {
+    final p = await showDatePicker(
       context: context,
-      initialDate: (isStart ? _startsOn : _endsOn) ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      initialDate: start ? _start : _end,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
     );
-    if (picked != null) {
-      setState(() => isStart ? _startsOn = picked : _endsOn = picked);
-    }
+    if (p != null) setState(() => start ? _start = p : _end = p);
   }
 
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_startsOn == null || _endsOn == null) {
-      setState(() => _error = 'يجب تحديد تاريخ البداية والنهاية');
+  Future<void> _save() async {
+    if (_title.text.trim().isEmpty) {
+      setState(() => _error = 'عنوان المنافسة مطلوب');
       return;
     }
-
     setState(() {
-      _submitting = true;
+      _saving = true;
       _error = null;
     });
-
     try {
-      final orgId = context.read<TenantController>().active!.organization.id;
-      await _repository.createChallenge(
-        organizationId: orgId,
-        title: _titleController.text.trim(),
-        metric: _metricController.text.trim(),
-        startsOn: _dateFormat.format(_startsOn!),
-        endsOn: _dateFormat.format(_endsOn!),
+      await _repository.saveChallenge(
+        context.read<TenantController>().active!.organization.id,
+        id: widget.challenge?.id,
+        title: _title.text.trim(),
+        description: _description.text.trim().isEmpty ? null : _description.text.trim(),
+        metric: _metric,
+        starts: _start,
+        ends: _end,
       );
-      if (mounted) context.pop();
-    } catch (e) {
-      setState(() => _error = 'حدث خطأ أثناء الإضافة - حاول مرة أخرى');
+      if (mounted) context.pop(true);
+    } on PostgrestException catch (e) {
+      setState(() => _error = e.message);
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    String d(DateTime v) => '${v.year}/${v.month}/${v.day}';
     return Scaffold(
-      appBar: AppBar(title: const Text('منافسة جديدة')),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: Text(widget.challenge == null ? 'منافسة جديدة' : 'تعديل المنافسة')),
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (_error != null) MessageBanner(message: _error!),
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'العنوان',
-                  hintText: 'منافسة الحفظ الشهرية',
-                ),
-                validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _metricController,
-                decoration: const InputDecoration(
-                  labelText: 'المعيار',
-                  hintText: 'عدد الأجزاء المحفوظة',
-                ),
-                validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => _pickDate(true),
-                icon: const Icon(Icons.event),
-                label: Text(_startsOn == null ? 'تاريخ البداية' : _dateFormat.format(_startsOn!)),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => _pickDate(false),
-                icon: const Icon(Icons.event),
-                label: Text(_endsOn == null ? 'تاريخ النهاية' : _dateFormat.format(_endsOn!)),
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _submitting ? null : _submit,
-                child: _submitting
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('إضافة المنافسة'),
-              ),
-            ],
+        children: [
+          if (_error != null) MessageBanner(message: _error!),
+          TextField(controller: _title, decoration: const InputDecoration(labelText: 'العنوان')),
+          const SizedBox(height: 12),
+          TextField(controller: _description, maxLines: 2, decoration: const InputDecoration(labelText: 'الوصف')),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _metric,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'المقياس'),
+            items: [for (final e in kMetricLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
+            onChanged: (v) => setState(() => _metric = v ?? 'points'),
           ),
-        ),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: OutlinedButton(onPressed: () => _pick(true), child: Text('من: ${d(_start)}'))),
+            const SizedBox(width: 8),
+            Expanded(child: OutlinedButton(onPressed: () => _pick(false), child: Text('إلى: ${d(_end)}'))),
+          ]),
+          const SizedBox(height: 20),
+          LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+        ],
       ),
     );
   }
