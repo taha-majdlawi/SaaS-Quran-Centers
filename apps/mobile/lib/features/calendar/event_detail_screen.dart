@@ -174,14 +174,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     children: [
                       TextFormField(
                         controller: _titleController,
-                        decoration: const InputDecoration(labelText: 'العنوان', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'العنوان'),
                         validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _descriptionController,
                         maxLines: 3,
-                        decoration: const InputDecoration(labelText: 'الوصف', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الوصف'),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
@@ -192,7 +192,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _locationController,
-                        decoration: const InputDecoration(labelText: 'المكان', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'المكان'),
                       ),
                       const SizedBox(height: 8),
                       CheckboxListTile(
@@ -231,7 +231,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: _registerStudentId,
-                    decoration: const InputDecoration(labelText: 'تسجيل طالب', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'تسجيل طالب'),
                     items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.fullName))).toList(),
                     onChanged: (v) => setState(() => _registerStudentId = v),
                   ),

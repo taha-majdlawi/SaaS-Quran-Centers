@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'core/auth/auth_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
+import 'core/theme/app_theme.dart';
 import 'core/tenant/tenant_controller.dart';
 import 'core/tenant/tenant_repository.dart';
 
@@ -90,6 +92,15 @@ class _AppRouterHost extends StatefulWidget {
 
 class _AppRouterHostState extends State<_AppRouterHost> {
   bool _wasAuthenticated = false;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    // Built once - the router listens to auth/tenant itself (refreshListenable),
+    // rebuilding it on every state change would reset the user's navigation.
+    _router = buildAppRouter(auth: context.read<AuthController>(), tenant: context.read<TenantController>());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,10 +115,11 @@ class _AppRouterHostState extends State<_AppRouterHost> {
       WidgetsBinding.instance.addPostFrameCallback((_) => tenant.clear());
     }
 
-    final router = buildAppRouter(auth: auth, tenant: tenant);
     return MaterialApp.router(
       title: 'بستان القرآن',
-      routerConfig: router,
+      theme: buildAppTheme(parseBrandColor(tenant.active?.organization.primaryColor)),
+      debugShowCheckedModeBanner: false,
+      routerConfig: _router,
       locale: const Locale('ar'),
       builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
     );

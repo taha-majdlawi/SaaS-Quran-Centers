@@ -146,14 +146,14 @@ class _BadgesScreenState extends State<BadgesScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _awardStudentId,
-                        decoration: const InputDecoration(labelText: 'الطالب', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الطالب'),
                         items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.fullName))).toList(),
                         onChanged: (v) => setState(() => _awardStudentId = v),
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _awardBadgeId,
-                        decoration: const InputDecoration(labelText: 'الشارة', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الشارة'),
                         items: _badges.map((b) => DropdownMenuItem(value: b.id, child: Text(b.name))).toList(),
                         onChanged: (v) => setState(() => _awardBadgeId = v),
                       ),

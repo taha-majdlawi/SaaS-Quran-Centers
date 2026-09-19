@@ -117,14 +117,14 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                     ],
                     DropdownButtonFormField<String>(
                       initialValue: _role,
-                      decoration: const InputDecoration(labelText: 'الدور', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'الدور'),
                       items: kMemberRoleLabels.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
                       onChanged: (v) => setState(() => _role = v ?? _role),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _status,
-                      decoration: const InputDecoration(labelText: 'الحالة', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'الحالة'),
                       items: kMemberStatusLabels.entries
                           .where((e) => e.key != 'invited')
                           .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))

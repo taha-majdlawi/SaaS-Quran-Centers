@@ -174,7 +174,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _purchaseStudentId,
-                        decoration: const InputDecoration(labelText: 'الطالب', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الطالب'),
                         items: _students
                             .map((s) => DropdownMenuItem(value: s.id, child: Text('${s.fullName} (${s.balance} نقطة)')))
                             .toList(),
@@ -183,7 +183,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _purchaseItemId,
-                        decoration: const InputDecoration(labelText: 'العنصر', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'العنصر'),
                         items: activeItems
                             .map((i) => DropdownMenuItem(value: i.id, child: Text('${i.name} (${i.cost} نقطة)')))
                             .toList(),
@@ -207,7 +207,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _adjustStudentId,
-                        decoration: const InputDecoration(labelText: 'الطالب', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الطالب'),
                         items: _students
                             .map((s) => DropdownMenuItem(value: s.id, child: Text('${s.fullName} (${s.balance} نقطة)')))
                             .toList(),
@@ -217,7 +217,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       TextField(
                         controller: _amountController,
                         keyboardType: const TextInputType.numberWithOptions(signed: true),
-                        decoration: const InputDecoration(labelText: 'الكمية (بالسالب للخصم)', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الكمية (بالسالب للخصم)'),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton(

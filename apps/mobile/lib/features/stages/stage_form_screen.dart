@@ -124,7 +124,6 @@ class _StageFormScreenState extends State<StageFormScreen> {
                       decoration: const InputDecoration(
                         labelText: 'اسم المرحلة',
                         hintText: 'تمهيدي',
-                        border: OutlineInputBorder(),
                       ),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
@@ -134,14 +133,13 @@ class _StageFormScreenState extends State<StageFormScreen> {
                       decoration: const InputDecoration(
                         labelText: 'كود المرحلة (يستخدم برقم الطالب المقترح)',
                         hintText: 'TM',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _sortOrderController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'ترتيب المرحلة', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'ترتيب المرحلة'),
                     ),
                     const SizedBox(height: 20),
                     FilledButton(

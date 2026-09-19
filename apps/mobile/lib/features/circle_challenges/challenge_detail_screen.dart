@@ -137,7 +137,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
                               child: TextField(
                                 controller: _controllers[s.circleId],
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                                decoration: const InputDecoration(isDense: true),
                               ),
                             ),
                           ],

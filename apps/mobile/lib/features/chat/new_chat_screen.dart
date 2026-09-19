@@ -79,7 +79,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
                   ],
                   DropdownButtonFormField<String>(
                     initialValue: _selectedUserId,
-                    decoration: const InputDecoration(labelText: 'مع', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'مع'),
                     items: _members.map((m) => DropdownMenuItem(value: m.userId, child: Text(m.label))).toList(),
                     onChanged: (v) => setState(() => _selectedUserId = v),
                   ),

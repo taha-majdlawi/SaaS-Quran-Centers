@@ -122,7 +122,6 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
                       decoration: const InputDecoration(
                         labelText: 'اسم الشارة',
                         hintText: 'حافظ جزء',
-                        border: OutlineInputBorder(),
                       ),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
@@ -130,7 +129,7 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'الوصف', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'الوصف'),
                     ),
                     const SizedBox(height: 20),
                     FilledButton(

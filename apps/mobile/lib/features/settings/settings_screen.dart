@@ -106,31 +106,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextField(
                     controller: _nameController,
                     enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'اسم المركز', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'اسم المركز'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _primaryColorController,
                     enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'اللون الأساسي (hex)', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'اللون الأساسي (hex)'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _secondaryColorController,
                     enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'اللون الثانوي (hex)', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'اللون الثانوي (hex)'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     enabled: false,
                     controller: TextEditingController(text: '${org.slug}.bustan-alquran.com'),
-                    decoration: const InputDecoration(labelText: 'رابط المركز', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'رابط المركز'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _timezoneController,
                     enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'المنطقة الزمنية', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'المنطقة الزمنية'),
                   ),
                   if (isAdmin) ...[
                     const SizedBox(height: 20),

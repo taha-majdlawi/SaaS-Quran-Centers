@@ -131,14 +131,14 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
                     ],
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'اسم العنصر', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'اسم العنصر'),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _costController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'التكلفة (نقاط)', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'التكلفة (نقاط)'),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
                     const SizedBox(height: 12),
@@ -147,7 +147,6 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         labelText: 'المخزون (اتركه فاضي لغير محدود)',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                     if (widget.isEditing) ...[

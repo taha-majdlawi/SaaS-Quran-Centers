@@ -18,10 +18,18 @@ class TenantController extends ChangeNotifier {
   List<OrganizationMembership> _memberships = [];
   OrganizationMembership? _active;
   bool _loading = false;
+  bool _loaded = false;
+  bool _loadFailed = false;
 
   List<OrganizationMembership> get memberships => _memberships;
   OrganizationMembership? get active => _active;
   bool get loading => _loading;
+
+  /// False until the first membership load has finished (or failed), so the
+  /// router can hold every screen back behind a splash instead of building
+  /// them with no active center.
+  bool get loaded => _loaded;
+  bool get loadFailed => _loadFailed;
   bool get hasMultipleOrganizations => _memberships.length > 1;
 
   /// Whether the active membership can use the given module (see
@@ -32,7 +40,13 @@ class TenantController extends ChangeNotifier {
     _loading = true;
     notifyListeners();
 
-    _memberships = await _repository.fetchMyMemberships();
+    try {
+      _memberships = await _repository.fetchMyMemberships();
+      _loadFailed = false;
+    } catch (_) {
+      _memberships = [];
+      _loadFailed = true;
+    }
 
     if (_memberships.isEmpty) {
       _active = null;
@@ -46,6 +60,7 @@ class TenantController extends ChangeNotifier {
     }
 
     _loading = false;
+    _loaded = true;
     notifyListeners();
   }
 
@@ -59,6 +74,8 @@ class TenantController extends ChangeNotifier {
   void clear() {
     _memberships = [];
     _active = null;
+    _loaded = false;
+    _loadFailed = false;
     notifyListeners();
   }
 }

@@ -98,7 +98,6 @@ class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'العنوان',
                   hintText: 'منافسة الحفظ الشهرية',
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
               ),
@@ -108,7 +107,6 @@ class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'المعيار',
                   hintText: 'عدد الأجزاء المحفوظة',
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
               ),

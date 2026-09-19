@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../auth/auth_controller.dart';
 import '../tenant/tenant_controller.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/splash_screen.dart';
 import '../../features/tenant/org_picker_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/students/students_list_screen.dart';
@@ -58,7 +59,9 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         return path == '/login' ? null : '/login';
       }
 
-      if (tenant.loading) return null;
+      // Nothing is built until the first membership load finishes, so no screen
+      // ever renders without an active center.
+      if (tenant.loading || !tenant.loaded) return path == '/splash' ? null : '/splash';
 
       if (tenant.active == null) {
         return path == '/select-organization' ? null : '/select-organization';
@@ -66,7 +69,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
 
       // "تبديل المركز" in AppDrawer navigates here deliberately even with an
       // active org already set, so only bounce away from /login.
-      if (path == '/login') {
+      if (path == '/login' || path == '/splash') {
         return '/dashboard';
       }
 
@@ -83,6 +86,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       return null;
     },
     routes: [
+      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),

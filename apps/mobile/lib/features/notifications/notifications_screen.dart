@@ -119,20 +119,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ],
                     DropdownButtonFormField<String>(
                       initialValue: _recipientId,
-                      decoration: const InputDecoration(labelText: 'المستلم', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'المستلم'),
                       items: _members.map((m) => DropdownMenuItem(value: m.userId, child: Text(m.label))).toList(),
                       onChanged: (v) => setState(() => _recipientId = v),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _titleController,
-                      decoration: const InputDecoration(labelText: 'العنوان', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'العنوان'),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _bodyController,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'النص', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'النص'),
                     ),
                     const SizedBox(height: 12),
                     FilledButton(

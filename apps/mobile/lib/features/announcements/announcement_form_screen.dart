@@ -130,20 +130,20 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
                     ],
                     TextFormField(
                       controller: _titleController,
-                      decoration: const InputDecoration(labelText: 'العنوان', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'العنوان'),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _bodyController,
                       maxLines: 4,
-                      decoration: const InputDecoration(labelText: 'النص', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'النص'),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _audience,
-                      decoration: const InputDecoration(labelText: 'الجمهور', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'الجمهور'),
                       items: kAnnouncementAudienceLabels.entries
                           .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                           .toList(),

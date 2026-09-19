@@ -155,13 +155,13 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                     ],
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'اسم الحلقة', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'اسم الحلقة'),
                       validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _stageId,
-                      decoration: const InputDecoration(labelText: 'المرحلة', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'المرحلة'),
                       items: [
                         const DropdownMenuItem(value: null, child: Text('بدون مرحلة')),
                         ..._stages.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))),
@@ -171,7 +171,7 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _teacherId,
-                      decoration: const InputDecoration(labelText: 'المعلم', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'المعلم'),
                       items: [
                         const DropdownMenuItem(value: null, child: Text('بدون معلم')),
                         ..._teachers.map((t) => DropdownMenuItem(value: t.userId, child: Text(t.label))),
@@ -182,13 +182,13 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                     TextFormField(
                       controller: _capacityController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'السعة (عدد الطلاب)', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'السعة (عدد الطلاب)'),
                     ),
                     if (widget.isEditing) ...[
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _status,
-                        decoration: const InputDecoration(labelText: 'الحالة', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الحالة'),
                         items: kCircleStatusLabels.entries
                             .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                             .toList(),

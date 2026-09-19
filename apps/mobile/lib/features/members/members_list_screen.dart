@@ -128,12 +128,12 @@ class _MembersListScreenState extends State<MembersListScreen> {
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(labelText: 'البريد الإلكتروني', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _inviteRole,
-                      decoration: const InputDecoration(labelText: 'الدور', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'الدور'),
                       items: kMemberRoleLabels.entries
                           .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                           .toList(),

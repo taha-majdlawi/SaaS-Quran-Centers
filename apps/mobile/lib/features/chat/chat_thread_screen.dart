@@ -99,7 +99,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                   Expanded(
                     child: TextField(
                       controller: _bodyController,
-                      decoration: const InputDecoration(hintText: 'اكتب رسالة...', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(hintText: 'اكتب رسالة...'),
                       onSubmitted: (_) => _send(),
                     ),
                   ),

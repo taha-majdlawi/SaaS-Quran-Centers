@@ -121,21 +121,21 @@ class _SiteScreenState extends State<SiteScreen> {
                   TextField(
                     controller: _heroTitleController,
                     enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'عنوان رئيسي', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'عنوان رئيسي'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _heroBodyController,
                     enabled: isAdmin,
                     maxLines: 4,
-                    decoration: const InputDecoration(labelText: 'نص تعريفي', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'نص تعريفي'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _contactEmailController,
                     enabled: isAdmin,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'بريد التواصل', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'بريد التواصل'),
                   ),
                   if (isAdmin) ...[
                     const SizedBox(height: 20),

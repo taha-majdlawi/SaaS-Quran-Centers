@@ -182,14 +182,14 @@ class _SerdFormScreenState extends State<SerdFormScreen> {
                     if (!widget.isEditing) ...[
                       DropdownButtonFormField<String>(
                         initialValue: _studentId,
-                        decoration: const InputDecoration(labelText: 'الطالب', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الطالب'),
                         items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.fullName))).toList(),
                         onChanged: (value) => setState(() => _studentId = value),
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _sessionType,
-                        decoration: const InputDecoration(labelText: 'نوع السرد', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'نوع السرد'),
                         items: kSerdTypeLabels.entries
                             .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                             .toList(),
@@ -198,7 +198,7 @@ class _SerdFormScreenState extends State<SerdFormScreen> {
                     ] else ...[
                       DropdownButtonFormField<String>(
                         initialValue: _status,
-                        decoration: const InputDecoration(labelText: 'الحالة', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الحالة'),
                         items: kSerdStatusLabels.entries
                             .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                             .toList(),
@@ -207,7 +207,7 @@ class _SerdFormScreenState extends State<SerdFormScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _examinerId,
-                        decoration: const InputDecoration(labelText: 'الممتحن', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الممتحن'),
                         items: [
                           const DropdownMenuItem(value: null, child: Text('بدون تحديد')),
                           ..._staff.map((m) => DropdownMenuItem(value: m.userId, child: Text(m.label))),
@@ -226,13 +226,13 @@ class _SerdFormScreenState extends State<SerdFormScreen> {
                       TextFormField(
                         controller: _gradeController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(labelText: 'التقدير (من 10)', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'التقدير (من 10)'),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _notesController,
                         maxLines: 3,
-                        decoration: const InputDecoration(labelText: 'ملاحظات', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'ملاحظات'),
                       ),
                     ],
                     const SizedBox(height: 20),

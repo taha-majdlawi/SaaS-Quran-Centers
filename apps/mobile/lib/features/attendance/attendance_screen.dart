@@ -124,7 +124,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         initialValue: _circleId,
-                        decoration: const InputDecoration(labelText: 'الحلقة', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'الحلقة'),
                         items: _circles.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                         onChanged: (value) {
                           setState(() => _circleId = value);

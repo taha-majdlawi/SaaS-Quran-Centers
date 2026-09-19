@@ -15,6 +15,7 @@ class TenantRepository {
     final rows = await _client
         .from('organization_members')
         .select('role, permissions, organizations(*)')
+        .eq('user_id', _client.auth.currentUser?.id ?? '')
         .eq('status', 'active');
 
     return (rows as List).map((row) {

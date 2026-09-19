@@ -17,7 +17,14 @@ class StudentSummary {
 }
 
 class CircleOption {
-  const CircleOption({required this.id, required this.name});
+  const CircleOption({required this.id, required this.name, this.stageId});
+  final String id;
+  final String name;
+  final String? stageId;
+}
+
+class StageChoice {
+  const StageChoice({required this.id, required this.name});
   final String id;
   final String name;
 }
@@ -70,13 +77,28 @@ class StudentsRepository {
   Future<List<CircleOption>> fetchCircles(String organizationId) async {
     final rows = await _client
         .from('circles')
-        .select('id, name')
+        .select('id, name, stage_id')
         .eq('organization_id', organizationId)
         .order('name');
 
     return (rows as List)
-        .map((r) => CircleOption(id: r['id'] as String, name: r['name'] as String))
+        .map((r) => CircleOption(id: r['id'] as String, name: r['name'] as String, stageId: r['stage_id'] as String?))
         .toList();
+  }
+
+  Future<List<StageChoice>> fetchStages(String organizationId) async {
+    final rows = await _client
+        .from('stages')
+        .select('id, name')
+        .eq('organization_id', organizationId)
+        .order('sort_order');
+    return (rows as List).map((r) => StageChoice(id: r['id'] as String, name: r['name'] as String)).toList();
+  }
+
+  /// Same RPC apps/web uses to suggest "{stage_code}-{0001}" for a new student.
+  Future<String?> nextStudentCode(String organizationId, String stageId) async {
+    final code = await _client.rpc('next_student_code', params: {'org_id': organizationId, 'target_stage_id': stageId});
+    return code as String?;
   }
 
   Future<StudentDetail?> fetchStudent(String id) async {
