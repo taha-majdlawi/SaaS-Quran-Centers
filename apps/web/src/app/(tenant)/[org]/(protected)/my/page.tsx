@@ -1,48 +1,63 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { SURAH_NAMES } from '@/lib/quran/data';
 
-const ATTENDANCE_LABELS: Record<string, string> = {
-  present: 'حاضر',
-  absent: 'غائب',
-  excused: 'معذور',
-  late: 'متأخر',
+const TYPE_LABELS: Record<string, string> = {
+  new_memorization: 'حفظ جديد',
+  recent_review: 'مراجعة قريبة',
+  distant_review: 'مراجعة بعيدة',
 };
 
 interface StudentRow {
   id: string;
   student_code: string;
   full_name: string;
-  status: string;
 }
 
-interface WalletRow {
-  student_id: string;
-  balance: number;
+interface Recent {
+  type: string;
+  surah: number;
+  ayah_from: number;
+  ayah_to: number;
+  grade_label: string | null;
+  points_awarded: number;
+  created_at: string;
+  notes: string | null;
 }
 
-interface BadgeRow {
-  student_id: string;
-  badge_id: string;
+interface Dashboard {
+  linked: boolean;
+  student: {
+    full_name: string;
+    student_code: string;
+    total_points: number;
+    total_parts_count: number;
+    total_progress: number;
+    next_plan: string | null;
+    phone: string | null;
+    address: string | null;
+  };
+  circle: { name: string; teacher: string | null; stage: string | null } | null;
+  stats: {
+    total_recitations: number;
+    recitations_this_week: number;
+    recitations_last_week: number;
+    ayahs_this_week: number;
+    current_streak: number;
+    longest_streak: number;
+    weekly_attendance_rate: number | null;
+    monthly_attendance_rate: number | null;
+    last_recitation_at: string | null;
+  };
+  recent: Recent[];
 }
 
-interface AttendanceRow {
-  student_id: string;
-  session_date: string;
-  status: string;
-}
-
-interface SerdRow {
-  student_id: string;
-  session_type: string;
-  status: string;
-  scheduled_at: string | null;
-}
+const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('ar') : '—');
 
 // The entire web dashboard under (staff) is off-limits to student/guardian
 // accounts (see (staff)/layout.tsx) - this is the one page they land on
-// instead. Every table read here is already scoped by RLS to the caller's
-// own linked student(s) (migration 0015), so a plain select is enough -
-// there is no need to re-filter in application code.
+// instead. All numbers come from the get_student_dashboard RPC (the same call
+// the mobile home uses), which enforces access itself.
 export default async function MyPortalPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
@@ -50,8 +65,9 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
 
   const { data: students } = await supabase
     .from('students_profile')
-    .select('id, student_code, full_name, status')
-    .eq('organization_id', org.id);
+    .select('id, student_code, full_name')
+    .eq('organization_id', org.id)
+    .order('full_name');
 
   const rows = (students ?? []) as StudentRow[];
 
@@ -64,46 +80,12 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
     );
   }
 
-  const studentIds = rows.map((s) => s.id);
-
-  const [{ data: wallets }, { data: badges }, { data: attendance }, { data: serd }] = await Promise.all([
-    supabase.from('student_wallets').select('student_id, balance').in('student_id', studentIds),
-    supabase.from('student_badges').select('student_id, badge_id').in('student_id', studentIds),
-    supabase
-      .from('attendance')
-      .select('student_id, session_date, status')
-      .in('student_id', studentIds)
-      .order('session_date', { ascending: false })
-      .limit(30),
-    supabase
-      .from('serd_sessions')
-      .select('student_id, session_type, status, scheduled_at')
-      .in('student_id', studentIds)
-      .order('scheduled_at', { ascending: false })
-      .limit(20),
-  ]);
-
-  const walletByStudent = new Map<string, number>();
-  ((wallets ?? []) as WalletRow[]).forEach((w) => walletByStudent.set(w.student_id, w.balance));
-
-  const badgeCountByStudent = new Map<string, number>();
-  ((badges ?? []) as BadgeRow[]).forEach((b) =>
-    badgeCountByStudent.set(b.student_id, (badgeCountByStudent.get(b.student_id) ?? 0) + 1),
+  const dashboards = await Promise.all(
+    rows.map(async (s) => {
+      const { data } = await supabase.rpc('get_student_dashboard', { p_org: org.id, p_student_id: s.id });
+      return data as Dashboard | null;
+    }),
   );
-
-  const attendanceByStudent = new Map<string, AttendanceRow[]>();
-  ((attendance ?? []) as AttendanceRow[]).forEach((a) => {
-    const list = attendanceByStudent.get(a.student_id) ?? [];
-    list.push(a);
-    attendanceByStudent.set(a.student_id, list);
-  });
-
-  const serdByStudent = new Map<string, SerdRow[]>();
-  ((serd ?? []) as SerdRow[]).forEach((s) => {
-    const list = serdByStudent.get(s.student_id) ?? [];
-    list.push(s);
-    serdByStudent.set(s.student_id, list);
-  });
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
@@ -111,71 +93,101 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
         {org.myRole === 'guardian' ? 'أبناؤك في' : 'ملفك في'} {org.name}
       </h1>
 
-      {rows.map((student) => {
-        const studentAttendance = (attendanceByStudent.get(student.id) ?? []).slice(0, 8);
-        const studentSerd = (serdByStudent.get(student.id) ?? []).slice(0, 5);
+      {dashboards.map((d, idx) => {
+        if (!d || !d.linked) return null;
+        const { student, circle, stats, recent } = d;
+        const change = stats.recitations_this_week - stats.recitations_last_week;
+        const weekText =
+          change > 0
+            ? `أفضل من الأسبوع الماضي (+${change})`
+            : change < 0
+              ? `أقل من الأسبوع الماضي (${change})`
+              : 'ثابت مقارنة بالأسبوع الماضي';
 
         return (
-          <div key={student.id} className="rounded-lg border bg-white p-6">
-            <div className="mb-4 flex items-center justify-between">
+          <div key={rows[idx].id} className="flex flex-col gap-4 rounded-lg border bg-white p-6">
+            <div className="flex items-center justify-between rounded-lg bg-brand p-5 text-white">
               <div>
                 <h2 className="text-lg font-bold">{student.full_name}</h2>
-                <p className="text-sm text-gray-500" dir="ltr">
+                <p className="text-sm opacity-85">
+                  {circle ? `${circle.name}${circle.teacher ? ` · الشيخ ${circle.teacher}` : ''}` : 'لم يُسند إلى حلقة بعد'}
+                </p>
+                <p className="text-xs opacity-70" dir="ltr">
                   {student.student_code}
                 </p>
               </div>
-              <div className="flex gap-4 text-center text-sm">
-                <div>
-                  <p className="text-xl font-bold text-brand">{walletByStudent.get(student.id) ?? 0}</p>
-                  <p className="text-gray-500">نقاط</p>
-                </div>
-                <div>
-                  <p className="text-xl font-bold text-brand">{badgeCountByStudent.get(student.id) ?? 0}</p>
-                  <p className="text-gray-500">شارات</p>
-                </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold">{student.total_points}</p>
+                <p className="text-sm opacity-85">نقطة</p>
               </div>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <h3 className="mb-2 text-sm font-semibold text-gray-600">آخر الحضور</h3>
-                {studentAttendance.length ? (
-                  <ul className="flex flex-col gap-1 text-sm">
-                    {studentAttendance.map((a, i) => (
-                      <li key={i} className="flex justify-between rounded bg-gray-50 px-3 py-1.5">
-                        <span>{a.session_date}</span>
-                        <span
-                          className={a.status === 'present' ? 'text-green-600' : 'text-gray-500'}
-                        >
-                          {ATTENDANCE_LABELS[a.status] ?? a.status}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-400">لا يوجد سجل حضور بعد</p>
-                )}
+            <div>
+              <div className="mb-1 flex justify-between text-sm">
+                <span className="font-semibold">{student.total_parts_count} من 30 جزءًا</span>
+                <span>{student.total_progress}%</span>
               </div>
+              <div className="h-2.5 overflow-hidden rounded bg-gray-100">
+                <div
+                  className="h-full bg-brand"
+                  style={{ width: `${Math.min(100, (student.total_parts_count / 30) * 100)}%` }}
+                />
+              </div>
+              {student.next_plan && (
+                <p className="mt-3 rounded bg-amber-50 p-3 text-sm">خطتك القادمة: {student.next_plan}</p>
+              )}
+            </div>
 
-              <div>
-                <h3 className="mb-2 text-sm font-semibold text-gray-600">جلسات السرد</h3>
-                {studentSerd.length ? (
-                  <ul className="flex flex-col gap-1 text-sm">
-                    {studentSerd.map((s, i) => (
-                      <li key={i} className="flex justify-between rounded bg-gray-50 px-3 py-1.5">
-                        <span>{s.session_type === 'full' ? 'سرد كامل' : 'سرد جزئي'}</span>
-                        <span className="text-gray-500">{s.status}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-400">لا توجد جلسات سرد بعد</p>
-                )}
-              </div>
+            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+              <Stat label="آيات هذا الأسبوع" value={String(stats.ayahs_this_week)} />
+              <Stat
+                label="الحضور الأسبوعي"
+                value={stats.weekly_attendance_rate == null ? '—' : `${stats.weekly_attendance_rate}%`}
+              />
+              <Stat label="إجمالي التسميعات" value={String(stats.total_recitations)} />
+              <Stat label="آخر تسميع" value={fmt(stats.last_recitation_at)} />
+            </div>
+
+            <p className="text-sm text-gray-600">
+              {stats.recitations_this_week} تسميعات هذا الأسبوع — {weekText} · 🔥 سلسلتك {stats.current_streak} يوم
+              (أطول سلسلة {stats.longest_streak})
+            </p>
+
+            <div>
+              <h3 className="mb-2 text-sm font-semibold text-gray-600">سجل التسميع</h3>
+              {recent.length ? (
+                <ul className="flex flex-col gap-2 text-sm">
+                  {recent.map((r, i) => (
+                    <li key={i} className="rounded bg-gray-50 px-3 py-2">
+                      <div className="flex justify-between">
+                        <span className="font-semibold">
+                          {SURAH_NAMES[r.surah - 1]} ({r.ayah_from}–{r.ayah_to})
+                        </span>
+                        <span className="text-brand">+{r.points_awarded}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {TYPE_LABELS[r.type] ?? r.type} · {r.grade_label ?? '—'} · {fmt(r.created_at)}
+                      </p>
+                      {r.notes && <p className="mt-1 text-xs text-gray-600">{r.notes}</p>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-400">لا يوجد تسميعات بعد</p>
+              )}
             </div>
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border bg-gray-50 p-3 text-center">
+      <p className="text-lg font-bold">{value}</p>
+      <p className="text-xs text-gray-500">{label}</p>
     </div>
   );
 }
