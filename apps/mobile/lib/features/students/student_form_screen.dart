@@ -340,7 +340,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                           helperText: 'اتركها فارغة لإنشاء الملف بدون حساب دخول',
                           prefixIcon: Icon(Icons.lock_outline),
                         ),
-                        validator: (v) => (v != null && v.trim().isNotEmpty && v.trim().length < 6) ? '6 خانات على الأقل' : null,
+                        validator: (v) => (v != null && v.trim().isNotEmpty && v.trim().length < 8) ? '8 خانات على الأقل' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(

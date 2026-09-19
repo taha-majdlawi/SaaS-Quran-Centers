@@ -84,7 +84,7 @@ export default async function JoinPage({
         </label>
         <label className={authLabelClass}>
           كلمة السر
-          <input type="password" name="password" required minLength={6} className={`mt-1 ${authInputClass}`} />
+          <input type="password" name="password" required minLength={8} className={`mt-1 ${authInputClass}`} />
         </label>
         <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText="جاري الإنشاء والانضمام...">
           إنشاء الحساب والانضمام

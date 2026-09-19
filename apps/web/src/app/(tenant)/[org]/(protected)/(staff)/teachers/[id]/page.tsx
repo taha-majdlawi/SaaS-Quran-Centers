@@ -86,7 +86,7 @@ export default async function EditTeacherPage({
           كلمة سر جديدة (اتركها فاضية إذا ما بدك تغيّرها)
           <input
             name="password"
-            minLength={6}
+            minLength={8}
             placeholder="••••••"
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
             dir="ltr"

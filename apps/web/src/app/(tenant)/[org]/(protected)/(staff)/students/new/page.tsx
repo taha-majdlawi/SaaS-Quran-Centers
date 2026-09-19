@@ -75,7 +75,7 @@ export default async function NewStudentPage({
             كلمة السر (مقترحة، اتركها فارغة لإنشاء الملف بدون حساب)
             <input
               name="password"
-              minLength={6}
+              minLength={8}
               defaultValue={generatePassword()}
               dir="ltr"
               className="mt-1 w-full rounded border px-3 py-2 text-sm"

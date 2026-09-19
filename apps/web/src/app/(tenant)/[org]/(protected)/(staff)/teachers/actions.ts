@@ -42,6 +42,22 @@ export async function updateTeacherAccount(formData: FormData) {
 
   const admin = createAdminClient();
 
+  // The service-role client bypasses RLS, so the target must be proven to
+  // belong to the caller's own center - otherwise an admin of center A could
+  // edit (email/password!) any account of center B by posting its ids.
+  const { data: target } = await admin
+    .from('organization_members')
+    .select('id, user_id')
+    .eq('id', memberId)
+    .eq('organization_id', orgId)
+    .maybeSingle();
+  if (!target || target.user_id !== userId) {
+    redirect(`/teachers?error=${encodeURIComponent('العضو غير موجود في هذا المركز')}` as never);
+  }
+  if (!['admin', 'teacher', 'student', 'guardian'].includes(role) || !['active', 'suspended'].includes(status)) {
+    redirect(`/teachers/${memberId}?error=${encodeURIComponent('قيمة غير صالحة')}` as never);
+  }
+
   const authUpdate: { email?: string; password?: string } = {};
   if (email) authUpdate.email = email;
   if (password) authUpdate.password = password;
@@ -58,7 +74,8 @@ export async function updateTeacherAccount(formData: FormData) {
   const { error: memberError } = await admin
     .from('organization_members')
     .update({ role, status, permissions })
-    .eq('id', memberId);
+    .eq('id', memberId)
+    .eq('organization_id', orgId);
 
   if (memberError) {
     redirect(`/teachers/${memberId}?error=${encodeURIComponent(memberError.message)}` as never);

@@ -188,7 +188,7 @@ export default async function EditStudentPage({
               <input name="fullName" required placeholder="اسم ولي الأمر" className={field} />
               <input name="identifier" required placeholder="رقم الدخول أو البريد" dir="ltr" className={field} />
               <input name="phone" placeholder="الجوال (اختياري)" dir="ltr" className={field} />
-              <input name="password" required minLength={6} placeholder="كلمة السر" className={field} />
+              <input name="password" required minLength={8} placeholder="كلمة السر" className={field} />
               <SubmitButton
                 className="self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white"
                 pendingText="جاري الإنشاء..."

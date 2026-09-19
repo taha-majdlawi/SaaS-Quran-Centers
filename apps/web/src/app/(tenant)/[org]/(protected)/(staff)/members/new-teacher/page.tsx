@@ -52,7 +52,7 @@ export default async function NewTeacherPage({
           <input
             name="password"
             required
-            minLength={6}
+            minLength={8}
             defaultValue={generatePassword()}
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
             dir="ltr"

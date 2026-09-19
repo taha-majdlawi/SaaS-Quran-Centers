@@ -22,12 +22,12 @@ async function membershipOf(admin: SupabaseClient, userId: string, orgId: string
 
 function friendlyAuthError(message: string): string {
   if (/already|registered|exists/i.test(message)) return 'هذا الرقم أو البريد مستخدم من قبل';
-  if (/password/i.test(message)) return 'كلمة السر غير صالحة (6 خانات على الأقل)';
+  if (/password/i.test(message)) return 'كلمة السر غير صالحة (8 خانات على الأقل)';
   return 'تعذّر إنشاء الحساب';
 }
 
 function requirePassword(password: string | undefined): string {
-  if (!password || password.length < 6) throw new AccountError('كلمة السر يجب ألا تقل عن 6 خانات');
+  if (!password || password.length < 8) throw new AccountError('كلمة السر يجب ألا تقل عن 8 خانات');
   return password;
 }
 
