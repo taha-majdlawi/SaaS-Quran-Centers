@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import { ScrollToEnd } from '@/components/scroll-to-end';
-import { ChatImagePicker } from '@/components/chat-image-picker';
-import { SubmitButton } from '@/components/submit-button';
-import { ChatAutoRefresh } from '@/components/chat-auto-refresh';
-import { editChat, muteChat, sendChat } from '@/lib/comms/actions';
+import { ChatConversation, type ChatMsg } from '@/components/chat-conversation';
+import { muteChat } from '@/lib/comms/actions';
 
 export const ROLE_LABELS: Record<string, string> = { admin: 'مدير', teacher: 'معلم', student: 'طالب', guardian: 'ولي أمر' };
 
@@ -25,16 +22,6 @@ interface Contact {
   name: string;
   role: string;
   detail: string | null;
-}
-
-interface Message {
-  id: string;
-  mine: boolean;
-  body: string;
-  image_path: string | null;
-  created_at: string;
-  edited_at: string | null;
-  read_at: string | null;
 }
 
 const time = (iso: string) =>
@@ -94,51 +81,41 @@ export async function ChatListView({ orgId, base }: { orgId: string; base: strin
   );
 }
 
-/** One conversation. Opening it marks the other side's messages as read. */
-export async function ChatThreadView({
-  orgId,
-  otherId,
-  base,
-  error,
-  editing,
-}: {
-  orgId: string;
-  otherId: string;
-  base: string;
-  error?: string;
-  editing?: string;
-}) {
+/** One conversation. Opening it marks the other side's messages as read; the live part is a client component. */
+export async function ChatThreadView({ orgId, otherId, base }: { orgId: string; otherId: string; base: string }) {
   const supabase = await createClient();
-  const path = `${base}/${otherId}`;
 
-  const [{ data: threadId }, { data: contacts }, { data: threads }] = await Promise.all([
+  const [{ data: threadId }, { data: contacts }, { data: threads }, {
+    data: { user },
+  }] = await Promise.all([
     supabase.rpc('chat_thread_with', { p_org: orgId, p_other: otherId }),
     supabase.rpc('chat_contacts', { p_org: orgId }),
     supabase.rpc('chat_threads_list', { p_org: orgId }),
+    supabase.auth.getUser(),
   ]);
   const thread = ((threads ?? []) as ThreadRow[]).find((t) => t.other_id === otherId);
   const contact = ((contacts ?? []) as Contact[]).find((c) => c.user_id === otherId);
   const name = thread?.other_name ?? contact?.name ?? '—';
   const canReply = thread ? thread.can_reply : !!contact;
 
-  let messages: Message[] = [];
+  let messages: ChatMsg[] = [];
   if (threadId) {
     await supabase.rpc('mark_thread_read', { p_thread: threadId });
     const { data } = await supabase.rpc('chat_thread_messages', { p_org: orgId, p_thread: threadId, p_after: null, p_limit: 80 });
-    messages = (data ?? []) as Message[];
+    messages = (data ?? []) as ChatMsg[];
   }
 
   // pictures are private: each viewer gets short-lived signed links
   const paths = messages.map((m) => m.image_path).filter((p): p is string => !!p);
-  const signed = new Map<string, string>();
   if (paths.length) {
     const { data } = await supabase.storage.from('chat-images').createSignedUrls(paths, 3600);
+    const signed = new Map<string, string>();
     for (const r of data ?? []) if (r.path && r.signedUrl) signed.set(r.path, r.signedUrl);
+    messages = messages.map((m) => ({ ...m, url: m.image_path ? signed.get(m.image_path) ?? null : null }));
   }
 
   return (
     <div className="max-w-2xl">
-      <ChatAutoRefresh />
       <div className="mb-3 flex items-center justify-between">
         <a href={base as never} className="text-sm text-brand hover:underline">
           ← المحادثات
@@ -147,7 +124,7 @@ export async function ChatThreadView({
           <form action={muteChat}>
             <input type="hidden" name="threadId" value={threadId as string} />
             <input type="hidden" name="muted" value={thread?.muted ? '0' : '1'} />
-            <input type="hidden" name="back" value={path} />
+            <input type="hidden" name="back" value={`${base}/${otherId}`} />
             <button className="text-xs text-gray-500 hover:underline">{thread?.muted ? '🔔 تفعيل التنبيهات' : '🔕 كتم'}</button>
           </form>
         )}
@@ -155,64 +132,15 @@ export async function ChatThreadView({
       <h1 className="mb-3 text-xl font-bold">
         {name} {thread && <span className="text-sm font-normal text-gray-500">{ROLE_LABELS[thread.other_role]}</span>}
       </h1>
-      {error && <p className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-      <div className="mb-4 flex min-h-64 flex-col gap-2 rounded-lg border bg-gray-50 p-3">
-        {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.mine ? 'justify-start' : 'justify-end'}`}>
-            <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${m.mine ? 'bg-brand text-white' : 'bg-white'}`}>
-              {editing === m.id && m.mine ? (
-                <form action={editChat} className="flex flex-col gap-2">
-                  <input type="hidden" name="id" value={m.id} />
-                  <input type="hidden" name="back" value={path} />
-                  <textarea name="body" defaultValue={m.body} rows={2} className="rounded border px-2 py-1 text-gray-900" />
-                  <SubmitButton className="rounded bg-white px-2 py-1 text-xs font-semibold text-brand" pendingText="...">
-                    حفظ
-                  </SubmitButton>
-                </form>
-              ) : (
-                <>
-                  {m.image_path && signed.get(m.image_path) && (
-                    <a href={signed.get(m.image_path)} target="_blank" rel="noreferrer">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={signed.get(m.image_path)} alt="صورة" className="mb-1 max-h-64 rounded" />
-                    </a>
-                  )}
-                  {m.body && <p className="whitespace-pre-wrap">{m.body}</p>}
-                </>
-              )}
-              <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>
-                {time(m.created_at)}
-                {m.edited_at && ' · عُدّلت'}
-                {m.mine && m.read_at && ' · ✓✓'}
-                {m.mine && m.body && editing !== m.id && Date.now() - new Date(m.created_at).getTime() < 30 * 60 * 1000 && (
-                  <a href={`${path}?edit=${m.id}` as never} className="mr-2 underline">
-                    تعديل
-                  </a>
-                )}
-              </p>
-            </div>
-          </div>
-        ))}
-        {!messages.length && <p className="m-auto text-sm text-gray-400">ابدأ المحادثة</p>}
-        <ScrollToEnd count={messages.length} />
-      </div>
-
-      {canReply ? (
-        <form action={sendChat} className="flex flex-wrap items-end gap-2">
-          <input type="hidden" name="orgId" value={orgId} />
-          <input type="hidden" name="otherId" value={otherId} />
-          <input type="hidden" name="back" value={path} />
-          <input type="hidden" name="ref" value={crypto.randomUUID()} />
-          <textarea name="body" rows={2} maxLength={2000} placeholder="اكتب رسالتك..." className="min-w-48 flex-1 rounded border px-3 py-2 text-sm" />
-          <ChatImagePicker />
-          <SubmitButton className="rounded bg-brand px-5 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText="...">
-            إرسال
-          </SubmitButton>
-        </form>
-      ) : (
-        <p className="rounded bg-gray-100 px-3 py-2 text-center text-sm text-gray-500">لا يمكنك مراسلة هذا المستخدم حاليًا</p>
-      )}
+      <ChatConversation
+        orgId={orgId}
+        otherId={otherId}
+        userId={user?.id ?? ''}
+        initialThreadId={(threadId as string | null) ?? null}
+        initialMessages={messages}
+        canReply={canReply}
+      />
     </div>
   );
 }

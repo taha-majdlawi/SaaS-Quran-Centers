@@ -14,8 +14,6 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typedRoutes: true,
-  // chat pictures go through a server action (max 5 MB each, checked again in the action)
-  experimental: { serverActions: { bodySizeLimit: '6mb' } },
   poweredByHeader: false,
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
