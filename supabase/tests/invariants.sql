@@ -8,7 +8,7 @@ declare
   v_org uuid; v_adm uuid; v_tch uuid; v_stu uuid; v_sp uuid; v_circle uuid; v_grade text;
   v_fail text[] := '{}'; v_n integer; v_before integer; v_after integer; v_cert uuid; r jsonb;
   v_exempt text[] := array['account_access', 'account_admin_grants', 'audit_log', 'deletion_requests', 'device_tokens',
-                           'notification_prefs', 'notifications', 'quran_bookmarks', 'quran_positions', 'calendar_reminders'];
+                           'notification_prefs', 'notifications', 'quran_bookmarks', 'quran_positions', 'calendar_reminders', 'weekly_digests_sent'];
 begin
   select id into v_org from public.organizations where slug = 'eqraa';
   select user_id into v_adm from public.organization_members where organization_id = v_org and role = 'admin' and status = 'active' limit 1;
@@ -86,6 +86,8 @@ begin
   if v_n > 0 then v_fail := v_fail || 'student sees other centers'; end if;
   begin perform public.center_report(v_org); v_fail := v_fail || 'student can run center_report'; exception when others then null; end;
   begin perform public.admin_attention(v_org); v_fail := v_fail || 'student can run admin_attention'; exception when others then null; end;
+  begin perform public.platform_overview(); v_fail := v_fail || 'student can run platform_overview'; exception when others then null; end;
+  begin perform public.platform_set_org(v_org, 'suspended'); v_fail := v_fail || 'student can run platform_set_org'; exception when others then null; end;
   reset role;
 
   -- ===== nothing new is left unlocked without a reason

@@ -2,7 +2,9 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { RECITERS } from '@/lib/quran/reader';
-import { updateOrgSettings, saveWeekdays, saveCenterSettings } from './actions';
+import { updateOrgSettings, saveWeekdays, saveCenterSettings, saveDigestSettings } from './actions';
+
+const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
 const PRAYER_METHODS: [string, string][] = [
   ['umm_al_qura', 'أم القرى'],
@@ -46,6 +48,8 @@ export default async function SettingsPage({
     supabase.from('center_weekdays').select('dow, label, is_working, is_serd_day').eq('organization_id', org.id).order('dow'),
     supabase.from('organization_settings').select('key, value').eq('organization_id', org.id),
   ]);
+  const { data: digestData } = isAdmin ? await supabase.rpc('get_digest_settings', { p_org: org.id }) : { data: null };
+  const digest = digestData as { enabled: boolean; dow: number; hour: number } | null;
   const weekdays = (weekdayRows ?? []) as Weekday[];
   const settings = new Map((settingRows ?? []).map((r) => [r.key as string, (r.value as string | null) ?? '']));
   const flag = (key: string) => (settings.get(key) ?? 'true') !== 'false';
@@ -210,6 +214,42 @@ export default async function SettingsPage({
           )}
         </fieldset>
       </form>
+
+      {isAdmin && digest && (
+        <form action={saveDigestSettings} className="flex max-w-lg flex-col gap-3 rounded-lg border bg-white p-6">
+          <input type="hidden" name="orgId" value={org.id} />
+          <h2 className="font-semibold">ملخص الأسبوع للأسر</h2>
+          <p className="text-xs text-gray-500">إشعار أسبوعي لكل أسرة: ما سمّع ابنها وحضوره ونقاطه، حسب توقيت المركز.</p>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="enabled" defaultChecked={digest.enabled} /> تفعيل الملخص الأسبوعي
+          </label>
+          <div className="flex gap-3">
+            <label className={label}>
+              اليوم
+              <select name="dow" defaultValue={digest.dow} className={input}>
+                {DAYS.map((d, i) => (
+                  <option key={d} value={i}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={label}>
+              الساعة
+              <select name="hour" defaultValue={digest.hour} className={input}>
+                {Array.from({ length: 24 }, (_, h) => (
+                  <option key={h} value={h}>
+                    {String(h).padStart(2, '0')}:00
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText="جاري الحفظ...">
+            حفظ
+          </SubmitButton>
+        </form>
+      )}
 
       {!isAdmin && <p className="text-xs text-gray-400">بس المدير يقدر يعدّل إعدادات المركز.</p>}
     </div>

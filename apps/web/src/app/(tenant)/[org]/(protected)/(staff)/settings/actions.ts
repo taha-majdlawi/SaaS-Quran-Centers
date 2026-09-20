@@ -4,6 +4,18 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { safeLogoUrl } from '@/lib/tenant/public-site';
 
+export async function saveDigestSettings(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('set_digest_settings', {
+    p_org: formData.get('orgId') as string,
+    p_enabled: formData.get('enabled') === 'on',
+    p_dow: Number(formData.get('dow')),
+    p_hour: Number(formData.get('hour')),
+  });
+  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
+  redirect('/settings?saved=1');
+}
+
 export async function updateOrgSettings(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const name = (formData.get('name') as string)?.trim();

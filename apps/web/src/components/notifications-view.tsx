@@ -17,6 +17,7 @@ export const EVENT_LABELS: Record<string, string> = {
   calendar_entry: 'التقويم والفعاليات',
   waitlist_promoted: 'الترقية من قائمة الانتظار',
   event_reminder: 'تذكير بالفعاليات',
+  weekly_digest: 'ملخص الأسبوع',
   serd_assigned: 'سرد مطلوب مني',
   serd_reviewed: 'اعتماد السرد',
   market_order: 'طلبات السوق',
@@ -39,6 +40,8 @@ function linkFor(n: Item, portal: boolean): string | null {
       return portal ? '/my' : '/serd';
     case 'market_order':
       return portal ? '/my/market' : '/market';
+    case 'weekly_digest':
+      return portal ? `/my/report?student=${n.ref_id}` : null;
     case 'badge_awarded':
       return portal ? '/my/badges' : `/badges/${n.ref_id}`;
     default:

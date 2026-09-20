@@ -10,6 +10,7 @@ const kEventLabels = {
   'calendar_entry': 'التقويم والفعاليات',
   'waitlist_promoted': 'الترقية من قائمة الانتظار',
   'event_reminder': 'تذكير بالفعاليات',
+  'weekly_digest': 'ملخص الأسبوع',
   'serd_assigned': 'سرد مطلوب مني',
   'serd_reviewed': 'اعتماد السرد',
   'market_order': 'طلبات السوق',
