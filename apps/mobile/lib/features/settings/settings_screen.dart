@@ -6,6 +6,7 @@ import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
+import '../quran/quran_data.dart' show kReciters;
 import 'settings_repository.dart';
 
 /// Mirrors apps/web's /settings page - admin-editable org name, branding
@@ -28,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _textSettings = {for (final k in kTextSettingKeys) k: TextEditingController()};
   final _flags = {for (final k in kFlagSettingKeys) k: false};
   List<WeekdayRow> _weekdays = [];
+  final Set<String> _reciterSet = {};
 
   String? _loadedForOrgId;
   String? _saving; // 'org' | 'days' | 'center'
@@ -66,6 +68,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       for (final k in _flags.keys) {
         _flags[k] = settings[k] == 'true';
       }
+      _reciterSet
+        ..clear()
+        ..addAll((settings['quran_reciters'] ?? '').split(',').where((e) => e.trim().isNotEmpty));
     } catch (_) {
       _message = 'تعذّر تحميل بعض الإعدادات';
       _isError = true;
@@ -232,6 +237,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   _field('طريقة حساب الصلاة', _textSettings['prayer_calc_method']!, isAdmin, ltr: true),
                   _field('المذهب (shafi / hanafi)', _textSettings['prayer_madhab']!, isAdmin, ltr: true),
+                  const SectionTitle('القرّاء في المصحف'),
+                  Text('اترك الاختيار فارغًا لإتاحة كل القرّاء.', style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final r in kReciters)
+                        FilterChip(
+                          label: Text(r.name),
+                          selected: _reciterSet.contains(r.id),
+                          onSelected: isAdmin
+                              ? (v) => setState(() {
+                                    v ? _reciterSet.add(r.id) : _reciterSet.remove(r.id);
+                                    _textSettings['quran_reciters']!.text = _reciterSet.join(',');
+                                  })
+                              : null,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: kReciters.any((r) => r.id == _textSettings['quran_default_reciter']!.text) ? _textSettings['quran_default_reciter']!.text : '',
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'القارئ الافتراضي'),
+                    items: [const DropdownMenuItem(value: '', child: Text('الأول في القائمة')), for (final r in kReciters) DropdownMenuItem(value: r.id, child: Text(r.name))],
+                    onChanged: isAdmin ? (v) => setState(() => _textSettings['quran_default_reciter']!.text = v ?? '') : null,
+                  ),
                   for (final f in const [
                     ('flag_market_enabled', 'تفعيل متجر النقاط'),
                     ('flag_leaderboard_enabled', 'تفعيل لوحة الصدارة'),

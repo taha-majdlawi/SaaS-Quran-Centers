@@ -18,6 +18,8 @@ const kTextSettingKeys = [
   'prayer_lng',
   'prayer_calc_method',
   'prayer_madhab',
+  'quran_reciters',
+  'quran_default_reciter',
 ];
 
 const kFlagSettingKeys = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students'];

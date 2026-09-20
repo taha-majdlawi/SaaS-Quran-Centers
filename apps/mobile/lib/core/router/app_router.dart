@@ -35,6 +35,7 @@ import '../../features/calendar/calendar_list_screen.dart';
 import '../../features/calendar/event_form_screen.dart';
 import '../../features/calendar/event_detail_screen.dart';
 import '../../features/calendar/calendar_types_screen.dart';
+import '../../features/quran/quran_screens.dart';
 import '../../features/comms/announcements_screens.dart';
 import '../../features/comms/chat_screens.dart';
 import '../../features/comms/notifications_screen.dart';
@@ -93,7 +94,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
           segments.first == 'calendar' &&
           (segments.length == 1 || (segments.length == 2 && segments[1] != 'new' && segments[1] != 'types'));
       final portalOk = path == '/chat' || path == '/chat/new' || (segments.length == 2 && segments.first == 'chat') ||
-          path == '/announcements' || path == '/notifications';
+          path == '/announcements' || path == '/notifications' || path == '/quran' || (segments.length == 2 && segments.first == 'quran');
       if (isPortalOnly && path != '/my' && !path.startsWith('/my/') && !calendarOk && !portalOk) {
         return '/my';
       }
@@ -106,6 +107,14 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),
+      GoRoute(path: '/quran', builder: (context, state) => const QuranScreen()),
+      GoRoute(
+        path: '/quran/:surah',
+        builder: (context, state) => SurahReaderScreen(
+          surah: int.tryParse(state.pathParameters['surah'] ?? '') ?? 1,
+          startAyah: int.tryParse(state.uri.queryParameters['ayah'] ?? ''),
+        ),
+      ),
       GoRoute(path: '/my/market', builder: (context, state) => const PortalMarketScreen()),
       GoRoute(path: '/my/badges', builder: (context, state) => const PortalBadgesScreen()),
       GoRoute(
