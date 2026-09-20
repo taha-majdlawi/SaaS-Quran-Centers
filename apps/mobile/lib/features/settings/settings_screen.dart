@@ -1,11 +1,15 @@
 import 'digest_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
+import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
 import '../quran/quran_data.dart' show kReciters;
 import 'settings_repository.dart';
@@ -94,6 +98,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  bool _uploadingLogo = false;
+
+  /// Picks a logo, uploads it to this center's folder of the public `org-logos` bucket and fills the
+  /// link field; "حفظ الإعدادات" then applies it everywhere (drawer, login, certificates, web).
+  Future<void> _pickLogo(String orgId) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(children: [
+          ListTile(leading: const Icon(Icons.photo_library_rounded), title: const Text('من المعرض'), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ListTile(leading: const Icon(Icons.photo_camera_rounded), title: const Text('التقاط صورة'), onTap: () => Navigator.pop(context, ImageSource.camera)),
+        ]),
+      ),
+    );
+    if (source == null) return;
+    final file = await ImagePicker().pickImage(source: source, maxWidth: 512, imageQuality: 90);
+    if (file == null) return;
+    setState(() {
+      _uploadingLogo = true;
+      _message = null;
+    });
+    try {
+      final bytes = await file.readAsBytes();
+      if (bytes.length > 1024 * 1024) throw StateError('الصورة كبيرة (الحد 1 ميغابايت)');
+      final ext = file.name.contains('.') ? file.name.split('.').last.toLowerCase() : 'jpg';
+      final clean = const {'jpg', 'jpeg', 'png', 'webp'}.contains(ext) ? (ext == 'jpeg' ? 'jpg' : ext) : 'jpg';
+      final mime = clean == 'png' ? 'image/png' : (clean == 'webp' ? 'image/webp' : 'image/jpeg');
+      final path = '$orgId/${const Uuid().v4()}.$clean';
+      final storage = AppSupabase.client.storage.from('org-logos');
+      await storage.uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
+      if (!mounted) return;
+      setState(() {
+        _logoController.text = storage.getPublicUrl(path);
+        _message = 'تم رفع الشعار — اضغط «حفظ الإعدادات» لتطبيقه في كل مكان';
+        _isError = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _message = e is StorageException && e.message.contains('row-level security') ? 'رفع الشعار للمدير فقط' : friendlyError(e, 'تعذّر رفع الشعار');
+          _isError = true;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingLogo = false);
+    }
+  }
+
   Future<void> _saveOrg(String orgId) async {
     final logo = _logoController.text.trim();
     if (logo.isNotEmpty && !(Uri.tryParse(logo)?.scheme == 'https')) {
@@ -172,7 +224,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (_message != null) MessageBanner(message: _message!, isError: _isError),
                   const SectionTitle('الهوية'),
                   _field('اسم المركز', _nameController, isAdmin),
-                  _field('رابط الشعار (https)', _logoController, isAdmin, ltr: true),
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                    OrgAvatar(name: _nameController.text.isEmpty ? 'ب' : _nameController.text, logoUrl: _logoController.text.trim().isEmpty ? null : _logoController.text.trim(), size: 64),
+                    const SizedBox(width: 12),
+                    if (isAdmin)
+                      Expanded(
+                        child: Wrap(spacing: 8, runSpacing: 4, children: [
+                          OutlinedButton.icon(onPressed: _uploadingLogo ? null : () => _pickLogo(org.id), icon: const Icon(Icons.upload_rounded, size: 18), label: Text(_uploadingLogo ? 'جاري الرفع...' : 'رفع شعار من الجهاز')),
+                          if (_logoController.text.trim().isNotEmpty)
+                            TextButton(onPressed: () => setState(_logoController.clear), child: const Text('إزالة', style: TextStyle(color: Colors.red))),
+                        ]),
+                      ),
+                  ]),
+                  const SizedBox(height: 8),
+                  _field('أو رابط الشعار (https)', _logoController, isAdmin, ltr: true),
                   _field('اللون الأساسي (hex)', _primaryColorController, isAdmin, ltr: true),
                   _field('اللون الثانوي (hex)', _secondaryColorController, isAdmin, ltr: true),
                   Padding(

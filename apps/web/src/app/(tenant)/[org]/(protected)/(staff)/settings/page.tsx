@@ -1,6 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
+import { LogoField } from '@/components/logo-field';
 import { RECITERS } from '@/lib/quran/reader';
 import { updateOrgSettings, saveWeekdays, saveCenterSettings, saveDigestSettings, saveAttendanceReminder } from './actions';
 
@@ -71,10 +72,7 @@ export default async function SettingsPage({
               اسم المركز
               <input name="name" required defaultValue={org.name} className={input} />
             </label>
-            <label className={label}>
-              رابط الشعار (https)
-              <input name="logoUrl" type="url" dir="ltr" placeholder="https://..." defaultValue={org.logoUrl ?? ''} className={input} />
-            </label>
+            <LogoField orgId={org.id} initialUrl={org.logoUrl} name={org.name} />
             <label className={label}>
               اللون الأساسي
               <input type="color" name="primaryColor" defaultValue={org.primaryColor} className="mt-1 h-10 w-full rounded border" />
