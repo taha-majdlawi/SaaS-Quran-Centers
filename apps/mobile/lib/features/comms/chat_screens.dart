@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -185,6 +186,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
   bool _canReply = true;
   bool _loading = true;
   bool _sending = false;
+  Uint8List? _attachment; // picked but not sent yet
+  String _attachmentExt = 'jpg';
   String? _error;
   Timer? _poll;
   RealtimeChannel? _channel;
@@ -252,18 +255,29 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
   Future<void> _send() async {
     final text = _input.text.trim();
-    if (text.isEmpty || _sending) return;
+    final picture = _attachment;
+    if ((text.isEmpty && picture == null) || _sending) return;
     setState(() {
       _sending = true;
       _error = null;
     });
     _pendingRef ??= const Uuid().v4();
     try {
-      await _repository.send(_orgId, widget.otherId, text, clientRef: _pendingRef);
+      if (picture != null) {
+        AccessController.instance.ensureCanWrite();
+        await _repository.sendImage(_orgId, widget.otherId, picture, _attachmentExt, caption: text, clientRef: _pendingRef);
+        _attachment = null;
+      } else {
+        await _repository.send(_orgId, widget.otherId, text, clientRef: _pendingRef);
+      }
       _pendingRef = null;
       _input.clear();
       await _load();
     } on PostgrestException catch (e) {
+      setState(() => _error = e.message);
+    } on StorageException catch (e) {
+      setState(() => _error = e.message.contains('row-level security') ? kViewerMessage : 'تعذّر رفع الصورة');
+    } on StateError catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
       setState(() => _error = 'تعذّر الإرسال، تأكد من الإنترنت وحاول مجددًا');
@@ -272,7 +286,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
-  Future<void> _sendPicture() async {
+  /// Picks a picture and keeps it as a preview above the text box; nothing is sent until the send button.
+  Future<void> _pickPicture() async {
     if (_sending) return;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -286,31 +301,19 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     if (source == null) return;
     final picked = await ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 80);
     if (picked == null) return;
-    setState(() {
-      _sending = true;
-      _error = null;
-    });
-    try {
-      AccessController.instance.ensureCanWrite();
-      final bytes = await picked.readAsBytes();
-      if (bytes.length > 5 * 1024 * 1024) throw StateError('حجم الصورة الأقصى 5 ميغابايت');
-      final name = picked.name;
-      final ext = name.contains('.') ? name.split('.').last : 'jpg';
-      await _repository.sendImage(_orgId, widget.otherId, bytes, ext, caption: _input.text.trim());
-      _input.clear();
-      _pendingRef = null;
-      await _load();
-    } on PostgrestException catch (e) {
-      if (mounted) setState(() => _error = e.message);
-    } on StorageException catch (e) {
-      if (mounted) setState(() => _error = e.message.contains('row-level security') ? kViewerMessage : 'تعذّر رفع الصورة');
-    } on StateError catch (e) {
-      if (mounted) setState(() => _error = e.message);
-    } catch (_) {
-      if (mounted) setState(() => _error = 'تعذّر إرسال الصورة، تأكد من الإنترنت وحاول مجددًا');
-    } finally {
-      if (mounted) setState(() => _sending = false);
+    final bytes = await picked.readAsBytes();
+    if (!mounted) return;
+    if (bytes.length > 5 * 1024 * 1024) {
+      setState(() => _error = 'حجم الصورة الأقصى 5 ميغابايت');
+      return;
     }
+    final name = picked.name;
+    setState(() {
+      _error = null;
+      _attachment = bytes;
+      _attachmentExt = name.contains('.') ? name.split('.').last : 'jpg';
+      _pendingRef = null;
+    });
   }
 
   Future<void> _edit(ChatMessage m) async {
@@ -399,13 +402,31 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     ),
         ),
         if (_error != null) Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: MessageBanner(message: _error!)),
+        if (_canReply && _attachment != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Stack(children: [
+                ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.memory(_attachment!, height: 110, fit: BoxFit.cover)),
+                PositionedDirectional(
+                  top: 2,
+                  end: 2,
+                  child: InkWell(
+                    onTap: _sending ? null : () => setState(() => _attachment = null),
+                    child: const CircleAvatar(radius: 12, backgroundColor: Colors.black54, child: Icon(Icons.close_rounded, size: 16, color: Colors.white)),
+                  ),
+                ),
+              ]),
+            ),
+          ),
         if (_canReply)
           SafeArea(
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
               child: Row(children: [
-                IconButton(onPressed: _sending ? null : _sendPicture, icon: const Icon(Icons.image_rounded), tooltip: 'إرسال صورة'),
+                IconButton(onPressed: _sending ? null : _pickPicture, icon: const Icon(Icons.image_rounded), tooltip: 'إرفاق صورة'),
                 Expanded(
                   child: TextField(
                     controller: _input,
@@ -413,7 +434,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                     maxLines: 4,
                     maxLength: 2000,
                     onChanged: (_) => _pendingRef = null,
-                    decoration: const InputDecoration(hintText: 'اكتب رسالتك...', counterText: ''),
+                    decoration: InputDecoration(hintText: _attachment != null ? 'أضف تعليقًا (اختياري)...' : 'اكتب رسالتك...', counterText: ''),
                   ),
                 ),
                 const SizedBox(width: 8),

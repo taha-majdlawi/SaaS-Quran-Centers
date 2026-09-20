@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { ChatImagePicker } from '@/components/chat-image-picker';
 import { SubmitButton } from '@/components/submit-button';
 import { ChatAutoRefresh } from '@/components/chat-auto-refresh';
 import { editChat, muteChat, sendChat } from '@/lib/comms/actions';
@@ -202,10 +203,7 @@ export async function ChatThreadView({
           <input type="hidden" name="back" value={path} />
           <input type="hidden" name="ref" value={crypto.randomUUID()} />
           <textarea name="body" rows={2} maxLength={2000} placeholder="اكتب رسالتك..." className="min-w-48 flex-1 rounded border px-3 py-2 text-sm" />
-          <label className="cursor-pointer rounded border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" title="إرفاق صورة">
-            📷
-            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="hidden" />
-          </label>
+          <ChatImagePicker />
           <SubmitButton className="rounded bg-brand px-5 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText="...">
             إرسال
           </SubmitButton>
