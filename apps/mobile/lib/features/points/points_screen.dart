@@ -122,7 +122,8 @@ class _PointsScreenState extends State<PointsScreen> {
     final isAdmin = context.watch<TenantController>().active?.role == OrgRole.admin;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تقديرات التسميع والنقاط')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('تقديرات التسميع والنقاط')),
       drawer: const AppDrawer(),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

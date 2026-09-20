@@ -184,6 +184,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const DrawerLeading(),
         title: const Text('الشهادات'),
         actions: [if (!widget.portal && _isAdmin) IconButton(tooltip: 'تخصيص الشهادة', onPressed: _settings, icon: const Icon(Icons.tune_rounded))],
       ),

@@ -133,7 +133,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('الحضور')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('الحضور')),
       drawer: const AppDrawer(),
       bottomNavigationBar: _students.isEmpty
           ? null

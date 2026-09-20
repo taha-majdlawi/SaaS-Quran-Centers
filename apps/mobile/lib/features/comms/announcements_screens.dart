@@ -40,7 +40,8 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
     final canWrite = role == OrgRole.admin || (role == OrgRole.teacher && tenant.hasModule('announcements'));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعلانات')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('الإعلانات')),
       drawer: isStaff ? const AppDrawer() : null,
       floatingActionButton: canWrite
           ? FloatingActionButton.extended(

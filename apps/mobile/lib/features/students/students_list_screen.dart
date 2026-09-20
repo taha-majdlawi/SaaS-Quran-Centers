@@ -73,7 +73,8 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الطلاب')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('الطلاب')),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _open('/students/new'),

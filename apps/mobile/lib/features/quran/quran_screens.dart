@@ -49,7 +49,8 @@ class _QuranScreenState extends State<QuranScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المصحف')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('المصحف')),
       drawer: _isStaff(tenant) ? const AppDrawer() : null,
       body: _future == null
           ? const SizedBox.shrink()

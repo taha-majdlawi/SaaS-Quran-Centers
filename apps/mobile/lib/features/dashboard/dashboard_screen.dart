@@ -94,7 +94,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('لوحة التحكم')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('لوحة التحكم')),
       drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {

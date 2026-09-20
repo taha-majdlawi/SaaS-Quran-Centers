@@ -59,7 +59,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
       _future = _repository.threads(orgId);
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('المحادثات')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('المحادثات')),
       drawer: _isStaff(tenant) ? const AppDrawer() : null,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {

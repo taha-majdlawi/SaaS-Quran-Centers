@@ -210,7 +210,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('إعدادات المركز')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('إعدادات المركز')),
       drawer: const AppDrawer(),
       body: org == null
           ? const Center(child: CircularProgressIndicator())

@@ -107,7 +107,8 @@ class _MarketScreenState extends State<MarketScreen> {
     final isAdmin = membership?.role == OrgRole.admin;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('سوق النقاط')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('سوق النقاط')),
       drawer: const AppDrawer(),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(

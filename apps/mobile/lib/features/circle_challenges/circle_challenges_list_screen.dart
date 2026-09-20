@@ -36,7 +36,8 @@ class _CircleChallengesListScreenState extends State<CircleChallengesListScreen>
     final isAdmin = membership?.role == OrgRole.admin;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('منافسات الحلقات')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('منافسات الحلقات')),
       drawer: const AppDrawer(),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(

@@ -196,10 +196,38 @@ class AppDrawer extends StatelessWidget {
             title: Text(item.label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
-              context.go(item.path);
+              // the dashboard is the root; everything else opens ON TOP of it (so there is a back
+              // button), and moving between drawer screens replaces the current one instead of
+              // piling them up
+              if (item.path == '/dashboard') {
+                context.go('/dashboard');
+              } else if (currentPath == '/dashboard') {
+                context.push(item.path);
+              } else {
+                context.pushReplacement(item.path);
+              }
             },
           ),
         ),
     ];
+  }
+}
+
+
+/// The leading button of an app bar whose screen has the drawer: a BACK arrow when the
+/// screen was opened on top of another (the normal case from the drawer), the menu button
+/// on the root screen. Without a drawer it behaves like the default back button.
+class DrawerLeading extends StatelessWidget {
+  const DrawerLeading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final canPop = GoRouter.of(context).canPop();
+    if (canPop) return const BackButton();
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold != null && scaffold.hasDrawer) {
+      return IconButton(icon: const Icon(Icons.menu_rounded), tooltip: 'القائمة', onPressed: scaffold.openDrawer);
+    }
+    return const SizedBox.shrink();
   }
 }

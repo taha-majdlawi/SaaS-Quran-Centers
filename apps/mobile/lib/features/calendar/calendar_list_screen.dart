@@ -88,6 +88,7 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const DrawerLeading(),
         title: const Text('التقويم والفعاليات'),
         actions: [
           if (isAdmin)

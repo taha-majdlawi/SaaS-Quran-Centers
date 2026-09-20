@@ -83,7 +83,8 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: Text(widget.title)),
       drawer: const AppDrawer(),
       floatingActionButton: widget.addPath == null
           ? null

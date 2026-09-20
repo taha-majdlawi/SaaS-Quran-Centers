@@ -182,6 +182,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const DrawerLeading(),
         title: const Text('السرد القرآني'),
         actions: [
           if (isAdmin)

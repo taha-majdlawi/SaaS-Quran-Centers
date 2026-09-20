@@ -80,7 +80,8 @@ class _MembersListScreenState extends State<MembersListScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الأعضاء والأدوار')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('الأعضاء والأدوار')),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {

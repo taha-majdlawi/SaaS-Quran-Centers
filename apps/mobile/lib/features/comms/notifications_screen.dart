@@ -96,6 +96,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const DrawerLeading(),
         title: const Text('الإشعارات'),
         actions: [
           IconButton(icon: const Icon(Icons.tune_rounded), tooltip: 'التفضيلات', onPressed: _prefs),

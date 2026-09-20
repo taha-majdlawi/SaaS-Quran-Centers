@@ -22,7 +22,8 @@ class SyncScreen extends StatelessWidget {
     final items = sync.mine;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('المزامنة')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('المزامنة')),
       drawer: const AppDrawer(),
       body: ListView(
         padding: const EdgeInsets.all(16),

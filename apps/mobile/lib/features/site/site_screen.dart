@@ -84,7 +84,8 @@ class _SiteScreenState extends State<SiteScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الموقع العام')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('الموقع العام')),
       drawer: const AppDrawer(),
       body: _loading || org == null
           ? const Center(child: CircularProgressIndicator())

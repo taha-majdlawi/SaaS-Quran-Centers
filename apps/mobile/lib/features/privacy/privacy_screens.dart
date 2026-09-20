@@ -48,7 +48,8 @@ class _DeletionRequestsScreenState extends State<DeletionRequestsScreen> {
       _future = _load();
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('طلبات حذف البيانات')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('طلبات حذف البيانات')),
       drawer: const AppDrawer(),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,

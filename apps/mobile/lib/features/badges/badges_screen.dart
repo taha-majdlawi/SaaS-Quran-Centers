@@ -46,6 +46,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const DrawerLeading(),
         title: const Text('الشارات'),
         actions: [
           if (isAdmin)

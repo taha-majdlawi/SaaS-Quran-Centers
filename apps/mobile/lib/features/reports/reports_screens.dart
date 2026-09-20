@@ -116,7 +116,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('التقارير')),
+      appBar: AppBar(
+        leading: const DrawerLeading(),title: const Text('التقارير')),
       drawer: const AppDrawer(),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         _RangeBar(
