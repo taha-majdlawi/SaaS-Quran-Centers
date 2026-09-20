@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/data/quran_data.dart';
+import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
@@ -156,6 +157,7 @@ class _RecitationSheetState extends State<_RecitationSheet> {
     final group = _parts.length > 1 ? _repository.newSessionGroupId() : null;
     var total = 0;
     var saved = 0;
+    var queued = 0;
     try {
       // Keep the real hour if the date is today; a back-dated one uses midday.
       final now = DateTime.now();
@@ -166,6 +168,7 @@ class _RecitationSheetState extends State<_RecitationSheet> {
         final result = await _repository.logRecitation(
           orgId: orgId,
           studentId: widget.studentId,
+          studentName: widget.studentName,
           type: _type,
           part: SurahPart(surah: p.surah!, ayahFrom: int.parse(p.from.text.trim()), ayahTo: int.parse(p.to.text.trim())),
           grade: _grade!,
@@ -174,10 +177,17 @@ class _RecitationSheetState extends State<_RecitationSheet> {
           sessionGroupId: group,
         );
         total += result.pointsAwarded;
+        if (result.queued) queued++;
         saved++;
         _parts.remove(p);
       }
-      if (mounted) Navigator.pop(context, total);
+      if (mounted) {
+        if (queued > 0) {
+          Navigator.pop(context, kQueuedPoints);
+        } else {
+          Navigator.pop(context, total);
+        }
+      }
     } on PostgrestException catch (e) {
       setState(() => _error = saved > 0 ? 'حُفظ $saved، ولم يُحفظ الباقي: ${e.message}' : e.message);
     } catch (_) {

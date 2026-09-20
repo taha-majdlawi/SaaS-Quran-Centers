@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
@@ -68,7 +69,8 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
     final s = _current!;
     final points = await showRecitationSheet(context, studentId: s.id, studentName: s.fullName, grades: _grades);
     if (points == null || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم الحفظ ✓  +$points نقطة')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
     setState(() {
       _recited++;
       _index++;
@@ -79,7 +81,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
     final s = _current!;
     final orgId = context.read<TenantController>().active!.organization.id;
     try {
-      await _repository.setAttendance(orgId: orgId, circleId: widget.circleId, studentId: s.id, status: 'absent');
+      await _repository.setAttendance(orgId: orgId, circleId: widget.circleId, studentId: s.id, studentName: s.fullName, status: 'absent');
       setState(() {
         _absent++;
         _index++;

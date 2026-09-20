@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/offline/sync_service.dart';
 import 'serd_models.dart';
 
 class SerdListPage {
@@ -59,7 +60,7 @@ class SerdRepository {
 
   /// Returns the server-computed score. A fresh client_ref makes a retry (bad
   /// network) safe: the server ignores a repeated one.
-  Future<num?> submit({
+  Future<({num? score, bool queued})> submit({
     required String orgId,
     String? studentId,
     String? studentName,
@@ -69,7 +70,7 @@ class SerdRepository {
     required Map<String, int> errors,
     String? sessionId,
   }) async {
-    final result = _map(await _client.rpc('teacher_submit_serd', params: {
+    final params = <String, dynamic>{
       'p_org': orgId,
       'p_student': studentId,
       'p_student_name': studentName,
@@ -82,8 +83,14 @@ class SerdRepository {
       ],
       'p_client_ref': _uuid.v4(),
       'p_session_id': sessionId,
-    }));
-    return result['score_percent'] as num?;
+    };
+    final outcome = await SyncService.instance.submit(
+      'serd_submit',
+      params,
+      label: 'سرد ${studentName ?? ''} — ${parts.length} جزء',
+    );
+    if (outcome.queued) return (score: null, queued: true);
+    return (score: _map(outcome.data)['score_percent'] as num?, queued: false);
   }
 
   Future<void> schedule({

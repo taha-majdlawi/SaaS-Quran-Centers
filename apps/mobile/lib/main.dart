@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'core/auth/auth_controller.dart';
+import 'core/offline/offline_setup.dart';
+import 'core/offline/sync_screen.dart';
+import 'core/offline/sync_service.dart';
 import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
 import 'core/theme/app_theme.dart';
@@ -27,7 +30,11 @@ Future<void> main() async {
 
   await AppSupabase.initialize(url: _supabaseUrl, publishableKey: _supabasePublishableKey);
 
-  runApp(const BustanAlQuranApp());
+  // Offline layer: queued writes + cached reads for the teacher's daily work.
+  final sync = createSyncService(AppSupabase.client);
+  await sync.start();
+
+  runApp(BustanAlQuranApp(sync: sync));
 }
 
 class _MissingConfigApp extends StatelessWidget {
@@ -66,12 +73,15 @@ class _MissingConfigApp extends StatelessWidget {
 }
 
 class BustanAlQuranApp extends StatelessWidget {
-  const BustanAlQuranApp({super.key});
+  const BustanAlQuranApp({super.key, required this.sync});
+
+  final SyncService sync;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: sync),
         ChangeNotifierProvider(create: (_) => AuthController(AppSupabase.client)),
         ChangeNotifierProvider(create: (_) => TenantController(TenantRepository(AppSupabase.client))),
       ],
@@ -121,7 +131,24 @@ class _AppRouterHostState extends State<_AppRouterHost> {
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       locale: const Locale('ar'),
-      builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
+      builder: (context, child) {
+        final sync = context.watch<SyncService>();
+        final bannerShown = auth.isAuthenticated && (sync.pendingCount + sync.failedCount > 0 || sync.usingCache);
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Column(children: [
+            if (auth.isAuthenticated) SyncBanner(onTap: () => _router.push('/sync')),
+            Expanded(
+              // the banner (when shown) already sits under the status bar
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: bannerShown,
+                child: child!,
+              ),
+            ),
+          ]),
+        );
+      },
     );
   }
 }

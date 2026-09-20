@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
@@ -106,7 +107,7 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
       _error = null;
     });
     try {
-      final score = await _repository.submit(
+      final outcome = await _repository.submit(
         orgId: _orgId,
         studentId: task?.studentId ?? _student?.id,
         studentName: _student == null ? _name.text.trim() : null,
@@ -117,7 +118,8 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
         sessionId: task?.id,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('أُرسل للاعتماد ✓  الدرجة ${score ?? ''}%')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(outcome.queued ? kQueuedMessage : 'أُرسل للاعتماد ✓  الدرجة ${outcome.score ?? ''}%')));
       context.pop();
     } on PostgrestException catch (e) {
       setState(() => _error = e.message);

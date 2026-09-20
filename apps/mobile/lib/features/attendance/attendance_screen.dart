@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:provider/provider.dart';
 
+import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
@@ -113,13 +114,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     });
     try {
       final orgId = context.read<TenantController>().active!.organization.id;
-      await _repository.saveAttendance(
+      final queued = await _repository.saveAttendance(
         organizationId: orgId,
         circleId: _circleId!,
         sessionDate: _dateFormat.format(_date),
         statusByStudentId: _statusByStudent,
       );
-      if (mounted) setState(() { _message = 'تم حفظ الحضور بنجاح'; _isError = false; });
+      if (mounted) setState(() { _message = queued ? kQueuedMessage : 'تم حفظ الحضور بنجاح'; _isError = false; });
     } catch (e) {
       if (mounted) setState(() { _message = 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'; _isError = true; });
     } finally {

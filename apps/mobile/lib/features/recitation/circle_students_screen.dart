@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
@@ -72,7 +73,8 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
       grades: grades,
     );
     if (points != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم الحفظ ✓  +$points نقطة')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
       _reload();
     }
   }
@@ -80,10 +82,11 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
   Future<void> _mark(CircleStudent student, String status) async {
     final orgId = context.read<TenantController>().active!.organization.id;
     try {
-      await _repository.setAttendance(orgId: orgId, circleId: widget.circleId, studentId: student.id, status: status);
+      final queued = await _repository.setAttendance(
+          orgId: orgId, circleId: widget.circleId, studentId: student.id, studentName: student.fullName, status: status);
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('${student.fullName}: ${_attendanceLabels[status]}')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(queued ? kQueuedMessage : '${student.fullName}: ${_attendanceLabels[status]}')));
         _reload();
       }
     } catch (_) {

@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/api/accounts_api.dart';
 import '../../core/data/quran_data.dart';
+import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -99,7 +100,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       grades: data.grades,
     );
     if (points != null && mounted) {
-      _toast('تم الحفظ ✓  +$points نقطة');
+      _toast(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة');
       _reload();
     }
   }

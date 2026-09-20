@@ -36,7 +36,10 @@ class _NavSection {
 /// admins see everything, teachers only the modules they were granted,
 /// admin-only entries stay hidden from everyone else.
 const _sections = [
-  _NavSection(null, [_NavItem(Icons.space_dashboard_rounded, 'لوحة التحكم', '/dashboard')]),
+  _NavSection(null, [
+    _NavItem(Icons.space_dashboard_rounded, 'لوحة التحكم', '/dashboard'),
+    _NavItem(Icons.sync_rounded, 'المزامنة', '/sync'),
+  ]),
   _NavSection('التعليم', [
     _NavItem(Icons.people_alt_rounded, 'الطلاب', '/students', module: 'students'),
     _NavItem(Icons.groups_rounded, 'الحلقات', '/circles', module: 'circles'),

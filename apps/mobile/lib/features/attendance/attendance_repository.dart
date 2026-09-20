@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/offline/sync_service.dart';
+
 const kAttendanceStatusOptions = {
   'present': 'حاضر',
   'absent': 'غائب',
@@ -28,47 +30,48 @@ class AttendanceRepository {
 
   final SupabaseClient _client;
 
-  Future<List<CirclePickerOption>> fetchCircles(String organizationId) async {
-    final rows = await _client
-        .from('circles')
-        .select('id, name')
-        .eq('organization_id', organizationId)
-        .order('name');
-    return (rows as List).map((r) => CirclePickerOption(id: r['id'] as String, name: r['name'] as String)).toList();
+  Future<List<CirclePickerOption>> fetchCircles(String organizationId) {
+    return SyncService.instance.cached<List<CirclePickerOption>>(
+      'att-circles:$organizationId',
+      () => _client.from('circles').select('id, name').eq('organization_id', organizationId).order('name'),
+      (rows) => [for (final r in rows as List) CirclePickerOption(id: r['id'] as String, name: r['name'] as String)],
+    );
   }
 
-  Future<List<AttendanceStudentRow>> fetchStudentsInCircle(String organizationId, String circleId) async {
-    final rows = await _client
-        .from('students_profile')
-        .select('id, full_name, student_code')
-        .eq('organization_id', organizationId)
-        .eq('circle_id', circleId)
-        .order('full_name');
-    return (rows as List)
-        .map((r) => AttendanceStudentRow(
-              id: r['id'] as String,
-              studentCode: r['student_code'] as String,
-              fullName: r['full_name'] as String,
-            ))
-        .toList();
+  Future<List<AttendanceStudentRow>> fetchStudentsInCircle(String organizationId, String circleId) {
+    return SyncService.instance.cached<List<AttendanceStudentRow>>(
+      'att-students:$circleId',
+      () => _client
+          .from('students_profile')
+          .select('id, full_name, student_code')
+          .eq('organization_id', organizationId)
+          .eq('circle_id', circleId)
+          .order('full_name'),
+      (rows) => [
+        for (final r in rows as List)
+          AttendanceStudentRow(id: r['id'] as String, studentCode: r['student_code'] as String, fullName: r['full_name'] as String),
+      ],
+    );
   }
 
   Future<Map<String, String>> fetchExisting(String circleId, String sessionDate) async {
-    final rows = await _client
-        .from('attendance')
-        .select('student_id, status')
-        .eq('circle_id', circleId)
-        .eq('session_date', sessionDate);
-    return {for (final r in rows as List) r['student_id'] as String: r['status'] as String};
+    final sync = SyncService.instance;
+    final saved = await sync.cached<Map<String, String>>(
+      'att-existing:$circleId:$sessionDate',
+      () => _client.from('attendance').select('student_id, status').eq('circle_id', circleId).eq('session_date', sessionDate),
+      (rows) => {for (final r in rows as List) r['student_id'] as String: r['status'] as String},
+    );
+    return saved;
   }
 
-  Future<void> saveAttendance({
+  /// Returns true when it was stored on the phone (no network) instead of reaching the server.
+  Future<bool> saveAttendance({
     required String organizationId,
     required String circleId,
     required String sessionDate,
     required Map<String, String> statusByStudentId,
   }) async {
-    if (statusByStudentId.isEmpty) return;
+    if (statusByStudentId.isEmpty) return false;
     final rows = statusByStudentId.entries
         .map((e) => {
               'organization_id': organizationId,
@@ -78,6 +81,11 @@ class AttendanceRepository {
               'status': e.value,
             })
         .toList();
-    await _client.from('attendance').upsert(rows, onConflict: 'student_id,session_date');
+    final outcome = await SyncService.instance.submit(
+      'attendance',
+      {'rows': rows},
+      label: 'كشف حضور $sessionDate (${rows.length} طالب)',
+    );
+    return outcome.queued;
   }
 }
