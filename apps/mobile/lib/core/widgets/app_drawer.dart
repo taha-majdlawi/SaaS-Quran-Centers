@@ -60,6 +60,8 @@ const _sections = [
     _NavItem(Icons.calendar_month_rounded, 'التقويم', '/calendar', module: 'calendar'),
     _NavItem(Icons.chat_bubble_rounded, 'المحادثات', '/chat', module: 'chat'),
     _NavItem(Icons.notifications_rounded, 'الإشعارات', '/notifications', module: 'notifications'),
+    _NavItem(Icons.insights_rounded, 'التقارير', '/reports', module: 'reports'),
+    _NavItem(Icons.workspace_premium_rounded, 'الشهادات', '/certificates', module: 'certificates'),
   ]),
   _NavSection('إدارة المركز', [
     _NavItem(Icons.admin_panel_settings_rounded, 'الأعضاء والأدوار', '/members', adminOnly: true),

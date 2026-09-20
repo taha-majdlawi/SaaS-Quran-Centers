@@ -122,10 +122,11 @@ class _ItemTile extends StatelessWidget {
   }
 }
 
-/// A thin strip under the status bar while something waits to upload (or old
-/// data is shown). Tapping it opens the sync center.
-class SyncBanner extends StatelessWidget {
-  const SyncBanner({super.key, required this.onTap});
+/// One thin strip while something waits to upload (or old data is shown).
+/// Tapping it opens the sync center. Placed by [StatusBanners], which owns the
+/// status-bar inset and decides whether anything is shown.
+class SyncStrip extends StatelessWidget {
+  const SyncStrip({super.key, required this.onTap});
 
   final VoidCallback onTap;
 
@@ -134,7 +135,6 @@ class SyncBanner extends StatelessWidget {
     final sync = context.watch<SyncService>();
     final waiting = sync.pendingCount;
     final failed = sync.failedCount;
-    if (waiting == 0 && failed == 0 && !sync.usingCache) return const SizedBox.shrink();
 
     final text = failed > 0
         ? 'بعض السجلات رُفضت ($failed) — اضغط للمراجعة'
@@ -147,16 +147,13 @@ class SyncBanner extends StatelessWidget {
       color: color,
       child: InkWell(
         onTap: onTap,
-        child: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(children: [
-              Icon(sync.flushing ? Icons.sync_rounded : Icons.cloud_off_rounded, size: 16, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
-            ]),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(children: [
+            Icon(sync.flushing ? Icons.sync_rounded : Icons.cloud_off_rounded, size: 16, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
+          ]),
         ),
       ),
     );

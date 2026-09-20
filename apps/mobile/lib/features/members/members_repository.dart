@@ -85,6 +85,15 @@ class MembersRepository {
     }).eq('id', id);
   }
 
+  /// Is this member's account a viewing (read-only) one? (admin only)
+  Future<bool> isViewer(String orgId, String userId) async {
+    final rows = await _client.rpc('list_account_flags', params: {'p_org': orgId}) as List;
+    return rows.any((r) => r['user_id'] == userId);
+  }
+
+  Future<void> setViewer(String orgId, String userId, bool viewer) =>
+      _client.rpc('set_account_access', params: {'p_org': orgId, 'p_user': userId, 'p_read_only': viewer});
+
   Future<void> removeMember(String id) {
     return _client.from('organization_members').delete().eq('id', id);
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/api/accounts_api.dart';
 import '../../core/auth/auth_controller.dart';
@@ -28,6 +29,8 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
   final _repository = MembersRepository(AppSupabase.client);
   MemberRow? _member;
   bool _isSelf = false;
+  bool _viewer = false;
+  bool _savingViewer = false;
   String _role = 'teacher';
   String _status = 'active';
   Set<String> _permissions = {};
@@ -51,6 +54,9 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
     _role = member.role;
     _status = member.status;
     _permissions = member.permissions.toSet();
+    try {
+      _viewer = await _repository.isViewer(orgId, member.userId);
+    } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
 
@@ -104,6 +110,25 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       if (mounted) setState(() => _error = e.message);
     } finally {
       if (mounted) setState(() => _resetting = false);
+    }
+  }
+
+  Future<void> _saveViewer(bool value) async {
+    setState(() {
+      _savingViewer = true;
+      _error = null;
+    });
+    try {
+      final orgId = context.read<TenantController>().active!.organization.id;
+      await _repository.setViewer(orgId, _member!.userId, value);
+      if (mounted) {
+        setState(() => _viewer = value);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حُفظت حالة الحساب')));
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = e is PostgrestException ? e.message : 'تعذّر الحفظ');
+    } finally {
+      if (mounted) setState(() => _savingViewer = false);
     }
   }
 
@@ -185,6 +210,13 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                       child: _submitting
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                           : const Text('حفظ التعديلات'),
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('حساب عرض فقط'),
+                      subtitle: const Text('يرى ولا يعدّل: يبقى دوره كما هو لكن لا يُحفظ له أي تغيير في هذا المركز.'),
+                      value: _viewer,
+                      onChanged: _savingViewer ? null : _saveViewer,
                     ),
                     const SectionTitle('تغيير كلمة السر'),
                     TextField(

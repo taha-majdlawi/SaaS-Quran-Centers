@@ -147,6 +147,8 @@ class _RecitationSheetState extends State<_RecitationSheet> {
         if (mounted) Navigator.pop(context, 0);
       } on PostgrestException catch (e) {
         setState(() => _error = e.message);
+      } on StateError catch (e) {
+        setState(() => _error = e.message);
       } catch (_) {
         setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
       } finally {
@@ -190,6 +192,8 @@ class _RecitationSheetState extends State<_RecitationSheet> {
       }
     } on PostgrestException catch (e) {
       setState(() => _error = saved > 0 ? 'حُفظ $saved، ولم يُحفظ الباقي: ${e.message}' : e.message);
+    } on StateError catch (e) {
+      setState(() => _error = e.message);
     } catch (_) {
       setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
     } finally {

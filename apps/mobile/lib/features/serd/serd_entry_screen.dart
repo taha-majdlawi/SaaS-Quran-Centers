@@ -123,6 +123,8 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
       context.pop();
     } on PostgrestException catch (e) {
       setState(() => _error = e.message);
+    } on StateError catch (e) {
+      setState(() => _error = e.message);
     } catch (_) {
       setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
     } finally {

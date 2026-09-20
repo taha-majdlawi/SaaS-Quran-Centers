@@ -9,6 +9,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import '../students/students_repository.dart';
+import '../certificates/certificates_repository.dart';
 import 'serd_models.dart';
 import 'serd_repository.dart';
 import 'serd_widgets.dart';
@@ -156,6 +157,13 @@ class _SerdListScreenState extends State<SerdListScreen> {
             onPressed: () => _approve(row, students),
             style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
             child: const Text('إعادة اعتماد'),
+          ),
+        if (row.status == 'approved' && row.studentId != null && row.scorePercent != null && row.scorePercent! >= (row.passPercentApplied ?? 0))
+          OutlinedButton.icon(
+            onPressed: () => _run(() => CertificatesRepository(AppSupabase.client).issueSerd(_loadedForOrgId!, row.id), 'صدرت الشهادة — تجدها في شاشة الشهادات'),
+            icon: const Icon(Icons.workspace_premium_rounded, size: 18),
+            label: const Text('إصدار شهادة'),
+            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
           ),
         TextButton(onPressed: () => _delete(row), child: const Text('حذف', style: TextStyle(color: Colors.red))),
       ],

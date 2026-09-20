@@ -116,4 +116,13 @@ void main() {
     expect(sync.pendingRecitationsToday('s2'), 0);
     expect(sync.pendingAttendance('s1', day), 'absent');
   });
+
+  test('a viewing account is refused before anything is sent or queued', () async {
+    SyncService.writeGuard = () => throw StateError('حساب عرض');
+    addTearDown(() => SyncService.writeGuard = null);
+    online = false; // even offline it must not enter the queue
+    await expectLater(sync.submit('log', {'n': '1'}, label: 'x'), throwsA(isA<StateError>()));
+    expect(sync.pendingCount, 0);
+    expect(await store.items(), isEmpty);
+  });
 }

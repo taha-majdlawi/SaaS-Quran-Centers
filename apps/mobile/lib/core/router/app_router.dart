@@ -36,6 +36,8 @@ import '../../features/calendar/event_form_screen.dart';
 import '../../features/calendar/event_detail_screen.dart';
 import '../../features/calendar/calendar_types_screen.dart';
 import '../offline/sync_screen.dart';
+import '../../features/certificates/certificates_screens.dart';
+import '../../features/reports/reports_screens.dart';
 import '../../features/quran/quran_screens.dart';
 import '../../features/comms/announcements_screens.dart';
 import '../../features/comms/chat_screens.dart';
@@ -109,6 +111,13 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),
       GoRoute(path: '/sync', builder: (context, state) => const SyncScreen()),
+      GoRoute(path: '/reports', builder: (context, state) => const ReportsScreen()),
+      GoRoute(path: '/students/:id/report', builder: (context, state) => StudentReportScreen(studentId: state.pathParameters['id']!)),
+      GoRoute(path: '/certificates', builder: (context, state) => const CertificatesScreen()),
+      GoRoute(path: '/certificates/:id', builder: (context, state) => CertificateScreen(certificateId: state.pathParameters['id']!)),
+      GoRoute(path: '/my/report', builder: (context, state) => const StudentReportScreen(portal: true)),
+      GoRoute(path: '/my/certificates', builder: (context, state) => const CertificatesScreen(portal: true)),
+      GoRoute(path: '/my/certificates/:id', builder: (context, state) => CertificateScreen(certificateId: state.pathParameters['id']!)),
       GoRoute(path: '/quran', builder: (context, state) => const QuranScreen()),
       GoRoute(
         path: '/quran/:surah',

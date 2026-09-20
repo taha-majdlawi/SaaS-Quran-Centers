@@ -122,7 +122,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       );
       if (mounted) setState(() { _message = queued ? kQueuedMessage : 'تم حفظ الحضور بنجاح'; _isError = false; });
     } catch (e) {
-      if (mounted) setState(() { _message = 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'; _isError = true; });
+      if (mounted) setState(() { _message = e is StateError ? e.message : 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'; _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = false);
     }

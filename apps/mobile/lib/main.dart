@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'core/access/account_access.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/offline/offline_setup.dart';
-import 'core/offline/sync_screen.dart';
 import 'core/offline/sync_service.dart';
 import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
@@ -32,6 +32,8 @@ Future<void> main() async {
 
   // Offline layer: queued writes + cached reads for the teacher's daily work.
   final sync = createSyncService(AppSupabase.client);
+  // a viewing account is refused BEFORE a write can enter the offline queue
+  SyncService.writeGuard = AccessController.instance.ensureCanWrite;
   await sync.start();
 
   runApp(BustanAlQuranApp(sync: sync));
@@ -82,6 +84,7 @@ class BustanAlQuranApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: sync),
+        ChangeNotifierProvider.value(value: AccessController.instance),
         ChangeNotifierProvider(create: (_) => AuthController(AppSupabase.client)),
         ChangeNotifierProvider(create: (_) => TenantController(TenantRepository(AppSupabase.client))),
       ],
@@ -125,6 +128,10 @@ class _AppRouterHostState extends State<_AppRouterHost> {
       WidgetsBinding.instance.addPostFrameCallback((_) => tenant.clear());
     }
 
+    // who am I in THIS center (viewing account?) - re-read when the center or account changes
+    final accessOrg = auth.isAuthenticated ? tenant.active?.organization.id : null;
+    WidgetsBinding.instance.addPostFrameCallback((_) => AccessController.instance.bind(AppSupabase.client, accessOrg));
+
     return MaterialApp.router(
       title: 'بستان القرآن',
       theme: buildAppTheme(parseBrandColor(tenant.active?.organization.primaryColor)),
@@ -132,19 +139,14 @@ class _AppRouterHostState extends State<_AppRouterHost> {
       routerConfig: _router,
       locale: const Locale('ar'),
       builder: (context, child) {
-        final sync = context.watch<SyncService>();
-        final bannerShown = auth.isAuthenticated && (sync.pendingCount + sync.failedCount > 0 || sync.usingCache);
+        final bannerShown = StatusBanners.isVisible(context);
         return Directionality(
           textDirection: TextDirection.rtl,
           child: Column(children: [
-            if (auth.isAuthenticated) SyncBanner(onTap: () => _router.push('/sync')),
+            StatusBanners(onSyncTap: () => _router.push('/sync')),
             Expanded(
-              // the banner (when shown) already sits under the status bar
-              child: MediaQuery.removePadding(
-                context: context,
-                removeTop: bannerShown,
-                child: child!,
-              ),
+              // the banners (when shown) already sit under the status bar
+              child: MediaQuery.removePadding(context: context, removeTop: bannerShown, child: child!),
             ),
           ]),
         );

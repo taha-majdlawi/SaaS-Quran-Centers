@@ -86,8 +86,8 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
         _absent++;
         _index++;
       });
-    } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر حفظ الغياب')));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : 'تعذّر حفظ الغياب')));
     }
   }
 

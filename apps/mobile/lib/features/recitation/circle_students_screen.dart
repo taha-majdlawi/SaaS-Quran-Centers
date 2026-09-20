@@ -89,8 +89,8 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
             content: Text(queued ? kQueuedMessage : '${student.fullName}: ${_attendanceLabels[status]}')));
         _reload();
       }
-    } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر حفظ الحضور')));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : 'تعذّر حفظ الحضور')));
     }
   }
 

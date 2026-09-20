@@ -16,6 +16,8 @@ const List<String> kModuleKeys = [
   'announcements',
   'chat',
   'notifications',
+  'reports',
+  'certificates',
 ];
 
 /// Arabic labels for the checkboxes on the member-permission editor.
@@ -33,4 +35,6 @@ const Map<String, String> kModuleLabels = {
   'announcements': 'الإعلانات',
   'chat': 'المحادثات',
   'notifications': 'الإشعارات',
+  'reports': 'التقارير',
+  'certificates': 'الشهادات',
 };

@@ -51,6 +51,9 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   /// The app-wide instance (repositories are not widgets, so they reach it here).
   static late SyncService instance;
 
+  /// Runs before anything is sent or queued; throws to refuse (e.g. a viewing account).
+  static void Function()? writeGuard;
+
   final OfflineStore _store;
   final String? Function() _currentUser;
   final Stream<dynamic>? _connectivity;
@@ -108,6 +111,7 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     String? orderKey,
     Future<dynamic> Function()? send,
   }) async {
+    writeGuard?.call();
     final user = _currentUser();
     if (user == null) throw StateError('not signed in');
     final handler = _handlers[kind];

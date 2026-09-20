@@ -309,6 +309,21 @@ class _HomeTab extends StatelessWidget {
         ]),
         Card(
           child: ListTile(
+            leading: const Icon(Icons.insights_rounded),
+            title: const Text('التقرير', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text('التسميع والحضور والسرد لفترة تختارها'),
+            onTap: () => context.push('/my/report'),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.workspace_premium_rounded),
+            title: const Text('الشهادات', style: TextStyle(fontWeight: FontWeight.w700)),
+            onTap: () => context.push('/my/certificates'),
+          ),
+        ),
+        Card(
+          child: ListTile(
             leading: const Icon(Icons.auto_stories_rounded),
             title: const Text('المصحف', style: TextStyle(fontWeight: FontWeight.w700)),
             subtitle: const Text('قراءة واستماع وعلامات'),
