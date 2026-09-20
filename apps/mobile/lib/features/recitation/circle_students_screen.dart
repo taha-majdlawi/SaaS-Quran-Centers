@@ -100,7 +100,7 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
                 child: snapshot.hasError
                     ? Padding(padding: const EdgeInsets.all(24), child: ErrorState(onRetry: _reload))
                     : data == null
-                        ? const Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator()))
+                        ? const Padding(padding: EdgeInsets.all(16), child: SkeletonCards(count: 4, height: 96))
                         : Padding(
                             padding: const EdgeInsets.only(top: 12, bottom: 24),
                             child: Column(children: [

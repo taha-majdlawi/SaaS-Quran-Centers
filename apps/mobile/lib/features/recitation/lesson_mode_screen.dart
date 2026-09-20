@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -70,6 +71,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
     final s = _current!;
     final points = await showRecitationSheet(context, studentId: s.id, studentName: s.fullName, grades: _grades);
     if (points == null || !mounted) return;
+    HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
     setState(() {

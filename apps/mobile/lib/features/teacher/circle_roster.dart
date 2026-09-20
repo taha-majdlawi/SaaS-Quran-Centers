@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +47,7 @@ class _CircleRosterState extends State<CircleRoster> {
   Future<void> _record(CircleStudent s) async {
     final points = await showRecitationSheet(context, studentId: s.id, studentName: s.fullName, grades: widget.grades);
     if (points != null && mounted) {
+      HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
       widget.onChanged();
     }

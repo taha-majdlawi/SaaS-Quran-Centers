@@ -92,7 +92,7 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(color: scheme.primary, borderRadius: BorderRadius.circular(20)),
+                          decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, 0.35)!]), borderRadius: BorderRadius.circular(20)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text('الرصيد', style: TextStyle(color: Colors.white.withValues(alpha: 0.85))),
                             Text(money(m.wallet.balance, m.symbol), style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),

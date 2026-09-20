@@ -87,7 +87,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         child: CustomScrollView(slivers: [
           teacherHeader(
             context,
-            title: _teacherName.isEmpty ? 'لوحة تحكم المعلم' : 'أهلاً بك، ${_teacherName.split(' ').first}',
+            title: _teacherName.isEmpty ? timeGreeting() : '${timeGreeting()}، ${_teacherName.split(' ').first}',
             actions: [
               if (tenant.hasModule('students')) IconButton(tooltip: 'بحث عن طالب', onPressed: () => context.push('/students'), icon: const Icon(Icons.person_search_rounded)),
               if (tenant.hasModule('attendance')) IconButton(tooltip: 'الحضور', onPressed: () => context.push('/attendance'), icon: const Icon(Icons.fact_check_rounded)),
@@ -116,7 +116,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               builder: (context, snap) {
                 if (snap.hasError) return Padding(padding: const EdgeInsets.all(24), child: ErrorState(onRetry: _reload));
                 final data = snap.data;
-                if (data == null) return const Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator()));
+                if (data == null) return const Padding(padding: EdgeInsets.all(16), child: SkeletonCards(count: 3, height: 96));
                 if (data.circles.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(24),
@@ -229,7 +229,7 @@ class _CircleCardState extends State<_CircleCard> {
               builder: (context, snap) {
                 if (snap.hasError) return Padding(padding: const EdgeInsets.all(16), child: ErrorState(onRetry: widget.onChanged));
                 final students = snap.data;
-                if (students == null) return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()));
+                if (students == null) return const Padding(padding: EdgeInsets.all(12), child: SkeletonCards(count: 2, height: 96));
                 return Column(children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),

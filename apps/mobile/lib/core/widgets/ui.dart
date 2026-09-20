@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../offline/sync_service.dart' show isNetworkError;
@@ -182,8 +183,12 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 10),
-      child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+      padding: const EdgeInsets.only(top: 22, bottom: 10),
+      child: Row(children: [
+        Container(width: 4, height: 18, decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(4))),
+        const SizedBox(width: 8),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+      ]),
     );
   }
 }
@@ -222,3 +227,36 @@ String friendlyError(Object e, String fallback) {
   if (isNetworkError(e)) return 'تعذّر الاتصال بالإنترنت، حاول مرة أخرى';
   return fallback;
 }
+
+
+/// Placeholder cards shown (shimmering) while a list loads - calmer than a lone spinner.
+class SkeletonCards extends StatelessWidget {
+  const SkeletonCards({super.key, this.count = 3, this.height = 84});
+
+  final int count;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      enabled: true,
+      child: Column(children: [
+        for (var i = 0; i < count; i++)
+          Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: SizedBox(
+              height: height,
+              child: const ListTile(
+                leading: CircleAvatar(radius: 22),
+                title: Text('اسم الطالب الكامل هنا'),
+                subtitle: Text('معلومات إضافية قصيرة'),
+              ),
+            ),
+          ),
+      ]),
+    );
+  }
+}
+
+/// "صباح الخير" / "مساء الخير" by the hour.
+String timeGreeting() => DateTime.now().hour < 12 ? 'صباح الخير' : 'مساء الخير';

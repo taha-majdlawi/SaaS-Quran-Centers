@@ -121,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('السلام عليكم',
+                        Text('${timeGreeting()}، السلام عليكم',
                             style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 14)),
                         const SizedBox(height: 4),
                         Text(org?.name ?? '',
@@ -267,14 +267,14 @@ class _StatCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: color.shade50, borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: color.shade700, size: 22),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$value', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1)),
+                Text('$value', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1, color: color.shade800)),
                 const SizedBox(height: 4),
                 Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               ],
@@ -303,18 +303,22 @@ class _QuickActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       onTap: () => context.push(action.path),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE7EDF3)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(action.icon, color: primary, size: 28),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: primary.withValues(alpha: 0.10), shape: BoxShape.circle),
+              child: Icon(action.icon, color: primary, size: 24),
+            ),
             const SizedBox(height: 8),
             Text(action.label,
                 textAlign: TextAlign.center, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
