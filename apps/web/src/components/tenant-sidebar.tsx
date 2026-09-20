@@ -27,6 +27,8 @@ export const TENANT_MODULES = [
   { slug: 'announcements', label: 'الإعلانات', module: 'announcements' },
   { slug: 'chat', label: 'المحادثات', module: 'chat' },
   { slug: 'notifications', label: 'الإشعارات' },
+  { slug: 'reports', label: 'التقارير', module: 'reports' },
+  { slug: 'certificates', label: 'الشهادات', module: 'certificates' },
   { slug: 'members', label: 'الأعضاء والأدوار', adminOnly: true },
   { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
   { slug: 'site', label: 'الموقع العام', adminOnly: true },
@@ -50,7 +52,7 @@ export function TenantSidebar({
   });
 
   return (
-    <aside className="w-64 shrink-0 border-l bg-white p-4">
+    <aside className="w-64 shrink-0 border-l bg-white p-4 print:hidden">
       <nav className="flex flex-col gap-1 text-sm">
         {visible.map((m) => (
           <a

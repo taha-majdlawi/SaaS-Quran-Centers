@@ -51,7 +51,10 @@ export default async function EditStudentPage({
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-6 text-2xl font-bold">تعديل بيانات طالب</h1>
+      <h1 className="mb-2 text-2xl font-bold">تعديل بيانات طالب</h1>
+      <a href={`/students/${student.id}/report` as never} className="mb-6 inline-block text-sm text-brand hover:underline">
+        تقرير الطالب (طباعة)
+      </a>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 

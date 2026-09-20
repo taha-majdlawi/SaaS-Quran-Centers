@@ -120,6 +120,12 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
           <a href="/my/market" className="rounded border px-4 py-2 text-sm text-brand">
             السوق
           </a>
+          <a href="/my/report" className="rounded border px-4 py-2 text-sm text-brand">
+            التقرير
+          </a>
+          <a href="/my/certificates" className="rounded border px-4 py-2 text-sm text-brand">
+            الشهادات
+          </a>
           <a href="/my/calendar" className="rounded border px-4 py-2 text-sm text-brand">
             التقويم والفعاليات
           </a>

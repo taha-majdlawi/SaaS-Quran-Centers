@@ -12,6 +12,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 interface MemberRow {
   id: string;
+  user_id: string;
   role: string;
   status: string;
   full_name: string | null;
@@ -42,6 +43,8 @@ export default async function MembersPage({
 
   const { data: members, error: membersError } = await supabase.rpc('list_org_members', { org_id: org.id });
   const isAdmin = org.myRole === 'admin';
+  const { data: flags } = isAdmin ? await supabase.rpc('list_account_flags', { p_org: org.id }) : { data: [] };
+  const viewers = new Set(((flags ?? []) as { user_id: string }[]).map((f) => f.user_id));
 
   const { data: invitations } = isAdmin
     ? await supabase.rpc('list_org_invitations', { org_id: org.id })
@@ -90,7 +93,10 @@ export default async function MembersPage({
           <tbody>
             {((members ?? []) as MemberRow[]).map((m) => (
               <tr key={m.id} className="border-t">
-                <td className="px-4 py-2">{m.full_name ?? '—'}</td>
+                <td className="px-4 py-2">
+                  {m.full_name ?? '—'}
+                  {viewers.has(m.user_id) && <span className="mr-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">عرض فقط</span>}
+                </td>
                 <td className="px-4 py-2">{m.email}</td>
                 <td className="px-4 py-2">{ROLE_LABELS[m.role] ?? m.role}</td>
                 <td className="px-4 py-2">{m.status === 'active' ? 'نشط' : m.status}</td>

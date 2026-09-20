@@ -12,6 +12,8 @@ const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
 // re-verifies session AND membership on every request; this just makes a future
 // route added outside (protected) fail closed instead of rendering for anyone.
 const PUBLIC_TENANT_PATHS = new Set(['/', '/login', '/join', '/privacy', '/support', '/delete-account']);
+// /verify/<serial> lets anyone check a printed certificate is genuine
+const isPublicTenantPath = (p: string) => PUBLIC_TENANT_PATHS.has(p) || /^\/verify\/[A-Za-z0-9-]{1,40}$/.test(p);
 const PUBLIC_PLATFORM_PATHS = new Set(['/login']);
 
 /**
@@ -82,7 +84,7 @@ export async function middleware(req: NextRequest) {
 
   if (!user && scope) {
     const isPublic =
-      scope === 'platform' ? PUBLIC_PLATFORM_PATHS.has(req.nextUrl.pathname) : PUBLIC_TENANT_PATHS.has(req.nextUrl.pathname);
+      scope === 'platform' ? PUBLIC_PLATFORM_PATHS.has(req.nextUrl.pathname) : isPublicTenantPath(req.nextUrl.pathname);
     if (!isPublic) {
       const redirectResponse = NextResponse.redirect(new URL('/login', req.url));
       // keep whatever getUser() just refreshed (a rotated / cleared cookie)

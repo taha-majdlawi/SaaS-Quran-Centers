@@ -4,6 +4,7 @@ import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { SubmitButton } from '@/components/submit-button';
 import { STATUS_LABELS, STATUS_STYLES, fmtDate, juzEquivalent, partsLabel, type SerdRow } from '@/lib/serd/format';
 import { deleteSerd, reviewSerd } from './actions';
+import { issueSerdCertificate } from '@/lib/certs/actions';
 
 const FILTERS: [string, string][] = [
   ['', 'الكل'],
@@ -21,7 +22,7 @@ function Notice({ text, tone }: { text: string; tone: 'ok' | 'error' }) {
   );
 }
 
-function RowCard({ row, isAdmin, students }: { row: SerdRow; isAdmin: boolean; students: { id: string; full_name: string }[] }) {
+function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boolean; students: { id: string; full_name: string }[]; orgId: string }) {
   return (
     <div className="rounded-lg border bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -62,6 +63,17 @@ function RowCard({ row, isAdmin, students }: { row: SerdRow; isAdmin: boolean; s
       )}
       {row.notes && <p className="mt-1 text-xs text-gray-600">{row.notes}</p>}
       {row.reject_reason && <p className="mt-1 text-xs text-red-600">سبب الرفض: {row.reject_reason}</p>}
+
+      {isAdmin && row.status === 'approved' && row.student_id && row.score_percent != null && row.score_percent >= (row.pass_percent_applied ?? 0) && (
+        <form action={issueSerdCertificate} className="mt-3 border-t pt-3">
+          <input type="hidden" name="orgId" value={orgId} />
+          <input type="hidden" name="sessionId" value={row.id} />
+          <input type="hidden" name="back" value="/serd" />
+          <SubmitButton className="rounded border border-brand px-3 py-1.5 text-xs text-brand hover:bg-gray-50" pendingText="جاري الإصدار...">
+            إصدار شهادة
+          </SubmitButton>
+        </form>
+      )}
 
       {isAdmin && (
         <div className="mt-3 flex flex-wrap items-end gap-3 border-t pt-3">
@@ -126,7 +138,7 @@ export default async function SerdPage({
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ status?: string; page?: string; saved?: string; scheduled?: string; reviewed?: string; deleted?: string; error?: string }>;
+  searchParams: Promise<{ status?: string; page?: string; saved?: string; scheduled?: string; reviewed?: string; deleted?: string; ok?: string; error?: string }>;
 }) {
   const { org: slug } = await params;
   const sp = await searchParams;
@@ -199,6 +211,7 @@ export default async function SerdPage({
       {sp.scheduled && <Notice tone="ok" text="تمت جدولة السرد" />}
       {sp.reviewed && <Notice tone="ok" text={sp.reviewed === 'approve' ? 'تم الاعتماد' : 'تم الرفض'} />}
       {sp.deleted && <Notice tone="ok" text="تم الحذف" />}
+      {sp.ok === 'certificate' && <Notice tone="ok" text="صدرت الشهادة — تجدها في صفحة الشهادات" />}
 
       {isAdmin && (
         <div className="mb-4 flex flex-wrap gap-2 text-sm">
@@ -240,7 +253,7 @@ export default async function SerdPage({
       {!isAdmin && <h2 className="mb-2 font-semibold">سردي</h2>}
       <div className="flex flex-col gap-3">
         {rows.map((r) => (
-          <RowCard key={r.id} row={r} isAdmin={isAdmin} students={students} />
+          <RowCard key={r.id} row={r} isAdmin={isAdmin} students={students} orgId={org.id} />
         ))}
         {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا يوجد سرد بعد</p>}
       </div>

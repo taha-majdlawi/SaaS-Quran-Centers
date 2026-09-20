@@ -17,6 +17,8 @@ export const MODULE_DEFS = [
   { key: 'announcements', label: 'الإعلانات' },
   { key: 'chat', label: 'المحادثات' },
   { key: 'notifications', label: 'الإشعارات' },
+  { key: 'reports', label: 'التقارير' },
+  { key: 'certificates', label: 'الشهادات' },
 ] as const;
 
 export type ModuleKey = (typeof MODULE_DEFS)[number]['key'];
