@@ -110,8 +110,8 @@ class _PointsScreenState extends State<PointsScreen> {
       _newPoints.clear();
       await _load();
       if (mounted) setState(() { _message = 'تم حفظ التقديرات'; _isError = false; });
-    } catch (_) {
-      if (mounted) setState(() { _message = 'حدث خطأ أثناء الحفظ'; _isError = true; });
+    } catch (e) {
+      if (mounted) setState(() { _message = friendlyError(e, 'حدث خطأ أثناء الحفظ'); _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = false);
     }

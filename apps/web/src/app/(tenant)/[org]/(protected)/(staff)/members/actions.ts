@@ -10,7 +10,8 @@ export async function createInvitation(formData: FormData) {
   const role = formData.get('role') as string;
 
   const supabase = await createClient();
-  await supabase.rpc('create_invitation', { org_id: orgId, invite_email: email, invite_role: role });
+  const { error } = await supabase.rpc('create_invitation', { org_id: orgId, invite_email: email, invite_role: role });
+  if (error) redirect(`/members?error=${encodeURIComponent(error.message)}` as never);
 
   redirect('/members');
 }

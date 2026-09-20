@@ -66,7 +66,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
         _reload(_loadedForOrgId!);
       }
     } catch (e) {
-      if (mounted) setState(() { _message = 'حدث خطأ أثناء الدعوة'; _isError = true; });
+      if (mounted) setState(() { _message = friendlyError(e, 'حدث خطأ أثناء الدعوة'); _isError = true; });
     } finally {
       if (mounted) setState(() => _inviting = false);
     }

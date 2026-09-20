@@ -86,8 +86,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await action();
       if (mounted) setState(() { _message = 'تم حفظ الإعدادات'; _isError = false; });
-    } catch (_) {
-      if (mounted) setState(() { _message = 'حدث خطأ أثناء الحفظ'; _isError = true; });
+    } catch (e) {
+      if (mounted) setState(() { _message = friendlyError(e, 'حدث خطأ أثناء الحفظ'); _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = null);
     }

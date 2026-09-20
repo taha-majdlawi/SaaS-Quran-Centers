@@ -201,7 +201,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     } on AccountsApiException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = 'رقم الطالب مستخدم من قبل، أو حدث خطأ آخر');
+      setState(() => _error = e.toString().contains('23505') ? 'رقم الطالب مستخدم من قبل بهذا المركز' : friendlyError(e, 'حدث خطأ أثناء الحفظ'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

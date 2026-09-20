@@ -96,7 +96,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       }
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = 'حدث خطأ أثناء الحفظ - حاول مرة أخرى');
+      setState(() => _error = friendlyError(e, 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

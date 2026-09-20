@@ -58,6 +58,8 @@ export async function saveAnnouncement(formData: FormData) {
 
 export async function deleteAnnouncement(formData: FormData) {
   const supabase = await createClient();
-  await supabase.rpc('delete_announcement', { p_org: s(formData, 'orgId'), p_id: s(formData, 'id') });
+  const id = s(formData, 'id');
+  const { error } = await supabase.rpc('delete_announcement', { p_org: s(formData, 'orgId'), p_id: id });
+  if (error) redirect(withParam(`/announcements/${id}`, 'error', error.message) as never);
   redirect('/announcements?ok=deleted' as never);
 }

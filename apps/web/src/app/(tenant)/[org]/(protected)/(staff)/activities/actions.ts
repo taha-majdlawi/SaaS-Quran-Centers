@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { deleteErrorMessage } from '@/lib/db-errors';
 
 export async function createActivity(formData: FormData) {
   const orgId = formData.get('orgId') as string;
@@ -52,7 +53,8 @@ export async function deleteActivity(formData: FormData) {
   const id = formData.get('id') as string;
 
   const supabase = await createClient();
-  await supabase.from('activities').delete().eq('id', id);
+  const { data: removed, error } = await supabase.from('activities').delete().eq('id', id).select('id');
+  if (error || !removed?.length) redirect(`/activities/${id}?error=${encodeURIComponent(deleteErrorMessage(error))}` as never);
 
   redirect('/activities');
 }

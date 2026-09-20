@@ -74,7 +74,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       );
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = 'حدث خطأ أثناء الحفظ');
+      setState(() => _error = friendlyError(e, 'حدث خطأ أثناء الحفظ'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

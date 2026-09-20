@@ -34,10 +34,10 @@ export default async function MembersPage({
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ createdEmail?: string; createdPassword?: string }>;
+  searchParams: Promise<{ createdEmail?: string; createdPassword?: string; error?: string }>;
 }) {
   const { org: slug } = await params;
-  const { createdEmail, createdPassword } = await searchParams;
+  const { createdEmail, createdPassword, error: actionError } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
@@ -65,6 +65,8 @@ export default async function MembersPage({
           </p>
         </div>
       )}
+
+      {actionError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{actionError}</p>}
 
       <div>
         {membersError && (

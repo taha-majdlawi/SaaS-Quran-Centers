@@ -73,7 +73,7 @@ class _StageFormScreenState extends State<StageFormScreen> {
       if (mounted) context.pop();
     } catch (e) {
       final isDuplicate = e.toString().contains('23505');
-      setState(() => _error = isDuplicate ? 'الاسم أو الكود مستخدم من قبل بهذا المركز' : 'حدث خطأ أثناء الحفظ');
+      setState(() => _error = isDuplicate ? 'الاسم أو الكود مستخدم من قبل بهذا المركز' : friendlyError(e, 'حدث خطأ أثناء الحفظ'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

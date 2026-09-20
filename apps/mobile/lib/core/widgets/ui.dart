@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../offline/sync_service.dart' show isNetworkError;
 
 /// Loading / error-with-retry / data states for any Future, so no screen
 /// spins forever when a request fails.
@@ -202,4 +205,20 @@ class InitialAvatar extends StatelessWidget {
       child: Text(letter, style: TextStyle(color: primary, fontWeight: FontWeight.w800, fontSize: radius * 0.85)),
     );
   }
+}
+
+
+/// The sentence a person should read when a save fails: the server's own
+/// (Arabic) rule or the viewing-account message when there is one, a clear line
+/// for a lost connection, and only otherwise the screen's generic [fallback].
+String friendlyError(Object e, String fallback) {
+  if (e is StateError) return e.message;
+  if (e is PostgrestException) {
+    final m = e.message;
+    if (m.contains('row-level security') || m.contains('permission denied')) return 'لا تملك صلاحية تنفيذ هذه العملية';
+    if (e.code == '23503') return 'لا يمكن تنفيذ العملية لوجود بيانات مرتبطة';
+    if (e.code == '42501' || e.code == 'P0001') return m;
+  }
+  if (isNetworkError(e)) return 'تعذّر الاتصال بالإنترنت، حاول مرة أخرى';
+  return fallback;
 }

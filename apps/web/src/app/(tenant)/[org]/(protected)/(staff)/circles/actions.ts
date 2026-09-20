@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { deleteErrorMessage } from '@/lib/db-errors';
 import { logAudit } from '@/lib/audit/log';
 
 function readCircleFields(formData: FormData) {
@@ -55,7 +56,8 @@ export async function deleteCircle(formData: FormData) {
   } = await supabase.auth.getUser();
   const { data: circle } = await supabase.from('circles').select('organization_id').eq('id', id).maybeSingle();
 
-  await supabase.from('circles').delete().eq('id', id);
+  const { data: removed, error: delError } = await supabase.from('circles').delete().eq('id', id).select('id');
+  if (delError || !removed?.length) redirect(`/circles/${id}?error=${encodeURIComponent(deleteErrorMessage(delError))}` as never);
 
   if (circle && user) {
     await logAudit(supabase, {

@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { deleteErrorMessage } from '@/lib/db-errors';
 import { logAudit } from '@/lib/audit/log';
 
 function readStageFields(formData: FormData) {
@@ -52,7 +53,8 @@ export async function deleteStage(formData: FormData) {
   } = await supabase.auth.getUser();
   const { data: stage } = await supabase.from('stages').select('organization_id').eq('id', id).maybeSingle();
 
-  await supabase.from('stages').delete().eq('id', id);
+  const { data: removed, error: delError } = await supabase.from('stages').delete().eq('id', id).select('id');
+  if (delError || !removed?.length) redirect(`/stages/${id}?error=${encodeURIComponent(deleteErrorMessage(delError))}` as never);
 
   if (stage && user) {
     await logAudit(supabase, {

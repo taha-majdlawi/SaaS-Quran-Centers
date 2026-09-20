@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { deleteErrorMessage } from '@/lib/db-errors';
 import { logAudit } from '@/lib/audit/log';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AccountError, provisionStudent } from '@/lib/accounts/provision';
@@ -110,7 +111,8 @@ export async function deleteStudent(formData: FormData) {
     .eq('id', id)
     .maybeSingle();
 
-  await supabase.from('students_profile').delete().eq('id', id);
+  const { data: removed, error: delError } = await supabase.from('students_profile').delete().eq('id', id).select('id');
+  if (delError || !removed?.length) redirect(`/students/${id}?error=${encodeURIComponent(deleteErrorMessage(delError))}` as never);
 
   if (student && user) {
     await logAudit(supabase, {
