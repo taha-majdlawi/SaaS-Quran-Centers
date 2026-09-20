@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ALL_MODULE_KEYS, type ModuleKey } from '@/lib/permissions/modules';
@@ -26,7 +27,7 @@ export interface OrgContext {
  * it. Every page under app/(tenant)/[org]/* should call this first - RLS
  * still enforces the real boundary, this is what drives the UI.
  */
-export async function getOrgContext(slug: string): Promise<OrgContext> {
+export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => {
   const supabase = await createClient();
 
   const { data: org } = await supabase
@@ -71,4 +72,4 @@ export async function getOrgContext(slug: string): Promise<OrgContext> {
     myRole,
     myPermissions,
   };
-}
+});
