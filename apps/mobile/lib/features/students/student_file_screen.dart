@@ -7,6 +7,7 @@ import '../../core/api/accounts_api.dart';
 import '../../core/data/quran_data.dart';
 import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/credentials_dialog.dart';
@@ -19,6 +20,7 @@ import '../recitation/recitation_sheet.dart';
 import '../serd/serd_models.dart';
 import '../serd/serd_repository.dart';
 import '../serd/serd_widgets.dart';
+import '../teacher/teacher_widgets.dart';
 
 class _FileData {
   const _FileData({
@@ -289,19 +291,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       builder: (context, snapshot) {
         final data = snapshot.data;
         return Scaffold(
-          appBar: AppBar(
-            title: Text(data?.dashboard.fullName ?? 'ملف الطالب'),
-            actions: [
-              IconButton(
-                tooltip: 'تعديل البيانات',
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () async {
-                  await context.push('/students/${widget.studentId}');
-                  if (mounted) _reload();
-                },
-              ),
-            ],
-          ),
+          backgroundColor: TeacherStyle.scaffold,
           floatingActionButton: data == null
               ? null
               : FloatingActionButton.extended(
@@ -322,7 +312,6 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
   Widget _buildBody(BuildContext context, _FileData data) {
     final d = data.dashboard;
     final gradeLabel = {for (final g in data.grades) g.key: g.label};
-    final scheme = Theme.of(context).colorScheme;
 
     Widget info(IconData icon, String label, String? value) => ListTile(
           dense: true,
@@ -331,38 +320,102 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           subtitle: Text(value == null || value.isEmpty ? '—' : value, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600)),
         );
 
+    final brand = TeacherStyle.brand(context);
+    final last = data.entries.isEmpty ? null : data.entries.first;
+    final stats = <Widget>[
+      StatCard(icon: Icons.mic_rounded, label: 'كل التسميعات', value: '${d.totalRecitations}', color: brand),
+      StatCard(icon: Icons.date_range_rounded, label: 'هذا الأسبوع', value: '${d.thisWeek}', color: TeacherStyle.blue),
+      StatCard(icon: Icons.local_fire_department_rounded, label: 'سلسلة الأيام', value: '${d.currentStreak}', color: TeacherStyle.warning),
+      StatCard(icon: Icons.how_to_reg_rounded, label: 'الحضور الأسبوعي', value: d.weeklyAttendance == null ? '—' : '${d.weeklyAttendance}%', color: TeacherStyle.success),
+    ];
+
     return RefreshIndicator(
+      color: brand,
       onRefresh: () async => _reload(),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: scheme.primary, borderRadius: BorderRadius.circular(20)),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(d.fullName, style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${d.studentCode}${d.circleName == null ? '' : '  ·  ${d.circleName}'}',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
-                      ),
-                    ],
-                  ),
+      child: CustomScrollView(slivers: [
+        teacherHeader(
+          context,
+          title: d.fullName,
+          expandedHeight: 210,
+          centerTitle: true,
+          actions: [
+            IconButton(
+              tooltip: 'تعديل البيانات',
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () async {
+                await context.push('/students/${widget.studentId}');
+                if (mounted) _reload();
+              },
+            ),
+          ],
+          background: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  child: Text(initialsOf(d.fullName), style: const TextStyle(fontSize: 26, color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
-                Column(
-                  children: [
-                    Text('${d.totalPoints}', style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
-                    Text('نقطة', style: TextStyle(color: Colors.white.withValues(alpha: 0.85))),
-                  ],
-                ),
-              ],
+                const SizedBox(height: 10),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                  const SizedBox(width: 4),
+                  Text('${d.totalPoints} نقطة', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                ]),
+                const SizedBox(height: 2),
+                Text('${d.studentCode}${d.circleName == null ? '' : '  ·  ${d.circleName}'}', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
+              ]),
             ),
           ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            childAspectRatio: 1.9,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            children: stats,
+          ),
+          if (last != null) ...[
+            const SectionTitle('آخر تسميع'),
+            Builder(builder: (context) {
+              final color = TeacherStyle.gradeColor(data.grades, last.grade);
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [color.withValues(alpha: 0.12), color.withValues(alpha: 0.04)]),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: color.withValues(alpha: 0.25)),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)), child: Icon(Icons.menu_book_rounded, color: color, size: 20)),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text('سورة ${surahName(last.surah)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+                      child: Text(gradeLabel[last.grade] ?? last.grade ?? '—', style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    ),
+                  ]),
+                  const SizedBox(height: 10),
+                  Text('${kAchievementTypes[last.type] ?? last.type} • من آية ${last.ayahFrom} إلى ${last.ayahTo}', style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  Text(formatDate(last.createdAt), style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12)),
+                  if (last.notes != null && last.notes!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text('"${last.notes}"', style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12.5, fontStyle: FontStyle.italic)),
+                  ],
+                ]),
+              );
+            }),
+          ],
           const SectionTitle('التقدّم'),
           Card(
             child: Padding(
@@ -452,32 +505,38 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           SerdSummaryCard(summary: data.serd),
           const SectionTitle('سجل التسميع'),
           if (data.entries.isEmpty)
-            const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))
+            const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد', style: TextStyle(color: TeacherStyle.textMuted)))
           else
             for (final e in data.entries)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Card(
-                  child: ListTile(
-                    title: Text('${surahName(e.surah)}  (${e.ayahFrom}–${e.ayahTo})', style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text(
-                      '${kAchievementTypes[e.type] ?? e.type}  ·  ${gradeLabel[e.grade] ?? e.grade ?? '—'}  ·  ${formatDate(e.createdAt)}'
-                      '${e.notes == null ? '' : '\n${e.notes}'}',
-                    ),
-                    isThreeLine: e.notes != null,
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (v) => v == 'edit' ? _edit(data, e) : _delete(e),
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(value: 'edit', child: Text('تعديل')),
-                        PopupMenuItem(value: 'delete', child: Text('حذف')),
-                      ],
-                      child: StatusChip(label: '+${e.points}', color: Colors.green),
-                    ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(color: TeacherStyle.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: TeacherStyle.border)),
+                child: Row(children: [
+                  Container(width: 6, height: 42, decoration: BoxDecoration(color: TeacherStyle.gradeColor(data.grades, e.grade), borderRadius: BorderRadius.circular(3))),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('${surahName(e.surah)} (${e.ayahFrom}–${e.ayahTo})', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                      const SizedBox(height: 2),
+                      Text('${kAchievementTypes[e.type] ?? e.type} • ${formatDate(e.createdAt)}${e.notes == null ? '' : ' • ${e.notes}'}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 11.5)),
+                    ]),
                   ),
-                ),
+                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Text(gradeLabel[e.grade] ?? e.grade ?? '', style: TextStyle(color: TeacherStyle.gradeColor(data.grades, e.grade), fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text('+${e.points}', style: const TextStyle(color: TeacherStyle.success, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                  ]),
+                  PopupMenuButton<String>(
+                    onSelected: (v) => v == 'edit' ? _edit(data, e) : _delete(e),
+                    itemBuilder: (context) => const [PopupMenuItem(value: 'edit', child: Text('تعديل')), PopupMenuItem(value: 'delete', child: Text('حذف'))],
+                    icon: const Icon(Icons.more_vert_rounded, size: 18, color: TeacherStyle.textMuted),
+                  ),
+                ]),
               ),
-        ],
-      ),
+            ]),
+          ),
+        ),
+      ]),
     );
   }
 }

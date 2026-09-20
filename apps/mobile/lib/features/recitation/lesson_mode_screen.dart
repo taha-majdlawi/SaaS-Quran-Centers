@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'recitation_repository.dart';
@@ -110,7 +111,13 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
   Widget build(BuildContext context) {
     final current = _current;
     return Scaffold(
-      appBar: AppBar(title: const Text('وضع الحصة')),
+      backgroundColor: TeacherStyle.scaffold,
+      appBar: AppBar(
+        title: const Text('وضع الحصة'),
+        backgroundColor: TeacherStyle.brand(context),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error
@@ -122,46 +129,70 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
   }
 
   Widget _student(BuildContext context, CircleStudent s) {
+    final brand = TeacherStyle.brand(context);
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('الطالب ${_index + 1} من ${_queue.length}',
-              textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(value: _queue.isEmpty ? 0 : _index / _queue.length, minHeight: 8, backgroundColor: TeacherStyle.chip, valueColor: AlwaysStoppedAnimation(brand)),
+          ),
           const SizedBox(height: 8),
-          LinearProgressIndicator(value: _queue.isEmpty ? 0 : _index / _queue.length, minHeight: 8),
+          Text('الطالب ${_index + 1} من ${_queue.length}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12.5, color: TeacherStyle.textMuted)),
           const Spacer(),
-          Center(child: InitialAvatar(s.fullName, radius: 48)),
+          Center(
+            child: CircleAvatar(
+              radius: 44,
+              backgroundColor: TeacherStyle.tint(brand),
+              child: Text(initialsOf(s.fullName), style: TextStyle(color: brand, fontWeight: FontWeight.bold, fontSize: 34)),
+            ),
+          ),
           const SizedBox(height: 16),
-          Text(s.fullName,
-              textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+          Text(s.fullName, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
           const SizedBox(height: 6),
-          Text('${s.totalPoints} نقطة', textAlign: TextAlign.center, style: TextStyle(color: Colors.amber.shade800)),
-          if (s.nextPlan != null && s.nextPlan!.isNotEmpty) ...[
+          Text('${s.totalPoints} نقطة', textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
+          if (s.nextPlan != null && s.nextPlan!.trim().isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(14)),
-              child: Text('الخطة المطلوبة منه: ${s.nextPlan}', textAlign: TextAlign.center),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: TeacherStyle.tint(Colors.teal), borderRadius: BorderRadius.circular(12)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('الخطة المطلوبة منه', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
+                const SizedBox(height: 4),
+                Text(s.nextPlan!, style: const TextStyle(fontSize: 13.5, height: 1.5, color: TeacherStyle.textPrimary)),
+              ]),
             ),
           ],
           const Spacer(),
-          LoadingButton(label: 'رصد التسميع', icon: Icons.mic_rounded, loading: false, onPressed: _record),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _markAbsent,
-                  style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                  child: const Text('غائب'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(child: OutlinedButton(onPressed: _later, child: const Text('لاحقًا'))),
-            ],
+          FilledButton.icon(
+            onPressed: _record,
+            icon: const Icon(Icons.menu_book_rounded),
+            label: const Text('رصد التسميع', style: TextStyle(fontSize: 16)),
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
           ),
+          const SizedBox(height: 10),
+          Row(children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _markAbsent,
+                icon: const Icon(Icons.person_off_rounded, size: 18),
+                label: const Text('غائب'),
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700, side: BorderSide(color: Colors.red.withValues(alpha: 0.4)), minimumSize: const Size.fromHeight(48)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _later,
+                icon: const Icon(Icons.skip_next_rounded, size: 18),
+                label: const Text('لاحقًا'),
+                style: OutlinedButton.styleFrom(foregroundColor: TeacherStyle.textMuted, side: const BorderSide(color: TeacherStyle.border), minimumSize: const Size.fromHeight(48)),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -170,24 +201,24 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
   Widget _summary(BuildContext context) {
     final noOneWaiting = _total == 0 && _recited == 0 && _absent == 0;
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.check_circle_rounded, size: 84, color: Colors.green.shade600),
+          Icon(noOneWaiting ? Icons.verified_rounded : Icons.task_alt_rounded, size: 64, color: TeacherStyle.success),
           const SizedBox(height: 16),
           Text(noOneWaiting ? 'لا أحد بانتظار التسميع في هذه الحلقة الآن' : 'انتهت الحصة',
-              textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
+              textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
+          const SizedBox(height: 12),
           if (!noOneWaiting)
-            Text('سمّع $_recited  •  غائب $_absent  •  مؤجَّل ${_postponed.length}',
-                textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade700)),
-          const SizedBox(height: 28),
-          if (_postponed.isNotEmpty)
-            FilledButton(onPressed: _anotherRound, child: const Text('جولة أخرى على من تبقّى')),
-          if (_postponed.isNotEmpty) const SizedBox(height: 10),
-          OutlinedButton(onPressed: () => context.pop(), child: const Text('إنهاء والعودة')),
+            Text('سمّع $_recited  •  غائب $_absent  •  مؤجَّل ${_postponed.length}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: TeacherStyle.textMuted)),
+          const SizedBox(height: 24),
+          if (_postponed.isNotEmpty) ...[
+            FilledButton.icon(onPressed: _anotherRound, icon: const Icon(Icons.replay_rounded), label: const Text('جولة أخرى على من تبقّى')),
+            const SizedBox(height: 8),
+          ],
+          TextButton(onPressed: () => context.pop(), child: const Text('إنهاء والعودة')),
         ],
       ),
     );

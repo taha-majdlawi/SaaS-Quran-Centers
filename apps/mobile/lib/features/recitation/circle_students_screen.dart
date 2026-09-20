@@ -2,22 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
+import '../teacher/circle_roster.dart';
+import '../teacher/teacher_widgets.dart';
 import 'recitation_repository.dart';
-import 'recitation_sheet.dart';
-
-const _attendanceLabels = {'present': 'حاضر', 'absent': 'غائب', 'late': 'متأخر', 'excused': 'بعذر'};
-const _attendanceColors = <String, MaterialColor>{
-  'present': Colors.green,
-  'absent': Colors.red,
-  'late': Colors.orange,
-  'excused': Colors.blue,
-};
-
-enum _Filter { all, notYet, done }
 
 class _CircleData {
   const _CircleData({required this.name, required this.students, required this.grades});
@@ -26,8 +17,9 @@ class _CircleData {
   final List<GradeOption> grades;
 }
 
-/// Eqraa's circle card as a screen: every student of the circle with today's
-/// recitation state, one-tap recitation entry and attendance.
+/// One circle as a page: gradient header with today's progress, the lesson
+/// button, and the roster (search / filter / sort, one-tap attendance and
+/// recitation) - the eqraa circle card as its own screen.
 class CircleStudentsScreen extends StatefulWidget {
   const CircleStudentsScreen({super.key, required this.circleId});
 
@@ -40,8 +32,6 @@ class CircleStudentsScreen extends StatefulWidget {
 class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
   final _repository = RecitationRepository(AppSupabase.client);
   late Future<_CircleData> _future;
-  _Filter _filter = _Filter.all;
-  String _query = '';
 
   @override
   void initState() {
@@ -65,184 +55,75 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
 
   void _reload() => setState(() => _future = _load());
 
-  Future<void> _record(CircleStudent student, List<GradeOption> grades) async {
-    final points = await showRecitationSheet(
-      context,
-      studentId: student.id,
-      studentName: student.fullName,
-      grades: grades,
-    );
-    if (points != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
-      _reload();
-    }
-  }
-
-  Future<void> _mark(CircleStudent student, String status) async {
-    final orgId = context.read<TenantController>().active!.organization.id;
-    try {
-      final queued = await _repository.setAttendance(
-          orgId: orgId, circleId: widget.circleId, studentId: student.id, studentName: student.fullName, status: status);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(queued ? kQueuedMessage : '${student.fullName}: ${_attendanceLabels[status]}')));
-        _reload();
-      }
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : 'تعذّر حفظ الحضور')));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_CircleData>(
       future: _future,
       builder: (context, snapshot) {
         final data = snapshot.data;
+        final done = data?.students.where((s) => s.recitedToday > 0).length ?? 0;
+        final total = data?.students.length ?? 0;
         return Scaffold(
-          appBar: AppBar(
-            title: Text(data?.name ?? 'الحلقة'),
-            actions: [
-              if (data != null)
-                IconButton(
-                  tooltip: 'ابدأ الحصة',
-                  icon: const Icon(Icons.play_circle_outline_rounded),
-                  onPressed: () async {
-                    await context.push('/circle/${widget.circleId}/lesson');
-                    if (mounted) _reload();
-                  },
+          backgroundColor: TeacherStyle.scaffold,
+          body: RefreshIndicator(
+            color: TeacherStyle.brand(context),
+            onRefresh: () async {
+              _reload();
+              await _future;
+            },
+            child: CustomScrollView(slivers: [
+              teacherHeader(
+                context,
+                title: data?.name ?? 'الحلقة',
+                expandedHeight: 150,
+                background: Align(
+                  alignment: AlignmentDirectional.bottomStart,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 20, end: 20, bottom: 52),
+                    child: total == 0
+                        ? const SizedBox.shrink()
+                        : Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('سمّع اليوم $done من $total', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: 220,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: LinearProgressIndicator(value: done / total, minHeight: 8, backgroundColor: Colors.white24, valueColor: const AlwaysStoppedAnimation(TeacherStyle.gold)),
+                              ),
+                            ),
+                          ]),
+                  ),
                 ),
-            ],
+              ),
+              SliverToBoxAdapter(
+                child: snapshot.hasError
+                    ? Padding(padding: const EdgeInsets.all(24), child: ErrorState(onRetry: _reload))
+                    : data == null
+                        ? const Padding(padding: EdgeInsets.all(48), child: Center(child: CircularProgressIndicator()))
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 12, bottom: 24),
+                            child: Column(children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                                child: FilledButton.icon(
+                                  onPressed: () async {
+                                    await context.push('/circle/${widget.circleId}/lesson');
+                                    if (mounted) _reload();
+                                  },
+                                  icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+                                  label: const Text('ابدأ الحصة'),
+                                ),
+                              ),
+                              CircleRoster(circleId: widget.circleId, students: data.students, grades: data.grades, onChanged: _reload),
+                            ]),
+                          ),
+              ),
+            ]),
           ),
-          body: snapshot.hasError
-              ? ErrorState(onRetry: _reload)
-              : data == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : _buildBody(context, data),
         );
       },
-    );
-  }
-
-  Widget _buildBody(BuildContext context, _CircleData data) {
-    final done = data.students.where((s) => s.recitedToday > 0).length;
-    var students = data.students.where((s) {
-      if (_filter == _Filter.notYet && s.recitedToday > 0) return false;
-      if (_filter == _Filter.done && s.recitedToday == 0) return false;
-      return _query.isEmpty || s.fullName.contains(_query) || s.studentCode.toLowerCase().contains(_query.toLowerCase());
-    }).toList();
-
-    if (data.students.isEmpty) {
-      return const EmptyState(
-        icon: Icons.people_outline,
-        title: 'لا يوجد طلاب في هذه الحلقة بعد',
-        subtitle: 'أضف الطلاب من قسم الطلاب',
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async => _reload(),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('سمّع اليوم $done من ${data.students.length}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: data.students.isEmpty ? 0 : done / data.students.length,
-                      minHeight: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            onChanged: (v) => setState(() => _query = v.trim()),
-            decoration: const InputDecoration(hintText: 'ابحث باسم الطالب أو رقمه', prefixIcon: Icon(Icons.search_rounded)),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final f in _Filter.values)
-                ChoiceChip(
-                  label: Text(switch (f) {
-                    _Filter.all => 'الكل',
-                    _Filter.notYet => 'لم يسمّع اليوم',
-                    _Filter.done => 'سمّع اليوم',
-                  }),
-                  selected: _filter == f,
-                  onSelected: (_) => setState(() => _filter = f),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (students.isEmpty)
-            const Padding(padding: EdgeInsets.only(top: 40), child: EmptyState(icon: Icons.search_off_rounded, title: 'لا يطابق أحد ما اخترته')),
-          for (final s in students)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Card(
-                child: ListTile(
-                  contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                  onTap: () async {
-                    await context.push('/students/${s.id}/file');
-                    if (mounted) _reload();
-                  },
-                  leading: InitialAvatar(s.fullName),
-                  title: Text(s.fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: [
-                        StatusChip(label: '${s.totalPoints} نقطة', color: Colors.amber),
-                        StatusChip(
-                          label: s.recitedToday > 0 ? 'سمّع اليوم ×${s.recitedToday}' : 'لم يسمّع',
-                          color: s.recitedToday > 0 ? Colors.green : Colors.grey,
-                        ),
-                        if (s.attendanceToday != null)
-                          StatusChip(
-                            label: _attendanceLabels[s.attendanceToday] ?? s.attendanceToday!,
-                            color: _attendanceColors[s.attendanceToday] ?? Colors.grey,
-                          ),
-                      ],
-                    ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton.filledTonal(
-                        tooltip: 'رصد تسميع',
-                        icon: const Icon(Icons.mic_none_rounded),
-                        onPressed: () => _record(s, data.grades),
-                      ),
-                      PopupMenuButton<String>(
-                        onSelected: (v) => _mark(s, v),
-                        itemBuilder: (context) => [
-                          for (final e in _attendanceLabels.entries)
-                            PopupMenuItem(value: e.key, child: Text('حضور: ${e.value}')),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

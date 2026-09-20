@@ -10,6 +10,7 @@ import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import '../../core/auth/auth_controller.dart';
 import '../recitation/recitation_repository.dart';
+import '../teacher/teacher_home_screen.dart';
 import 'attention_section.dart';
 
 const _roleGreeting = {
@@ -71,6 +72,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final tenant = context.watch<TenantController>();
     final membership = tenant.active;
+    // teachers get the eqraa-style home (circles with their rosters); admins keep the management dashboard
+    if (membership?.role == OrgRole.teacher) return const TeacherHomeScreen();
+
     final org = membership?.organization;
     final isAdmin = membership?.role == OrgRole.admin;
     final scheme = Theme.of(context).colorScheme;
