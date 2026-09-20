@@ -45,6 +45,16 @@ export default async function StudentsPage({
       )}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">الطلاب</h1>
+      {org.myPermissions.includes('students') && (
+        <div className="mb-4 flex gap-2 text-sm">
+          <a href="/students/import" className="rounded border px-3 py-1.5 text-brand hover:bg-gray-50">
+            استيراد من CSV
+          </a>
+          <a href="/students/export" className="rounded border px-3 py-1.5 text-brand hover:bg-gray-50">
+            تصدير CSV
+          </a>
+        </div>
+      )}
         <a href="/students/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
           + إضافة طالب
         </a>

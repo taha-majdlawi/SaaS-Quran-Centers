@@ -2,7 +2,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { RECITERS } from '@/lib/quran/reader';
-import { updateOrgSettings, saveWeekdays, saveCenterSettings, saveDigestSettings } from './actions';
+import { updateOrgSettings, saveWeekdays, saveCenterSettings, saveDigestSettings, saveAttendanceReminder } from './actions';
 
 const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -214,6 +214,30 @@ export default async function SettingsPage({
           )}
         </fieldset>
       </form>
+
+      {isAdmin && (
+        <form action={saveAttendanceReminder} className="flex max-w-lg flex-col gap-3 rounded-lg border bg-white p-6">
+          <input type="hidden" name="orgId" value={org.id} />
+          <h2 className="font-semibold">تذكير المعلم بتسجيل الحضور</h2>
+          <p className="text-xs text-gray-500">في أيام الدوام، بعد الساعة المحددة، يصل المعلم تذكير واحد إن لم يُسجَّل حضور حلقته بعد.</p>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="enabled" defaultChecked={(settings.get('attendance_reminder_enabled') ?? 'true') !== 'false'} /> تفعيل التذكير
+          </label>
+          <label className={label}>
+            بعد الساعة
+            <select name="hour" defaultValue={settings.get('attendance_reminder_hour') ?? '11'} className={input}>
+              {Array.from({ length: 21 }, (_, h) => (
+                <option key={h} value={h}>
+                  {String(h).padStart(2, '0')}:00
+                </option>
+              ))}
+            </select>
+          </label>
+          <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText="جاري الحفظ...">
+            حفظ
+          </SubmitButton>
+        </form>
+      )}
 
       {isAdmin && digest && (
         <form action={saveDigestSettings} className="flex max-w-lg flex-col gap-3 rounded-lg border bg-white p-6">

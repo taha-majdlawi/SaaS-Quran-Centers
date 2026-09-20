@@ -30,6 +30,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'calendar_entry':
       case 'weekly_digest':
         return '/my/report';
+      case 'attendance_reminder':
+        return portal ? null : '/attendance';
+      case 'deletion_request':
+        return portal ? null : '/deletion-requests';
+      case 'deletion_reviewed':
+        return portal ? '/my/privacy' : null;
       case 'event_reminder':
       case 'waitlist_promoted':
         return '/calendar/${n.refId}';

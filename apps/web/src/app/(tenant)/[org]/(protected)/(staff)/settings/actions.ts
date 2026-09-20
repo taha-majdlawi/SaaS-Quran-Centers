@@ -4,6 +4,21 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { safeLogoUrl } from '@/lib/tenant/public-site';
 
+export async function saveAttendanceReminder(formData: FormData) {
+  const supabase = await createClient();
+  const orgId = formData.get('orgId') as string;
+  const hour = Math.min(20, Math.max(0, Number(formData.get('hour')) || 11));
+  const { error } = await supabase.from('organization_settings').upsert(
+    [
+      { organization_id: orgId, key: 'attendance_reminder_enabled', value: formData.get('enabled') === 'on' ? 'true' : 'false' },
+      { organization_id: orgId, key: 'attendance_reminder_hour', value: String(hour) },
+    ],
+    { onConflict: 'organization_id,key' },
+  );
+  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
+  redirect('/settings?saved=1');
+}
+
 export async function saveDigestSettings(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc('set_digest_settings', {

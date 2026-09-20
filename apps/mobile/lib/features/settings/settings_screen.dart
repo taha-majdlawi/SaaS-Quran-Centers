@@ -280,6 +280,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (isAdmin) ...[
                     const SizedBox(height: 8),
                     DigestTile(orgId: org.id),
+                    AttendanceReminderTile(orgId: org.id),
                     LoadingButton(label: 'حفظ الإعدادات', loading: _saving == 'center', onPressed: () => _saveCenter(org.id)),
                   ] else ...[
                     const SizedBox(height: 12),

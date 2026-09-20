@@ -65,6 +65,7 @@ const _sections = [
   ]),
   _NavSection('إدارة المركز', [
     _NavItem(Icons.admin_panel_settings_rounded, 'الأعضاء والأدوار', '/members', adminOnly: true),
+    _NavItem(Icons.privacy_tip_rounded, 'طلبات حذف البيانات', '/deletion-requests', adminOnly: true),
     _NavItem(Icons.history_rounded, 'سجل العمليات', '/audit', adminOnly: true),
     _NavItem(Icons.public_rounded, 'الموقع العام', '/site', adminOnly: true),
     _NavItem(Icons.settings_rounded, 'إعدادات المركز', '/settings', adminOnly: true),

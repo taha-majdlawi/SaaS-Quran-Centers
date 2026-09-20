@@ -75,3 +75,74 @@ class DigestTile extends StatelessWidget {
     );
   }
 }
+
+/// Admin: remind teachers to record attendance (on/off + hour), stored as center settings.
+class AttendanceReminderTile extends StatelessWidget {
+  const AttendanceReminderTile({super.key, required this.orgId});
+
+  final String orgId;
+
+  Future<void> _open(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    var enabled = true;
+    var hour = 11;
+    try {
+      final rows = await AppSupabase.client
+          .from('organization_settings')
+          .select('key, value')
+          .eq('organization_id', orgId)
+          .inFilter('key', ['attendance_reminder_enabled', 'attendance_reminder_hour']) as List;
+      for (final r in rows) {
+        if (r['key'] == 'attendance_reminder_enabled') enabled = r['value'] != 'false';
+        if (r['key'] == 'attendance_reminder_hour') hour = int.tryParse('${r['value']}') ?? 11;
+      }
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(content: Text('تعذّر تحميل الإعداد')));
+      return;
+    }
+    if (!context.mounted) return;
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheet) => Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('تذكير المعلم بالحضور', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text('في أيام الدوام، بعد الساعة المحددة، يصل المعلم تذكير واحد إن لم يُسجَّل حضور حلقته.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('تفعيل التذكير'), value: enabled, onChanged: (v) => setSheet(() => enabled = v)),
+            DropdownButtonFormField<int>(
+              initialValue: hour.clamp(0, 20),
+              decoration: const InputDecoration(labelText: 'بعد الساعة'),
+              items: [for (var h = 0; h <= 20; h++) DropdownMenuItem(value: h, child: Text('${h.toString().padLeft(2, '0')}:00'))],
+              onChanged: (v) => setSheet(() => hour = v ?? hour),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+          ]),
+        ),
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await AppSupabase.client.from('organization_settings').upsert([
+        {'organization_id': orgId, 'key': 'attendance_reminder_enabled', 'value': enabled ? 'true' : 'false'},
+        {'organization_id': orgId, 'key': 'attendance_reminder_hour', 'value': '$hour'},
+      ], onConflict: 'organization_id,key');
+      messenger.showSnackBar(const SnackBar(content: Text('حُفظ إعداد التذكير')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : 'تعذّر الحفظ')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.alarm_rounded),
+      title: const Text('تذكير المعلم بتسجيل الحضور'),
+      subtitle: const Text('تفعيله والساعة'),
+      trailing: const Icon(Icons.chevron_left_rounded),
+      onTap: () => _open(context),
+    );
+  }
+}

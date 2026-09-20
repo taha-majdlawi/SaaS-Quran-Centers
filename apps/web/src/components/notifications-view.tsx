@@ -18,6 +18,9 @@ export const EVENT_LABELS: Record<string, string> = {
   waitlist_promoted: 'الترقية من قائمة الانتظار',
   event_reminder: 'تذكير بالفعاليات',
   weekly_digest: 'ملخص الأسبوع',
+  attendance_reminder: 'تذكير تسجيل الحضور',
+  deletion_request: 'طلبات حذف البيانات',
+  deletion_reviewed: 'نتيجة طلب حذف بياناتي',
   serd_assigned: 'سرد مطلوب مني',
   serd_reviewed: 'اعتماد السرد',
   market_order: 'طلبات السوق',
@@ -40,6 +43,12 @@ function linkFor(n: Item, portal: boolean): string | null {
       return portal ? '/my' : '/serd';
     case 'market_order':
       return portal ? '/my/market' : '/market';
+    case 'attendance_reminder':
+      return portal ? null : '/attendance';
+    case 'deletion_request':
+      return portal ? null : '/deletion-requests';
+    case 'deletion_reviewed':
+      return portal ? '/my/privacy' : null;
     case 'weekly_digest':
       return portal ? `/my/report?student=${n.ref_id}` : null;
     case 'badge_awarded':

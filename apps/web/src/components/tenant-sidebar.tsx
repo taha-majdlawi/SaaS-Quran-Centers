@@ -30,6 +30,7 @@ export const TENANT_MODULES = [
   { slug: 'reports', label: 'التقارير', module: 'reports' },
   { slug: 'certificates', label: 'الشهادات', module: 'certificates' },
   { slug: 'members', label: 'الأعضاء والأدوار', adminOnly: true },
+  { slug: 'deletion-requests', label: 'طلبات حذف البيانات', adminOnly: true },
   { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
   { slug: 'site', label: 'الموقع العام', adminOnly: true },
   { slug: 'settings', label: 'إعدادات المركز', adminOnly: true },

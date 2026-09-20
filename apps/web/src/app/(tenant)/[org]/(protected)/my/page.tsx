@@ -128,6 +128,9 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
             السوق
           </a>
           )}
+          <a href="/my/privacy" className="rounded border px-4 py-2 text-sm text-gray-500">
+            حسابي وبياناتي
+          </a>
           {!org.disabledModules.includes('reports') && (
           <a href="/my/report" className="rounded border px-4 py-2 text-sm text-brand">
             التقرير

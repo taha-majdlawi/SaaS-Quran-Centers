@@ -337,6 +337,14 @@ class _HomeTab extends StatelessWidget {
         ),
         Card(
           child: ListTile(
+            leading: const Icon(Icons.privacy_tip_rounded),
+            title: const Text('حسابي وبياناتي', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text('طلب حذف الحساب والبيانات'),
+            onTap: () => context.push('/my/privacy'),
+          ),
+        ),
+        Card(
+          child: ListTile(
             leading: const Icon(Icons.notifications_rounded),
             title: const Text('الإشعارات', style: TextStyle(fontWeight: FontWeight.w700)),
             onTap: () => context.push('/notifications'),
