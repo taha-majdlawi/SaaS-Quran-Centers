@@ -245,7 +245,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       });
       if (grew) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scroll.hasClients) _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+          if (_scroll.hasClients) _scroll.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
         });
       }
     } catch (_) {
@@ -373,10 +373,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                   ? const Center(child: Text('ابدأ المحادثة'))
                   : ListView.builder(
                       controller: _scroll,
+                      // anchored at the bottom: opens on the newest message and stays there while pictures load
+                      reverse: true,
                       padding: const EdgeInsets.all(12),
                       itemCount: _messages.length,
                       itemBuilder: (context, i) {
-                        final m = _messages[i];
+                        final m = _messages[_messages.length - 1 - i];
                         return Align(
                           alignment: m.mine ? AlignmentDirectional.centerStart : AlignmentDirectional.centerEnd,
                           child: GestureDetector(

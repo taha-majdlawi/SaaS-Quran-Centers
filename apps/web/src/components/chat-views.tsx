@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { ScrollToEnd } from '@/components/scroll-to-end';
 import { ChatImagePicker } from '@/components/chat-image-picker';
 import { SubmitButton } from '@/components/submit-button';
 import { ChatAutoRefresh } from '@/components/chat-auto-refresh';
@@ -194,6 +195,7 @@ export async function ChatThreadView({
           </div>
         ))}
         {!messages.length && <p className="m-auto text-sm text-gray-400">ابدأ المحادثة</p>}
+        <ScrollToEnd count={messages.length} />
       </div>
 
       {canReply ? (
