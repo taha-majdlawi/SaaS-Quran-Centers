@@ -1,4 +1,5 @@
 import { SubmitButton } from '@/components/submit-button';
+import { MarketImageField } from '@/components/market-image-field';
 import { saveItem } from '@/app/(tenant)/[org]/(protected)/(staff)/market/actions';
 
 const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
@@ -27,10 +28,7 @@ export function MarketItemForm({
         الوصف
         <textarea name="description" rows={2} defaultValue={item?.description ?? ''} className={field} />
       </label>
-      <label className="text-sm font-medium text-gray-700">
-        رابط الصورة (اختياري)
-        <input name="imageUrl" dir="ltr" defaultValue={item?.image_url ?? ''} className={field} />
-      </label>
+      <MarketImageField orgId={orgId} initialUrl={item?.image_url ?? null} />
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm font-medium text-gray-700">
           السعر ({symbol})

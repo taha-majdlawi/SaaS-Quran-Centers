@@ -110,6 +110,14 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                if (i.imageUrl != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(i.imageUrl!, height: 150, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                                    ),
+                                  ),
                                 Row(children: [
                                   Expanded(child: Text(i.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15))),
                                   Text(money(i.price, m.symbol), style: TextStyle(fontWeight: FontWeight.w800, color: scheme.primary)),

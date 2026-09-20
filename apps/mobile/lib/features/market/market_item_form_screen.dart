@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +32,8 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
   final _stock = TextEditingController();
   bool _active = true;
   bool _saving = false;
+  Uint8List? _picked; // chosen from the device, uploaded on save
+  String _pickedExt = 'jpg';
   String? _error;
 
   String get _orgId => context.read<TenantController>().active!.organization.id;
@@ -68,12 +73,14 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
       _error = null;
     });
     try {
+      // a picture chosen from the device wins over a pasted link
+      final uploaded = _picked == null ? null : await _repository.uploadMarketImage(_orgId, _picked!, _pickedExt);
       await _repository.saveItem(
         _orgId,
         id: widget.itemId,
         name: _name.text.trim(),
         description: _description.text.trim().isEmpty ? null : _description.text.trim(),
-        imageUrl: _image.text.trim().isEmpty ? null : _image.text.trim(),
+        imageUrl: uploaded ?? (_image.text.trim().isEmpty ? null : _image.text.trim()),
         price: price,
         stock: int.tryParse(_stock.text.trim()),
         isActive: _active,
@@ -81,9 +88,39 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
       if (mounted) context.pop();
     } on PostgrestException catch (e) {
       setState(() => _error = e.message);
+    } on StorageException catch (e) {
+      setState(() => _error = e.message.contains('row-level security') ? 'لا تملك صلاحية رفع الصور' : 'تعذّر رفع الصورة');
+    } catch (e) {
+      setState(() => _error = friendlyError(e, 'تعذّر الحفظ'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  Future<void> _pickImage() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(children: [
+          ListTile(leading: const Icon(Icons.photo_library_rounded), title: const Text('من المعرض'), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ListTile(leading: const Icon(Icons.photo_camera_rounded), title: const Text('التقاط صورة'), onTap: () => Navigator.pop(context, ImageSource.camera)),
+        ]),
+      ),
+    );
+    if (source == null) return;
+    final file = await ImagePicker().pickImage(source: source, maxWidth: 1200, imageQuality: 85);
+    if (file == null) return;
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    if (bytes.length > 3 * 1024 * 1024) {
+      setState(() => _error = 'الصورة كبيرة (الحد 3 ميغابايت)');
+      return;
+    }
+    setState(() {
+      _error = null;
+      _picked = bytes;
+      _pickedExt = file.name.contains('.') ? file.name.split('.').last : 'jpg';
+    });
   }
 
   Future<void> _delete() async {
@@ -124,7 +161,36 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
             const SizedBox(height: 12),
             TextField(controller: _description, maxLines: 2, decoration: const InputDecoration(labelText: 'الوصف')),
             const SizedBox(height: 12),
-            TextField(controller: _image, textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'رابط الصورة (اختياري)')),
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 96,
+                  height: 96,
+                  child: _picked != null
+                      ? Image.memory(_picked!, fit: BoxFit.cover)
+                      : (_image.text.trim().isNotEmpty
+                          ? Image.network(_image.text.trim(), fit: BoxFit.cover, errorBuilder: (_, _, _) => const Center(child: Icon(Icons.broken_image_rounded)))
+                          : Container(color: Colors.grey.shade200, child: const Center(child: Icon(Icons.image_outlined, size: 32, color: Colors.grey)))),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Wrap(spacing: 8, runSpacing: 4, children: [
+                  OutlinedButton.icon(onPressed: _saving ? null : _pickImage, icon: const Icon(Icons.upload_rounded, size: 18), label: const Text('رفع من الجهاز')),
+                  if (_picked != null || _image.text.trim().isNotEmpty)
+                    TextButton(
+                      onPressed: _saving ? null : () => setState(() {
+                        _picked = null;
+                        _image.clear();
+                      }),
+                      child: const Text('إزالة الصورة', style: TextStyle(color: Colors.red)),
+                    ),
+                ]),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            TextField(controller: _image, textDirection: TextDirection.ltr, onChanged: (_) => setState(() => _picked = null), decoration: const InputDecoration(labelText: 'أو الصق رابط الصورة (https)')),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(child: TextField(controller: _price, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'السعر (${o.symbol})'))),

@@ -227,6 +227,12 @@ class _MarketScreenState extends State<MarketScreen> {
           for (final i in o.items)
             Card(
               child: ListTile(
+                leading: i.imageUrl == null
+                    ? null
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(i.imageUrl!, width: 48, height: 48, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.broken_image_rounded)),
+                      ),
                 onTap: () async {
                   await context.push('/market/${i.id}');
                   if (mounted) setState(() => _load(_orgId!));

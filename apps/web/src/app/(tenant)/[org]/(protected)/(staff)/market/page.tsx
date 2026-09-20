@@ -132,6 +132,10 @@ export default async function MarketPage({
           <div className="mb-8 grid gap-3 sm:grid-cols-2">
             {o.items.map((i) => (
               <a key={i.id} href={`/market/${i.id}` as never} className={`rounded-lg border bg-white p-4 text-sm hover:bg-gray-50 ${i.is_active ? '' : 'opacity-60'}`}>
+                {i.image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={i.image_url} alt="" className="mb-2 h-32 w-full rounded object-cover" />
+                )}
                 <div className="flex items-center justify-between">
                   <b>{i.name}</b>
                   <span className="text-brand">{money(i.price, sym)}</span>

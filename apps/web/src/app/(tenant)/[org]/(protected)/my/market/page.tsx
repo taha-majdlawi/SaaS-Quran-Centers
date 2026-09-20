@@ -74,6 +74,10 @@ export default async function MyMarketPage({
               const out = i.stock != null && i.stock <= 0;
               return (
                 <div key={i.id} className="rounded-lg border bg-white p-4 text-sm">
+                  {i.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={i.image_url} alt="" className="mb-2 h-36 w-full rounded object-cover" />
+                  )}
                   <div className="flex items-center justify-between">
                     <b>{i.name}</b>
                     <span className="font-semibold text-brand">{money(i.price, m.symbol)}</span>

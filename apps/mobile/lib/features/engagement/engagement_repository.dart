@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import 'engagement_models.dart';
 
@@ -195,4 +198,15 @@ class EngagementRepository {
   }
 
   Future<void> deleteChallenge(String orgId, String id) => _client.rpc('admin_delete_challenge', params: {'p_org': orgId, 'p_id': id});
+
+  /// Uploads a picture from the device into this center's folder of the public
+  /// `market-images` bucket and returns its URL (what `image_url` stores).
+  Future<String> uploadMarketImage(String orgId, Uint8List bytes, String extension) async {
+    final ext = const {'jpg', 'jpeg', 'png', 'webp'}.contains(extension.toLowerCase()) ? extension.toLowerCase() : 'jpg';
+    final clean = ext == 'jpeg' ? 'jpg' : ext;
+    final path = '$orgId/${const Uuid().v4()}.$clean';
+    final mime = clean == 'png' ? 'image/png' : (clean == 'webp' ? 'image/webp' : 'image/jpeg');
+    await _client.storage.from('market-images').uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
+    return _client.storage.from('market-images').getPublicUrl(path);
+  }
 }
