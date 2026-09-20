@@ -105,30 +105,44 @@ export default async function MyPortalPage({ params }: { params: Promise<{ org: 
           <a href="/my/quran" className="rounded border px-4 py-2 text-sm text-brand">
             المصحف
           </a>
+          {!org.disabledModules.includes('announcements') && (
           <a href="/my/announcements" className="rounded border px-4 py-2 text-sm text-brand">
             الإعلانات
           </a>
+          )}
+          {!org.disabledModules.includes('chat') && (
           <a href="/my/chat" className="rounded border px-4 py-2 text-sm text-brand">
             المحادثات
           </a>
+          )}
           <a href="/my/notifications" className="rounded border px-4 py-2 text-sm text-brand">
             الإشعارات
           </a>
+          {!org.disabledModules.includes('badges') && (
           <a href="/my/badges" className="rounded border px-4 py-2 text-sm text-brand">
             الشارات
           </a>
+          )}
+          {!org.disabledModules.includes('market') && (
           <a href="/my/market" className="rounded border px-4 py-2 text-sm text-brand">
             السوق
           </a>
+          )}
+          {!org.disabledModules.includes('reports') && (
           <a href="/my/report" className="rounded border px-4 py-2 text-sm text-brand">
             التقرير
           </a>
+          )}
+          {!org.disabledModules.includes('certificates') && (
           <a href="/my/certificates" className="rounded border px-4 py-2 text-sm text-brand">
             الشهادات
           </a>
+          )}
+          {!org.disabledModules.includes('calendar') && (
           <a href="/my/calendar" className="rounded border px-4 py-2 text-sm text-brand">
             التقويم والفعاليات
           </a>
+          )}
         </div>
       </div>
 

@@ -278,6 +278,7 @@ class _HomeTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        if (!context.watch<TenantController>().isDisabled('calendar'))
         Card(
           child: ListTile(
             leading: const Icon(Icons.calendar_month_rounded),
@@ -288,6 +289,7 @@ class _HomeTab extends StatelessWidget {
           ),
         ),
         Row(children: [
+          if (!context.watch<TenantController>().isDisabled('chat'))
           Expanded(
             child: Card(
               child: ListTile(
@@ -297,6 +299,7 @@ class _HomeTab extends StatelessWidget {
               ),
             ),
           ),
+          if (!context.watch<TenantController>().isDisabled('announcements'))
           Expanded(
             child: Card(
               child: ListTile(
@@ -307,6 +310,7 @@ class _HomeTab extends StatelessWidget {
             ),
           ),
         ]),
+        if (!context.watch<TenantController>().isDisabled('reports'))
         Card(
           child: ListTile(
             leading: const Icon(Icons.insights_rounded),
@@ -315,6 +319,7 @@ class _HomeTab extends StatelessWidget {
             onTap: () => context.push('/my/report'),
           ),
         ),
+        if (!context.watch<TenantController>().isDisabled('certificates'))
         Card(
           child: ListTile(
             leading: const Icon(Icons.workspace_premium_rounded),
@@ -338,6 +343,7 @@ class _HomeTab extends StatelessWidget {
           ),
         ),
         Row(children: [
+          if (!context.watch<TenantController>().isDisabled('badges'))
           Expanded(
             child: Card(
               child: ListTile(
@@ -347,6 +353,7 @@ class _HomeTab extends StatelessWidget {
               ),
             ),
           ),
+          if (!context.watch<TenantController>().isDisabled('market'))
           Expanded(
             child: Card(
               child: ListTile(

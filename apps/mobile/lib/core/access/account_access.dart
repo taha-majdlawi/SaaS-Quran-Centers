@@ -33,6 +33,9 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
 
   bool get isReadOnly => _readOnly;
 
+  /// Messages from the platform owner (maintenance, updates), shown to everyone.
+  List<({String title, String? body, String level})> notices = const [];
+
   String get _key => 'access_ro:$_userId:$_orgId';
 
   Future<void> bind(SupabaseClient client, String? orgId) async {
@@ -68,6 +71,16 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
     } catch (_) {
       // offline / old server: keep the last known answer
     }
+    try {
+      final data = await client.rpc('active_platform_notices') as List;
+      final next = [
+        for (final n in data) (title: (n as Map<String, dynamic>)['title'] as String, body: n['body'] as String?, level: n['level'] as String),
+      ];
+      if (next.length != notices.length || next.any((n) => !notices.contains(n))) {
+        notices = next;
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   void _set(bool value) {
@@ -97,7 +110,8 @@ class StatusBanners extends StatelessWidget {
   static bool isVisible(BuildContext context) {
     if (!context.watch<AuthController>().isAuthenticated) return false;
     final sync = context.watch<SyncService>();
-    return context.watch<AccessController>().isReadOnly || sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
+    final access = context.watch<AccessController>();
+    return access.isReadOnly || access.notices.isNotEmpty || sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
   }
 
   @override
@@ -106,13 +120,29 @@ class StatusBanners extends StatelessWidget {
     final viewer = context.watch<AccessController>().isReadOnly;
     final sync = context.watch<SyncService>();
     final syncShown = sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
-    final top = viewer ? Colors.amber.shade800 : (sync.failedCount > 0 ? Colors.red.shade700 : Colors.orange.shade800);
+    final notices = context.watch<AccessController>().notices;
+    Color noticeColor(String level) => level == 'critical' ? Colors.red.shade700 : (level == 'warning' ? Colors.orange.shade800 : Colors.blue.shade700);
+    final top = notices.isNotEmpty ? noticeColor(notices.first.level) : (viewer ? Colors.amber.shade800 : (sync.failedCount > 0 ? Colors.red.shade700 : Colors.orange.shade800));
 
     return ColoredBox(
       color: top,
       child: SafeArea(
         bottom: false,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          for (final n in notices)
+            Material(
+              color: noticeColor(n.level),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(children: [
+                  const Icon(Icons.campaign_rounded, size: 16, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text('${n.title}${n.body == null ? '' : ' — ${n.body}'}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ),
+                ]),
+              ),
+            ),
           if (viewer)
             Material(
               color: Colors.amber.shade800,

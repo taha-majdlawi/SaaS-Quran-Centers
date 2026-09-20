@@ -72,6 +72,13 @@ begin
   if public.verify_certificate('tabean', r ->> 'serial') is not null then v_fail := v_fail || 'verify leaks across centers'; end if;
   begin perform public.issue_certificate(v_org, v_sp, 'serd', 'x y'); v_fail := v_fail || 'generic serd cert allowed'; exception when others then null; end;
 
+  -- ===== the platform console is closed to center admins
+  begin perform public.platform_org_detail(v_org); v_fail := v_fail || 'admin can read platform_org_detail'; exception when others then null; end;
+  begin perform public.platform_set_feature(v_org, 'chat', false); v_fail := v_fail || 'admin can switch features'; exception when others then null; end;
+  begin perform public.platform_users(); v_fail := v_fail || 'admin can list all accounts'; exception when others then null; end;
+  begin perform public.platform_save_plan(null, 'zz', 'zz', 0, 'USD', 1, 1, '{}'::jsonb, true); v_fail := v_fail || 'admin can edit plans'; exception when others then null; end;
+  begin perform public.platform_save_notice(null, 'zz zz', null, 'info', true, null); v_fail := v_fail || 'admin can publish platform notices'; exception when others then null; end;
+
   -- ===== reports + dashboard summary work
   r := public.center_report(v_org, current_date - 30, current_date);
   if r -> 'totals' is null then v_fail := v_fail || 'center_report empty'; end if;

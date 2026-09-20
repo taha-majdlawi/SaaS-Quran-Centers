@@ -34,7 +34,25 @@ class TenantController extends ChangeNotifier {
 
   /// Whether the active membership can use the given module (see
   /// `core/access/module_keys.dart`) - false with no active org.
-  bool hasModule(String moduleKey) => _active?.hasModule(moduleKey) ?? false;
+  bool hasModule(String moduleKey) => !_disabled.contains(moduleKey) && (_active?.hasModule(moduleKey) ?? false);
+
+  /// Switched off for this center by the platform (also hides the family-side tiles).
+  bool isDisabled(String moduleKey) => _disabled.contains(moduleKey);
+
+  Set<String> _disabled = {};
+
+  Future<void> _loadDisabled() async {
+    final id = _active?.organization.id;
+    if (id == null) {
+      _disabled = {};
+      return;
+    }
+    try {
+      _disabled = await _repository.fetchDisabledModules(id);
+    } catch (_) {
+      // offline / older server: keep what we knew
+    }
+  }
 
   Future<void> loadMemberships() async {
     _loading = true;
@@ -59,6 +77,7 @@ class TenantController extends ChangeNotifier {
       );
     }
 
+    await _loadDisabled();
     _loading = false;
     _loaded = true;
     notifyListeners();
@@ -74,6 +93,7 @@ class TenantController extends ChangeNotifier {
         _memberships = list;
         _active = list.firstWhere((m) => m.organization.id == id, orElse: () => list.first);
       }
+      await _loadDisabled();
     } catch (_) {
       // keep what we had
     }
@@ -84,11 +104,13 @@ class TenantController extends ChangeNotifier {
     _active = membership;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_activeOrgPrefKey, membership.organization.id);
+    await _loadDisabled();
     notifyListeners();
   }
 
   void clear() {
     _memberships = [];
+    _disabled = {};
     _active = null;
     _loaded = false;
     _loadFailed = false;

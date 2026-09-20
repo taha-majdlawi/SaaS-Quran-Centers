@@ -11,6 +11,12 @@ class TenantRepository {
 
   final SupabaseClient _client;
 
+  /// Modules the platform owner switched off for this center (hidden here, refused by the DB).
+  Future<Set<String>> fetchDisabledModules(String orgId) async {
+    final rows = await _client.rpc('disabled_modules', params: {'p_org': orgId});
+    return {for (final k in (rows as List? ?? const [])) k as String};
+  }
+
   Future<List<OrganizationMembership>> fetchMyMemberships() async {
     final rows = await _client
         .from('organization_members')

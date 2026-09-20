@@ -1,78 +1,103 @@
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
-import { setOrgStatus } from '@/lib/platform/actions';
+import { Flash, btn, field } from '@/components/platform-flash';
+import { createOrg } from '@/lib/platform/actions';
+import { STATUS_LABELS, fmt } from '@/lib/platform/labels';
 
 interface Overview {
-  orgs: { id: string; name: string; slug: string; status: string; plan_id: string | null; created_at: string; trial_ends_at: string | null; students: number }[];
+  orgs: { id: string; name: string; slug: string; status: string; plan: string | null; students: number; teachers: number; recitations_7d: number; last_activity: string | null; trial_ends_at: string | null }[];
   plans: { id: string; name: string }[];
 }
 
-const STATUSES: [string, string][] = [
-  ['trial', 'تجريبي'],
-  ['active', 'فعّال'],
-  ['suspended', 'موقوف'],
-  ['cancelled', 'ملغى'],
-];
-
-export default async function PlatformOrganizationsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
-  const { error, saved } = await searchParams;
+export default async function PlatformOrganizationsPage({ searchParams }: { searchParams: Promise<{ error?: string; ok?: string; q?: string }> }) {
+  const { error, ok, q } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase.rpc('platform_overview');
   const o = data as Overview | null;
+  const query = (q ?? '').trim().toLowerCase();
+  const orgs = (o?.orgs ?? []).filter((c) => !query || c.name.toLowerCase().includes(query) || c.slug.includes(query));
 
   return (
     <div className="max-w-5xl">
-      <h1 className="mb-6 text-2xl font-bold">المراكز (Tenants)</h1>
-      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحفظ</p>}
-      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      <div className="overflow-x-auto rounded-lg border bg-white">
+      <h1 className="mb-4 text-2xl font-bold">المراكز</h1>
+      <Flash ok={ok} error={error} />
+
+      <form className="mb-4 flex gap-2">
+        <input name="q" defaultValue={q} placeholder="ابحث باسم المركز أو رابطه" className="w-64 rounded border px-3 py-2 text-sm" />
+        <button className="rounded border px-4 py-2 text-sm hover:bg-gray-50">بحث</button>
+      </form>
+
+      <div className="mb-8 overflow-x-auto rounded-lg border bg-white">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-right">
             <tr>
-              <th className="px-4 py-2">المركز</th>
-              <th className="px-4 py-2">الطلاب</th>
-              <th className="px-4 py-2">الحالة والخطة</th>
+              {['المركز', 'الحالة', 'الخطة', 'الطلاب', 'المعلمون', 'نشاط 7 أيام', 'آخر نشاط'].map((h) => (
+                <th key={h} className="px-3 py-2">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {(o?.orgs ?? []).map((c) => (
-              <tr key={c.id} className="border-t">
-                <td className="px-4 py-2">
-                  <a href={`https://${c.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com'}`} className="text-brand hover:underline">
+            {orgs.map((c) => (
+              <tr key={c.id} className="border-t hover:bg-gray-50">
+                <td className="px-3 py-2">
+                  <a href={`/organizations/${c.id}` as never} className="font-semibold text-blue-700 hover:underline">
                     {c.name}
                   </a>
                   <span className="mr-2 text-xs text-gray-400">{c.slug}</span>
                 </td>
-                <td className="px-4 py-2">{c.students}</td>
-                <td className="px-4 py-2">
-                  <form action={setOrgStatus} className="flex flex-wrap items-center gap-2">
-                    <input type="hidden" name="orgId" value={c.id} />
-                    <select name="status" defaultValue={c.status} className="rounded border px-2 py-1">
-                      {STATUSES.map(([v, l]) => (
-                        <option key={v} value={v}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                    <select name="planId" defaultValue={c.plan_id ?? ''} className="rounded border px-2 py-1">
-                      <option value="">— بلا خطة —</option>
-                      {(o?.plans ?? []).map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
-                    <SubmitButton className="rounded border px-3 py-1 hover:bg-gray-50" pendingText="...">
-                      حفظ
-                    </SubmitButton>
-                  </form>
-                </td>
+                <td className="px-3 py-2">{STATUS_LABELS[c.status] ?? c.status}</td>
+                <td className="px-3 py-2">{c.plan ?? '—'}</td>
+                <td className="px-3 py-2">{c.students}</td>
+                <td className="px-3 py-2">{c.teachers}</td>
+                <td className="px-3 py-2">{c.recitations_7d}</td>
+                <td className="px-3 py-2 text-xs text-gray-500">{fmt(c.last_activity)}</td>
               </tr>
             ))}
+            {!orgs.length && (
+              <tr>
+                <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
+                  لا مراكز
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs text-gray-500">إيقاف مركز يمنع أعضاءه من الدخول فورًا؛ كل بياناته تبقى محفوظة.</p>
+
+      <form action={createOrg} className="grid max-w-2xl gap-3 rounded-lg border bg-white p-4 sm:grid-cols-2">
+        <h2 className="font-semibold sm:col-span-2">إنشاء مركز جديد</h2>
+        <label className="text-sm">
+          اسم المركز
+          <input name="name" required minLength={2} className={field} />
+        </label>
+        <label className="text-sm">
+          الرابط (إنجليزي صغير)
+          <input name="slug" required pattern="[a-z0-9]([a-z0-9\-]{0,38}[a-z0-9])?" dir="ltr" placeholder="alnoor" className={field} />
+        </label>
+        <label className="text-sm">
+          الخطة
+          <select name="planId" defaultValue="" className={field}>
+            <option value="">بلا خطة</option>
+            {(o?.plans ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm">
+          بريد المدير (اختياري)
+          <input name="adminEmail" type="email" dir="ltr" className={field} />
+        </label>
+        <p className="text-xs text-gray-500 sm:col-span-2">إن كان للبريد حساب يصير مديرًا فورًا، وإلا تُنشأ دعوة برابط تُرسله له.</p>
+        <div className="sm:col-span-2">
+          <SubmitButton className={btn} pendingText="جاري الإنشاء...">
+            إنشاء المركز
+          </SubmitButton>
+        </div>
+      </form>
     </div>
   );
 }

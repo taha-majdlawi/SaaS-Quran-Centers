@@ -35,6 +35,8 @@ export default async function TenantProtectedLayout({
   const supabase = await createClient();
   const { data: access } = await supabase.rpc('my_access', { p_org: org.id });
   const viewer = (access as { is_read_only?: boolean } | null)?.is_read_only === true;
+  const { data: noticeData } = await supabase.rpc('active_platform_notices');
+  const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
   return (
     <div
@@ -47,6 +49,22 @@ export default async function TenantProtectedLayout({
       }
     >
       <div className="flex-1">
+        {org.isPlatformOwner && (
+          <div className="bg-purple-700 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">
+            وضع مالك المنصة — أنت تتصفح هذا المركز كمشرف وليس كعضو فيه
+          </div>
+        )}
+        {notices.map((n) => (
+          <div
+            key={n.id}
+            className={`px-6 py-2 text-center text-sm print:hidden ${
+              n.level === 'critical' ? 'bg-red-600 text-white' : n.level === 'warning' ? 'bg-amber-100 text-amber-900' : 'bg-blue-50 text-blue-900'
+            }`}
+          >
+            <b>{n.title}</b>
+            {n.body && <span> — {n.body}</span>}
+          </div>
+        ))}
         {viewer && (
           <div className="bg-amber-500 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">
             هذا حساب عرض — البيانات للاطّلاع فقط

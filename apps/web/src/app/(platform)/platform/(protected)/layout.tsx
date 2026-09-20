@@ -26,13 +26,25 @@ export default async function PlatformProtectedLayout({ children }: { children: 
             نظرة عامة
           </a>
           <a href="/organizations" className="rounded px-3 py-2 hover:bg-gray-800">
-            المراكز (Tenants)
+            المراكز
+          </a>
+          <a href="/users" className="rounded px-3 py-2 hover:bg-gray-800">
+            الحسابات
           </a>
           <a href="/plans" className="rounded px-3 py-2 hover:bg-gray-800">
-            الخطط والاشتراكات
+            الخطط والحدود
           </a>
           <a href="/feature-flags" className="rounded px-3 py-2 hover:bg-gray-800">
-            أعلام الميزات
+            مفاتيح الميزات
+          </a>
+          <a href="/notices" className="rounded px-3 py-2 hover:bg-gray-800">
+            إشعارات للمراكز
+          </a>
+          <a href="/settings" className="rounded px-3 py-2 hover:bg-gray-800">
+            إعدادات المنصة
+          </a>
+          <a href="/audit" className="rounded px-3 py-2 hover:bg-gray-800">
+            سجل العمليات
           </a>
         </nav>
         <form action={signOut} className="mt-6 border-t border-gray-700 pt-4">

@@ -19,6 +19,10 @@ export interface OrgContext {
    * isn't gated by this list.
    */
   myPermissions: ModuleKey[];
+  /** Modules the platform switched off for this center (hidden for everyone, enforced in the DB). */
+  disabledModules: string[];
+  /** The platform owner looking at a center they are not a member of (support mode). */
+  isPlatformOwner: boolean;
 }
 
 /**
@@ -44,6 +48,8 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
 
   let myRole: OrgContext['myRole'] = null;
   let myPermissions: ModuleKey[] = [];
+  let isPlatformOwner = false;
+  let disabledModules: string[] = [];
   if (user) {
     const { data: membership } = await supabase
       .from('organization_members')
@@ -60,6 +66,22 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
         (p): p is ModuleKey => (ALL_MODULE_KEYS as string[]).includes(p),
       );
     }
+
+    if (!myRole) {
+      // not a member: the platform owner may still open any center as its admin
+      const { data: owner } = await supabase.from('platform_owners').select('user_id').eq('user_id', user.id).maybeSingle();
+      if (owner) {
+        isPlatformOwner = true;
+        myRole = 'admin';
+        myPermissions = ALL_MODULE_KEYS;
+      }
+    }
+
+    if (myRole && !isPlatformOwner) {
+      const { data: off } = await supabase.rpc('disabled_modules', { p_org: org.id });
+      disabledModules = (off as string[] | null) ?? [];
+      myPermissions = myPermissions.filter((p) => !disabledModules.includes(p));
+    }
   }
 
   return {
@@ -71,5 +93,7 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
     logoUrl: org.logo_url,
     myRole,
     myPermissions,
+    disabledModules,
+    isPlatformOwner,
   };
 });
