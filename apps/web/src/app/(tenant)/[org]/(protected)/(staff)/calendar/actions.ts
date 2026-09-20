@@ -7,6 +7,15 @@ import { runRpc, safeBack, withParam } from '@/lib/calendar/actions-shared';
 const s = (formData: FormData, key: string) => ((formData.get(key) as string) ?? '').trim();
 const orNull = (formData: FormData, key: string) => s(formData, key) || null;
 
+export async function saveReminderHours(formData: FormData) {
+  await runRpc(
+    'set_reminder_hours',
+    { p_org: s(formData, 'orgId'), p_hours: Number(s(formData, 'hours') || '0') },
+    '/calendar',
+    'reminder',
+  );
+}
+
 export async function saveEntry(formData: FormData) {
   const id = orNull(formData, 'id');
   const back = id ? `/calendar/${id}/edit` : '/calendar/new';

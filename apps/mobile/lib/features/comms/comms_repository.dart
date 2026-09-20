@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -7,6 +9,7 @@ const kEventLabels = {
   'announcement': 'الإعلانات',
   'calendar_entry': 'التقويم والفعاليات',
   'waitlist_promoted': 'الترقية من قائمة الانتظار',
+  'event_reminder': 'تذكير بالفعاليات',
   'serd_assigned': 'سرد مطلوب مني',
   'serd_reviewed': 'اعتماد السرد',
   'market_order': 'طلبات السوق',
@@ -62,15 +65,16 @@ class ChatContact {
 }
 
 class ChatMessage {
-  const ChatMessage({required this.id, required this.mine, required this.body, required this.createdAt, this.editedAt, this.readAt});
+  const ChatMessage({required this.id, required this.mine, required this.body, required this.createdAt, this.editedAt, this.readAt, this.imagePath});
   final String id;
   final bool mine;
   final String body;
   final String createdAt;
   final String? editedAt;
   final String? readAt;
+  final String? imagePath;
 
-  bool get editable => mine && DateTime.now().difference(DateTime.parse(createdAt)) < const Duration(minutes: 30);
+  bool get editable => mine && body.isNotEmpty && DateTime.now().difference(DateTime.parse(createdAt)) < const Duration(minutes: 30);
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
         id: j['id'] as String,
@@ -79,6 +83,7 @@ class ChatMessage {
         createdAt: j['created_at'] as String,
         editedAt: j['edited_at'] as String?,
         readAt: j['read_at'] as String?,
+        imagePath: j['image_path'] as String?,
       );
 }
 
@@ -186,6 +191,34 @@ class CommsRepository {
         'p_body': body,
         'p_client_ref': clientRef ?? _uuid.v4(),
       });
+
+  /// Uploads a picture into `<org>/<me>/` (private bucket) and sends it as a message.
+  /// Needs the network (a picture is never queued offline).
+  Future<void> sendImage(String orgId, String otherId, Uint8List bytes, String extension, {String caption = '', String? clientRef}) async {
+    final me = _client.auth.currentUser!.id;
+    final ext = const {'jpg', 'jpeg', 'png', 'webp'}.contains(extension.toLowerCase()) ? extension.toLowerCase() : 'jpg';
+    final path = '$orgId/$me/${_uuid.v4()}.${ext == 'jpeg' ? 'jpg' : ext}';
+    final mime = ext == 'png' ? 'image/png' : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
+    await _client.storage.from('chat-images').uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
+    await _client.rpc('send_chat_message', params: {
+      'p_org': orgId,
+      'p_other': otherId,
+      'p_body': caption,
+      'p_client_ref': clientRef ?? _uuid.v4(),
+      'p_image_path': path,
+    });
+  }
+
+  final Map<String, ({String url, DateTime at})> _signed = {};
+
+  /// A short-lived link to a private picture (kept for 50 minutes, the link lives 60).
+  Future<String> imageUrl(String path) async {
+    final hit = _signed[path];
+    if (hit != null && DateTime.now().difference(hit.at) < const Duration(minutes: 50)) return hit.url;
+    final url = await _client.storage.from('chat-images').createSignedUrl(path, 3600);
+    _signed[path] = (url: url, at: DateTime.now());
+    return url;
+  }
 
   Future<void> edit(String messageId, String body) => _client.rpc('edit_chat_message', params: {'p_message': messageId, 'p_body': body});
 

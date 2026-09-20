@@ -17,6 +17,10 @@ class CalendarRepository {
         params: {'p_org': orgId, 'p_from': isoDate(from), 'p_to': isoDate(to), 'p_circle': null},
       )));
 
+  Future<int> reminderHours(String orgId) async => (await _client.rpc('get_reminder_hours', params: {'p_org': orgId})) as int;
+
+  Future<void> setReminderHours(String orgId, int hours) => _client.rpc('set_reminder_hours', params: {'p_org': orgId, 'p_hours': hours});
+
   Future<CalEntry> fetchDetails(String orgId, String entryId) async =>
       CalEntry.fromJson(_map(await _client.rpc('calendar_entry_details', params: {'p_org': orgId, 'p_entry': entryId})));
 

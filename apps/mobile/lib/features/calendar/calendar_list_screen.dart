@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -41,6 +42,42 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
     });
   }
 
+  Future<void> _editReminder() async {
+    final orgId = _loadedForOrgId!;
+    final messenger = ScaffoldMessenger.of(context);
+    int current;
+    try {
+      current = await _repository.reminderHours(orgId);
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(content: Text('تعذّر تحميل الإعداد')));
+      return;
+    }
+    if (!mounted) return;
+    final controller = TextEditingController(text: '$current');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تذكير المسجّلين'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'قبل بدء الفعالية بـ (ساعة) — 0 = إيقاف', helperText: 'يصل التذكير لأولياء أمور الطلاب المسجّلين وللطلاب'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _repository.setReminderHours(orgId, int.tryParse(controller.text.trim()) ?? 0);
+      messenger.showSnackBar(const SnackBar(content: Text('حُفظ إعداد التذكير')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : 'تعذّر الحفظ')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final membership = context.watch<TenantController>().active;
@@ -53,6 +90,8 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
       appBar: AppBar(
         title: const Text('التقويم والفعاليات'),
         actions: [
+          if (isAdmin)
+            IconButton(tooltip: 'التذكير قبل الفعالية', icon: const Icon(Icons.notifications_active_rounded), onPressed: _editReminder),
           if (isAdmin)
             IconButton(
               tooltip: 'أنواع العناصر',

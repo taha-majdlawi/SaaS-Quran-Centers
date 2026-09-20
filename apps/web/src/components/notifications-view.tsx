@@ -16,6 +16,7 @@ export const EVENT_LABELS: Record<string, string> = {
   announcement: 'الإعلانات',
   calendar_entry: 'التقويم والفعاليات',
   waitlist_promoted: 'الترقية من قائمة الانتظار',
+  event_reminder: 'تذكير بالفعاليات',
   serd_assigned: 'سرد مطلوب مني',
   serd_reviewed: 'اعتماد السرد',
   market_order: 'طلبات السوق',
@@ -27,6 +28,7 @@ function linkFor(n: Item, portal: boolean): string | null {
   if (!n.ref_id) return null;
   switch (n.event_key) {
     case 'calendar_entry':
+    case 'event_reminder':
     case 'waitlist_promoted':
       return portal ? `/my/calendar/${n.ref_id}` : `/calendar/${n.ref_id}`;
     case 'announcement':

@@ -1,6 +1,8 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { CalendarMonth } from '@/components/calendar-month';
+import { saveReminderHours } from './actions';
+import { SubmitButton } from '@/components/submit-button';
 import { fmtRange, fmtTime, monthBounds, type CalRange } from '@/lib/calendar/format';
 
 export default async function CalendarPage({
@@ -19,6 +21,7 @@ export default async function CalendarPage({
 
   const { data, error: rpcError } = await supabase.rpc('calendar_range', { p_org: org.id, p_from: b.from, p_to: b.to, p_circle: null });
   const range = data as CalRange | null;
+  const { data: reminderHours } = isAdmin ? await supabase.rpc('get_reminder_hours', { p_org: org.id }) : { data: null };
 
   return (
     <div className="max-w-5xl">
@@ -39,8 +42,22 @@ export default async function CalendarPage({
         )}
       </div>
 
+      {ok === 'reminder' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">حُفظ إعداد التذكير</p>}
       {ok === 'deleted' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحذف</p>}
       {(error || rpcError) && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error ?? rpcError?.message}</p>}
+
+      {isAdmin && reminderHours != null && (
+        <form action={saveReminderHours} className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-white p-3 text-sm">
+          <input type="hidden" name="orgId" value={org.id} />
+          <label className="text-gray-700">
+            تذكير المسجّلين قبل بدء الفعالية بـ (ساعة، 0 = إيقاف)
+            <input type="number" name="hours" min={0} max={168} defaultValue={reminderHours as number} className="mt-1 block w-28 rounded border px-3 py-2" />
+          </label>
+          <SubmitButton className="rounded border px-4 py-2 hover:bg-gray-50" pendingText="...">
+            حفظ
+          </SubmitButton>
+        </form>
+      )}
 
       {range && (
         <>

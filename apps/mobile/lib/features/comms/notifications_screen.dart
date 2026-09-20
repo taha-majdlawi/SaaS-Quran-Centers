@@ -28,6 +28,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (n.refId == null) return null;
     switch (n.eventKey) {
       case 'calendar_entry':
+      case 'event_reminder':
       case 'waitlist_promoted':
         return '/calendar/${n.refId}';
       case 'announcement':

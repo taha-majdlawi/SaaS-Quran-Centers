@@ -29,6 +29,7 @@ interface Message {
   id: string;
   mine: boolean;
   body: string;
+  image_path: string | null;
   created_at: string;
   edited_at: string | null;
   read_at: string | null;
@@ -125,6 +126,14 @@ export async function ChatThreadView({
     messages = (data ?? []) as Message[];
   }
 
+  // pictures are private: each viewer gets short-lived signed links
+  const paths = messages.map((m) => m.image_path).filter((p): p is string => !!p);
+  const signed = new Map<string, string>();
+  if (paths.length) {
+    const { data } = await supabase.storage.from('chat-images').createSignedUrls(paths, 3600);
+    for (const r of data ?? []) if (r.path && r.signedUrl) signed.set(r.path, r.signedUrl);
+  }
+
   return (
     <div className="max-w-2xl">
       <ChatAutoRefresh />
@@ -160,13 +169,21 @@ export async function ChatThreadView({
                   </SubmitButton>
                 </form>
               ) : (
-                <p className="whitespace-pre-wrap">{m.body}</p>
+                <>
+                  {m.image_path && signed.get(m.image_path) && (
+                    <a href={signed.get(m.image_path)} target="_blank" rel="noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={signed.get(m.image_path)} alt="صورة" className="mb-1 max-h-64 rounded" />
+                    </a>
+                  )}
+                  {m.body && <p className="whitespace-pre-wrap">{m.body}</p>}
+                </>
               )}
               <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>
                 {time(m.created_at)}
                 {m.edited_at && ' · عُدّلت'}
                 {m.mine && m.read_at && ' · ✓✓'}
-                {m.mine && editing !== m.id && Date.now() - new Date(m.created_at).getTime() < 30 * 60 * 1000 && (
+                {m.mine && m.body && editing !== m.id && Date.now() - new Date(m.created_at).getTime() < 30 * 60 * 1000 && (
                   <a href={`${path}?edit=${m.id}` as never} className="mr-2 underline">
                     تعديل
                   </a>
@@ -179,12 +196,16 @@ export async function ChatThreadView({
       </div>
 
       {canReply ? (
-        <form action={sendChat} className="flex items-end gap-2">
+        <form action={sendChat} className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="orgId" value={orgId} />
           <input type="hidden" name="otherId" value={otherId} />
           <input type="hidden" name="back" value={path} />
           <input type="hidden" name="ref" value={crypto.randomUUID()} />
-          <textarea name="body" required rows={2} maxLength={2000} placeholder="اكتب رسالتك..." className="flex-1 rounded border px-3 py-2 text-sm" />
+          <textarea name="body" rows={2} maxLength={2000} placeholder="اكتب رسالتك..." className="min-w-48 flex-1 rounded border px-3 py-2 text-sm" />
+          <label className="cursor-pointer rounded border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" title="إرفاق صورة">
+            📷
+            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="hidden" />
+          </label>
           <SubmitButton className="rounded bg-brand px-5 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText="...">
             إرسال
           </SubmitButton>

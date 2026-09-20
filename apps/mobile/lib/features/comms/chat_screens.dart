@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/access/account_access.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -270,6 +272,47 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
+  Future<void> _sendPicture() async {
+    if (_sending) return;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(children: [
+          ListTile(leading: const Icon(Icons.photo_library_rounded), title: const Text('من المعرض'), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ListTile(leading: const Icon(Icons.photo_camera_rounded), title: const Text('التقاط صورة'), onTap: () => Navigator.pop(context, ImageSource.camera)),
+        ]),
+      ),
+    );
+    if (source == null) return;
+    final picked = await ImagePicker().pickImage(source: source, maxWidth: 1600, imageQuality: 80);
+    if (picked == null) return;
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      AccessController.instance.ensureCanWrite();
+      final bytes = await picked.readAsBytes();
+      if (bytes.length > 5 * 1024 * 1024) throw StateError('حجم الصورة الأقصى 5 ميغابايت');
+      final name = picked.name;
+      final ext = name.contains('.') ? name.split('.').last : 'jpg';
+      await _repository.sendImage(_orgId, widget.otherId, bytes, ext, caption: _input.text.trim());
+      _input.clear();
+      _pendingRef = null;
+      await _load();
+    } on PostgrestException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } on StorageException catch (e) {
+      if (mounted) setState(() => _error = e.message.contains('row-level security') ? kViewerMessage : 'تعذّر رفع الصورة');
+    } on StateError catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _error = 'تعذّر إرسال الصورة، تأكد من الإنترنت وحاول مجددًا');
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
   Future<void> _edit(ChatMessage m) async {
     final controller = TextEditingController(text: m.body);
     final ok = await showDialog<bool>(
@@ -341,7 +384,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                               constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
                               decoration: BoxDecoration(color: m.mine ? scheme.primary : Colors.grey.shade200, borderRadius: BorderRadius.circular(14)),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(m.body, style: TextStyle(color: m.mine ? Colors.white : Colors.black87)),
+                                if (m.imagePath != null) _ChatImage(repository: _repository, path: m.imagePath!),
+                                if (m.body.isNotEmpty) Text(m.body, style: TextStyle(color: m.mine ? Colors.white : Colors.black87)),
                                 const SizedBox(height: 3),
                                 Text(
                                   '${formatDateTime(m.createdAt)}${m.editedAt == null ? '' : ' · عُدّلت'}${m.mine && m.readAt != null ? ' · ✓✓' : ''}',
@@ -361,6 +405,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
               child: Row(children: [
+                IconButton(onPressed: _sending ? null : _sendPicture, icon: const Icon(Icons.image_rounded), tooltip: 'إرسال صورة'),
                 Expanded(
                   child: TextField(
                     controller: _input,
@@ -379,6 +424,48 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         else
           const Padding(padding: EdgeInsets.all(14), child: Text('لا يمكنك مراسلة هذا المستخدم حاليًا')),
       ]),
+    );
+  }
+}
+
+
+/// A picture inside a bubble: fetched through a short-lived signed link (the
+/// bucket is private); tap to view it full screen.
+class _ChatImage extends StatelessWidget {
+  const _ChatImage({required this.repository, required this.path});
+
+  final CommsRepository repository;
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: repository.imageUrl(path),
+      builder: (context, snap) {
+        final url = snap.data;
+        if (url == null) {
+          return SizedBox(height: 120, width: 160, child: Center(child: snap.hasError ? const Icon(Icons.broken_image_rounded) : const CircularProgressIndicator(strokeWidth: 2)));
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: GestureDetector(
+            onTap: () => showDialog<void>(
+              context: context,
+              builder: (context) => Dialog.fullscreen(
+                backgroundColor: Colors.black,
+                child: Stack(children: [
+                  Positioned.fill(child: InteractiveViewer(child: Center(child: Image.network(url)))),
+                  SafeArea(child: IconButton(color: Colors.white, icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context))),
+                ]),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(url, width: 220, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.broken_image_rounded)),
+            ),
+          ),
+        );
+      },
     );
   }
 }
