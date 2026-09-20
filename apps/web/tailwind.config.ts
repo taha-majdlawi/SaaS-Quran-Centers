@@ -4,6 +4,10 @@ export default {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        // Amiri Quran (SIL OFL), loaded by components/quran-font.tsx
+        quran: ['var(--font-quran)', 'serif'],
+      },
       colors: {
         // Overridden per-tenant at runtime via CSS variables set from
         // organizations.primary_color / secondary_color - see

@@ -1,6 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
+import { RECITERS } from '@/lib/quran/reader';
 import { updateOrgSettings, saveWeekdays, saveCenterSettings } from './actions';
 
 const PRAYER_METHODS: [string, string][] = [
@@ -179,6 +180,27 @@ export default async function SettingsPage({
             <select name="prayer_madhab" defaultValue={settings.get('prayer_madhab') ?? 'shafi'} className={input}>
               <option value="shafi">الجمهور (شافعي/مالكي/حنبلي)</option>
               <option value="hanafi">حنفي</option>
+            </select>
+          </label>
+          <div className={label}>
+            القرّاء المتاحون في المصحف (بلا اختيار = الكل)
+            <div className="mt-1 flex flex-wrap gap-2 font-normal">
+              {RECITERS.map((r) => (
+                <label key={r.id} className="flex items-center gap-1 rounded border px-2 py-1">
+                  <input type="checkbox" name="quran_reciters" value={r.id} defaultChecked={(settings.get('quran_reciters') ?? '').split(',').includes(r.id)} /> {r.name}
+                </label>
+              ))}
+            </div>
+          </div>
+          <label className={label}>
+            القارئ الافتراضي
+            <select name="quran_default_reciter" defaultValue={settings.get('quran_default_reciter') ?? ''} className={input}>
+              <option value="">الأول في القائمة</option>
+              {RECITERS.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
             </select>
           </label>
           {isAdmin && (

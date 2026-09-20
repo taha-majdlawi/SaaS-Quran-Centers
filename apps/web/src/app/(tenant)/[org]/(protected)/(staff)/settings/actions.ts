@@ -61,6 +61,7 @@ const TEXT_SETTINGS = [
   'prayer_lng',
   'prayer_calc_method',
   'prayer_madhab',
+  'quran_default_reciter',
 ] as const;
 
 const FLAG_SETTINGS = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students'] as const;
@@ -77,6 +78,13 @@ export async function saveCenterSettings(formData: FormData) {
       value: ((formData.get(key) as string) ?? '').trim(),
       updated_at: new Date().toISOString(),
     })),
+    // several checkboxes -> one comma-separated value (empty = every reciter)
+    {
+      organization_id: orgId,
+      key: 'quran_reciters',
+      value: (formData.getAll('quran_reciters') as string[]).join(','),
+      updated_at: new Date().toISOString(),
+    },
     ...FLAG_SETTINGS.map((key) => ({
       organization_id: orgId,
       key,

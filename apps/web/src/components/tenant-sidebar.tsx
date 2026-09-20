@@ -11,6 +11,7 @@ import type { ModuleKey } from '@/lib/permissions/modules';
 // migration 0015's member_has_module()).
 export const TENANT_MODULES = [
   { slug: 'dashboard', label: 'لوحة التحكم' },
+  { slug: 'quran', label: 'المصحف' },
   { slug: 'students', label: 'الطلاب', module: 'students' },
   { slug: 'teachers', label: 'المعلمون', adminOnly: true },
   { slug: 'circles', label: 'الحلقات', module: 'circles' },
