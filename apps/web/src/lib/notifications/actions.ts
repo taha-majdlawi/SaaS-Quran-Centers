@@ -82,3 +82,30 @@ export async function sendTestPush(formData: FormData) {
   if (error) to('devices', 'error', error.message);
   to('devices', 'ok', `أُرسل إشعار تجريبي إلى ${Number(data) || 1} جهاز — راقب الهاتف خلال ثوانٍ`);
 }
+
+export async function saveAttendanceReminderSetting(formData: FormData) {
+  const supabase = await createClient();
+  const hour = Math.min(20, Math.max(0, Number(formData.get('hour')) || 11));
+  const orgId = s(formData, 'orgId');
+  const { error } = await supabase.from('organization_settings').upsert(
+    [
+      { organization_id: orgId, key: 'attendance_reminder_enabled', value: formData.get('enabled') === 'on' ? 'true' : 'false' },
+      { organization_id: orgId, key: 'attendance_reminder_hour', value: String(hour) },
+    ],
+    { onConflict: 'organization_id,key' },
+  );
+  if (error) to('settings', 'error', error.message);
+  to('settings', 'ok', 'حُفظ تذكير الحضور');
+}
+
+export async function saveDigestSetting(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('set_digest_settings', {
+    p_org: s(formData, 'orgId'),
+    p_enabled: formData.get('enabled') === 'on',
+    p_dow: Number(formData.get('dow')),
+    p_hour: Number(formData.get('hour')),
+  });
+  if (error) to('settings', 'error', error.message);
+  to('settings', 'ok', 'حُفظ الملخص الأسبوعي');
+}

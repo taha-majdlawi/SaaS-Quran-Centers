@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/offline/sync_service.dart';
+
 const kRoleLabels = {'admin': 'مدير', 'teacher': 'معلم', 'student': 'طالب', 'guardian': 'ولي أمر'};
 
 const kAudienceLabels = {'all': 'الجميع', 'teachers': 'المعلمون', 'students': 'الطلاب', 'guardians': 'أولياء الأمور'};
@@ -235,8 +237,11 @@ class CommsRepository {
 
   // ---- notifications ------------------------------------------------------------
 
-  Future<List<NotificationItem>> notifications(String orgId) async =>
-      [for (final n in _list(await _client.rpc('my_notifications', params: {'p_org': orgId, 'p_limit': 80}))) NotificationItem.fromJson(n)];
+  Future<List<NotificationItem>> notifications(String orgId) => SyncService.instance.cached<List<NotificationItem>>(
+        'notifications:$orgId',
+        () async => await _client.rpc('my_notifications', params: {'p_org': orgId, 'p_limit': 80}),
+        (rows) => [for (final n in _list(rows)) NotificationItem.fromJson(n)],
+      );
 
   Future<int> unreadNotifications(String orgId) async =>
       (await _client.rpc('unread_notifications_count', params: {'p_org': orgId}) as num).toInt();

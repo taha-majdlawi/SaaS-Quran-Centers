@@ -44,10 +44,26 @@ class InsightsRepository {
           ),
       ];
 
-  Future<Set<String>> checkedInCircles(String orgId) async =>
-      {for (final r in _list(await _client.rpc('teacher_today_attendance', params: {'p_org': orgId}))) r['circle_id'] as String};
+  static final Map<String, ({DateTime at, Future<Set<String>> future})> _checkedInMemo = {};
 
-  Future<void> checkIn(String orgId, String circleId) => _client.rpc('teacher_check_in', params: {'p_org': orgId, 'p_circle': circleId, 'p_date': null});
+  /// Circles the signed-in teacher already checked in to today. Cards on the same screen share one request.
+  Future<Set<String>> checkedInCircles(String orgId) {
+    final memo = _checkedInMemo[orgId];
+    if (memo != null && DateTime.now().difference(memo.at) < const Duration(seconds: 20)) return memo.future;
+    Future<Set<String>> fetch() async => {for (final r in _list(await _client.rpc('teacher_today_attendance', params: {'p_org': orgId}))) r['circle_id'] as String};
+    final future = fetch();
+    _checkedInMemo[orgId] = (at: DateTime.now(), future: future);
+    future.catchError((_) {
+      _checkedInMemo.remove(orgId);
+      return <String>{};
+    });
+    return future;
+  }
+
+  Future<void> checkIn(String orgId, String circleId) async {
+    await _client.rpc('teacher_check_in', params: {'p_org': orgId, 'p_circle': circleId, 'p_date': null});
+    _checkedInMemo.remove(orgId);
+  }
 
   Future<List<StudentNote>> notes(String orgId, String studentId) async => [
         for (final n in _list(await _client.rpc('list_student_notes', params: {'p_org': orgId, 'p_student': studentId})))

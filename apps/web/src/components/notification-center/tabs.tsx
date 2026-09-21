@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
-import { saveNotificationSettings, sendTestPush } from '@/lib/notifications/actions';
+import { saveNotificationSettings, sendTestPush, saveAttendanceReminderSetting, saveDigestSetting } from '@/lib/notifications/actions';
 import { PUSH_STATUS, ROLE_LABELS } from '@/lib/notifications/catalog';
 import { TemplateEditor, type TemplateRow } from './template-editor';
 import { SendForm } from './send-form';
@@ -350,12 +350,19 @@ interface Settings {
 
 export async function SettingsTab({ orgId }: { orgId: string }) {
   const supabase = await createClient();
-  const { data } = await supabase.rpc('admin_notification_config', { p_org: orgId });
+  const [{ data }, { data: digestData }, { data: settingRows }] = await Promise.all([
+    supabase.rpc('admin_notification_config', { p_org: orgId }),
+    supabase.rpc('get_digest_settings', { p_org: orgId }),
+    supabase.from('organization_settings').select('key, value').eq('organization_id', orgId).in('key', ['attendance_reminder_enabled', 'attendance_reminder_hour']),
+  ]);
   const s = (data as { settings?: Settings } | null)?.settings;
   if (!s) return null;
+  const digest = digestData as { enabled: boolean; dow: number; hour: number } | null;
+  const att = new Map(((settingRows ?? []) as { key: string; value: string | null }[]).map((r) => [r.key, r.value ?? '']));
+  const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
   const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
   return (
-    <section className="max-w-2xl">
+    <section className="max-w-3xl">
       <h2 className="mb-1 text-lg font-semibold">الإعدادات العامة</h2>
       <p className="mb-4 text-sm text-gray-500">توقيت وقواعد الإرسال لمركزك. المنطقة الزمنية الحالية: <b>{s.timezone}</b> (تُغيَّر من إعدادات المركز).</p>
       <form action={saveNotificationSettings} className="grid gap-4 rounded-lg border bg-white p-5 sm:grid-cols-2">
@@ -395,9 +402,54 @@ export async function SettingsTab({ orgId }: { orgId: string }) {
           <SubmitButton className="rounded bg-brand px-5 py-2 text-sm text-white" pendingText="...">حفظ الإعدادات</SubmitButton>
         </div>
       </form>
-      <p className="mt-4 text-sm text-gray-500">
-        يوم وساعة الملخص الأسبوعي ووقت تذكير الحضور من <a className="text-brand hover:underline" href={'/settings' as never}>إعدادات المركز</a>.
-      </p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <form action={saveAttendanceReminderSetting} className="flex flex-col gap-3 rounded-lg border bg-white p-5">
+          <input type="hidden" name="orgId" value={orgId} />
+          <h3 className="font-semibold">تذكير المعلم بتسجيل الحضور</h3>
+          <p className="text-xs text-gray-500">في أيام الدوام، بعد الساعة المحددة، يصل المعلم (والمساعدون) تذكير واحد إن لم يُسجَّل حضور حلقتهم بعد.</p>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="enabled" defaultChecked={(att.get('attendance_reminder_enabled') ?? 'true') !== 'false'} /> تفعيل التذكير
+          </label>
+          <label className="text-sm">
+            بعد الساعة
+            <select name="hour" defaultValue={att.get('attendance_reminder_hour') ?? '11'} className={field}>
+              {Array.from({ length: 21 }, (_, h) => (
+                <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
+              ))}
+            </select>
+          </label>
+          <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm text-white" pendingText="...">حفظ</SubmitButton>
+        </form>
+        {digest && (
+          <form action={saveDigestSetting} className="flex flex-col gap-3 rounded-lg border bg-white p-5">
+            <input type="hidden" name="orgId" value={orgId} />
+            <h3 className="font-semibold">ملخص الأسبوع للأسر</h3>
+            <p className="text-xs text-gray-500">إشعار أسبوعي لكل أسرة: ما سمّع ابنها وحضوره ونقاطه، حسب توقيت المركز.</p>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="enabled" defaultChecked={digest.enabled} /> تفعيل الملخص الأسبوعي
+            </label>
+            <div className="flex gap-3">
+              <label className="flex-1 text-sm">
+                اليوم
+                <select name="dow" defaultValue={digest.dow} className={field}>
+                  {DAYS.map((d, i) => (
+                    <option key={d} value={i}>{d}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex-1 text-sm">
+                الساعة
+                <select name="hour" defaultValue={digest.hour} className={field}>
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm text-white" pendingText="...">حفظ</SubmitButton>
+          </form>
+        )}
+      </div>
     </section>
   );
 }
