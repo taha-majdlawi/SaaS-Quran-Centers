@@ -289,7 +289,11 @@ class CommsRepository {
 
   Future<List<({String id, String name})>> myCircles(String orgId, {required bool isAdmin, required String userId}) async {
     var q = _client.from('circles').select('id, name').eq('organization_id', orgId);
-    if (!isAdmin) q = q.eq('teacher_id', userId);
+    if (!isAdmin) {
+      final mine = await _client.rpc('my_circle_ids', params: {'p_org': orgId}) as List;
+      if (mine.isEmpty) return [];
+      q = q.inFilter('id', [for (final m in mine) m['id'] as String]);
+    }
     final rows = await q.order('name');
     return [for (final r in rows as List) (id: r['id'] as String, name: r['name'] as String)];
   }

@@ -232,6 +232,15 @@ class _CircleCardState extends State<_CircleCard> {
               builder: (context, snap) {
                 final done = snap.data?.where((s) => s.recitedToday > 0).length;
                 return Wrap(spacing: 6, runSpacing: 4, children: [
+                  if (c.assistant)
+                    Chip(
+                      visualDensity: VisualDensity.compact,
+                      backgroundColor: TeacherStyle.tint(TeacherStyle.gold),
+                      side: BorderSide.none,
+                      label: const Text('معلم مساعد', style: TextStyle(color: TeacherStyle.gold, fontSize: 12, fontWeight: FontWeight.w600)),
+                      padding: EdgeInsets.zero,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                   Chip(
                     visualDensity: VisualDensity.compact,
                     backgroundColor: TeacherStyle.chip,

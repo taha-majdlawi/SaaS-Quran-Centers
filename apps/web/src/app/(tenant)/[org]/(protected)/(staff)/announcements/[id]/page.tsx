@@ -25,10 +25,9 @@ export default async function EditAnnouncementPage({
 
   let query = supabase.from('circles').select('id, name').eq('organization_id', org.id).order('name');
   if (!isAdmin) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    query = query.eq('teacher_id', user?.id ?? '');
+    // the circles this person teaches, as primary or assistant
+    const { data: mine } = await supabase.rpc('my_circle_ids', { p_org: org.id });
+    query = query.in('id', ((mine ?? []) as { id: string }[]).map((c) => c.id));
   }
   const { data: circles } = await query;
 

@@ -30,6 +30,7 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
   List<TeacherOption> _teachers = [];
   String? _stageId;
   String? _teacherId;
+  Set<String> _assistants = {};
   String _status = 'active';
   bool _loading = true;
   bool _submitting = false;
@@ -59,6 +60,9 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
         _teacherId = circle.teacherId;
         _status = circle.status;
       }
+      try {
+        _assistants = await _repository.fetchAssistants(orgId, widget.circleId!);
+      } catch (_) {}
     }
 
     if (mounted) setState(() => _loading = false);
@@ -92,6 +96,7 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
           teacherId: _teacherId,
           capacity: capacity,
         );
+        await _repository.setAssistants(orgId, widget.circleId!, _assistants.where((u) => u != _teacherId).toSet());
       } else {
         await _repository.createCircle(
           organizationId: orgId,
@@ -179,6 +184,20 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                       decoration: const InputDecoration(labelText: 'السعة (عدد الطلاب)'),
                     ),
                     if (widget.isEditing) ...[
+                      const SizedBox(height: 16),
+                      const Text('المعلمون المساعدون', style: TextStyle(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      const Text('يرثون صلاحيات معلم هذه الحلقة عليها فقط ويظهرون بوسم «معلم مساعد».', style: TextStyle(fontSize: 12)),
+                      const SizedBox(height: 6),
+                      Wrap(spacing: 6, runSpacing: 4, children: [
+                        for (final t in _teachers.where((t) => t.userId != _teacherId))
+                          FilterChip(
+                            label: Text(t.label),
+                            selected: _assistants.contains(t.userId),
+                            onSelected: (v) => setState(() => v ? _assistants.add(t.userId) : _assistants.remove(t.userId)),
+                          ),
+                        if (_teachers.where((t) => t.userId != _teacherId).isEmpty) const Text('لا معلمون آخرون في المركز'),
+                      ]),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _status,

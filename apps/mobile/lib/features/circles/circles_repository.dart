@@ -155,6 +155,15 @@ class CirclesRepository {
     }).eq('id', id);
   }
 
+  /// User ids of the circle's assistant teachers (admin only).
+  Future<Set<String>> fetchAssistants(String orgId, String circleId) async {
+    final rows = await _client.rpc('circle_assistants_list', params: {'p_org': orgId}) as List;
+    return {for (final r in rows) if (r['circle_id'] == circleId) r['user_id'] as String};
+  }
+
+  Future<void> setAssistants(String orgId, String circleId, Set<String> userIds) =>
+      _client.rpc('set_circle_assistants', params: {'p_org': orgId, 'p_circle': circleId, 'p_users': userIds.toList()});
+
   Future<void> deleteCircle(String id) {
     return _client.from('circles').delete().eq('id', id);
   }

@@ -78,7 +78,10 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
       .maybeSingle();
     if (flag?.value === 'false') throw new AccountError('إضافة الطلاب مغلقة للمعلمين في هذا المركز');
     if (!(caller.permissions ?? []).includes('students')) throw new AccountError('ليست لديك صلاحية على الطلاب');
-    if (circle.teacher_id !== callerId) throw new AccountError('يمكنك إضافة الطلاب إلى حلقتك فقط');
+    if (circle.teacher_id !== callerId) {
+      const { data: assist } = await admin.from('circle_assistants').select('user_id').eq('circle_id', circle.id).eq('user_id', callerId).maybeSingle();
+      if (!assist) throw new AccountError('يمكنك إضافة الطلاب إلى حلقتك فقط');
+    }
   } else if (caller.role !== 'admin') {
     throw new AccountError('غير مصرّح لك بهذا الإجراء');
   }

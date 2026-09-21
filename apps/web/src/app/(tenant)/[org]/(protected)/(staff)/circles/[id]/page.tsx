@@ -3,7 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { updateCircle, deleteCircle } from '../actions';
+import { updateCircle, deleteCircle, setCircleAssistants } from '../actions';
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'نشطة' },
@@ -22,10 +22,10 @@ export default async function EditCirclePage({
   searchParams,
 }: {
   params: Promise<{ org: string; id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; ok?: string }>;
 }) {
   const { org: slug, id } = await params;
-  const { error } = await searchParams;
+  const { error, ok } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
@@ -43,12 +43,15 @@ export default async function EditCirclePage({
   if (!circle) notFound();
 
   const teachers = ((members ?? []) as MemberRow[]).filter((m) => m.role === 'teacher');
+  const { data: assistData } = org.myRole === 'admin' ? await supabase.rpc('circle_assistants_list', { p_org: org.id }) : { data: [] };
+  const assistantIds = new Set(((assistData ?? []) as { circle_id: string; user_id: string }[]).filter((a) => a.circle_id === id).map((a) => a.user_id));
 
   return (
     <div className="max-w-lg">
       <h1 className="mb-6 text-2xl font-bold">تعديل حلقة</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
 
       <form action={updateCircle} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="id" value={circle.id} />
@@ -128,6 +131,25 @@ export default async function EditCirclePage({
           حفظ التعديلات
         </SubmitButton>
       </form>
+
+      {org.myRole === 'admin' && (
+        <form action={setCircleAssistants} className="mt-6 flex flex-col gap-2 rounded-lg border bg-white p-6">
+          <input type="hidden" name="id" value={circle.id} />
+          <input type="hidden" name="orgId" value={org.id} />
+          <h2 className="font-semibold">المعلمون المساعدون</h2>
+          <p className="text-xs text-gray-500">
+            المعلم المساعد حساب معلم عادي يرث كل صلاحيات معلم هذه الحلقة عليها فقط (التسميع، الحضور، الملاحظات، المراجعة...) ويظهر بوسم «معلم مساعد».
+          </p>
+          {teachers.filter((t) => t.user_id !== circle.teacher_id).map((t) => (
+            <label key={t.user_id} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="assistant" value={t.user_id} defaultChecked={assistantIds.has(t.user_id)} />
+              {t.full_name ?? t.email}
+            </label>
+          ))}
+          {!teachers.length && <p className="text-sm text-gray-400">لا معلمون في المركز</p>}
+          <SubmitButton className="self-start rounded border px-4 py-2 text-sm text-brand hover:bg-gray-50" pendingText="...">حفظ المساعدين</SubmitButton>
+        </form>
+      )}
 
       <form action={deleteCircle} className="mt-3">
         <input type="hidden" name="id" value={circle.id} />

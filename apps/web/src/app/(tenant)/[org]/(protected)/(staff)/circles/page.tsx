@@ -26,6 +26,12 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
     supabase.rpc('list_org_members', { org_id: org.id }),
   ]);
 
+  const { data: assistData } = org.myRole === 'admin' ? await supabase.rpc('circle_assistants_list', { p_org: org.id }) : { data: [] };
+  const assistantsByCircle = new Map<string, string[]>();
+  for (const a of (assistData ?? []) as { circle_id: string; name: string | null }[]) {
+    assistantsByCircle.set(a.circle_id, [...(assistantsByCircle.get(a.circle_id) ?? []), a.name ?? '—']);
+  }
+
   const teacherNameByUserId = new Map(
     ((members ?? []) as MemberRow[]).map((m) => [m.user_id, m.full_name ?? m.email ?? '—']),
   );
@@ -54,7 +60,11 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
             <tr key={c.id} className="border-t">
               <td className="px-4 py-2">{c.name}</td>
               <td className="px-4 py-2">{(c.stages as unknown as { name: string } | null)?.name ?? '—'}</td>
-              <td className="px-4 py-2">{c.teacher_id ? teacherNameByUserId.get(c.teacher_id) ?? '—' : '—'}</td>
+              <td className="px-4 py-2">{c.teacher_id ? teacherNameByUserId.get(c.teacher_id) ?? '—' : '—'}
+                {(assistantsByCircle.get(c.id) ?? []).length > 0 && (
+                  <span className="mt-0.5 block text-xs text-gray-500">مساعد: {(assistantsByCircle.get(c.id) ?? []).join('، ')}</span>
+                )}
+              </td>
               <td className="px-4 py-2">{c.capacity ?? '—'}</td>
               <td className="px-4 py-2">{STATUS_LABELS[c.status] ?? c.status}</td>
               <td className="px-4 py-2 text-left">

@@ -71,3 +71,16 @@ export async function deleteCircle(formData: FormData) {
 
   redirect('/circles');
 }
+
+/** Assistant teachers of one circle (ticked teachers replace the previous list). */
+export async function setCircleAssistants(formData: FormData) {
+  const id = formData.get('id') as string;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('set_circle_assistants', {
+    p_org: formData.get('orgId') as string,
+    p_circle: id,
+    p_users: formData.getAll('assistant').map(String),
+  });
+  if (error) redirect(`/circles/${id}?error=${encodeURIComponent(error.message)}` as never);
+  redirect(`/circles/${id}?ok=${encodeURIComponent('حُفظ المعلمون المساعدون')}` as never);
+}

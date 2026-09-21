@@ -161,6 +161,36 @@ begin
   begin perform public.admin_match_external_recitation(gen_random_uuid(), v_sp); v_fail := v_fail || 'teacher can link external recitations'; exception when others then null; end;
   reset role;
 
+  -- ===== assistant teachers: inherit their circle only, cannot manage assistants, lose access when removed
+  begin
+    declare v_asst uuid := gen_random_uuid(); v_prim uuid; v_c uuid; v_s uuid;
+    begin
+      select c.teacher_id, c.id into v_prim, v_c from public.circles c where c.organization_id = v_org and c.teacher_id is not null and exists (select 1 from public.students_profile x where x.circle_id = c.id) limit 1;
+      select id into v_s from public.students_profile where circle_id = v_c limit 1;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+      insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+        values (v_asst, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'asst-test-' || v_asst || '@example.test', '{}', '{}', now(), now());
+      insert into public.organization_members (organization_id, user_id, role, status) values (v_org, v_asst, 'teacher', 'active');
+      perform set_config('request.jwt.claims', json_build_object('sub', v_asst, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      if public._teaches_student(v_s) then v_fail := v_fail || 'unassigned teacher teaches a circle student'; end if;
+      reset role;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+      insert into public.circle_assistants (organization_id, circle_id, user_id) values (v_org, v_c, v_asst);
+      perform set_config('request.jwt.claims', json_build_object('sub', v_asst, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      if not public._teaches_student(v_s) then v_fail := v_fail || 'assistant does not inherit the circle'; end if;
+      begin perform public.set_circle_assistants(v_org, v_c, array[]::uuid[]); v_fail := v_fail || 'assistant can manage assistants'; exception when others then null; end;
+      reset role;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+      delete from public.circle_assistants where user_id = v_asst;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_asst, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      if public._teaches_student(v_s) then v_fail := v_fail || 'removed assistant keeps access'; end if;
+      reset role;
+    end;
+  end;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')

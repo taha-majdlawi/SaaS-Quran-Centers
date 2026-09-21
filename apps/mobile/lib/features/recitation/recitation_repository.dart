@@ -17,7 +17,8 @@ class GradeOption {
 }
 
 class MyCircle {
-  const MyCircle({required this.id, required this.name, this.stageName, required this.studentCount});
+  const MyCircle({required this.id, required this.name, this.stageName, required this.studentCount, this.assistant = false});
+  final bool assistant;
   final String id;
   final String name;
   final String? stageName;
@@ -140,8 +141,18 @@ class RecitationRepository {
           .select('id, name, teacher_id, stages(name), students_profile(count)')
           .eq('organization_id', orgId)
           .eq('status', 'active');
-      if (!isAdmin) query = query.eq('teacher_id', userId);
-      return await query.order('name');
+      final assistantIn = <String>{};
+      if (!isAdmin) {
+        // primary teacher or assistant (0046)
+        final mine = await _client.rpc('my_circle_ids', params: {'p_org': orgId}) as List;
+        if (mine.isEmpty) return <dynamic>[];
+        for (final m in mine) {
+          if (m['assistant'] == true) assistantIn.add(m['id'] as String);
+        }
+        query = query.inFilter('id', [for (final m in mine) m['id'] as String]);
+      }
+      final rows = await query.order('name');
+      return [for (final r in rows) {...Map<String, dynamic>.from(r as Map), 'assistant': assistantIn.contains(r['id'])}];
     }, (rows) => _parseCircles(rows));
   }
 
@@ -150,7 +161,7 @@ class RecitationRepository {
       final stage = r['stages'] as Map<String, dynamic>?;
       final counts = r['students_profile'] as List?;
       final count = counts != null && counts.isNotEmpty ? (counts.first['count'] as int? ?? 0) : 0;
-      return MyCircle(id: r['id'] as String, name: r['name'] as String, stageName: stage?['name'] as String?, studentCount: count);
+      return MyCircle(id: r['id'] as String, name: r['name'] as String, stageName: stage?['name'] as String?, studentCount: count, assistant: r['assistant'] == true);
     }).toList();
   }
 
