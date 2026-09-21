@@ -11,6 +11,7 @@ import '../../core/widgets/ui.dart';
 import '../../core/auth/auth_controller.dart';
 import '../recitation/recitation_repository.dart';
 import '../teacher/teacher_home_screen.dart';
+import 'admin_insights_section.dart';
 import 'attention_section.dart';
 
 const _roleGreeting = {
@@ -136,6 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             if (isAdmin && org != null) AttentionSection(orgId: org.id),
+            if (isAdmin && org != null) AdminInsightsSection(orgId: org.id),
             if (_circlesFuture != null) ...[
               const SectionTitle('حلقاتك اليوم'),
               AsyncBody<TeacherToday>(

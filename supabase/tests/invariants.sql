@@ -128,6 +128,23 @@ begin
   select count(*) into v_after from public.notifications where organization_id = v_org and event_key = 'announcement';
   if v_after <> v_before then v_fail := v_fail || 'a disabled notification type still reaches people'; end if;
 
+  -- ===== parity round 2: insight / export / notes functions stay behind their roles
+  perform set_config('request.jwt.claims', json_build_object('sub', v_stu, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin perform public.due_reviews(v_org); v_fail := v_fail || 'student can read review schedule'; exception when others then null; end;
+  begin perform public.search_global(v_org, 'ab'); v_fail := v_fail || 'student can use global search'; exception when others then null; end;
+  begin perform public.list_student_notes(v_org, v_sp); v_fail := v_fail || 'student can read teacher notes'; exception when others then null; end;
+  begin perform public.add_student_note(v_org, v_sp, 'x'); v_fail := v_fail || 'student can write teacher notes'; exception when others then null; end;
+  begin perform public.admin_export_data(v_org); v_fail := v_fail || 'student can export data'; exception when others then null; end;
+  begin perform public.admin_dropout_risk(v_org); v_fail := v_fail || 'student can read dropout risk'; exception when others then null; end;
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin perform public.admin_export_data(v_org); v_fail := v_fail || 'teacher can export data'; exception when others then null; end;
+  begin perform public.admin_teacher_performance(v_org); v_fail := v_fail || 'teacher can read teacher performance'; exception when others then null; end;
+  begin perform public.admin_set_teacher_attendance(v_org, v_tch, v_circle, current_date, 'present'); v_fail := v_fail || 'teacher can set attendance as admin'; exception when others then null; end;
+  reset role;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')

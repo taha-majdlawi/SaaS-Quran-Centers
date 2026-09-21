@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { updateStudent, deleteStudent } from '../actions';
+import { addStudentNote } from '@/lib/insights/actions';
 import { createGuardianForStudent, setStudentGuardian } from './guardian-actions';
 
 const STATUS_OPTIONS = [
@@ -23,10 +24,11 @@ export default async function EditStudentPage({
     guardianCreated?: string;
     guardianPassword?: string;
     guardianLinked?: string;
+    ok?: string;
   }>;
 }) {
   const { org: slug, id } = await params;
-  const { error, guardianCreated, guardianPassword, guardianLinked } = await searchParams;
+  const { error, guardianCreated, guardianPassword, guardianLinked, ok } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
@@ -46,6 +48,8 @@ export default async function EditStudentPage({
     .filter((m) => m.role === 'guardian');
   const currentGuardian = guardians.find((g) => g.id === student?.guardian_member_id);
   const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
+  const { data: notesData } = await supabase.rpc('list_student_notes', { p_org: org.id, p_student: id });
+  const notes = (notesData ?? []) as { id: string; body: string; visibility: string; created_at: string; author: string | null }[];
 
   if (!student) notFound();
 
@@ -57,6 +61,7 @@ export default async function EditStudentPage({
       </a>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
 
       <form action={updateStudent} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="id" value={student.id} />
@@ -213,6 +218,35 @@ export default async function EditStudentPage({
           حذف الطالب
         </ConfirmSubmitButton>
       </form>
+      <section className="mt-8 rounded-lg border bg-white p-6">
+        <h2 className="mb-1 font-semibold">ملاحظات المعلم</h2>
+        <p className="mb-3 text-xs text-gray-500">سجل يُضاف إليه ولا يُعدَّل، لا يراه الطالب. الملاحظة «ظاهرة لولي الأمر» يراها وليّه فقط.</p>
+        <form action={addStudentNote} className="mb-4 flex flex-col gap-2">
+          <input type="hidden" name="orgId" value={org.id} />
+          <input type="hidden" name="studentId" value={student.id} />
+          <input type="hidden" name="back" value={`/students/${student.id}`} />
+          <textarea name="body" required maxLength={1000} rows={2} placeholder="مثال: يستعجل في أواخر الآيات، يحتاج حلقة أبطأ" className="w-full rounded border px-3 py-2 text-sm" />
+          <div className="flex items-center gap-3">
+            <select name="visibility" className="rounded border px-2 py-1.5 text-sm">
+              <option value="staff_only">للإدارة والمعلمين فقط</option>
+              <option value="guardian_visible">ظاهرة لولي الأمر</option>
+            </select>
+            <SubmitButton className="rounded bg-brand px-4 py-1.5 text-sm text-white" pendingText="...">إضافة</SubmitButton>
+          </div>
+        </form>
+        <ul className="flex flex-col gap-2 text-sm">
+          {notes.map((n) => (
+            <li key={n.id} className="rounded bg-gray-50 p-3">
+              <p>{n.body}</p>
+              <p className="mt-1 text-xs text-gray-400">
+                {n.author ?? '—'} · {new Date(n.created_at).toLocaleDateString('ar')}
+                {n.visibility === 'guardian_visible' ? ' · ظاهرة لولي الأمر' : ''}
+              </p>
+            </li>
+          ))}
+          {!notes.length && <li className="text-gray-400">لا ملاحظات بعد</li>}
+        </ul>
+      </section>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { MODULE_DEFS } from '@/lib/permissions/modules';
 import { updateTeacherAccount } from '../actions';
+import { setTeacherAttendance } from '@/lib/insights/actions';
 
 const ROLE_OPTIONS = [
   { value: 'teacher', label: 'معلم' },
@@ -35,10 +36,10 @@ export default async function EditTeacherPage({
   searchParams,
 }: {
   params: Promise<{ org: string; id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; ok?: string }>;
 }) {
   const { org: slug, id } = await params;
-  const { error } = await searchParams;
+  const { error, ok } = await searchParams;
   const org = await getOrgContext(slug);
 
   if (org.myRole !== 'admin') redirect('/teachers' as never);
@@ -49,11 +50,22 @@ export default async function EditTeacherPage({
 
   if (!member) notFound();
 
+  const today = new Date().toISOString().slice(0, 10);
+  const from = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const [{ data: attData }, { data: circleRows }] = await Promise.all([
+    supabase.rpc('admin_teacher_attendance', { p_org: org.id, p_teacher: member.user_id, p_from: from, p_to: today }),
+    supabase.from('circles').select('id, name').eq('organization_id', org.id).eq('teacher_id', member.user_id),
+  ]);
+  const att = (attData ?? []) as { id: string; circle_name: string; status: string; date: string; checked_in_at: string | null; note: string | null; set_by_admin: boolean }[];
+  const teacherCircles = (circleRows ?? []) as { id: string; name: string }[];
+  const STATUS: Record<string, string> = { present: 'حاضر', absent: 'غائب', excused: 'بعذر', late: 'متأخر' };
+
   return (
     <div className="max-w-md">
       <h1 className="mb-6 text-2xl font-bold">تعديل بيانات المعلم</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
 
       <form action={updateTeacherAccount} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="memberId" value={member.id} />
@@ -144,6 +156,44 @@ export default async function EditTeacherPage({
           حفظ التعديلات
         </SubmitButton>
       </form>
+      <section className="mt-8 rounded-lg border bg-white p-6">
+        <h2 className="mb-1 font-semibold">حضور المعلم (آخر 30 يومًا)</h2>
+        <p className="mb-3 text-xs text-gray-500">يسجّل المعلم حضوره بنفسه من التطبيق أو لوحة التحكم، ولك تصحيحه هنا.</p>
+        {teacherCircles.length > 0 && (
+          <form action={setTeacherAttendance} className="mb-4 grid grid-cols-2 gap-2 text-sm">
+            <input type="hidden" name="orgId" value={org.id} />
+            <input type="hidden" name="teacherId" value={member.user_id} />
+            <input type="hidden" name="back" value={`/teachers/${member.id}`} />
+            <select name="circleId" className="rounded border px-2 py-1.5">
+              {teacherCircles.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <input type="date" name="date" defaultValue={today} required className="rounded border px-2 py-1.5" />
+            <select name="status" className="rounded border px-2 py-1.5">
+              {Object.entries(STATUS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <input name="note" placeholder="ملاحظة (اختياري)" className="rounded border px-2 py-1.5" />
+            <SubmitButton className="col-span-2 rounded bg-brand px-4 py-1.5 text-white" pendingText="...">حفظ الحضور</SubmitButton>
+          </form>
+        )}
+        <ul className="divide-y text-sm">
+          {att.map((a) => (
+            <li key={a.id} className="flex justify-between py-1.5">
+              <span>{new Date(a.date).toLocaleDateString('ar')} · {a.circle_name}</span>
+              <span className="text-xs text-gray-500">
+                {STATUS[a.status] ?? a.status}
+                {a.checked_in_at ? ` · ${new Date(a.checked_in_at).toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' })}` : ''}
+                {a.set_by_admin ? ' · عدّله المشرف' : ''}
+                {a.note ? ` · ${a.note}` : ''}
+              </span>
+            </li>
+          ))}
+          {!att.length && <li className="py-2 text-gray-400">لا سجلات</li>}
+        </ul>
+      </section>
     </div>
   );
 }

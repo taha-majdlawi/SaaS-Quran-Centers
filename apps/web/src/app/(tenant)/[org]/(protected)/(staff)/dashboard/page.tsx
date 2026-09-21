@@ -1,6 +1,19 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { fmtDay, pct } from '@/lib/reports/format';
+import { teacherCheckIn } from '@/lib/insights/actions';
+import { SubmitButton } from '@/components/submit-button';
+
+const RISK_TAGS: Record<string, string> = {
+  never: 'لم يسمّع إطلاقًا',
+  regressed: 'توقّف بعد انتظام',
+  slowing: 'تباطأ',
+  attendance_gap: 'يحضر ولا يسمّع',
+};
+
+interface Risk { id: string; name: string; circle: string | null; last_at: string | null; idle_days: number; tag: string }
+interface Perf { teacher_id: string; name: string | null; circles: number; students: number; recitations: number; reciting_students: number; check_ins: number }
+interface Trend { date: string; recitations: number; attendance: number }
 
 interface Attention {
   serd_submitted: number;
@@ -14,8 +27,9 @@ interface Attention {
 
 // Replaces wep-eqraa-center/admin/dashboard - same KPI-counter idea, now
 // scoped by organization_id via RLS instead of "the one Supabase project".
-export default async function DashboardPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function DashboardPage({ params, searchParams }: { params: Promise<{ org: string }>; searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { org: slug } = await params;
+  const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
@@ -48,6 +62,19 @@ export default async function DashboardPage({ params }: { params: Promise<{ org:
       ].filter((w) => w.value > 0)
     : [];
 
+  const isAdmin = org.myRole === 'admin';
+  const [{ data: riskData }, { data: perfData }, { data: trendData }, { data: checkData }] = await Promise.all([
+    isAdmin ? supabase.rpc('admin_dropout_risk', { p_org: org.id, p_limit: 8 }) : Promise.resolve({ data: null }),
+    isAdmin ? supabase.rpc('admin_teacher_performance', { p_org: org.id, p_days: 7 }) : Promise.resolve({ data: null }),
+    isAdmin ? supabase.rpc('admin_daily_trend', { p_org: org.id, p_days: 14 }) : Promise.resolve({ data: null }),
+    org.myRole === 'teacher' ? supabase.rpc('teacher_today_attendance', { p_org: org.id }) : Promise.resolve({ data: null }),
+  ]);
+  const risk = (riskData ?? []) as Risk[];
+  const perf = (perfData ?? []) as Perf[];
+  const trend = (trendData ?? []) as Trend[];
+  const checkedIn = new Set(((checkData ?? []) as { circle_id: string }[]).map((c) => c.circle_id));
+  const maxTrend = Math.max(1, ...trend.map((t) => t.recitations));
+
   const stats = [
     { label: 'الطلاب', value: studentCount ?? 0 },
     { label: 'المعلمون', value: teacherCount ?? 0 },
@@ -57,6 +84,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ org:
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">لوحة التحكم</h1>
+      {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
+      {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      <form action={'/search' as never} className="mb-6 flex max-w-xl gap-2">
+        <input name="q" placeholder="بحث شامل: طالب، معلم، حلقة، رقم الطالب" className="flex-1 rounded border bg-white px-3 py-2 text-sm" />
+        <button className="rounded bg-brand px-4 py-2 text-sm text-white">بحث</button>
+      </form>
       <div className="grid grid-cols-3 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-lg border bg-white p-6">
@@ -147,6 +180,62 @@ export default async function DashboardPage({ params }: { params: Promise<{ org:
         </div>
       )}
 
+      {isAdmin && (
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <section className="rounded-lg border bg-white p-4">
+            <h2 className="mb-3 font-semibold">خطر التسرّب</h2>
+            {risk.length ? (
+              <ul className="flex flex-col gap-1.5 text-sm">
+                {risk.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between gap-2">
+                    <a href={`/students/${r.id}/report` as never} className="text-brand hover:underline">{r.name}</a>
+                    <span className="text-xs text-gray-500">
+                      <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">{RISK_TAGS[r.tag] ?? r.tag}</span>
+                      {r.circle} · {r.idle_days} يوم دوام
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">لا طالب معرَّض للتسرّب ✓</p>
+            )}
+          </section>
+          <section className="rounded-lg border bg-white p-4">
+            <h2 className="mb-3 font-semibold">التسميع آخر 14 يومًا</h2>
+            <div className="flex h-28 items-end gap-1">
+              {trend.map((t) => (
+                <div key={t.date} className="group relative flex-1" title={`${fmtDay(t.date)}: ${t.recitations} تسميع · حضور ${t.attendance}`}>
+                  <div className="w-full rounded-t bg-brand/70" style={{ height: `${Math.max(3, (t.recitations / maxTrend) * 100)}%` }} />
+                </div>
+              ))}
+            </div>
+            <div className="mt-1 flex justify-between text-[11px] text-gray-400">
+              <span>{trend[0] ? fmtDay(trend[0].date) : ''}</span>
+              <span>{trend.length ? fmtDay(trend[trend.length - 1].date) : ''}</span>
+            </div>
+          </section>
+          <section className="rounded-lg border bg-white p-4 lg:col-span-2">
+            <h2 className="mb-3 font-semibold">أداء المعلمين (7 أيام)</h2>
+            <div className="overflow-auto">
+              <table className="w-full text-sm">
+                <thead className="text-right text-xs text-gray-500">
+                  <tr><th className="p-1">المعلم</th><th className="p-1">حلقات</th><th className="p-1">طلاب</th><th className="p-1">تسميعات</th><th className="p-1">طلاب سمّعوا</th><th className="p-1">حضور المعلم</th></tr>
+                </thead>
+                <tbody className="divide-y">
+                  {perf.map((p) => (
+                    <tr key={p.teacher_id}>
+                      <td className="p-1">{p.name ?? '—'}</td><td className="p-1">{p.circles}</td><td className="p-1">{p.students}</td>
+                      <td className="p-1 font-semibold text-brand">{p.recitations}</td><td className="p-1">{p.reciting_students}</td><td className="p-1">{p.check_ins}</td>
+                    </tr>
+                  ))}
+                  {!perf.length && <tr><td colSpan={6} className="p-4 text-center text-gray-400">لا معلمون بعد</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
+
       {today && today.circles.length > 0 && (
         <div className="mt-8">
           <h2 className="mb-3 font-semibold">حلقاتك اليوم</h2>
@@ -161,6 +250,18 @@ export default async function DashboardPage({ params }: { params: Promise<{ org:
                   {c.students} طالب · سمّع {c.recited} · حاضر {c.present}
                   {c.absent > 0 && ` · غائب ${c.absent}`}
                 </p>
+                {org.myRole === 'teacher' && (
+                  checkedIn.has(c.id) ? (
+                    <p className="mt-2 text-xs text-green-700">✓ سُجّل حضورك اليوم</p>
+                  ) : (
+                    <form action={teacherCheckIn} className="mt-2">
+                      <input type="hidden" name="orgId" value={org.id} />
+                      <input type="hidden" name="circleId" value={c.id} />
+                      <input type="hidden" name="back" value="/dashboard" />
+                      <SubmitButton className="rounded border px-3 py-1 text-xs text-brand hover:bg-gray-50" pendingText="...">سجّل حضوري</SubmitButton>
+                    </form>
+                  )
+                )}
               </div>
             ))}
           </div>

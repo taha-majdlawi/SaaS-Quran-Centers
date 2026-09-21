@@ -44,6 +44,8 @@ const _sections = [
     _NavItem(Icons.people_alt_rounded, 'الطلاب', '/students', module: 'students'),
     _NavItem(Icons.groups_rounded, 'الحلقات', '/circles', module: 'circles'),
     _NavItem(Icons.fact_check_rounded, 'الحضور', '/attendance', module: 'attendance'),
+    _NavItem(Icons.replay_circle_filled_rounded, 'المراجعة المقترحة', '/reviews'),
+    _NavItem(Icons.search_rounded, 'بحث شامل', '/search'),
     _NavItem(Icons.auto_stories_rounded, 'المصحف', '/quran'),
     _NavItem(Icons.menu_book_rounded, 'السرد القرآني', '/serd', module: 'serd'),
     _NavItem(Icons.stairs_rounded, 'المراحل', '/stages', adminOnly: true),

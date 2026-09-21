@@ -273,6 +273,18 @@ export default async function SettingsPage({
         </form>
       )}
 
+      {isAdmin && (
+        <section className="rounded-lg border bg-white p-5">
+          <h2 className="mb-1 font-semibold">نسخة احتياطية من بيانات المركز</h2>
+          <p className="mb-3 text-sm text-gray-500">
+            ملف واحد (JSON) فيه الطلاب والحلقات والتسميع والحضور والسرد والتقويم والسوق وغيرها. لا يتضمن كلمات السر ولا بيانات الدخول. احتفظ به في مكان آمن.
+          </p>
+          <a href={`/api/backup?org=${org.id}` as never} className="inline-block rounded border px-4 py-2 text-sm text-brand hover:bg-gray-50">
+            تنزيل النسخة الاحتياطية
+          </a>
+        </section>
+      )}
+
       {!isAdmin && <p className="text-xs text-gray-400">بس المدير يقدر يعدّل إعدادات المركز.</p>}
     </div>
   );

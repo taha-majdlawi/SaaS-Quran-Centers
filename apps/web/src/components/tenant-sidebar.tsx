@@ -17,6 +17,8 @@ export const TENANT_MODULES = [
   { slug: 'circles', label: 'الحلقات', module: 'circles' },
   { slug: 'stages', label: 'المراحل', adminOnly: true },
   { slug: 'attendance', label: 'الحضور', module: 'attendance' },
+  { slug: 'reviews', label: 'المراجعة المقترحة' },
+  { slug: 'search', label: 'بحث شامل' },
   { slug: 'serd', label: 'السرد القرآني', module: 'serd' },
   { slug: 'points', label: 'النقاط', module: 'points' },
   { slug: 'badges', label: 'الشارات', module: 'badges' },

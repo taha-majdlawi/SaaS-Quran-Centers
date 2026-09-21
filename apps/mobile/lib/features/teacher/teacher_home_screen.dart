@@ -10,6 +10,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
+import '../insights/insights_repository.dart';
 import '../recitation/recitation_repository.dart';
 import 'circle_roster.dart';
 import 'teacher_widgets.dart';
@@ -166,6 +167,35 @@ class _CircleCard extends StatefulWidget {
 class _CircleCardState extends State<_CircleCard> {
   final _repository = RecitationRepository(AppSupabase.client);
   late final Future<List<CircleStudent>> _students = _repository.fetchCircleStudents(widget.circle.id);
+  final _insights = InsightsRepository(AppSupabase.client);
+  bool? _checkedIn;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCheckIn();
+  }
+
+  String get _orgId => context.read<TenantController>().active!.organization.id;
+
+  Future<void> _loadCheckIn() async {
+    try {
+      final set = await _insights.checkedInCircles(_orgId);
+      if (mounted) setState(() => _checkedIn = set.contains(widget.circle.id));
+    } catch (_) {}
+  }
+
+  Future<void> _checkIn() async {
+    try {
+      await _insights.checkIn(_orgId, widget.circle.id);
+      if (mounted) {
+        setState(() => _checkedIn = true);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('سُجّل حضورك ✓')));
+      }
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر تسجيل الحضور — تحقّق من الاتصال')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +261,16 @@ class _CircleCardState extends State<_CircleCard> {
                 final students = snap.data;
                 if (students == null) return const Padding(padding: EdgeInsets.all(12), child: SkeletonCards(count: 2, height: 96));
                 return Column(children: [
+                  if (_checkedIn == false)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                      child: OutlinedButton.icon(
+                        onPressed: _checkIn,
+                        icon: const Icon(Icons.how_to_reg_rounded, size: 18),
+                        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
+                        label: const Text('سجّل حضوري اليوم'),
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                     child: FilledButton.icon(

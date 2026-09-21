@@ -1,0 +1,65 @@
+import { getOrgContext } from '@/lib/tenant/get-org-context';
+import { createClient } from '@/lib/supabase/server';
+import { surahName } from '@/lib/quran/data';
+
+interface Due {
+  student_id: string;
+  student_name: string;
+  circle_id: string | null;
+  circle_name: string | null;
+  surah: number;
+  due: string;
+  days_overdue: number;
+  last_grade: string | null;
+}
+
+/** Spaced-review schedule: which surahs each student should review today (interval grows with good grades). */
+export default async function ReviewsPage({ params }: { params: Promise<{ org: string }> }) {
+  const { org: slug } = await params;
+  const org = await getOrgContext(slug);
+  const supabase = await createClient();
+  const { data } = await supabase.rpc('due_reviews', { p_org: org.id, p_circle: null });
+  const rows = (data ?? []) as Due[];
+
+  const byCircle = new Map<string, Map<string, Due[]>>();
+  for (const r of rows) {
+    const c = r.circle_name ?? 'بدون حلقة';
+    if (!byCircle.has(c)) byCircle.set(c, new Map());
+    const m = byCircle.get(c)!;
+    m.set(r.student_id, [...(m.get(r.student_id) ?? []), r]);
+  }
+
+  return (
+    <div className="max-w-3xl">
+      <h1 className="mb-1 text-2xl font-bold">المراجعة المقترحة اليوم</h1>
+      <p className="mb-5 text-sm text-gray-500">
+        جدول مراجعة بالتكرار المتباعد: كل سورة تُقترح للمراجعة بعد فاصل يكبر مع التقدير الجيد ويعود ليوم واحد مع الضعيف. يُحدَّث تلقائيًا مع كل تسميع.
+      </p>
+      {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا مراجعات مستحقة اليوم ✓</p>}
+      <div className="flex flex-col gap-4">
+        {[...byCircle.entries()].map(([circle, students]) => (
+          <section key={circle} className="rounded-lg border bg-white p-4">
+            <h2 className="mb-3 font-semibold">{circle}</h2>
+            <ul className="divide-y text-sm">
+              {[...students.entries()].map(([id, list]) => (
+                <li key={id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <a href={`/students/${id}/report` as never} className="font-medium text-brand hover:underline">
+                    {list[0].student_name}
+                  </a>
+                  <span className="flex flex-wrap gap-1.5">
+                    {list.map((r) => (
+                      <span key={r.surah} className={`rounded-full px-2 py-0.5 text-xs ${r.days_overdue > 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
+                        {surahName(r.surah)}
+                        {r.days_overdue > 0 ? ` · متأخرة ${r.days_overdue}` : ''}
+                      </span>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}

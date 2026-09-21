@@ -13,6 +13,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/credentials_dialog.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
+import '../insights/student_notes_section.dart';
 import '../members/members_repository.dart';
 import '../my_portal/my_portal_repository.dart';
 import '../recitation/recitation_repository.dart';
@@ -503,6 +504,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           ],
           const SectionTitle('السرد القرآني'),
           SerdSummaryCard(summary: data.serd),
+          StudentNotesSection(orgId: _orgId, studentId: widget.studentId),
           const SectionTitle('سجل التسميع'),
           if (data.entries.isEmpty)
             const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد', style: TextStyle(color: TeacherStyle.textMuted)))

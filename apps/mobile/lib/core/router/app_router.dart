@@ -44,6 +44,8 @@ import '../../features/quran/quran_screens.dart';
 import '../../features/comms/announcements_screens.dart';
 import '../../features/comms/chat_screens.dart';
 import '../../features/comms/notification_prefs_screen.dart';
+import '../../features/insights/reviews_screen.dart';
+import '../../features/insights/search_screen.dart';
 import '../../features/comms/notifications_screen.dart';
 import '../../features/comms/comms_repository.dart' show Announcement;
 import '../../features/my_portal/portal_engagement_screens.dart';
@@ -216,6 +218,8 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => EventDetailScreen(eventId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/reviews', builder: (context, state) => const ReviewsScreen()),
+      GoRoute(path: '/search', builder: (context, state) => const GlobalSearchScreen()),
       GoRoute(path: '/notifications/prefs', builder: (context, state) => const NotificationPrefsScreen()),
       GoRoute(path: '/chat', builder: (context, state) => const ChatListScreen()),
       GoRoute(path: '/chat/new', builder: (context, state) => const NewChatScreen()),
