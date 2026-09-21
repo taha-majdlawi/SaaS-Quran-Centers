@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/widgets/ui.dart';
+import '../gatherings/gatherings_repository.dart';
 import '../reports/reports_repository.dart';
 
 /// Admin dashboard: what needs a decision or a call today, and the week in
@@ -19,6 +20,15 @@ class AttentionSection extends StatefulWidget {
 
 class _AttentionSectionState extends State<AttentionSection> {
   late Future<Map<String, dynamic>> _future = _load();
+  late Future<Map<String, int>> _pending = _loadPending();
+
+  Future<Map<String, int>> _loadPending() async {
+    try {
+      return await GatheringsRepository(AppSupabase.client).pendingReviews(widget.orgId);
+    } catch (_) {
+      return {'gatherings': 0, 'external': 0};
+    }
+  }
 
   Future<Map<String, dynamic>> _load() => SyncService.instance.cached<Map<String, dynamic>>(
         'attention:${widget.orgId}',
@@ -29,7 +39,20 @@ class _AttentionSectionState extends State<AttentionSection> {
   @override
   void didUpdateWidget(covariant AttentionSection old) {
     super.didUpdateWidget(old);
-    if (old.orgId != widget.orgId) _future = _load();
+    if (old.orgId != widget.orgId) {
+      _future = _load();
+      _pending = _loadPending();
+    }
+  }
+
+  Map<String, int> _pendingNow = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    _pending.then((v) {
+      if (mounted) setState(() => _pendingNow = v);
+    });
   }
 
   List<Map<String, dynamic>> _list(dynamic v) => [for (final e in (v as List? ?? const [])) e as Map<String, dynamic>];
@@ -42,9 +65,12 @@ class _AttentionSectionState extends State<AttentionSection> {
         final a = snap.data;
         if (a == null) return const SizedBox.shrink(); // not critical: the rest of the dashboard stands alone
         final week = a['week'] as Map<String, dynamic>;
+        final pend = _pendingNow;
         final waiting = [
           ('سرد بانتظار الاعتماد', a['serd_submitted'] as int, '/serd'),
           ('طلبات سوق بانتظار القرار', a['market_pending'] as int, '/market'),
+          ('مجالس بانتظار ربط الأسماء', pend['gatherings'] ?? 0, '/gatherings'),
+          ('تسميع خارجي بانتظار الربط', pend['external'] ?? 0, '/external-recitations'),
         ].where((w) => w.$2 > 0).toList();
         final inactive = _list(a['inactive_students']);
         final upcoming = _list(a['upcoming']);

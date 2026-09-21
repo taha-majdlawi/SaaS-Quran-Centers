@@ -55,10 +55,14 @@ export default async function DashboardPage({ params, searchParams }: { params: 
   // Admin only: what needs a decision or a call today (one RPC)
   const { data: attentionData } = org.myRole === 'admin' ? await supabase.rpc('admin_attention', { p_org: org.id }) : { data: null };
   const att = attentionData as Attention | null;
+  const { data: pendingData } = org.myRole === 'admin' ? await supabase.rpc('admin_pending_reviews', { p_org: org.id }) : { data: null };
+  const pendingReviews = (pendingData ?? { gatherings: 0, external: 0 }) as { gatherings: number; external: number };
   const waiting = att
     ? [
         { label: 'سرد بانتظار الاعتماد', value: att.serd_submitted, href: '/serd?status=submitted' },
         { label: 'طلبات سوق بانتظار القرار', value: att.market_pending, href: '/market' },
+        { label: 'مجالس بانتظار ربط الأسماء', value: pendingReviews.gatherings, href: '/gatherings' },
+        { label: 'تسميع خارجي بانتظار الربط', value: pendingReviews.external, href: '/external-recitations' },
       ].filter((w) => w.value > 0)
     : [];
 

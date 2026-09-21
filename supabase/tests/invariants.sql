@@ -145,6 +145,22 @@ begin
   begin perform public.admin_set_teacher_attendance(v_org, v_tch, v_circle, current_date, 'present'); v_fail := v_fail || 'teacher can set attendance as admin'; exception when others then null; end;
   reset role;
 
+  -- ===== gatherings / external recitations: staff-only, admin-only review
+  perform set_config('request.jwt.claims', json_build_object('sub', v_stu, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin perform public.submit_gathering(v_org, 'x', null, null, null, null, array['a']); v_fail := v_fail || 'student can upload a gathering'; exception when others then null; end;
+  begin perform public.submit_external_recitation(v_org, 'x', 'new_memorization', 1, 1, 2, 'x'); v_fail := v_fail || 'student can upload an external recitation'; exception when others then null; end;
+  begin perform public.admin_list_gatherings(v_org); v_fail := v_fail || 'student can list gatherings'; exception when others then null; end;
+  begin perform public.admin_list_external_recitations(v_org); v_fail := v_fail || 'student can list external recitations'; exception when others then null; end;
+  begin perform public.admin_pending_reviews(v_org); v_fail := v_fail || 'student can read pending reviews'; exception when others then null; end;
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin perform public.admin_list_gatherings(v_org); v_fail := v_fail || 'teacher can list every gathering'; exception when others then null; end;
+  begin perform public.admin_list_external_recitations(v_org); v_fail := v_fail || 'teacher can list every external recitation'; exception when others then null; end;
+  begin perform public.admin_match_external_recitation(gen_random_uuid(), v_sp); v_fail := v_fail || 'teacher can link external recitations'; exception when others then null; end;
+  reset role;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')

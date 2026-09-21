@@ -1,0 +1,103 @@
+'use server';
+
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { safeBack, withParam } from '@/lib/calendar/actions-shared';
+
+const s = (formData: FormData, key: string) => ((formData.get(key) as string) ?? '').trim();
+
+async function run(back: string, fn: string, args: Record<string, unknown>, ok: string | ((data: unknown) => string)): Promise<never> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc(fn, args);
+  if (error) redirect(withParam(back, 'error', error.message) as never);
+  redirect(withParam(back, 'ok', typeof ok === 'function' ? ok(data) : ok) as never);
+}
+
+// ---- gatherings ----------------------------------------------------------
+
+export async function submitGathering(formData: FormData) {
+  const names = s(formData, 'names')
+    .split(/\r?\n|،|,/)
+    .map((n) => n.trim())
+    .filter(Boolean);
+  await run('/gatherings', 'submit_gathering', {
+    p_org: s(formData, 'orgId'),
+    p_title: s(formData, 'title'),
+    p_type: s(formData, 'type') || null,
+    p_date: s(formData, 'date') || null,
+    p_location: s(formData, 'location') || null,
+    p_notes: s(formData, 'notes') || null,
+    p_names: names,
+  }, (d) => `رُفع النشاط بـ ${(d as { names_count: number }).names_count} اسم`);
+}
+
+export async function deleteGathering(formData: FormData) {
+  await run('/gatherings', 'delete_gathering', { p_id: s(formData, 'id') }, 'حُذف النشاط');
+}
+
+export async function updateGathering(formData: FormData) {
+  const id = s(formData, 'id');
+  await run(`/gatherings/${id}`, 'admin_update_gathering', {
+    p_id: id,
+    p_title: s(formData, 'title'),
+    p_type: s(formData, 'type') || null,
+    p_date: s(formData, 'date'),
+    p_location: s(formData, 'location') || null,
+    p_notes: s(formData, 'notes') || null,
+  }, 'حُفظت بيانات النشاط');
+}
+
+export async function addGatheringEntry(formData: FormData) {
+  const id = s(formData, 'gatheringId');
+  await run(`/gatherings/${id}`, 'gathering_add_entry', { p_gathering: id, p_name: s(formData, 'name') }, 'أُضيف الاسم');
+}
+
+export async function deleteGatheringEntry(formData: FormData) {
+  await run(safeBack(formData.get('back'), '/gatherings'), 'gathering_delete_entry', { p_entry: s(formData, 'entryId') }, 'حُذف الاسم');
+}
+
+export async function matchGatheringEntry(formData: FormData) {
+  const back = safeBack(formData.get('back'), '/gatherings');
+  await run(back, 'admin_match_gathering_entry', { p_entry: s(formData, 'entryId'), p_student: s(formData, 'studentId') }, (d) => {
+    const r = d as { center_attendance: boolean; note: string | null };
+    return r.center_attendance ? 'رُبط الاسم وسُجّل حضور الطالب' : (r.note ?? 'رُبط الاسم');
+  });
+}
+
+export async function skipGatheringEntry(formData: FormData) {
+  await run(safeBack(formData.get('back'), '/gatherings'), 'admin_skip_gathering_entry', { p_entry: s(formData, 'entryId') }, 'تُجوهل الاسم');
+}
+
+export async function unmatchGatheringEntry(formData: FormData) {
+  await run(safeBack(formData.get('back'), '/gatherings'), 'admin_unmatch_gathering_entry', { p_entry: s(formData, 'entryId') }, (d) => String(d));
+}
+
+// ---- external recitations --------------------------------------------------
+
+export async function submitExternalRecitation(formData: FormData) {
+  await run('/external-recitations', 'submit_external_recitation', {
+    p_org: s(formData, 'orgId'),
+    p_name: s(formData, 'name'),
+    p_type: s(formData, 'type'),
+    p_surah: Number(s(formData, 'surah')),
+    p_from: Number(s(formData, 'ayahFrom')),
+    p_to: Number(s(formData, 'ayahTo')),
+    p_grade: s(formData, 'grade'),
+    p_notes: s(formData, 'notes') || null,
+    p_recorded_at: null,
+    p_client_ref: s(formData, 'clientRef') || null,
+  }, 'رُفع التسميع وينتظر ربط المشرف');
+}
+
+export async function deleteExternalRecitation(formData: FormData) {
+  await run('/external-recitations', 'delete_external_recitation', { p_id: s(formData, 'id') }, 'حُذف الطلب');
+}
+
+export async function matchExternalRecitation(formData: FormData) {
+  await run('/external-recitations', 'admin_match_external_recitation', { p_id: s(formData, 'id'), p_student: s(formData, 'studentId') },
+    (d) => `رُبط التسميع وسُجّل للطالب (+${(d as { points_awarded: number }).points_awarded} نقطة)`);
+}
+
+export async function rejectExternalRecitation(formData: FormData) {
+  await run('/external-recitations', 'admin_reject_external_recitation', { p_id: s(formData, 'id'), p_reason: s(formData, 'reason') || null }, 'رُفض الطلب');
+}

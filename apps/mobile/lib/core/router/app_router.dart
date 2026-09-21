@@ -44,6 +44,9 @@ import '../../features/quran/quran_screens.dart';
 import '../../features/comms/announcements_screens.dart';
 import '../../features/comms/chat_screens.dart';
 import '../../features/comms/notification_prefs_screen.dart';
+import '../../features/gatherings/external_recitations_screen.dart';
+import '../../features/gatherings/gathering_detail_screen.dart';
+import '../../features/gatherings/gatherings_screen.dart';
 import '../../features/insights/reviews_screen.dart';
 import '../../features/insights/search_screen.dart';
 import '../../features/comms/notifications_screen.dart';
@@ -218,6 +221,9 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => EventDetailScreen(eventId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/gatherings', builder: (context, state) => const GatheringsScreen()),
+      GoRoute(path: '/gatherings/:id', builder: (context, state) => GatheringDetailScreen(gatheringId: state.pathParameters['id']!)),
+      GoRoute(path: '/external-recitations', builder: (context, state) => const ExternalRecitationsScreen()),
       GoRoute(path: '/reviews', builder: (context, state) => const ReviewsScreen()),
       GoRoute(path: '/search', builder: (context, state) => const GlobalSearchScreen()),
       GoRoute(path: '/notifications/prefs', builder: (context, state) => const NotificationPrefsScreen()),
