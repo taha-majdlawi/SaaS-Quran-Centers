@@ -43,6 +43,7 @@ import '../../features/reports/reports_screens.dart';
 import '../../features/quran/quran_screens.dart';
 import '../../features/comms/announcements_screens.dart';
 import '../../features/comms/chat_screens.dart';
+import '../../features/comms/notification_prefs_screen.dart';
 import '../../features/comms/notifications_screen.dart';
 import '../../features/comms/comms_repository.dart' show Announcement;
 import '../../features/my_portal/portal_engagement_screens.dart';
@@ -102,7 +103,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
           segments.first == 'calendar' &&
           (segments.length == 1 || (segments.length == 2 && segments[1] != 'new' && segments[1] != 'types'));
       final portalOk = path == '/chat' || path == '/chat/new' || (segments.length == 2 && segments.first == 'chat') ||
-          path == '/announcements' || path == '/notifications' || path == '/quran' || (segments.length == 2 && segments.first == 'quran');
+          path == '/announcements' || path == '/notifications' || path == '/notifications/prefs' || path == '/quran' || (segments.length == 2 && segments.first == 'quran');
       if (isPortalOnly && path != '/my' && !path.startsWith('/my/') && !calendarOk && !portalOk) {
         return '/my';
       }
@@ -215,6 +216,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => EventDetailScreen(eventId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(path: '/notifications/prefs', builder: (context, state) => const NotificationPrefsScreen()),
       GoRoute(path: '/chat', builder: (context, state) => const ChatListScreen()),
       GoRoute(path: '/chat/new', builder: (context, state) => const NewChatScreen()),
       GoRoute(

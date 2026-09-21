@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -35,6 +36,17 @@ class PushService {
   String? _pending;
 
   bool get isReady => _ready;
+
+  /// Whether the phone currently lets this app show notifications (for the preferences screen).
+  Future<bool> notificationsAllowed() async {
+    if (!_ready) return false;
+    try {
+      final s = await FirebaseMessaging.instance.getNotificationSettings();
+      return s.authorizationStatus != AuthorizationStatus.denied;
+    } catch (_) {
+      return true;
+    }
+  }
 
   void _open(Map<String, dynamic> data) {
     final route = routeForPush(data);
@@ -118,7 +130,11 @@ class PushService {
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null) return;
       _token = token;
-      await client.rpc('register_device_token', params: {'p_org': orgId, 'p_token': token, 'p_platform': 'android'});
+      String? version;
+      try {
+        version = (await PackageInfo.fromPlatform()).version;
+      } catch (_) {}
+      await client.rpc('register_device_token', params: {'p_org': orgId, 'p_token': token, 'p_platform': 'android', 'p_app_version': version});
       _registeredFor = key;
       _refreshSub ??= FirebaseMessaging.instance.onTokenRefresh.listen((fresh) async {
         _token = fresh;

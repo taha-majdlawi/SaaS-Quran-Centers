@@ -1,0 +1,84 @@
+'use server';
+
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+
+const s = (formData: FormData, key: string) => ((formData.get(key) as string) ?? '').trim();
+
+function to(tab: string, kind: 'ok' | 'error', message: string): never {
+  redirect(`/notifications?tab=${tab}&${kind}=${encodeURIComponent(message)}` as never);
+}
+
+export async function saveTemplate(formData: FormData) {
+  const supabase = await createClient();
+  const lead = s(formData, 'lead');
+  const { error } = await supabase.rpc('admin_save_notification_template', {
+    p_org: s(formData, 'orgId'),
+    p_event: s(formData, 'event'),
+    p_title: s(formData, 'title'),
+    p_body: s(formData, 'body'),
+    p_lead: lead === '' ? null : Number(lead),
+    p_audience: s(formData, 'audience') || 'source',
+    p_enabled: formData.get('enabled') === 'on',
+  });
+  if (error) to('templates', 'error', error.message);
+  to('templates', 'ok', 'حُفظ القالب');
+}
+
+export async function resetTemplate(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('admin_reset_notification_template', { p_org: s(formData, 'orgId'), p_event: s(formData, 'event') });
+  if (error) to('templates', 'error', error.message);
+  to('templates', 'ok', 'أُعيد القالب إلى الصياغة الافتراضية');
+}
+
+export async function saveNotificationSettings(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('admin_save_notification_settings', {
+    p_org: s(formData, 'orgId'),
+    p_quiet_from: s(formData, 'quiet_from'),
+    p_quiet_to: s(formData, 'quiet_to'),
+    p_day_start: s(formData, 'day_start_time'),
+    p_grace: Number(s(formData, 'late_grace_hours')),
+    p_idle: Number(s(formData, 'idle_days')),
+    p_paused: formData.get('is_paused') === 'on',
+  });
+  if (error) to('settings', 'error', error.message);
+  to('settings', 'ok', 'حُفظت الإعدادات');
+}
+
+export async function sendBroadcast(formData: FormData) {
+  const supabase = await createClient();
+  const mode = s(formData, 'mode');
+  const audience = s(formData, 'audience') || 'all';
+  let userIds: string[] | null = null;
+  if (mode === 'self') {
+    const { data } = await supabase.auth.getUser();
+    userIds = data.user ? [data.user.id] : null;
+  } else if (audience === '__people__') {
+    userIds = formData.getAll('user').map(String);
+    if (!userIds.length) to('send', 'error', 'اختر شخصًا واحدًا على الأقل');
+  }
+  const { data, error } = await supabase.rpc('admin_send_notification', {
+    p_org: s(formData, 'orgId'),
+    p_title: s(formData, 'title'),
+    p_body: s(formData, 'body'),
+    p_audience: audience === '__people__' ? 'all' : audience,
+    p_circle: s(formData, 'circle') || null,
+    p_user_ids: userIds,
+    p_deep_link: s(formData, 'deep_link') || null,
+  });
+  if (error) to('send', 'error', error.message);
+  const r = data as { sent: number; no_device: number };
+  to('send', 'ok', `أُرسل إلى ${r.sent} شخصًا${r.no_device ? ` — منهم ${r.no_device} بلا هاتف مسجّل (يصلهم داخل التطبيق فقط)` : ''}`);
+}
+
+export async function sendTestPush(formData: FormData) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('send_test_push', {
+    p_org: s(formData, 'orgId'),
+    p_user: s(formData, 'userId') || null,
+  });
+  if (error) to('devices', 'error', error.message);
+  to('devices', 'ok', `أُرسل إشعار تجريبي إلى ${Number(data) || 1} جهاز — راقب الهاتف خلال ثوانٍ`);
+}

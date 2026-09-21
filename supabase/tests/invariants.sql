@@ -103,6 +103,31 @@ begin
     v_fail := v_fail || ('tables without write lock: ' || (select string_agg(t, ',') from public.tables_without_write_lock() t where t <> all (v_exempt)));
   end if;
 
+  -- ===== notification centre: admin-only management, templates are honoured, muted/disabled types insert nothing
+  perform set_config('request.jwt.claims', json_build_object('sub', v_stu, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin perform public.admin_notification_config(v_org); v_fail := v_fail || 'student can read notification config'; exception when others then null; end;
+  begin perform public.admin_send_notification(v_org, 'a', 'b'); v_fail := v_fail || 'student can broadcast'; exception when others then null; end;
+  begin perform public.admin_save_notification_settings(v_org, '21:00', '07:00', '07:00', 12, 3, true); v_fail := v_fail || 'student can change notification settings'; exception when others then null; end;
+  begin perform public.admin_notification_log(v_org); v_fail := v_fail || 'student can read the delivery log'; exception when others then null; end;
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  perform public.admin_save_notification_template(v_org, 'announcement', 'مركز: {العنوان}', '{الوصف}', null, 'source', true);
+  perform public.save_announcement(v_org, null, 'عنوان اختبار', 'نص', 'all', null, false, true, null);
+  reset role;
+  select count(*) into v_n from public.notifications where organization_id = v_org and event_key = 'announcement' and title = 'مركز: عنوان اختبار' and created_at > now() - interval '1 minute';
+  if v_n = 0 then v_fail := v_fail || 'a saved template is not used for the notification wording'; end if;
+  set local role authenticated;
+  perform public.admin_save_notification_template(v_org, 'announcement', 'x', 'y', null, 'source', false);
+  reset role;
+  select count(*) into v_before from public.notifications where organization_id = v_org and event_key = 'announcement';
+  set local role authenticated;
+  perform public.save_announcement(v_org, null, 'ثانٍ', 'نص', 'all', null, false, true, null);
+  reset role;
+  select count(*) into v_after from public.notifications where organization_id = v_org and event_key = 'announcement';
+  if v_after <> v_before then v_fail := v_fail || 'a disabled notification type still reaches people'; end if;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')

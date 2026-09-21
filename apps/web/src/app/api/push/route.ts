@@ -65,10 +65,11 @@ interface Payload {
 async function deliver(sa: ServiceAccount, p: Payload) {
   const admin = createAdminClient();
   const { data: tokens } = await admin.from('device_tokens').select('token').eq('user_id', p.userId);
-  if (!tokens?.length) return { sent: 0, removed: 0 };
+  if (!tokens?.length) return { sent: 0, removed: 0, total: 0, error: null as string | null };
   const bearer = await accessToken(sa);
   let sent = 0;
   let removed = 0;
+  let error: string | null = null;
   for (const { token } of tokens) {
     const res = await fetch(`https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`, {
       method: 'POST',
@@ -83,16 +84,19 @@ async function deliver(sa: ServiceAccount, p: Payload) {
       }),
     });
     if (res.ok) sent++;
-    else if (res.status === 404 || res.status === 400) {
-      // the app was uninstalled / the token is stale: forget it
+    else {
       const err = (await res.text()).toUpperCase();
+      error = `FCM ${res.status}`;
+      if (res.status !== 404 && res.status !== 400) continue;
+      // the app was uninstalled / the token is stale: forget it
       if (err.includes('UNREGISTERED') || err.includes('INVALID_ARGUMENT') || res.status === 404) {
         await admin.from('device_tokens').delete().eq('token', token);
         removed++;
+        error = 'الجهاز لم يعد صالحًا (أُزيل التطبيق أو انتهى الرمز)';
       }
     }
   }
-  return { sent, removed };
+  return { sent, removed, total: tokens.length, error };
 }
 
 export async function POST(req: Request) {
@@ -114,15 +118,26 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   try {
     if (kind === 'notification') {
-      const { data: n } = await admin.from('notifications').select('user_id, organization_id, event_key, title, body, ref_id').eq('id', id).maybeSingle();
+      const { data: n } = await admin.from('notifications').select('user_id, organization_id, event_key, title, body, ref_id, deep_link').eq('id', id).maybeSingle();
       if (!n) return Response.json({ ok: true, skipped: 'gone' });
       const result = await deliver(sa, {
         userId: n.user_id,
         title: n.title,
         body: n.body ?? '',
-        data: { kind: 'notification', event_key: n.event_key, ref_id: n.ref_id ?? '', org_id: n.organization_id },
+        data: { kind: 'notification', event_key: n.event_key, ref_id: n.ref_id ?? '', deep_link: n.deep_link ?? '', org_id: n.organization_id },
       });
-      return Response.json({ ok: true, ...result });
+      // the delivery log the admin reads in the notification centre
+      await admin
+        .from('notifications')
+        .update({
+          push_status: result.total === 0 ? 'no_device' : result.sent > 0 ? 'sent' : 'failed',
+          devices_total: result.total,
+          devices_ok: result.sent,
+          push_error: result.sent > 0 ? null : result.error,
+          pushed_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+      return Response.json({ ok: true, sent: result.sent, removed: result.removed });
     }
 
     const { data: m } = await admin.from('chat_messages').select('thread_id, sender_id, body, image_path').eq('id', id).maybeSingle();
@@ -139,7 +154,7 @@ export async function POST(req: Request) {
       body: m.body ? String(m.body).slice(0, 140) : '📷 صورة',
       data: { kind: 'chat', event_key: 'chat_message', ref_id: m.sender_id, org_id: t.organization_id },
     });
-    return Response.json({ ok: true, ...result });
+    return Response.json({ ok: true, sent: result.sent, removed: result.removed });
   } catch (e) {
     return new Response(e instanceof Error ? e.message : 'error', { status: 500 });
   }

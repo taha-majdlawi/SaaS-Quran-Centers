@@ -5,21 +5,6 @@ import 'package:uuid/uuid.dart';
 
 const kRoleLabels = {'admin': 'مدير', 'teacher': 'معلم', 'student': 'طالب', 'guardian': 'ولي أمر'};
 
-const kEventLabels = {
-  'announcement': 'الإعلانات',
-  'calendar_entry': 'التقويم والفعاليات',
-  'waitlist_promoted': 'الترقية من قائمة الانتظار',
-  'event_reminder': 'تذكير بالفعاليات',
-  'weekly_digest': 'ملخص الأسبوع',
-  'attendance_reminder': 'تذكير تسجيل الحضور',
-  'deletion_request': 'طلبات حذف البيانات',
-  'deletion_reviewed': 'نتيجة طلب حذف بياناتي',
-  'serd_assigned': 'سرد مطلوب مني',
-  'serd_reviewed': 'اعتماد السرد',
-  'market_order': 'طلبات السوق',
-  'badge_awarded': 'الشارات',
-};
-
 const kAudienceLabels = {'all': 'الجميع', 'teachers': 'المعلمون', 'students': 'الطلاب', 'guardians': 'أولياء الأمور'};
 
 class ChatThreadRow {
@@ -92,12 +77,13 @@ class ChatMessage {
 }
 
 class NotificationItem {
-  const NotificationItem({required this.id, required this.eventKey, required this.title, required this.createdAt, required this.read, this.body, this.refId});
+  const NotificationItem({required this.id, required this.eventKey, required this.title, required this.createdAt, required this.read, this.body, this.refId, this.deepLink});
   final String id;
   final String eventKey;
   final String title;
   final String? body;
   final String? refId;
+  final String? deepLink;
   final String createdAt;
   final bool read;
 
@@ -107,9 +93,28 @@ class NotificationItem {
         title: j['title'] as String,
         body: j['body'] as String?,
         refId: j['ref_id'] as String?,
+        deepLink: j['deep_link'] as String?,
         createdAt: j['created_at'] as String,
         read: j['read'] as bool? ?? false,
       );
+}
+
+/// One switch on the person's notification-preferences screen.
+class NotificationType {
+  const NotificationType({required this.key, required this.name, required this.enabled});
+  final String key;
+  final String name;
+  final bool enabled;
+
+  NotificationType copyWith({bool? enabled}) => NotificationType(key: key, name: name, enabled: enabled ?? this.enabled);
+}
+
+class NotificationPrefs {
+  const NotificationPrefs({required this.types, required this.quietFrom, required this.quietTo, required this.paused});
+  final List<NotificationType> types;
+  final String quietFrom;
+  final String quietTo;
+  final bool paused;
 }
 
 class Announcement {
@@ -238,9 +243,14 @@ class CommsRepository {
 
   Future<void> markAllRead(String orgId) => _client.rpc('mark_notifications_read', params: {'p_org': orgId, 'p_ids': null});
 
-  Future<Map<String, bool>> prefs(String orgId) async {
-    final j = await _client.rpc('my_notification_prefs', params: {'p_org': orgId}) as Map<String, dynamic>;
-    return {for (final e in j.entries) e.key: e.value as bool};
+  Future<NotificationPrefs> prefs(String orgId) async {
+    final j = await _client.rpc('my_notification_types', params: {'p_org': orgId}) as Map<String, dynamic>;
+    return NotificationPrefs(
+      types: [for (final t in _list(j['types'])) NotificationType(key: t['event_key'] as String, name: t['name'] as String, enabled: t['enabled'] as bool? ?? true)],
+      quietFrom: j['quiet_from'] as String? ?? '',
+      quietTo: j['quiet_to'] as String? ?? '',
+      paused: j['paused'] as bool? ?? false,
+    );
   }
 
   Future<void> setPref(String orgId, String event, bool enabled) =>

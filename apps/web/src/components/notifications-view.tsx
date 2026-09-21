@@ -8,30 +8,33 @@ interface Item {
   title: string;
   body: string | null;
   ref_id: string | null;
+  deep_link: string | null;
   created_at: string;
   read: boolean;
 }
 
-export const EVENT_LABELS: Record<string, string> = {
-  announcement: 'الإعلانات',
-  calendar_entry: 'التقويم والفعاليات',
-  waitlist_promoted: 'الترقية من قائمة الانتظار',
-  event_reminder: 'تذكير بالفعاليات',
-  weekly_digest: 'ملخص الأسبوع',
-  attendance_reminder: 'تذكير تسجيل الحضور',
-  deletion_request: 'طلبات حذف البيانات',
-  deletion_reviewed: 'نتيجة طلب حذف بياناتي',
-  serd_assigned: 'سرد مطلوب مني',
-  serd_reviewed: 'اعتماد السرد',
-  market_order: 'طلبات السوق',
-  badge_awarded: 'الشارات',
+interface PrefType {
+  event_key: string;
+  name: string;
+  enabled: boolean;
+}
+
+/** Screens an immediate message can open (keys chosen in the notification centre). */
+const DEEP: Record<string, [string, string]> = {
+  announcements: ['/announcements', '/my/announcements'],
+  calendar: ['/calendar', '/my/calendar'],
+  market: ['/market', '/my/market'],
+  chat: ['/chat', '/my/chat'],
+  badges: ['/badges', '/my/badges'],
 };
 
 /** Where an inbox row leads, per audience (`base` is '' for staff, '/my' for the portal). */
 function linkFor(n: Item, portal: boolean): string | null {
+  if (n.deep_link && DEEP[n.deep_link]) return DEEP[n.deep_link][portal ? 1 : 0];
   if (!n.ref_id) return null;
   switch (n.event_key) {
     case 'calendar_entry':
+    case 'center_closed':
     case 'event_reminder':
     case 'waitlist_promoted':
       return portal ? `/my/calendar/${n.ref_id}` : `/calendar/${n.ref_id}`;
@@ -40,8 +43,14 @@ function linkFor(n: Item, portal: boolean): string | null {
     case 'serd_assigned':
       return `/serd/new?session=${n.ref_id}`;
     case 'serd_reviewed':
+    case 'serd_approved':
+    case 'serd_rejected':
       return portal ? '/my' : '/serd';
+    case 'student_idle':
+      return portal ? '/my' : null;
     case 'market_order':
+    case 'market_fulfilled':
+    case 'market_cancelled':
       return portal ? '/my/market' : '/market';
     case 'attendance_reminder':
       return portal ? null : '/attendance';
@@ -58,21 +67,21 @@ function linkFor(n: Item, portal: boolean): string | null {
   }
 }
 
-export async function NotificationsView({ orgId, portal }: { orgId: string; portal: boolean }) {
+export async function NotificationsView({ orgId, portal, embedded = false }: { orgId: string; portal: boolean; embedded?: boolean }) {
   const supabase = await createClient();
   const back = portal ? '/my/notifications' : '/notifications';
   const [{ data }, { data: prefsData }] = await Promise.all([
     supabase.rpc('my_notifications', { p_org: orgId, p_limit: 80 }),
-    supabase.rpc('my_notification_prefs', { p_org: orgId }),
+    supabase.rpc('my_notification_types', { p_org: orgId }),
   ]);
   const items = (data ?? []) as Item[];
-  const prefs = (prefsData ?? {}) as Record<string, boolean>;
+  const prefs = (prefsData ?? { types: [] }) as { types: PrefType[]; quiet_from?: string; quiet_to?: string };
   const unread = items.filter((i) => !i.read).length;
 
   return (
     <div className="max-w-2xl">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">الإشعارات</h1>
+        {embedded ? <span /> : <h1 className="text-2xl font-bold">الإشعارات</h1>}
         {unread > 0 && (
           <form action={markAllRead}>
             <input type="hidden" name="orgId" value={orgId} />
@@ -107,21 +116,21 @@ export async function NotificationsView({ orgId, portal }: { orgId: string; port
         {!items.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد إشعارات</p>}
       </div>
 
-      <h2 className="mb-2 font-semibold">ما أريد أن يصلني</h2>
+      <h2 className="mb-1 font-semibold">ما أريد أن يصلني</h2>
+      {prefs.quiet_from && prefs.quiet_to && (
+        <p className="mb-2 text-xs text-gray-500">لا تصل إشعارات الهاتف بين {prefs.quiet_from} و{prefs.quiet_to} — تُؤجَّل إلى الصباح.</p>
+      )}
       <div className="flex flex-col gap-1 rounded-lg border bg-white p-3 text-sm">
-        {Object.entries(EVENT_LABELS).map(([event, label]) => {
-          const on = prefs[event] !== false;
-          return (
-            <form key={event} action={setPref} className="flex items-center justify-between py-1">
-              <input type="hidden" name="orgId" value={orgId} />
-              <input type="hidden" name="event" value={event} />
-              <input type="hidden" name="enabled" value={on ? '0' : '1'} />
-              <input type="hidden" name="back" value={back} />
-              <span>{label}</span>
-              <button className={`rounded-full px-3 py-1 text-xs ${on ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{on ? 'مفعّل' : 'متوقف'}</button>
-            </form>
-          );
-        })}
+        {prefs.types.map((t) => (
+          <form key={t.event_key} action={setPref} className="flex items-center justify-between py-1">
+            <input type="hidden" name="orgId" value={orgId} />
+            <input type="hidden" name="event" value={t.event_key} />
+            <input type="hidden" name="enabled" value={t.enabled ? '0' : '1'} />
+            <input type="hidden" name="back" value={back} />
+            <span>{t.name}</span>
+            <button className={`rounded-full px-3 py-1 text-xs ${t.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{t.enabled ? 'مفعّل' : 'متوقف'}</button>
+          </form>
+        ))}
       </div>
     </div>
   );
