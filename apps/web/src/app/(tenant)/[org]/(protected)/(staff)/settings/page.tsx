@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { LogoField } from '@/components/logo-field';
 import { RECITERS } from '@/lib/quran/reader';
-import { updateOrgSettings, saveWeekdays, saveCenterSettings, saveDigestSettings, saveAttendanceReminder, sendTestPush } from './actions';
+import { updateOrgSettings, saveWeekdays, saveCenterSettings, saveDigestSettings, saveAttendanceReminder } from './actions';
 
 const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -37,10 +37,10 @@ export default async function SettingsPage({
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; pushSent?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string }>;
 }) {
   const { org: slug } = await params;
-  const { error, saved, pushSent } = await searchParams;
+  const { error, saved } = await searchParams;
   const org = await getOrgContext(slug);
   const isAdmin = org.myRole === 'admin';
   const supabase = await createClient();
@@ -51,8 +51,6 @@ export default async function SettingsPage({
   ]);
   const { data: digestData } = isAdmin ? await supabase.rpc('get_digest_settings', { p_org: org.id }) : { data: null };
   const digest = digestData as { enabled: boolean; dow: number; hour: number } | null;
-  const { data: pushData } = isAdmin ? await supabase.rpc('push_status', { p_org: org.id }) : { data: null };
-  const push = pushData as { configured: boolean; my_devices: number; devices: Record<string, number>; people: Record<string, number> } | null;
   const weekdays = (weekdayRows ?? []) as Weekday[];
   const settings = new Map((settingRows ?? []).map((r) => [r.key as string, (r.value as string | null) ?? '']));
   const flag = (key: string) => (settings.get(key) ?? 'true') !== 'false';
@@ -65,7 +63,6 @@ export default async function SettingsPage({
 
         {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ الإعدادات</p>}
-        {pushSent && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">أُرسل إشعار تجريبي إلى {pushSent} جهاز — راقب هاتفك خلال ثوانٍ</p>}
 
         <form action={updateOrgSettings} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
           <input type="hidden" name="orgId" value={org.id} />
@@ -238,39 +235,6 @@ export default async function SettingsPage({
             حفظ
           </SubmitButton>
         </form>
-      )}
-
-      {isAdmin && push && (
-        <section className="flex max-w-lg flex-col gap-3 rounded-lg border bg-white p-6">
-          <h2 className="font-semibold">الإشعارات الفورية على الهاتف</h2>
-          <p className="text-xs text-gray-500">
-            تصل للجميع (معلمين وأسر وطلاب) على هواتفهم حتى والتطبيق مغلق: الرسائل، والإعلانات، وتذكير الفعاليات، والملخص الأسبوعي، واعتماد السرد، وطلبات السوق. كل شخص يستطيع كتم أي نوع من إعدادات الإشعارات في تطبيقه.
-          </p>
-          <p className={`rounded px-3 py-2 text-sm ${push.configured ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-800'}`}>
-            {push.configured ? 'الخدمة مفعّلة على المنصة' : 'الخدمة غير مفعّلة على المنصة بعد'}
-          </p>
-          <div className="text-sm text-gray-700">
-            الأجهزة المسجّلة في مركزك:
-            <ul className="mt-1 list-disc pr-5 text-xs text-gray-600">
-              {Object.keys(push.devices).length ? (
-                Object.entries(push.devices).map(([role, n]) => (
-                  <li key={role}>
-                    {{ admin: 'مدراء', teacher: 'معلمون', guardian: 'أولياء أمور', student: 'طلاب' }[role] ?? role}: {push.people[role] ?? 0} شخص · {n} جهاز
-                  </li>
-                ))
-              ) : (
-                <li>لا أحد بعد — يسجَّل الهاتف عند أول دخول للتطبيق ومنح إذن الإشعارات</li>
-              )}
-            </ul>
-          </div>
-          <form action={sendTestPush} className="flex items-center gap-3">
-            <input type="hidden" name="orgId" value={org.id} />
-            <SubmitButton className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText="جاري الإرسال...">
-              إرسال إشعار تجريبي لهاتفي
-            </SubmitButton>
-            <span className="text-xs text-gray-500">أجهزتك المسجّلة: {push.my_devices}</span>
-          </form>
-        </section>
       )}
 
       {isAdmin && digest && (
