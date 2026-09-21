@@ -1,3 +1,4 @@
+import '../push/push_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,7 +19,9 @@ class AuthController extends ChangeNotifier {
     return _client.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<void> signOut() {
-    return _client.auth.signOut();
+  Future<void> signOut() async {
+    // stop this phone receiving the account's pushes before the session goes away
+    await PushService.instance.unregister(_client);
+    await _client.auth.signOut();
   }
 }

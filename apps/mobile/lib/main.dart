@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'core/access/account_access.dart';
+import 'core/push/push_service.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/offline/offline_setup.dart';
 import 'core/offline/sync_service.dart';
@@ -29,6 +30,9 @@ Future<void> main() async {
   }
 
   await AppSupabase.initialize(url: _supabaseUrl, publishableKey: _supabasePublishableKey);
+
+  // Push notifications (Firebase): a no-op when this build has no Firebase config file.
+  await PushService.instance.init();
 
   // Offline layer: queued writes + cached reads for the teacher's daily work.
   final sync = createSyncService(AppSupabase.client);
@@ -113,6 +117,9 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     // Built once - the router listens to auth/tenant itself (refreshListenable),
     // rebuilding it on every state change would reset the user's navigation.
     _router = buildAppRouter(auth: context.read<AuthController>(), tenant: context.read<TenantController>());
+    // a tapped push opens the right screen (also when it launched the app)
+    PushService.instance.openRoute = (route) => _router.push(route);
+    WidgetsBinding.instance.addPostFrameCallback((_) => PushService.instance.flushPending());
   }
 
   @override
@@ -130,7 +137,10 @@ class _AppRouterHostState extends State<_AppRouterHost> {
 
     // who am I in THIS center (viewing account?) - re-read when the center or account changes
     final accessOrg = auth.isAuthenticated ? tenant.active?.organization.id : null;
-    WidgetsBinding.instance.addPostFrameCallback((_) => AccessController.instance.bind(AppSupabase.client, accessOrg));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AccessController.instance.bind(AppSupabase.client, accessOrg);
+      if (accessOrg != null) PushService.instance.register(AppSupabase.client, accessOrg);
+    });
 
     return MaterialApp.router(
       title: 'بستان القرآن',
