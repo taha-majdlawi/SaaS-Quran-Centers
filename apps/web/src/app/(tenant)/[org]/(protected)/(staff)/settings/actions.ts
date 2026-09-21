@@ -19,6 +19,13 @@ export async function saveAttendanceReminder(formData: FormData) {
   redirect('/settings?saved=1');
 }
 
+export async function sendTestPush(formData: FormData) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('send_test_push', { p_org: formData.get('orgId') as string });
+  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
+  redirect(`/settings?pushSent=${Number(data) || 1}` as never);
+}
+
 export async function saveDigestSettings(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc('set_digest_settings', {
