@@ -108,3 +108,36 @@ export async function setResult(formData: FormData) {
     'result',
   );
 }
+
+// ---- photos -----------------------------------------------------------
+
+export async function addEntryImage(formData: FormData) {
+  const back = safeBack(formData.get('back'), '/calendar');
+  return runRpc(
+    'admin_add_calendar_image',
+    {
+      p_org: s(formData, 'orgId'),
+      p_entry: s(formData, 'entryId'),
+      p_image_url: s(formData, 'imageUrl'),
+      p_caption: orNull(formData, 'caption'),
+    },
+    back,
+    'image-added',
+  );
+}
+
+export async function deleteEntryImage(formData: FormData) {
+  const back = safeBack(formData.get('back'), '/calendar');
+  return runRpc('admin_delete_calendar_image', { p_org: s(formData, 'orgId'), p_id: s(formData, 'id') }, back, 'image-removed');
+}
+
+export async function reorderEntryImages(formData: FormData) {
+  const back = safeBack(formData.get('back'), '/calendar');
+  const ids = s(formData, 'ids').split(',').filter(Boolean);
+  return runRpc(
+    'admin_reorder_calendar_images',
+    { p_org: s(formData, 'orgId'), p_entry: s(formData, 'entryId'), p_ids: ids },
+    back,
+    'reordered',
+  );
+}

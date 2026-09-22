@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { CalendarEntryForm } from '@/components/calendar-entry-form';
+import { CalendarImagesField } from '@/components/calendar-images-field';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import type { CalDetails, CalType } from '@/lib/calendar/format';
 import { deleteEntry } from '../../actions';
@@ -41,6 +42,14 @@ export default async function EditCalendarEntryPage({
         entry={entry as CalDetails}
         error={error}
       />
+      <div className="mt-6 border-t pt-6">
+        <CalendarImagesField
+          orgId={org.id}
+          entryId={id}
+          images={(entry as CalDetails).images}
+          back={`/calendar/${id}/edit`}
+        />
+      </div>
       <form action={deleteEntry} className="mt-4">
         <input type="hidden" name="orgId" value={org.id} />
         <input type="hidden" name="id" value={id} />

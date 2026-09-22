@@ -1,7 +1,7 @@
-import { AUDIENCE_LABELS, STATE_LABELS, fmtRange, fmtTime, type CalEntry } from '@/lib/calendar/format';
+import { AUDIENCE_LABELS, STATE_LABELS, fmtRange, fmtTime, type CalEntry, type CalImage } from '@/lib/calendar/format';
 
 /** The read-only facts about one calendar entry (shared by staff and portal). */
-export function CalendarEntryInfo({ entry }: { entry: CalEntry }) {
+export function CalendarEntryInfo({ entry }: { entry: CalEntry & { images?: CalImage[] } }) {
   const rows: [string, string | null][] = [
     ['التاريخ', `${fmtRange(entry)}${entry.starts_at ? ` · ${fmtTime(entry.starts_at)}` : ''}`],
     ['المكان', entry.location],
@@ -17,6 +17,20 @@ export function CalendarEntryInfo({ entry }: { entry: CalEntry }) {
         </span>
       </div>
       {entry.description && <p className="mb-3 whitespace-pre-line text-sm text-gray-700">{entry.description}</p>}
+      {entry.images && entry.images.length > 0 && (
+        <div className="mb-3 flex gap-2 overflow-x-auto">
+          {entry.images.map((img) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={img.id}
+              src={img.image_url}
+              alt={img.caption ?? ''}
+              title={img.caption ?? ''}
+              className="h-40 w-56 flex-shrink-0 rounded-lg border object-cover"
+            />
+          ))}
+        </div>
+      )}
       <dl className="grid gap-2 text-sm sm:grid-cols-2">
         {rows.map(([label, value]) =>
           value ? (

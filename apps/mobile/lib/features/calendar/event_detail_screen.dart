@@ -204,6 +204,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               ),
             ]),
             if (e.description != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(e.description!)),
+            if (e.images.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: _imageGallery(e.images)),
             row(Icons.event_rounded, '${formatDayRange(e.startDate, e.endDate)}${e.startsAt == null ? '' : '  ·  ${e.startsAt!.substring(0, 5)}'}'),
             if (e.location != null) row(Icons.place_outlined, e.location!),
             row(Icons.groups_rounded, [
@@ -213,6 +214,47 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             ].join('  ·  ')),
             row(Icons.work_outline_rounded, e.isWorkingDay ? 'يوم دوام' : 'ليس يوم دوام (لا يُحتسب في نسبة الحضور)'),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _imageGallery(List<CalImage> images) {
+    return SizedBox(
+      height: 140,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, i) => GestureDetector(
+          onTap: () => showDialog(
+            context: context,
+            builder: (context) => Dialog(
+              backgroundColor: Colors.black,
+              insetPadding: const EdgeInsets.all(12),
+              child: Stack(children: [
+                Positioned.fill(child: InteractiveViewer(child: Center(child: Image.network(images[i].imageUrl)))),
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              images[i].imageUrl,
+              width: 180,
+              height: 140,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(width: 180, height: 140, color: Colors.grey.shade200, child: const Icon(Icons.broken_image_rounded)),
+            ),
+          ),
         ),
       ),
     );

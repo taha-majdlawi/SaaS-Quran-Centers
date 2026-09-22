@@ -151,6 +151,16 @@ class Participant {
       );
 }
 
+class CalImage {
+  const CalImage({required this.id, required this.imageUrl, this.caption});
+  final String id;
+  final String imageUrl;
+  final String? caption;
+
+  factory CalImage.fromJson(Map<String, dynamic> j) =>
+      CalImage(id: j['id'] as String, imageUrl: j['image_url'] as String, caption: j['caption'] as String?);
+}
+
 class CalEntry {
   const CalEntry({
     required this.id,
@@ -182,6 +192,7 @@ class CalEntry {
     this.mine = const [],
     this.participants = const [],
     this.waitlist = const [],
+    this.images = const [],
   });
 
   final String id;
@@ -215,6 +226,7 @@ class CalEntry {
   final List<MineRow> mine;
   final List<Participant> participants;
   final List<({String studentId, String name})> waitlist;
+  final List<CalImage> images;
 
   bool covers(String iso) => startDate.compareTo(iso) <= 0 && endDate.compareTo(iso) >= 0;
 
@@ -251,6 +263,7 @@ class CalEntry {
           for (final w in (j['waitlist'] as List? ?? const []))
             (studentId: w['student_id'] as String, name: w['student_name'] as String),
         ],
+        images: [for (final i in (j['images'] as List? ?? const [])) CalImage.fromJson(i as Map<String, dynamic>)],
       );
 }
 

@@ -80,10 +80,17 @@ export interface Participant {
   result_note: string | null;
 }
 
+export interface CalImage {
+  id: string;
+  image_url: string;
+  caption: string | null;
+}
+
 export interface CalDetails extends CalEntry {
   mine: MineRow[];
   participants: Participant[];
   waitlist: { student_id: string; student_name: string; created_at: string }[];
+  images: CalImage[];
 }
 
 export const AUDIENCE_LABELS: Record<string, string> = {
