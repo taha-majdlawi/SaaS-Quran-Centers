@@ -1,25 +1,12 @@
 <svg width="640" height="640" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="320" cy="320" r="230" fill="none" stroke="#D4A24C" stroke-width="4" opacity="0.55"/>
+  <circle cx="320" cy="320" r="230" fill="none" stroke="#D4A24C" stroke-width="13"/>
   <g transform="translate(320,340)">
-    <path d="M -134 26
-             C -134 -44, -70 -83, 0 -64
-             C 70 -83, 134 -44, 134 26
-             L 134 96
-             C 83 67, 39 60, 0 83
-             C -39 60, -83 67, -134 96
-             Z"
-          fill="#FBF8F1"/>
-    <path d="M 0 -64 L 0 83" stroke="#12523A" stroke-width="3.5" opacity="0.5"/>
-    <path d="M -114 -19 C -76 -35, -39 -35, -9 -19" fill="none" stroke="#12523A" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
-    <path d="M -114 13 C -76 -3, -39 -3, -9 13" fill="none" stroke="#12523A" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
-    <path d="M -114 43 C -76 27, -39 27, -9 43" fill="none" stroke="#12523A" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
-    <path d="M 114 -19 C 76 -35, 39 -35, 9 -19" fill="none" stroke="#12523A" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
-    <path d="M 114 13 C 76 -3, 39 -3, 9 13" fill="none" stroke="#12523A" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
-    <path d="M 114 43 C 76 27, 39 27, 9 43" fill="none" stroke="#12523A" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+    <path d="M -10,-68 C -94,-91 -143,-40 -143,28 L -143,104 C -94,74 -46,65 -10,88 Z" fill="#FBF8F1"/>
+    <path d="M 10,-68 C 94,-91 143,-40 143,28 L 143,104 C 94,74 46,65 10,88 Z" fill="#FBF8F1"/>
   </g>
-  <g transform="translate(320,187)">
-    <path d="M 0 58 C 0 20, -12 -7, -29 -22 C -12 -22, 0 -12, 5 2 C 10 -12, 22 -22, 40 -22 C 22 -7, 10 20, 10 58 Z"
-          fill="#D4A24C"/>
-    <path d="M 5 2 C 5 -22, -2 -43, -19 -59" fill="none" stroke="#D4A24C" stroke-width="4" stroke-linecap="round"/>
+  <g transform="translate(320,185)">
+    <path d="M0,75 C0,44 0,12 0,-19" stroke="#D4A24C" stroke-width="13" stroke-linecap="round" fill="none"/>
+    <path d="M0,-5 C-7,-40 -41,-61 -74,-65 C-62,-27 -36,-4 0,9 Z" fill="#D4A24C"/>
+    <path d="M0,-5 C7,-40 41,-61 74,-65 C62,-27 36,-4 0,9 Z" fill="#D4A24C"/>
   </g>
 </svg>

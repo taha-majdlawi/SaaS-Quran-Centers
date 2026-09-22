@@ -1,24 +1,11 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <g transform="translate(512,548) scale(0.58)">
-    <path d="M -230 44
-             C -230 -76, -120 -142, 0 -110
-             C 120 -142, 230 -76, 230 44
-             L 230 164
-             C 142 115, 66 104, 0 142
-             C -66 104, -142 115, -230 164
-             Z"
-          fill="#1E7A54"/>
-    <path d="M 0 -110 L 0 142" stroke="#FBF8F1" stroke-width="8" opacity="0.55"/>
-    <path d="M -196 -32 C -130 -60, -66 -60, -16 -32" fill="none" stroke="#FBF8F1" stroke-width="7" opacity="0.4" stroke-linecap="round"/>
-    <path d="M -196 22 C -130 -6, -66 -6, -16 22" fill="none" stroke="#FBF8F1" stroke-width="7" opacity="0.4" stroke-linecap="round"/>
-    <path d="M -196 74 C -130 46, -66 46, -16 74" fill="none" stroke="#FBF8F1" stroke-width="7" opacity="0.4" stroke-linecap="round"/>
-    <path d="M 196 -32 C 130 -60, 66 -60, 16 -32" fill="none" stroke="#FBF8F1" stroke-width="7" opacity="0.4" stroke-linecap="round"/>
-    <path d="M 196 22 C 130 -6, 66 -6, 16 22" fill="none" stroke="#FBF8F1" stroke-width="7" opacity="0.4" stroke-linecap="round"/>
-    <path d="M 196 74 C 130 46, 66 46, 16 74" fill="none" stroke="#FBF8F1" stroke-width="7" opacity="0.4" stroke-linecap="round"/>
+    <path d="M -16,-108 C -150,-146 -228,-64 -228,44 L -228,166 C -150,118 -74,104 -16,140 Z" fill="#1E7A54"/>
+    <path d="M 16,-108 C 150,-146 228,-64 228,44 L 228,166 C 150,118 74,104 16,140 Z" fill="#1E7A54"/>
   </g>
   <g transform="translate(512,548) scale(0.58) translate(0,-448)">
-    <path d="M 0 100 C 0 34, -20 -12, -50 -38 C -20 -38, 0 -20, 9 4 C 18 -20, 38 -38, 68 -38 C 38 -12, 18 34, 18 100 Z"
-          fill="#D4A24C"/>
-    <path d="M 9 4 C 9 -38, -4 -74, -33 -102" fill="none" stroke="#D4A24C" stroke-width="9" stroke-linecap="round"/>
+    <path d="M0,120 C0,70 0,20 0,-30" stroke="#D4A24C" stroke-width="20" stroke-linecap="round" fill="none"/>
+    <path d="M0,-8 C-12,-64 -66,-98 -118,-104 C-100,-44 -58,-6 0,14 Z" fill="#D4A24C"/>
+    <path d="M0,-8 C12,-64 66,-98 118,-104 C100,-44 58,-6 0,14 Z" fill="#D4A24C"/>
   </g>
 </svg>
