@@ -216,6 +216,29 @@ begin
     end;
   end;
 
+  -- ===== teacher circle scoping (0051): a teacher sees/writes only their own circle's data
+  begin
+    declare v_own_circle uuid; v_other_circle uuid; v_other_sp uuid;
+    begin
+      select id into v_own_circle from public.circles where organization_id = v_org and teacher_id = v_tch limit 1;
+      select id into v_other_circle from public.circles where organization_id = v_org and id is distinct from v_own_circle and teacher_id is distinct from v_tch
+        and not exists (select 1 from public.circle_assistants a where a.circle_id = circles.id and a.user_id = v_tch) limit 1;
+      select id into v_other_sp from public.students_profile where circle_id = v_other_circle limit 1;
+      if v_own_circle is not null and v_other_circle is not null then
+        perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated')::text, true);
+        set local role authenticated;
+        if exists (select 1 from public.circles where id = v_other_circle) then v_fail := v_fail || 'teacher can read another circle'; end if;
+        if v_other_sp is not null and exists (select 1 from public.students_profile where id = v_other_sp) then v_fail := v_fail || 'teacher can read another circle''s student'; end if;
+        begin update public.circles set name = name where id = v_own_circle; v_fail := v_fail || 'teacher can rename their own circle (should be admin-only now)'; exception when others then null; end;
+        if v_other_sp is not null then
+          begin update public.students_profile set full_name = full_name where id = v_other_sp; v_fail := v_fail || 'teacher can edit another circle''s student'; exception when others then null; end;
+          begin insert into public.attendance (organization_id, student_id, circle_id, session_date, status, recorded_by) values (v_org, v_other_sp, v_other_circle, current_date, 'present', v_tch); v_fail := v_fail || 'teacher can mark another circle''s attendance'; exception when others then null; end;
+        end if;
+        reset role;
+      end if;
+    end;
+  end;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')

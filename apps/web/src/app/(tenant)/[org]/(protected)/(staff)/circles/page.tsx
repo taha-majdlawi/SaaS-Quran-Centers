@@ -35,15 +35,19 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
   const teacherNameByUserId = new Map(
     ((members ?? []) as MemberRow[]).map((m) => [m.user_id, m.full_name ?? m.email ?? '—']),
   );
+  const isAdmin = org.myRole === 'admin';
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">الحلقات</h1>
-        <a href="/circles/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-          + إضافة حلقة
-        </a>
+        {isAdmin && (
+          <a href="/circles/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
+            + إضافة حلقة
+          </a>
+        )}
       </div>
+      {!isAdmin && <p className="mb-4 text-sm text-gray-500">حلقاتك أنت فقط (يديرها المشرف).</p>}
       <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
         <thead className="bg-gray-50 text-right">
           <tr>
@@ -68,9 +72,11 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
               <td className="px-4 py-2">{c.capacity ?? '—'}</td>
               <td className="px-4 py-2">{STATUS_LABELS[c.status] ?? c.status}</td>
               <td className="px-4 py-2 text-left">
-                <a href={`/circles/${c.id}`} className="text-brand hover:underline">
-                  تعديل
-                </a>
+                {isAdmin && (
+                  <a href={`/circles/${c.id}`} className="text-brand hover:underline">
+                    تعديل
+                  </a>
+                )}
               </td>
             </tr>
           ))}

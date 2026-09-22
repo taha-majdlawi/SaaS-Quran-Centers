@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
@@ -20,6 +21,7 @@ export default async function NewCirclePage({
   const { org: slug } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  if (org.myRole !== 'admin') redirect('/circles' as never);
   const supabase = await createClient();
 
   const [{ data: stages }, { data: members }] = await Promise.all([

@@ -14,7 +14,7 @@ export const TENANT_MODULES = [
   { slug: 'quran', label: 'المصحف' },
   { slug: 'students', label: 'الطلاب', module: 'students' },
   { slug: 'teachers', label: 'المعلمون', adminOnly: true },
-  { slug: 'circles', label: 'الحلقات', module: 'circles' },
+  { slug: 'circles', label: 'الحلقات', adminOnly: true },
   { slug: 'stages', label: 'المراحل', adminOnly: true },
   { slug: 'attendance', label: 'الحضور', module: 'attendance' },
   { slug: 'gatherings', label: 'المجالس والأنشطة', module: 'attendance' },

@@ -42,7 +42,7 @@ const _sections = [
   ]),
   _NavSection('التعليم', [
     _NavItem(Icons.people_alt_rounded, 'الطلاب', '/students', module: 'students'),
-    _NavItem(Icons.groups_rounded, 'الحلقات', '/circles', module: 'circles'),
+    _NavItem(Icons.groups_rounded, 'الحلقات', '/circles', adminOnly: true),
     _NavItem(Icons.fact_check_rounded, 'الحضور', '/attendance', module: 'attendance'),
     _NavItem(Icons.groups_2_rounded, 'المجالس والأنشطة', '/gatherings', module: 'attendance'),
     _NavItem(Icons.record_voice_over_rounded, 'التسميع الخارجي', '/external-recitations', module: 'students'),
