@@ -4,8 +4,8 @@ class Organization {
     required this.name,
     required this.slug,
     this.logoUrl,
-    this.primaryColor = '#0f766e',
-    this.secondaryColor = '#f59e0b',
+    this.primaryColor = '#1E7A54',
+    this.secondaryColor = '#D4A24C',
   });
 
   final String id;
@@ -21,8 +21,8 @@ class Organization {
       name: map['name'] as String,
       slug: map['slug'] as String,
       logoUrl: map['logo_url'] as String?,
-      primaryColor: (map['primary_color'] as String?) ?? '#0f766e',
-      secondaryColor: (map['secondary_color'] as String?) ?? '#f59e0b',
+      primaryColor: (map['primary_color'] as String?) ?? '#1E7A54',
+      secondaryColor: (map['secondary_color'] as String?) ?? '#D4A24C',
     );
   }
 }

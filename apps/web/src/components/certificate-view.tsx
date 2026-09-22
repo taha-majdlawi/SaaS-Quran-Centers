@@ -11,7 +11,7 @@ import { fmtDay, type CertificateFull } from '@/lib/reports/format';
  */
 export async function CertificateView({ cert, back }: { cert: CertificateFull; back: string }) {
   const host = (await headers()).get('host') ?? '';
-  const color = cert.center.primary_color || '#0f766e';
+  const color = cert.center.primary_color || '#1E7A54';
 
   return (
     <QuranFont>

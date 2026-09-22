@@ -11,9 +11,12 @@ export default {
       colors: {
         // Overridden per-tenant at runtime via CSS variables set from
         // organizations.primary_color / secondary_color - see
-        // src/lib/tenant/get-org-context.ts.
-        brand: 'var(--brand-primary, #0f766e)',
-        'brand-accent': 'var(--brand-secondary, #f59e0b)',
+        // src/lib/tenant/get-org-context.ts. The fallback (no override) is
+        // the platform's own identity - marketing pages, the platform owner
+        // console, and a brand-new center before it picks its own colors.
+        // See design/brand/README.md.
+        brand: 'var(--brand-primary, #1E7A54)',
+        'brand-accent': 'var(--brand-secondary, #D4A24C)',
       },
     },
   },

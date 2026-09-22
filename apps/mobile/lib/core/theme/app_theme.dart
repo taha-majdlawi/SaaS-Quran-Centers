@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-const kDefaultBrandColor = Color(0xFF0F766E);
+const kDefaultBrandColor = Color(0xFF1E7A54);
 
 /// Parses the organization's `#rrggbb` brand color, falling back to the
-/// platform teal if the value is missing or malformed.
+/// platform's own emerald if the value is missing or malformed.
 Color parseBrandColor(String? hex) {
   if (hex == null) return kDefaultBrandColor;
   final cleaned = hex.replaceAll('#', '').trim();

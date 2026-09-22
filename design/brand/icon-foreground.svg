@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(512,560)">
+    <path d="M -230 44
+             C -230 -76, -120 -142, 0 -110
+             C 120 -142, 230 -76, 230 44
+             L 230 164
+             C 142 115, 66 104, 0 142
+             C -66 104, -142 115, -230 164
+             Z"
+          fill="#FBF8F1"/>
+    <path d="M 0 -110 L 0 142" stroke="#12523A" stroke-width="6" opacity="0.5"/>
+    <path d="M -196 -32 C -130 -60, -66 -60, -16 -32" fill="none" stroke="#12523A" stroke-width="5" opacity="0.35" stroke-linecap="round"/>
+    <path d="M -196 22 C -130 -6, -66 -6, -16 22" fill="none" stroke="#12523A" stroke-width="5" opacity="0.35" stroke-linecap="round"/>
+    <path d="M -196 74 C -130 46, -66 46, -16 74" fill="none" stroke="#12523A" stroke-width="5" opacity="0.35" stroke-linecap="round"/>
+    <path d="M 196 -32 C 130 -60, 66 -60, 16 -32" fill="none" stroke="#12523A" stroke-width="5" opacity="0.35" stroke-linecap="round"/>
+    <path d="M 196 22 C 130 -6, 66 -6, 16 22" fill="none" stroke="#12523A" stroke-width="5" opacity="0.35" stroke-linecap="round"/>
+    <path d="M 196 74 C 130 46, 66 46, 16 74" fill="none" stroke="#12523A" stroke-width="5" opacity="0.35" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(512,300)">
+    <path d="M 0 100 C 0 34, -20 -12, -50 -38 C -20 -38, 0 -20, 9 4 C 18 -20, 38 -38, 68 -38 C 38 -12, 18 34, 18 100 Z"
+          fill="#D4A24C"/>
+    <path d="M 9 4 C 9 -38, -4 -74, -33 -102" fill="none" stroke="#D4A24C" stroke-width="7" stroke-linecap="round"/>
+  </g>
+</svg>

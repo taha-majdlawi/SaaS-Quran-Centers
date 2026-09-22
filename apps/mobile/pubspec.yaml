@@ -45,8 +45,37 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+# App icon + splash source: design/brand/ at the repo root (SVG source, PNG
+# rendered from it - see design/brand/README.md). Run after any change:
+#   dart run flutter_launcher_icons
+#   dart run flutter_native_splash:create
+flutter_launcher_icons:
+  android: true
+  ios: false # no ios/ platform folder in this project yet - flip to true once `flutter create --platforms=ios .` is run
+  image_path: assets/brand/icon-source.png
+  adaptive_icon_background: '#12523A'
+  adaptive_icon_foreground: assets/brand/icon-foreground.png
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: '#1E7A54'
+  image: assets/brand/splash-image.png
+  color_dark: '#0B3B2E'
+  image_dark: assets/brand/splash-image.png
+  android_12:
+    color: '#1E7A54'
+    image: assets/brand/splash-image.png
+    icon_background_color: '#1E7A54'
+    color_dark: '#0B3B2E'
+    image_dark: assets/brand/splash-image.png
+    icon_background_color_dark: '#0B3B2E'
+
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/brand/icon-source.png
 
   fonts:
     # UI text: Tajawal (SIL Open Font License 1.1, see assets/fonts/Tajawal-OFL.txt)
