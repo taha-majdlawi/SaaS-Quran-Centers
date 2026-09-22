@@ -130,19 +130,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Once the center is known, its own identity (logo + name) replaces the platform mark.
+                    // Before a center is identified this is the app's own mark; once the
+                    // center is known, its own identity (logo + name) replaces it.
                     Center(
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [BoxShadow(color: brand.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
                         ),
-                        child: OrgAvatar(
-                          name: _center?.name ?? 'ب',
-                          logoUrl: _center?.logoUrl,
-                          brandColor: _center?.primaryColor,
-                          size: 76,
-                        ),
+                        child: _center == null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(76 / 3.2),
+                                child: Image.asset('assets/brand/icon-source.png', width: 76, height: 76),
+                              )
+                            : OrgAvatar(
+                                name: _center!.name,
+                                logoUrl: _center!.logoUrl,
+                                brandColor: _center!.primaryColor,
+                                size: 76,
+                              ),
                       ),
                     ),
                     const SizedBox(height: 18),

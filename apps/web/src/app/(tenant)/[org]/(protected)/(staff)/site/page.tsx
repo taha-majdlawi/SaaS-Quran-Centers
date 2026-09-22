@@ -25,7 +25,13 @@ export default async function SitePage({
   return (
     <div className="max-w-lg">
       <h1 className="mb-1 text-2xl font-bold">الموقع العام</h1>
-      <p className="mb-6 text-sm text-gray-500">صفحة تعريفية عامة عن مركزك، تُعرض للزوار غير المسجّلين.</p>
+      <p className="mb-3 text-sm text-gray-500">صفحة تعريفية عامة عن مركزك، تُعرض للزوار غير المسجّلين.</p>
+      <p className="mb-6 text-sm">
+        <a href={'/?preview=1' as never} target="_blank" rel="noreferrer" className="text-brand hover:underline">
+          معاينة الصفحة كما يراها زائر ↗
+        </a>
+        <span className="mr-1 text-xs text-gray-400">(بما إنك مسجّل دخولك، الرابط العادي يأخذك للوحة التحكم مباشرة)</span>
+      </p>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ الإعدادات</p>}

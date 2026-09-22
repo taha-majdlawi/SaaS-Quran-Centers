@@ -12,20 +12,31 @@ import { getPublicSite } from '@/lib/tenant/public-site';
 // Members go straight to their area. Anyone else sees the center's public
 // page if the admin turned it on (identity + intro + contact), otherwise the
 // sign-in screen. getOrgContext() 404s on a slug that is not a real center.
-export default async function TenantRootPage({ params }: { params: Promise<{ org: string }> }) {
+// `?preview=1` (linked from the site settings page) lets a signed-in admin
+// see the page a logged-out visitor gets, without signing out first.
+export default async function TenantRootPage({ params, searchParams }: { params: Promise<{ org: string }>; searchParams: Promise<{ preview?: string }> }) {
   const { org } = await params;
+  const { preview } = await searchParams;
   const ctx = await getOrgContext(org);
 
-  if (ctx.myRole) redirect(ctx.myRole === 'student' || ctx.myRole === 'guardian' ? '/my' : '/dashboard');
+  if (ctx.myRole && preview !== '1') redirect(ctx.myRole === 'student' || ctx.myRole === 'guardian' ? '/my' : '/dashboard');
 
   const site = await getPublicSite(org);
-  if (!site?.enabled) redirect('/login');
+  if (!site?.enabled) {
+    if (preview === '1') redirect(('/site?error=' + encodeURIComponent('الصفحة العامة موقوفة حاليًا — فعّلها أولًا من هذه الشاشة')) as never);
+    redirect('/login' as never);
+  }
 
   return (
     <div
       className="flex min-h-screen flex-col"
       style={{ '--brand-primary': site.primary_color, '--brand-secondary': site.secondary_color } as React.CSSProperties}
     >
+      {preview === '1' && (
+        <div className="bg-amber-100 px-4 py-2 text-center text-xs text-amber-800">
+          معاينة — هذا ما يراه زائر غير مسجّل الدخول. <a href="/site" className="underline">رجوع للإعدادات</a>
+        </div>
+      )}
       <header className="flex items-center justify-between border-b bg-white px-6 py-4">
         <div className="flex items-center gap-2 font-bold text-brand">
           <OrgLogo name={site.name} logoUrl={site.logo_url} size={36} />

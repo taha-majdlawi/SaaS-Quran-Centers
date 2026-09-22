@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../auth/auth_controller.dart';
 import '../tenant/tenant_controller.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/onboarding_screen.dart';
 import '../../features/auth/splash_screen.dart';
 import '../../features/tenant/org_picker_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
@@ -67,7 +68,7 @@ import '../tenant/organization.dart';
 /// apps/web where role differences are handled INSIDE each page rather than
 /// via separate route prefixes per role. Splitting by role can come back
 /// once there's more than one role's worth of screens actually built.
-GoRouter buildAppRouter({required AuthController auth, required TenantController tenant}) {
+GoRouter buildAppRouter({required AuthController auth, required TenantController tenant, required OnboardingGate onboarding}) {
   return GoRouter(
     refreshListenable: Listenable.merge([auth, tenant]),
     initialLocation: '/dashboard',
@@ -78,8 +79,13 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       if (path == '/join') return null;
 
       if (!auth.isAuthenticated) {
+        // The animated intro plays once per install, before the very first login.
+        if (!onboarding.seen) {
+          return path == '/onboarding' ? null : '/onboarding';
+        }
         return path == '/login' ? null : '/login';
       }
+      if (path == '/onboarding') return '/dashboard';
 
       // Nothing is built until the first membership load finishes, so no screen
       // ever renders without an active center.
@@ -118,6 +124,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/onboarding', builder: (context, state) => OnboardingScreen(gate: onboarding)),
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
       GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
       GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),

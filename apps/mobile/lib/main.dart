@@ -12,6 +12,7 @@ import 'core/supabase/supabase_client.dart';
 import 'core/theme/app_theme.dart';
 import 'core/tenant/tenant_controller.dart';
 import 'core/tenant/tenant_repository.dart';
+import 'features/auth/onboarding_screen.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const _supabasePublishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
@@ -40,7 +41,10 @@ Future<void> main() async {
   SyncService.writeGuard = AccessController.instance.ensureCanWrite;
   await sync.start();
 
-  runApp(BustanAlQuranApp(sync: sync));
+  // Has the animated intro already played on this device?
+  final onboarding = await OnboardingGate.load();
+
+  runApp(BustanAlQuranApp(sync: sync, onboarding: onboarding));
 }
 
 class _MissingConfigApp extends StatelessWidget {
@@ -79,9 +83,10 @@ class _MissingConfigApp extends StatelessWidget {
 }
 
 class BustanAlQuranApp extends StatelessWidget {
-  const BustanAlQuranApp({super.key, required this.sync});
+  const BustanAlQuranApp({super.key, required this.sync, required this.onboarding});
 
   final SyncService sync;
+  final OnboardingGate onboarding;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +97,7 @@ class BustanAlQuranApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthController(AppSupabase.client)),
         ChangeNotifierProvider(create: (_) => TenantController(TenantRepository(AppSupabase.client))),
       ],
-      child: const _AppRouterHost(),
+      child: _AppRouterHost(onboarding: onboarding),
     );
   }
 }
@@ -101,7 +106,9 @@ class BustanAlQuranApp extends StatelessWidget {
 /// and clears them on sign-out - the router's redirect logic depends on
 /// `tenant.active` being up to date with the CURRENT auth state.
 class _AppRouterHost extends StatefulWidget {
-  const _AppRouterHost();
+  const _AppRouterHost({required this.onboarding});
+
+  final OnboardingGate onboarding;
 
   @override
   State<_AppRouterHost> createState() => _AppRouterHostState();
@@ -116,7 +123,7 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     super.initState();
     // Built once - the router listens to auth/tenant itself (refreshListenable),
     // rebuilding it on every state change would reset the user's navigation.
-    _router = buildAppRouter(auth: context.read<AuthController>(), tenant: context.read<TenantController>());
+    _router = buildAppRouter(auth: context.read<AuthController>(), tenant: context.read<TenantController>(), onboarding: widget.onboarding);
     // a tapped push opens the right screen (also when it launched the app)
     PushService.instance.openRoute = (route) => _router.push(route);
     WidgetsBinding.instance.addPostFrameCallback((_) => PushService.instance.flushPending());
