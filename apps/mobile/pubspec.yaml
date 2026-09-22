@@ -53,7 +53,7 @@ flutter_launcher_icons:
   android: true
   ios: false # no ios/ platform folder in this project yet - flip to true once `flutter create --platforms=ios .` is run
   image_path: assets/brand/icon-source.png
-  adaptive_icon_background: '#12523A'
+  adaptive_icon_background: '#FBF8F1'
   adaptive_icon_foreground: assets/brand/icon-foreground.png
   min_sdk_android: 21
   remove_alpha_ios: true
