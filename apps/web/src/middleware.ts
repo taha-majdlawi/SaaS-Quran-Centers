@@ -11,7 +11,16 @@ const RESERVED_SUBDOMAINS = new Set(['www', 'admin', 'api', 'app']);
 // subdomain -> /{slug} rewrite). Defense-in-depth only: (protected)/layout.tsx
 // re-verifies session AND membership on every request; this just makes a future
 // route added outside (protected) fail closed instead of rendering for anyone.
-const PUBLIC_TENANT_PATHS = new Set(['/', '/login', '/join', '/privacy', '/support', '/delete-account']);
+const PUBLIC_TENANT_PATHS = new Set([
+  '/',
+  '/login',
+  '/join',
+  '/privacy',
+  '/support',
+  '/delete-account',
+  '/forgot-password',
+  '/reset-password',
+]);
 // /verify/<serial> lets anyone check a printed certificate is genuine
 const isPublicTenantPath = (p: string) => PUBLIC_TENANT_PATHS.has(p) || /^\/verify\/[A-Za-z0-9-]{1,40}$/.test(p);
 const PUBLIC_PLATFORM_PATHS = new Set(['/login']);

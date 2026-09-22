@@ -54,6 +54,9 @@ export default async function TenantLoginPage({
         <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText="جاري تسجيل الدخول...">
           دخول
         </SubmitButton>
+        <a href="/forgot-password" className="text-center text-sm font-semibold text-brand">
+          نسيت كلمة السر؟
+        </a>
       </form>
     </AuthCard>
   );

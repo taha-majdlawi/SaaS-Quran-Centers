@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -109,6 +110,21 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _error = 'تعذّر الاتصال بالخادم، تأكد من الإنترنت وحاول مرة أخرى');
     } finally {
       if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  // Password reset needs a real inbox and an email link - both are a web
+  // job, same as center registration (see onboarding_screen.dart).
+  Future<void> _openForgotPassword() async {
+    final slug = (_center?.slug ?? _centerController.text).trim().toLowerCase();
+    if (slug.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أدخل رمز المركز أولًا')));
+      return;
+    }
+    final uri = Uri.parse('https://$slug.bustan-alquran.com/forgot-password');
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر فتح الصفحة، حاول من المتصفح')));
     }
   }
 
@@ -253,7 +269,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: (v) => (v == null || v.isEmpty) ? 'أدخل كلمة السر' : null,
                     ),
-                    const SizedBox(height: 24),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton(
+                        onPressed: _openForgotPassword,
+                        child: const Text('نسيت كلمة السر؟'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     FilledButton(
                       style: FilledButton.styleFrom(backgroundColor: brand),
                       onPressed: _submitting ? null : _submit,
