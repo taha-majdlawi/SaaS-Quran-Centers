@@ -59,7 +59,19 @@ class ChatContact {
 }
 
 class ChatMessage {
-  const ChatMessage({required this.id, required this.mine, required this.body, required this.createdAt, this.editedAt, this.readAt, this.imagePath, this.deletedAt});
+  const ChatMessage({
+    required this.id,
+    required this.mine,
+    required this.body,
+    required this.createdAt,
+    this.editedAt,
+    this.readAt,
+    this.imagePath,
+    this.deletedAt,
+    this.localImage,
+    this.sending = false,
+    this.failed = false,
+  });
   final String id;
   final bool mine;
   final String body;
@@ -68,11 +80,31 @@ class ChatMessage {
   final String? readAt;
   final String? imagePath;
   final String? deletedAt;
+  /// Set only on the optimistic local echo, before the server confirms it (an in-memory picture preview).
+  final Uint8List? localImage;
+  /// True for the brief window between tapping send and the server confirming it.
+  final bool sending;
+  final bool failed;
 
   bool get deleted => deletedAt != null;
-  bool get editable => mine && !deleted && body.isNotEmpty && DateTime.now().difference(DateTime.parse(createdAt)) < const Duration(minutes: 30);
+  bool get editable => mine && !deleted && !sending && body.isNotEmpty && DateTime.now().difference(DateTime.parse(createdAt)) < const Duration(minutes: 30);
   /// Deletion has no time limit (removing your own words is always allowed), unlike editing.
-  bool get deletable => mine && !deleted;
+  bool get deletable => mine && !deleted && !sending;
+
+  ChatMessage copyWith({String? id, String? createdAt, String? readAt, String? imagePath, bool? sending, bool? failed}) => ChatMessage(
+        id: id ?? this.id,
+        mine: mine,
+        body: body,
+        createdAt: createdAt ?? this.createdAt,
+        editedAt: editedAt,
+        readAt: readAt ?? this.readAt,
+        imagePath: imagePath ?? this.imagePath,
+        deletedAt: deletedAt,
+        // kept while sending OR failed (the retry bubble still needs its preview); dropped only once fully confirmed
+        localImage: ((sending ?? this.sending) || (failed ?? this.failed)) ? localImage : null,
+        sending: sending ?? this.sending,
+        failed: failed ?? this.failed,
+      );
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
         id: j['id'] as String,
@@ -201,31 +233,39 @@ class CommsRepository {
           ChatMessage.fromJson(m),
       ];
 
+  /// Only what is newer than [after] (ISO created_at) - the light poll used once the thread id is known.
+  Future<List<ChatMessage>> messagesAfter(String orgId, String threadId, {String? after, int limit = 60}) async => [
+        for (final m in _list(await _client.rpc('chat_thread_messages', params: {'p_org': orgId, 'p_thread': threadId, 'p_after': after, 'p_limit': limit})))
+          ChatMessage.fromJson(m),
+      ];
+
   Future<void> markRead(String threadId) => _client.rpc('mark_thread_read', params: {'p_thread': threadId});
 
   /// One client_ref per composed message: a retry after a dropped response never double-sends.
-  Future<void> send(String orgId, String otherId, String body, {String? clientRef}) => _client.rpc('send_chat_message', params: {
+  /// Returns {message_id, thread_id, duplicate} so the caller can show the real message instantly (no reload round-trip).
+  Future<Map<String, dynamic>> send(String orgId, String otherId, String body, {String? clientRef}) async =>
+      Map<String, dynamic>.from(await _client.rpc('send_chat_message', params: {
         'p_org': orgId,
         'p_other': otherId,
         'p_body': body,
         'p_client_ref': clientRef ?? _uuid.v4(),
-      });
+      }) as Map);
 
   /// Uploads a picture into `<org>/<me>/` (private bucket) and sends it as a message.
   /// Needs the network (a picture is never queued offline).
-  Future<void> sendImage(String orgId, String otherId, Uint8List bytes, String extension, {String caption = '', String? clientRef}) async {
+  Future<Map<String, dynamic>> sendImage(String orgId, String otherId, Uint8List bytes, String extension, {String caption = '', String? clientRef}) async {
     final me = _client.auth.currentUser!.id;
     final ext = const {'jpg', 'jpeg', 'png', 'webp'}.contains(extension.toLowerCase()) ? extension.toLowerCase() : 'jpg';
     final path = '$orgId/$me/${_uuid.v4()}.${ext == 'jpeg' ? 'jpg' : ext}';
     final mime = ext == 'png' ? 'image/png' : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
     await _client.storage.from('chat-images').uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
-    await _client.rpc('send_chat_message', params: {
+    return Map<String, dynamic>.from(await _client.rpc('send_chat_message', params: {
       'p_org': orgId,
       'p_other': otherId,
       'p_body': caption,
       'p_client_ref': clientRef ?? _uuid.v4(),
       'p_image_path': path,
-    });
+    }) as Map);
   }
 
   final Map<String, ({String url, DateTime at})> _signed = {};
