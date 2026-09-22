@@ -31,14 +31,14 @@ export default async function StudentRecitationsPage({
   searchParams,
 }: {
   params: Promise<{ org: string; id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; planSaved?: string; deleted?: string; updated?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; planSaved?: string; deleted?: string; updated?: string; prefillSurah?: string; prefillType?: string }>;
 }) {
   const { org: slug, id } = await params;
-  const { error, saved, planSaved, deleted, updated } = await searchParams;
+  const { error, saved, planSaved, deleted, updated, prefillSurah, prefillType } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
 
-  const [{ data: student }, { data: grades }, { data: recent }, { data: serdData }] = await Promise.all([
+  const [{ data: student }, { data: grades }, { data: recent }, { data: serdData }, { data: dueData }] = await Promise.all([
     supabase
       .from('students_profile')
       .select('id, full_name, student_code, total_points, next_plan')
@@ -58,6 +58,7 @@ export default async function StudentRecitationsPage({
       .order('created_at', { ascending: false })
       .limit(20),
     supabase.rpc('serd_student_summary', { p_org: org.id, p_student: id }),
+    supabase.rpc('student_due_reviews', { p_org: org.id, p_student: id }),
   ]);
 
   if (!student) notFound();
@@ -65,6 +66,8 @@ export default async function StudentRecitationsPage({
   const gradeLabel = new Map((grades ?? []).map((g) => [g.key as string, g.label as string]));
   const typeLabel = new Map(TYPES);
   const today = new Date().toISOString().slice(0, 10);
+  const due = (dueData ?? []) as { surah: number; days_overdue: number }[];
+  const chosenSurah = prefillSurah ? Number(prefillSurah) : null;
 
   return (
     <div className="max-w-2xl">
@@ -103,10 +106,27 @@ export default async function StudentRecitationsPage({
         </SubmitButton>
       </form>
 
-      <form action={logRecitation} className="mb-8 flex flex-col gap-3 rounded-lg border bg-white p-6">
+      {due.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
+          <span className="font-semibold text-amber-800">مراجعة مستحقة:</span>
+          {due.map((d) => (
+            <a
+              key={d.surah}
+              href={`?prefillSurah=${d.surah}&prefillType=recent_review#log` as never}
+              className="rounded-full border border-amber-300 bg-white px-3 py-1 text-amber-800 hover:bg-amber-100"
+            >
+              {SURAH_NAMES[d.surah - 1]}
+              {d.days_overdue > 0 ? ` · متأخرة ${d.days_overdue}` : ''}
+            </a>
+          ))}
+        </div>
+      )}
+
+      <form id="log" action={logRecitation} className="mb-8 flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="orgId" value={org.id} />
         <input type="hidden" name="studentId" value={student.id} />
         <h2 className="font-semibold">تسجيل إنجاز يومي</h2>
+        {chosenSurah && <p className="-mt-1 text-xs text-amber-700">مُعبّأ من جدول المراجعة المقترح — عدّله إن لزم</p>}
 
         <div className="grid grid-cols-2 gap-3">
           <label className="text-sm font-medium text-gray-700">
@@ -115,7 +135,7 @@ export default async function StudentRecitationsPage({
           </label>
           <label className="text-sm font-medium text-gray-700">
             نوع الإنجاز
-            <select name="type" className={input}>
+            <select name="type" defaultValue={prefillType ?? TYPES[0][0]} className={input}>
               {TYPES.map(([value, text]) => (
                 <option key={value} value={value}>
                   {text}
@@ -129,7 +149,7 @@ export default async function StudentRecitationsPage({
           <div key={i} className="grid grid-cols-[1fr_5rem_5rem] items-end gap-3 rounded bg-gray-50 p-3">
             <label className="text-sm font-medium text-gray-700">
               {i === 0 ? 'السورة' : `سورة إضافية (${i})`}
-              <select name="surah" defaultValue="" className={input}>
+              <select name="surah" defaultValue={i === 0 && chosenSurah ? String(chosenSurah) : ''} className={input}>
                 <option value="">{i === 0 ? 'اختر السورة' : '—'}</option>
                 {SURAH_NAMES.map((n, idx) => (
                   <option key={idx + 1} value={idx + 1}>
@@ -144,7 +164,7 @@ export default async function StudentRecitationsPage({
             </label>
             <label className="text-sm font-medium text-gray-700">
               إلى آية
-              <input type="number" name="ayahTo" min={1} className={input} />
+              <input type="number" name="ayahTo" min={1} defaultValue={i === 0 && chosenSurah ? AYAH_COUNTS[chosenSurah - 1] : undefined} className={input} />
             </label>
           </div>
         ))}

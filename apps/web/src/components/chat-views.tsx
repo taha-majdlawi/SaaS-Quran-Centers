@@ -11,6 +11,7 @@ interface ThreadRow {
   other_role: string;
   last_message_at: string | null;
   last_body: string | null;
+  last_deleted: boolean;
   last_mine: boolean | null;
   unread: number;
   muted: boolean;
@@ -49,9 +50,8 @@ export async function ChatListView({ orgId, base }: { orgId: string; base: strin
                 {t.other_name} <span className="text-xs font-normal text-gray-500">{ROLE_LABELS[t.other_role]}</span>
                 {t.muted && <span className="mr-1 text-xs text-gray-400">🔕</span>}
               </p>
-              <p className="truncate text-sm text-gray-500">
-                {t.last_mine ? 'أنت: ' : ''}
-                {t.last_body}
+              <p className={`truncate text-sm ${t.last_deleted ? 'italic text-gray-400' : 'text-gray-500'}`}>
+                {t.last_deleted ? '🚫 حُذفت رسالة' : `${t.last_mine ? 'أنت: ' : ''}${t.last_body ?? ''}`}
               </p>
             </div>
             <div className="shrink-0 text-left text-xs text-gray-400">

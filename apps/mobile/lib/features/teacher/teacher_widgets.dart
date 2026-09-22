@@ -104,12 +104,15 @@ const attendanceColors = <String, Color>{
 /// One student of a circle: avatar, name, points, today's state, and the two
 /// actions a teacher uses all day (attendance, record a recitation).
 class TeacherStudentTile extends StatelessWidget {
-  const TeacherStudentTile({super.key, required this.student, required this.onOpen, required this.onRecord, required this.onAttendance});
+  const TeacherStudentTile({super.key, required this.student, required this.onOpen, required this.onRecord, required this.onAttendance, this.dueReviews = const [], this.onRecordDue});
 
   final CircleStudent student;
   final VoidCallback onOpen;
   final VoidCallback onRecord;
   final ValueChanged<String> onAttendance;
+  /// Surah numbers the spaced-review schedule says are due today for this student.
+  final List<int> dueReviews;
+  final VoidCallback? onRecordDue;
 
   @override
   Widget build(BuildContext context) {
@@ -148,13 +151,18 @@ class TeacherStudentTile extends StatelessWidget {
                 ]),
               ),
             ]),
-            if (student.recitedToday > 0 || att != null)
+            if (student.recitedToday > 0 || att != null || dueReviews.isNotEmpty)
               Padding(
                 padding: const EdgeInsetsDirectional.only(start: 58, top: 8),
                 child: Wrap(spacing: 8, runSpacing: 4, children: [
                   if (student.recitedToday > 0)
                     Pill(color: brand, icon: Icons.check_circle_rounded, label: student.recitedToday > 1 ? 'سمّع اليوم ×${student.recitedToday}' : 'سمّع اليوم'),
                   if (att != null) Pill(color: attendanceColors[att] ?? TeacherStyle.textMuted, icon: Icons.how_to_reg_rounded, label: attendanceLabels[att] ?? att),
+                  if (dueReviews.isNotEmpty)
+                    GestureDetector(
+                      onTap: onRecordDue,
+                      child: Pill(color: TeacherStyle.gold, icon: Icons.replay_circle_filled_rounded, label: 'مراجعة مستحقة (${dueReviews.length})'),
+                    ),
                 ]),
               ),
             const SizedBox(height: 10),

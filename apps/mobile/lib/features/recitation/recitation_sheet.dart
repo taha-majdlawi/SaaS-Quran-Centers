@@ -17,6 +17,9 @@ Future<int?> showRecitationSheet(
   required String studentName,
   required List<GradeOption> grades,
   RecitationEntry? editing,
+  /// Pre-fills the type and surah - e.g. opened from a "due for review" chip. Ignored while [editing].
+  String? initialType,
+  int? initialSurah,
 }) {
   return showModalBottomSheet<int>(
     context: context,
@@ -24,7 +27,14 @@ Future<int?> showRecitationSheet(
     useSafeArea: true,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-    builder: (context) => _RecitationSheet(studentId: studentId, studentName: studentName, grades: grades, editing: editing),
+    builder: (context) => _RecitationSheet(
+      studentId: studentId,
+      studentName: studentName,
+      grades: grades,
+      editing: editing,
+      initialType: initialType,
+      initialSurah: initialSurah,
+    ),
   );
 }
 
@@ -40,7 +50,7 @@ class _PartInput {
 }
 
 class _RecitationSheet extends StatefulWidget {
-  const _RecitationSheet({required this.studentId, required this.studentName, required this.grades, this.editing});
+  const _RecitationSheet({required this.studentId, required this.studentName, required this.grades, this.editing, this.initialType, this.initialSurah});
 
   final String studentId;
   final String studentName;
@@ -48,6 +58,8 @@ class _RecitationSheet extends StatefulWidget {
 
   /// Set when correcting an existing recitation instead of logging a new one.
   final RecitationEntry? editing;
+  final String? initialType;
+  final int? initialSurah;
 
   @override
   State<_RecitationSheet> createState() => _RecitationSheetState();
@@ -75,6 +87,13 @@ class _RecitationSheetState extends State<_RecitationSheet> {
         ..surah = e.surah
         ..from.text = '${e.ayahFrom}'
         ..to.text = '${e.ayahTo}';
+    } else if (widget.initialSurah != null) {
+      if (widget.initialType != null) _type = widget.initialType!;
+      final s = widget.initialSurah!;
+      _parts.first
+        ..surah = s
+        ..from.text = '1'
+        ..to.text = '${ayahCount(s)}';
     }
   }
 
@@ -224,6 +243,17 @@ class _RecitationSheetState extends State<_RecitationSheet> {
             Text(widget.editing == null ? 'تسجيل إنجاز يومي' : 'تعديل التسميع', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             Text(widget.studentName, style: TextStyle(color: Colors.grey.shade600)),
             const SizedBox(height: 16),
+            if (widget.editing == null && widget.initialSurah != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(10)),
+                child: Row(children: [
+                  Icon(Icons.replay_circle_filled_rounded, size: 18, color: Colors.amber.shade800),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('مُعبّأ من جدول المراجعة المقترح — عدّله إن لزم', style: TextStyle(fontSize: 12, color: Colors.amber.shade900))),
+                ]),
+              ),
             if (_error != null) MessageBanner(message: _error!),
             if (widget.editing == null)
               OutlinedButton.icon(

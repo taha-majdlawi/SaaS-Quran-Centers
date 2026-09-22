@@ -191,6 +191,31 @@ begin
     end;
   end;
 
+  -- ===== chat delete: sender-only, tombstone blocks further edits, due-reviews is staff-only
+  begin
+    declare v_msg uuid; v_thread uuid; r2 jsonb;
+    begin
+      perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      r2 := public.send_chat_message(v_org, v_tch, 'رسالة فحص الحذف', gen_random_uuid());
+      v_msg := (r2 ->> 'message_id')::uuid;
+      reset role;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      begin perform public.delete_chat_message(v_msg); v_fail := v_fail || 'non-sender can delete a chat message'; exception when others then null; end;
+      reset role;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      perform public.delete_chat_message(v_msg);
+      begin perform public.edit_chat_message(v_msg, 'x'); v_fail := v_fail || 'a deleted chat message can still be edited'; exception when others then null; end;
+      reset role;
+      perform set_config('request.jwt.claims', json_build_object('sub', v_stu, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      begin perform public.student_due_reviews(v_org, v_sp); v_fail := v_fail || 'student can read the review schedule'; exception when others then null; end;
+      reset role;
+    end;
+  end;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')

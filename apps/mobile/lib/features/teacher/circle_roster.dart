@@ -7,6 +7,7 @@ import '../../core/offline/sync_service.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/supabase/supabase_client.dart';
+import '../insights/insights_repository.dart';
 import '../recitation/recitation_repository.dart';
 import '../recitation/recitation_sheet.dart';
 import 'teacher_widgets.dart';
@@ -33,10 +34,36 @@ class CircleRoster extends StatefulWidget {
 class _CircleRosterState extends State<CircleRoster> {
   static const _toolbarThreshold = 6;
   final _repository = RecitationRepository(AppSupabase.client);
+  final _insights = InsightsRepository(AppSupabase.client);
   final _search = TextEditingController();
   String _query = '';
   _Filter _filter = _Filter.all;
   _Sort _sort = _Sort.name;
+  Map<String, List<int>> _due = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDue();
+  }
+
+  @override
+  void didUpdateWidget(covariant CircleRoster old) {
+    super.didUpdateWidget(old);
+    if (old.circleId != widget.circleId) _loadDue();
+  }
+
+  Future<void> _loadDue() async {
+    try {
+      final orgId = context.read<TenantController>().active!.organization.id;
+      final rows = await _insights.dueReviews(orgId, circleId: widget.circleId);
+      final map = <String, List<int>>{};
+      for (final r in rows) {
+        map.putIfAbsent(r.studentId, () => []).add(r.surah);
+      }
+      if (mounted) setState(() => _due = map);
+    } catch (_) {} // not critical: the roster stands on its own without it
+  }
 
   @override
   void dispose() {
@@ -44,12 +71,20 @@ class _CircleRosterState extends State<CircleRoster> {
     super.dispose();
   }
 
-  Future<void> _record(CircleStudent s) async {
-    final points = await showRecitationSheet(context, studentId: s.id, studentName: s.fullName, grades: widget.grades);
+  Future<void> _record(CircleStudent s, {int? prefillSurah}) async {
+    final points = await showRecitationSheet(
+      context,
+      studentId: s.id,
+      studentName: s.fullName,
+      grades: widget.grades,
+      initialType: prefillSurah == null ? null : 'recent_review',
+      initialSurah: prefillSurah,
+    );
     if (points != null && mounted) {
       HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
       widget.onChanged();
+      _loadDue();
     }
   }
 
@@ -180,6 +215,8 @@ class _CircleRosterState extends State<CircleRoster> {
             },
             onRecord: () => _record(s),
             onAttendance: (status) => _mark(s, status),
+            dueReviews: _due[s.id] ?? const [],
+            onRecordDue: (_due[s.id] ?? const []).isEmpty ? null : () => _record(s, prefillSurah: _due[s.id]!.first),
           ),
     ]);
   }

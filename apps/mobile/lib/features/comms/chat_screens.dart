@@ -94,7 +94,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                 Text(kRoleLabels[t.otherRole] ?? '', style: TextStyle(color: Colors.grey.shade500, fontSize: 11.5)),
                                 if (t.muted) const Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.notifications_off_outlined, size: 14, color: Colors.grey)),
                               ]),
-                              subtitle: Text('${t.lastMine ? 'أنت: ' : ''}${t.lastBody ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                              subtitle: Text(t.lastDeleted ? '🚫 حُذفت رسالة' : '${t.lastMine ? 'أنت: ' : ''}${t.lastBody ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: t.lastDeleted ? const TextStyle(fontStyle: FontStyle.italic) : null),
                               trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                                 Text(t.lastAt == null ? '' : formatDate(t.lastAt), style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
                                 if (t.unread > 0)
@@ -341,6 +341,49 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     }
   }
 
+  Future<void> _delete(ChatMessage m) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('حذف الرسالة'),
+        content: const Text('تُحذف عندك وعند الطرف الآخر ولا يمكن التراجع.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('حذف'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _repository.deleteMessage(m.id);
+      await _load();
+    } on PostgrestException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } catch (_) {
+      if (mounted) setState(() => _error = 'تعذّر الحذف — تحقّق من الاتصال');
+    }
+  }
+
+  Future<void> _showActions(ChatMessage m) async {
+    if (!m.editable && !m.deletable) return;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          if (m.editable) ListTile(leading: const Icon(Icons.edit_rounded), title: const Text('تعديل'), onTap: () => Navigator.pop(context, 'edit')),
+          if (m.deletable) ListTile(leading: const Icon(Icons.delete_outline_rounded, color: Colors.red), title: const Text('حذف', style: TextStyle(color: Colors.red)), onTap: () => Navigator.pop(context, 'delete')),
+        ]),
+      ),
+    );
+    if (action == 'edit') await _edit(m);
+    if (action == 'delete') await _delete(m);
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -383,18 +426,28 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                         return Align(
                           alignment: m.mine ? AlignmentDirectional.centerStart : AlignmentDirectional.centerEnd,
                           child: GestureDetector(
-                            onLongPress: m.editable ? () => _edit(m) : null,
+                            onLongPress: (m.editable || m.deletable) ? () => _showActions(m) : null,
                             child: Container(
                               margin: const EdgeInsets.symmetric(vertical: 3),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
                               decoration: BoxDecoration(color: m.mine ? scheme.primary : Colors.grey.shade200, borderRadius: BorderRadius.circular(14)),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                if (m.imagePath != null) _ChatImage(repository: _repository, path: m.imagePath!),
-                                if (m.body.isNotEmpty) Text(m.body, style: TextStyle(color: m.mine ? Colors.white : Colors.black87)),
+                                if (m.deleted)
+                                  Row(mainAxisSize: MainAxisSize.min, children: [
+                                    Icon(Icons.block_rounded, size: 14, color: m.mine ? Colors.white70 : Colors.black45),
+                                    const SizedBox(width: 4),
+                                    Text('حُذفت هذه الرسالة', style: TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: m.mine ? Colors.white70 : Colors.black45)),
+                                  ])
+                                else ...[
+                                  if (m.imagePath != null) _ChatImage(repository: _repository, path: m.imagePath!),
+                                  if (m.body.isNotEmpty) Text(m.body, style: TextStyle(color: m.mine ? Colors.white : Colors.black87)),
+                                ],
                                 const SizedBox(height: 3),
                                 Text(
-                                  '${formatDateTime(m.createdAt)}${m.editedAt == null ? '' : ' · عُدّلت'}${m.mine && m.readAt != null ? ' · ✓✓' : ''}',
+                                  m.deleted
+                                      ? formatDateTime(m.createdAt)
+                                      : '${formatDateTime(m.createdAt)}${m.editedAt == null ? '' : ' · عُدّلت'}${m.mine && m.readAt != null ? ' · ✓✓' : ''}',
                                   style: TextStyle(fontSize: 10, color: m.mine ? Colors.white70 : Colors.black45),
                                 ),
                               ]),

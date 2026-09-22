@@ -21,6 +21,7 @@ class ChatThreadRow {
     this.lastAt,
     this.lastBody,
     this.lastMine = false,
+    this.lastDeleted = false,
   });
   final String threadId;
   final String otherId;
@@ -29,6 +30,7 @@ class ChatThreadRow {
   final String? lastAt;
   final String? lastBody;
   final bool lastMine;
+  final bool lastDeleted;
   final int unread;
   final bool muted;
   final bool canReply;
@@ -41,6 +43,7 @@ class ChatThreadRow {
         lastAt: j['last_message_at'] as String?,
         lastBody: j['last_body'] as String?,
         lastMine: j['last_mine'] as bool? ?? false,
+        lastDeleted: j['last_deleted'] as bool? ?? false,
         unread: (j['unread'] as num?)?.toInt() ?? 0,
         muted: j['muted'] as bool? ?? false,
         canReply: j['can_reply'] as bool? ?? false,
@@ -56,7 +59,7 @@ class ChatContact {
 }
 
 class ChatMessage {
-  const ChatMessage({required this.id, required this.mine, required this.body, required this.createdAt, this.editedAt, this.readAt, this.imagePath});
+  const ChatMessage({required this.id, required this.mine, required this.body, required this.createdAt, this.editedAt, this.readAt, this.imagePath, this.deletedAt});
   final String id;
   final bool mine;
   final String body;
@@ -64,8 +67,12 @@ class ChatMessage {
   final String? editedAt;
   final String? readAt;
   final String? imagePath;
+  final String? deletedAt;
 
-  bool get editable => mine && body.isNotEmpty && DateTime.now().difference(DateTime.parse(createdAt)) < const Duration(minutes: 30);
+  bool get deleted => deletedAt != null;
+  bool get editable => mine && !deleted && body.isNotEmpty && DateTime.now().difference(DateTime.parse(createdAt)) < const Duration(minutes: 30);
+  /// Deletion has no time limit (removing your own words is always allowed), unlike editing.
+  bool get deletable => mine && !deleted;
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
         id: j['id'] as String,
@@ -75,6 +82,7 @@ class ChatMessage {
         editedAt: j['edited_at'] as String?,
         readAt: j['read_at'] as String?,
         imagePath: j['image_path'] as String?,
+        deletedAt: j['deleted_at'] as String?,
       );
 }
 
@@ -232,6 +240,17 @@ class CommsRepository {
   }
 
   Future<void> edit(String messageId, String body) => _client.rpc('edit_chat_message', params: {'p_message': messageId, 'p_body': body});
+
+  /// Deletes my own message (tombstone) and, if it carried a picture, removes it from storage too.
+  Future<void> deleteMessage(String messageId) async {
+    final r = await _client.rpc('delete_chat_message', params: {'p_message': messageId}) as Map;
+    final path = r['image_path'] as String?;
+    if (path != null) {
+      try {
+        await _client.storage.from('chat-images').remove([path]);
+      } catch (_) {}
+    }
+  }
 
   Future<void> setMuted(String threadId, bool muted) => _client.rpc('set_thread_muted', params: {'p_thread': threadId, 'p_muted': muted});
 

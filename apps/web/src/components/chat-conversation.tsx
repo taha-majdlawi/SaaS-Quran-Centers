@@ -12,6 +12,7 @@ export interface ChatMsg {
   created_at: string;
   edited_at: string | null;
   read_at: string | null;
+  deleted_at: string | null;
   /** short-lived link to the picture (private bucket) */
   url?: string | null;
 }
@@ -100,7 +101,7 @@ export function ChatConversation({
     const channel = supabase
       .channel(`web-chat-${threadId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages', filter: `thread_id=eq.${threadId}` }, (payload) => {
-        const row = payload.new as { id?: string; sender_id?: string; body?: string; image_path?: string | null; created_at?: string; edited_at?: string | null; read_at?: string | null };
+        const row = payload.new as { id?: string; sender_id?: string; body?: string; image_path?: string | null; created_at?: string; edited_at?: string | null; read_at?: string | null; deleted_at?: string | null };
         if (!row?.id || !row.created_at) return;
         void merge([
           {
@@ -111,6 +112,7 @@ export function ChatConversation({
             created_at: row.created_at,
             edited_at: row.edited_at ?? null,
             read_at: row.read_at ?? null,
+            deleted_at: row.deleted_at ?? null,
           },
         ]);
       })
@@ -190,6 +192,18 @@ export function ChatConversation({
     setEditing(null);
   };
 
+  const deleteMessage = async (id: string) => {
+    if (!confirm('تُحذف عندك وعند الطرف الآخر ولا يمكن التراجع. حذف الرسالة؟')) return;
+    const { data, error: rpcError } = await supabase.rpc('delete_chat_message', { p_message: id });
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
+    const imagePath = (data as { image_path?: string } | null)?.image_path;
+    if (imagePath) void supabase.storage.from('chat-images').remove([imagePath]);
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, body: '', image_path: null, url: null, deleted_at: new Date().toISOString() } : m)));
+  };
+
   return (
     <>
       <div
@@ -214,6 +228,8 @@ export function ChatConversation({
                     </button>
                   </div>
                 </div>
+              ) : m.deleted_at ? (
+                <p className={`flex items-center gap-1 text-sm italic ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>🚫 حُذفت هذه الرسالة</p>
               ) : (
                 <>
                   {m.image_path && m.url && (
@@ -227,9 +243,9 @@ export function ChatConversation({
               )}
               <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>
                 {time(m.created_at)}
-                {m.edited_at && ' · عُدّلت'}
-                {m.mine && m.read_at && ' · ✓✓'}
-                {m.mine && m.body && editing !== m.id && Date.now() - new Date(m.created_at).getTime() < 30 * 60 * 1000 && (
+                {!m.deleted_at && m.edited_at && ' · عُدّلت'}
+                {!m.deleted_at && m.mine && m.read_at && ' · ✓✓'}
+                {!m.deleted_at && m.mine && m.body && editing !== m.id && Date.now() - new Date(m.created_at).getTime() < 30 * 60 * 1000 && (
                   <button
                     type="button"
                     onClick={() => {
@@ -239,6 +255,11 @@ export function ChatConversation({
                     className="mr-2 underline"
                   >
                     تعديل
+                  </button>
+                )}
+                {!m.deleted_at && m.mine && editing !== m.id && (
+                  <button type="button" onClick={() => deleteMessage(m.id)} className="mr-2 underline">
+                    حذف
                   </button>
                 )}
               </p>
