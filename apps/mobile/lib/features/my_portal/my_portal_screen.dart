@@ -10,9 +10,13 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
+import '../engagement/engagement_repository.dart';
 import '../recitation/recitation_repository.dart' show kAchievementTypes;
+import '../serd/serd_models.dart';
 import '../serd/serd_widgets.dart';
+import 'home_extras.dart';
 import 'my_portal_repository.dart';
+import 'record_extras.dart';
 
 /// The student's (or guardian's) whole app: home, record, account. Students
 /// and guardians never reach the staff screens - the router sends them here.
@@ -137,7 +141,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                                 onRefresh: () async => _reload(),
                                 child: switch (_tab) {
                                   0 => _HomeTab(data: data),
-                                  1 => _RecordTab(data: data),
+                                  1 => _RecordTab(key: ValueKey(_studentId), orgId: org!.id, studentId: _studentId!, serd: data.serd),
                                   _ => _AccountTab(data: data),
                                 },
                               );
@@ -197,13 +201,19 @@ class _HomeTab extends StatelessWidget {
               ),
               Column(
                 children: [
-                  Text('${data.totalPoints}', style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),
-                  Text('نقطة', style: TextStyle(color: Colors.white.withValues(alpha: 0.85))),
+                  ProgressRing(progress: (data.totalParts / 30).clamp(0.0, 1.0), centerText: '${data.totalParts}/30', size: 76, strokeWidth: 7),
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    const Icon(Icons.local_fire_department_rounded, color: Colors.white, size: 16),
+                    const SizedBox(width: 3),
+                    Text('${data.currentStreak}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  ]),
                 ],
               ),
             ],
           ),
         ),
+        AnnouncementsPreviewCard(announcements: data.announcements),
         const SectionTitle('تقدّم الحفظ'),
         Card(
           child: Padding(
@@ -236,6 +246,18 @@ class _HomeTab extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        NextGoalsCard(goals: computeGoals(data.totalParts, data.totalPoints)),
+        const SizedBox(height: 12),
+        UpcomingEventsCard(entries: data.upcoming),
+        const SizedBox(height: 12),
+        const DailyInspirationCard(),
+        Builder(builder: (context) {
+          final today = computeTodayPrayers(data.prayerSettings);
+          return today == null
+              ? const SizedBox.shrink()
+              : Padding(padding: const EdgeInsets.only(top: 12), child: PrayerTimesCard(today: today));
+        }),
         const SectionTitle('إحصائياتك'),
         GridView.count(
           shrinkWrap: true,
@@ -263,7 +285,15 @@ class _HomeTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${data.thisWeek} تسميعات هذا الأسبوع', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Row(children: [
+                  Icon(
+                    change > 0 ? Icons.trending_up_rounded : (change < 0 ? Icons.trending_down_rounded : Icons.trending_flat_rounded),
+                    color: change > 0 ? Colors.green : (change < 0 ? Colors.red : Colors.grey),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text('${data.thisWeek} تسميعات هذا الأسبوع', style: const TextStyle(fontWeight: FontWeight.w700)),
+                ]),
                 Text(weekText, style: TextStyle(color: Colors.grey.shade600)),
                 const Divider(height: 24),
                 Row(
@@ -273,10 +303,21 @@ class _HomeTab extends StatelessWidget {
                     Text('سلسلتك الحالية: ${data.currentStreak} يوم  ·  أطول سلسلة: ${data.longestStreak}'),
                   ],
                 ),
+                if (data.currentStreak > 0 && data.currentStreak == data.longestStreak) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(color: Colors.deepOrange.shade50, borderRadius: BorderRadius.circular(10)),
+                    child: const Text('🎉 رقمك الشخصي الجديد في السلسلة!', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ],
               ],
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        BadgesPreviewRow(badges: data.badges),
         const SizedBox(height: 12),
         if (!context.watch<TenantController>().isDisabled('calendar'))
         Card(
@@ -378,7 +419,7 @@ class _HomeTab extends StatelessWidget {
         if (data.recent.isEmpty)
           const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))
         else
-          for (final r in data.recent.take(5)) _RecitationTile(r: r),
+          for (final r in data.recent.take(5)) RecitationTile(r: r),
       ],
     );
   }
@@ -422,8 +463,8 @@ class _Stat extends StatelessWidget {
   }
 }
 
-class _RecitationTile extends StatelessWidget {
-  const _RecitationTile({required this.r});
+class RecitationTile extends StatelessWidget {
+  const RecitationTile({super.key, required this.r});
   final PortalRecitation r;
 
   @override
@@ -464,50 +505,101 @@ class TileBadge extends StatelessWidget {
   }
 }
 
-class _RecordTab extends StatelessWidget {
-  const _RecordTab({required this.data});
-  final PortalDashboard data;
+class _RecordData {
+  const _RecordData(this.detail, this.gradeLabels);
+  final RecordDetail detail;
+  final Map<String, String> gradeLabels;
+}
+
+/// سجلّي: recitations / attendance / serd, each its own segment (parity with
+/// eqraa's record_tab.dart 3-way switch) - fetched lazily via
+/// student_record_detail (0056), not from the home dashboard payload.
+class _RecordTab extends StatefulWidget {
+  const _RecordTab({super.key, required this.orgId, required this.studentId, required this.serd});
+  final String orgId;
+  final String studentId;
+  final SerdSummary? serd;
+
+  @override
+  State<_RecordTab> createState() => _RecordTabState();
+}
+
+class _RecordTabState extends State<_RecordTab> {
+  final _portal = MyPortalRepository(AppSupabase.client);
+  final _engagement = EngagementRepository(AppSupabase.client);
+  int _segment = 0;
+  late Future<_RecordData> _future = _load();
+
+  Future<_RecordData> _load() async {
+    final results = await Future.wait<dynamic>([
+      _portal.fetchRecordDetail(widget.orgId, widget.studentId),
+      _engagement.gradeLabels(widget.orgId).catchError((_) => <String, String>{}),
+    ]);
+    return _RecordData(results[0] as RecordDetail, results[1] as Map<String, String>);
+  }
+
+  bool _isThisMonth(String iso) {
+    final d = DateTime.tryParse(iso);
+    if (d == null) return false;
+    final now = DateTime.now();
+    return d.year == now.year && d.month == now.month;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (data.recent.isEmpty) {
-      return ListView(children: const [SizedBox(height: 80), EmptyState(icon: Icons.history_edu_outlined, title: 'لا يوجد تسميعات بعد')]);
-    }
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _Mini(label: 'تسميعات', value: '${data.totalRecitations}'),
-                _Mini(label: 'الأسبوع', value: '${data.thisWeek}'),
-                _Mini(label: 'نقاط', value: '${data.totalPoints}'),
-              ],
+    return AsyncBody<_RecordData>(
+      future: _future,
+      onRetry: () => setState(() => _future = _load()),
+      builder: (context, rd) {
+        final monthly = rd.detail.recitations.where((r) => _isThisMonth(r.createdAt)).toList();
+        final monthlyAyahs = monthly.where((r) => r.type == 'new_memorization').fold<int>(0, (sum, r) => sum + (r.ayahTo - r.ayahFrom + 1));
+        final monthlyAttendance = rd.detail.attendance.where((a) => _isThisMonth(a.date)).toList();
+        final monthlyAttendanceRate =
+            monthlyAttendance.isEmpty ? null : monthlyAttendance.where((a) => a.status == 'present').length / monthlyAttendance.length;
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(value: 0, label: Text('التسميع')),
+                  ButtonSegment(value: 1, label: Text('الحضور')),
+                  ButtonSegment(value: 2, label: Text('السرد')),
+                ],
+                selected: {_segment},
+                onSelectionChanged: (s) => setState(() => _segment = s.first),
+              ),
             ),
-          ),
-        ),
-        const SectionTitle('سجل التسميع'),
-        for (final r in data.recent) _RecitationTile(r: r),
-      ],
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: switch (_segment) {
+                  0 => [
+                      MonthlySummaryCard(
+                        recitations: monthly.length,
+                        ayahs: monthlyAyahs,
+                        attendanceRate: monthlyAttendanceRate,
+                        points: rd.detail.monthlyPoints,
+                      ),
+                      const SizedBox(height: 12),
+                      PointsBreakdownCard(rows: rd.detail.pointsBreakdown, gradeLabels: rd.gradeLabels),
+                      const SizedBox(height: 12),
+                      if (rd.detail.recitations.isEmpty)
+                        const Padding(padding: EdgeInsets.all(24), child: EmptyState(icon: Icons.history_edu_outlined, title: 'لا يوجد تسميعات بعد'))
+                      else
+                        RecitationsSearchList(recitations: rd.detail.recitations),
+                    ],
+                  1 => [AttendanceListSection(rows: rd.detail.attendance)],
+                  _ => [SerdSummaryCard(summary: widget.serd)],
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
-}
-
-class _Mini extends StatelessWidget {
-  const _Mini({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-          Text(label, style: TextStyle(color: Colors.grey.shade600)),
-        ],
-      );
 }
 
 class _AccountTab extends StatelessWidget {

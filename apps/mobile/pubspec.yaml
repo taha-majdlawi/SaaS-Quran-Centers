@@ -76,6 +76,7 @@ flutter:
 
   assets:
     - assets/brand/icon-source.png
+    - assets/data/daily_inspirations.json
 
   fonts:
     # UI text: Tajawal (SIL Open Font License 1.1, see assets/fonts/Tajawal-OFL.txt)

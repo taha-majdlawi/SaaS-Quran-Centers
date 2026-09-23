@@ -1,6 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../calendar/calendar_models.dart';
+import '../calendar/calendar_repository.dart';
+import '../comms/comms_repository.dart' show Announcement, CommsRepository;
+import '../engagement/engagement_models.dart' show BadgeProgress;
+import '../engagement/engagement_repository.dart';
 import '../serd/serd_models.dart';
+import '../settings/settings_repository.dart';
 
 class PortalStudent {
   const PortalStudent({required this.id, required this.fullName, required this.studentCode});
@@ -31,6 +37,59 @@ class PortalRecitation {
   final String createdAt;
   final String? notes;
   final String? sessionGroupId;
+
+  factory PortalRecitation.fromJson(Map<String, dynamic> r) => PortalRecitation(
+        type: r['type'] as String,
+        surah: (r['surah'] as num).toInt(),
+        ayahFrom: (r['ayah_from'] as num).toInt(),
+        ayahTo: (r['ayah_to'] as num).toInt(),
+        gradeLabel: (r['grade_label'] as String?) ?? '',
+        points: (r['points_awarded'] as num).toInt(),
+        createdAt: r['created_at'] as String,
+        notes: r['notes'] as String?,
+        sessionGroupId: r['session_group_id'] as String?,
+      );
+}
+
+class AttendanceRow {
+  const AttendanceRow({required this.date, required this.status});
+  final String date;
+  final String status;
+
+  factory AttendanceRow.fromJson(Map<String, dynamic> j) =>
+      AttendanceRow(date: j['date'] as String, status: j['status'] as String);
+}
+
+class PointsBreakdownRow {
+  const PointsBreakdownRow({required this.grade, required this.count, required this.pointsEach, required this.total});
+  final String grade;
+  final int count;
+  final int pointsEach;
+  final int total;
+
+  factory PointsBreakdownRow.fromJson(Map<String, dynamic> j) => PointsBreakdownRow(
+        grade: j['grade'] as String,
+        count: (j['count'] as num).toInt(),
+        pointsEach: (j['points_each'] as num).toInt(),
+        total: (j['total'] as num).toInt(),
+      );
+}
+
+/// The student "record" screen's fuller data - beyond the 20-row home
+/// preview, and the two figures (monthly points, points-by-grade) that must
+/// come from the server so they never drift from students_profile.total_points
+/// after an admin changes a grade's point value (see 0056).
+class RecordDetail {
+  const RecordDetail({
+    required this.monthlyPoints,
+    required this.pointsBreakdown,
+    required this.recitations,
+    required this.attendance,
+  });
+  final int monthlyPoints;
+  final List<PointsBreakdownRow> pointsBreakdown;
+  final List<PortalRecitation> recitations;
+  final List<AttendanceRow> attendance;
 }
 
 class PortalDashboard {
@@ -57,9 +116,17 @@ class PortalDashboard {
     this.phone,
     this.address,
     this.serd,
+    this.announcements = const [],
+    this.upcoming = const [],
+    this.badges = const [],
+    this.prayerSettings = const {},
   });
 
   final SerdSummary? serd;
+  final List<Announcement> announcements;
+  final List<CalEntry> upcoming;
+  final List<BadgeProgress> badges;
+  final Map<String, String> prayerSettings;
   final String fullName;
   final String studentCode;
   final int totalPoints;
@@ -118,7 +185,9 @@ class MyPortalRepository {
     final circle = data['circle'] as Map<String, dynamic>?;
     final stats = data['stats'] as Map<String, dynamic>;
 
-    // Serd is a separate module: a failure here must not blank the home.
+    // Each extra home section is a separate call to its own already-existing
+    // feature - a failure in any one (e.g. calendar module disabled) must
+    // never blank the rest of the home screen.
     SerdSummary? serd;
     try {
       serd = SerdSummary.fromJson(
@@ -128,8 +197,34 @@ class MyPortalRepository {
       serd = null;
     }
 
+    var announcements = <Announcement>[];
+    try {
+      announcements = await CommsRepository(_client).announcements(organizationId);
+    } catch (_) {}
+
+    var upcoming = <CalEntry>[];
+    try {
+      final now = DateTime.now();
+      final range = await CalendarRepository(_client).fetchRange(organizationId, now, now.add(const Duration(days: 7)));
+      upcoming = range.entries;
+    } catch (_) {}
+
+    var badges = <BadgeProgress>[];
+    try {
+      badges = await EngagementRepository(_client).studentBadges(organizationId, studentId);
+    } catch (_) {}
+
+    var prayerSettings = <String, String>{};
+    try {
+      prayerSettings = await SettingsRepository(_client).fetchCenterSettings(organizationId);
+    } catch (_) {}
+
     return PortalDashboard(
       serd: serd,
+      announcements: announcements,
+      upcoming: upcoming,
+      badges: badges,
+      prayerSettings: prayerSettings,
       fullName: student['full_name'] as String,
       studentCode: student['student_code'] as String,
       totalPoints: (student['total_points'] as num).toInt(),
@@ -150,19 +245,22 @@ class MyPortalRepository {
       weeklyAttendance: stats['weekly_attendance_rate'] as num?,
       monthlyAttendance: stats['monthly_attendance_rate'] as num?,
       lastRecitationAt: stats['last_recitation_at'] as String?,
-      recent: (data['recent'] as List)
-          .map((r) => PortalRecitation(
-                type: r['type'] as String,
-                surah: (r['surah'] as num).toInt(),
-                ayahFrom: (r['ayah_from'] as num).toInt(),
-                ayahTo: (r['ayah_to'] as num).toInt(),
-                gradeLabel: (r['grade_label'] as String?) ?? '',
-                points: (r['points_awarded'] as num).toInt(),
-                createdAt: r['created_at'] as String,
-                notes: r['notes'] as String?,
-                sessionGroupId: r['session_group_id'] as String?,
-              ))
+      recent: (data['recent'] as List).map((r) => PortalRecitation.fromJson(r as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  Future<RecordDetail> fetchRecordDetail(String organizationId, String studentId) async {
+    final data = await _client.rpc('student_record_detail', params: {
+      'p_org': organizationId,
+      'p_student': studentId,
+    }) as Map<String, dynamic>;
+    return RecordDetail(
+      monthlyPoints: (data['monthly_points'] as num).toInt(),
+      pointsBreakdown: (data['points_breakdown'] as List)
+          .map((r) => PointsBreakdownRow.fromJson(r as Map<String, dynamic>))
           .toList(),
+      recitations: (data['recitations'] as List).map((r) => PortalRecitation.fromJson(r as Map<String, dynamic>)).toList(),
+      attendance: (data['attendance'] as List).map((r) => AttendanceRow.fromJson(r as Map<String, dynamic>)).toList(),
     );
   }
 }
