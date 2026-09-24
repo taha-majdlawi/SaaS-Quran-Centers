@@ -8,7 +8,9 @@ declare
   v_org uuid; v_adm uuid; v_tch uuid; v_stu uuid; v_sp uuid; v_circle uuid; v_grade text;
   v_fail text[] := '{}'; v_n integer; v_before integer; v_after integer; v_cert uuid; r jsonb;
   v_exempt text[] := array['account_access', 'account_admin_grants', 'audit_log', 'deletion_requests', 'device_tokens',
-                           'notification_prefs', 'notifications', 'quran_bookmarks', 'quran_positions', 'calendar_reminders', 'weekly_digests_sent', 'attendance_reminders_sent'];
+                           'notification_prefs', 'notifications', 'quran_bookmarks', 'quran_positions', 'calendar_reminders', 'weekly_digests_sent', 'attendance_reminders_sent',
+                           -- 0066: a center locked for non-payment must still be able to report its payment (RPC-only writes)
+                           'billing_requests'];
 begin
   select id into v_org from public.organizations where slug = 'eqraa';
   select user_id into v_adm from public.organization_members where organization_id = v_org and role = 'admin' and status = 'active' limit 1;
@@ -296,6 +298,26 @@ begin
       reset role;
     end;
   end;
+
+  -- ===== 0066 billing: a locked center is read-only for everyone, yet its admin can still report a payment
+  insert into public.platform_settings (key, value) values ('billing_enforce', 'true') on conflict (key) do update set value = 'true';
+  update public.organizations set status = 'suspended' where id = v_org;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  if not coalesce((public.my_access(v_org) ->> 'is_read_only')::boolean, false) then v_fail := v_fail || text 'locked center not read-only'; end if;
+  begin insert into public.attendance (organization_id, student_id, circle_id, session_date, status) values (v_org, v_sp, v_circle, current_date, 'present');
+    v_fail := v_fail || text 'locked center accepted a write'; exception when others then null; end;
+  begin perform public.billing_overview(v_org); v_fail := v_fail || text 'teacher can read billing'; exception when others then null; end;
+  reset role;
+  perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  begin perform public.billing_overview(v_org); exception when others then v_fail := v_fail || text ('admin cannot open billing while locked: ' || sqlerrm); end;
+  begin insert into public.billing_requests (organization_id, plan_id, period, amount_cents, currency, method)
+    select v_org, id, 'monthly', 0, 'USD', 'cash' from public.plans limit 1;
+    get diagnostics v_n = row_count; if v_n > 0 then v_fail := v_fail || text 'billing_requests directly writable'; end if;
+  exception when others then null; end;
+  begin perform public.platform_record_payment(v_org, (select id from public.plans limit 1), 'yearly', 0, 'cash'); v_fail := v_fail || text 'center admin recorded own payment'; exception when others then null; end;
+  reset role;
 
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
