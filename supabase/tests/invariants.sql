@@ -276,6 +276,27 @@ begin
   reset role;
   delete from public.account_access where user_id = v_adm and organization_id = v_org;
 
+  -- ===== 0065: a signed-in account with NO membership in this center gets nothing
+  -- (is_org_admin/is_org_staff/member_has_module used to return NULL for it, which
+  -- plpgsql `if not ...` guards silently let through)
+  begin
+    declare v_out uuid := gen_random_uuid();
+    begin
+      insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+        values (v_out, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'outsider-test-' || v_out || '@example.test', '{}', '{}', now(), now());
+      perform set_config('request.jwt.claims', json_build_object('sub', v_out, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      if public.is_org_admin(v_org) is null or public.is_org_staff(v_org) is null or public.member_has_module(v_org, 'reports') is null then
+        v_fail := v_fail || text 'role helpers return NULL for outsiders';
+      end if;
+      begin perform public.admin_export_data(v_org); v_fail := v_fail || text 'outsider exported the center'; exception when others then null; end;
+      begin perform public.admin_market_wallets(v_org); v_fail := v_fail || text 'outsider read wallets'; exception when others then null; end;
+      begin perform public.center_report(v_org); v_fail := v_fail || text 'outsider ran center_report'; exception when others then null; end;
+      begin perform public.admin_send_notification(v_org, 'x', 'y'); v_fail := v_fail || text 'outsider broadcast to the center'; exception when others then null; end;
+      reset role;
+    end;
+  end;
+
   -- ===== the anonymous door is exactly three functions
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
