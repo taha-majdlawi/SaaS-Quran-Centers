@@ -56,6 +56,8 @@ function linkFor(n: Item, portal: boolean): string | null {
       return portal ? null : '/attendance';
     case 'deletion_request':
       return portal ? null : '/deletion-requests';
+    case 'billing_reviewed':
+      return portal ? null : '/billing';
     case 'deletion_reviewed':
       return portal ? '/my/privacy' : null;
     case 'weekly_digest':

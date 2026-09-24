@@ -10,6 +10,7 @@ interface Plan {
   code: string;
   name: string;
   price_cents: number;
+  yearly_price_cents: number | null;
   currency: string;
   limits: { max_students?: number | null; max_teachers?: number | null };
   features: Record<string, boolean>;
@@ -18,7 +19,7 @@ interface Plan {
 
 function PlanForm({ plan }: { plan?: Plan }) {
   return (
-    <form action={savePlan} className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-4">
+    <form action={savePlan} className="grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-5">
       {plan && <input type="hidden" name="id" value={plan.id} />}
       <label className="text-sm">
         الرمز
@@ -31,6 +32,10 @@ function PlanForm({ plan }: { plan?: Plan }) {
       <label className="text-sm">
         السعر الشهري
         <input name="price" type="number" step="0.01" min="0" defaultValue={plan ? plan.price_cents / 100 : 0} className={field} />
+      </label>
+      <label className="text-sm">
+        السعر السنوي (فارغ = لا يوجد سنوي)
+        <input name="yearlyPrice" type="number" step="0.01" min="0" defaultValue={plan?.yearly_price_cents != null ? plan.yearly_price_cents / 100 : ''} className={field} />
       </label>
       <label className="text-sm">
         العملة
@@ -47,7 +52,7 @@ function PlanForm({ plan }: { plan?: Plan }) {
       <label className="flex items-center gap-2 self-end text-sm">
         <input type="checkbox" name="active" defaultChecked={plan?.is_active ?? true} /> فعّالة
       </label>
-      <div className="sm:col-span-4">
+      <div className="sm:col-span-5">
         <p className="mb-1 text-xs text-gray-500">ميزات الخطة (عند اختيار «مغلقة» تُعطَّل لمراكز هذه الخطة ما لم يُستثنَ المركز):</p>
         <div className="flex flex-wrap gap-2">
           {FEATURES.map(([k, l]) => (
@@ -62,7 +67,7 @@ function PlanForm({ plan }: { plan?: Plan }) {
           ))}
         </div>
       </div>
-      <div className="sm:col-span-4">
+      <div className="sm:col-span-5">
         <SubmitButton className={btn} pendingText="جاري الحفظ...">
           {plan ? 'حفظ الخطة' : 'إضافة خطة'}
         </SubmitButton>
@@ -74,7 +79,7 @@ function PlanForm({ plan }: { plan?: Plan }) {
 export default async function PlansPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { ok, error } = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase.from('plans').select('id, code, name, price_cents, currency, limits, features, is_active').order('price_cents');
+  const { data } = await supabase.from('plans').select('id, code, name, price_cents, yearly_price_cents, currency, limits, features, is_active').order('price_cents');
   const plans = (data ?? []) as Plan[];
 
   return (

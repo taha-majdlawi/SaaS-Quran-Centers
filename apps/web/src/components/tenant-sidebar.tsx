@@ -38,6 +38,7 @@ export const TENANT_MODULES = [
   { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
   { slug: 'site', label: 'الموقع العام', adminOnly: true },
   { slug: 'settings', label: 'إعدادات المركز', adminOnly: true },
+  { slug: 'billing', label: 'الاشتراك والدفع', adminOnly: true },
 ] as const;
 
 export function TenantSidebar({

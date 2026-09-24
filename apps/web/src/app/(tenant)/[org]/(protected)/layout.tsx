@@ -4,6 +4,7 @@ import { SubmitButton } from '@/components/submit-button';
 import { OrgLogo } from '@/components/org-logo';
 import { signOut } from '@/lib/auth/actions';
 import { createClient } from '@/lib/supabase/server';
+import { billingBanner, type BillingState } from '@/lib/billing/format';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'مدير',
@@ -34,7 +35,10 @@ export default async function TenantProtectedLayout({
   // A viewing (read-only) account is told so on every page; the database refuses its writes regardless.
   const supabase = await createClient();
   const { data: access } = await supabase.rpc('my_access', { p_org: org.id });
-  const viewer = (access as { is_read_only?: boolean } | null)?.is_read_only === true;
+  const acc = access as { is_read_only?: boolean; reason?: 'account' | 'billing' | null; billing?: BillingState } | null;
+  const viewer = acc?.is_read_only === true && acc.reason !== 'billing';
+  // Subscription state (0066): locked for everyone, expiring-soon for admins only.
+  const billing = billingBanner(acc?.billing, org.myRole === 'admin');
   const { data: noticeData } = await supabase.rpc('active_platform_notices');
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
@@ -65,6 +69,18 @@ export default async function TenantProtectedLayout({
             {n.body && <span> — {n.body}</span>}
           </div>
         ))}
+        {billing && (
+          <div
+            className={`px-6 py-2 text-center text-sm font-semibold print:hidden ${billing.tone === 'red' ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-900'}`}
+          >
+            {billing.text}
+            {org.myRole === 'admin' && (
+              <a href="/billing" className="ms-2 underline">
+                الاشتراك والدفع
+              </a>
+            )}
+          </div>
+        )}
         {viewer && (
           <div className="bg-amber-500 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">
             هذا حساب عرض — البيانات للاطّلاع فقط

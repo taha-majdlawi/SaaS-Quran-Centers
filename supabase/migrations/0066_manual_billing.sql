@@ -387,13 +387,13 @@ begin
     v_what := case b ->> 'kind' when 'trial' then 'الفترة التجريبية' else 'اشتراك المركز' end;
     if b ->> 'state' in ('trial', 'active') and v_days in (7, 3, 1) then
       perform public._notify(o.id, public._org_admins(o.id), 'billing_reminder',
-        'ينتهي ' || v_what || ' خلال ' || v_days || ' ' || case when v_days = 1 then 'يوم' else 'أيام' end,
+        case b ->> 'kind' when 'trial' then 'تنتهي ' else 'ينتهي ' end || v_what || ' خلال ' || v_days || ' ' || case when v_days = 1 then 'يوم' else 'أيام' end,
         'جدّد الاشتراك من صفحة «الاشتراك والدفع» حتى لا يتحول المركز للقراءة فقط', null, null, true,
         'billing|' || o.id || '|' || (b ->> 'until') || '|' || v_days);
       v_n := v_n + 1;
     elsif b ->> 'state' = 'grace' then
       perform public._notify(o.id, public._org_admins(o.id), 'billing_reminder',
-        'انتهى ' || v_what, 'مهلة حتى ' || to_char((b ->> 'grace_ends')::timestamptz, 'YYYY-MM-DD') || ' ثم يتحول المركز للقراءة فقط', null, null, true,
+        case b ->> 'kind' when 'trial' then 'انتهت ' else 'انتهى ' end || v_what, 'مهلة حتى ' || to_char((b ->> 'grace_ends')::timestamptz, 'YYYY-MM-DD') || ' ثم يتحول المركز للقراءة فقط', null, null, true,
         'billing|' || o.id || '|' || (b ->> 'until') || '|grace');
       v_n := v_n + 1;
     end if;

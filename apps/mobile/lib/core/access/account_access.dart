@@ -11,6 +11,9 @@ import '../offline/sync_service.dart';
 /// not that a check failed (a "no permission" message invites a second try).
 const kViewerMessage = 'هذا حساب عرض — البيانات للاطّلاع فقط';
 
+/// The same lock, when the reason is the center's subscription (0066) rather than the account.
+const kBillingLockMessage = 'انتهى اشتراك المركز — البيانات للاطّلاع فقط حتى التجديد';
+
 /// Is the signed-in person a viewing (read-only) account in the active center?
 ///
 /// The database refuses every write of such an account (a trigger under all
@@ -26,6 +29,7 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
   static final AccessController instance = AccessController._();
 
   bool _readOnly = false;
+  bool _billingLock = false;
   String? _userId;
   String? _orgId;
   SupabaseClient? _client;
@@ -33,10 +37,17 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
 
   bool get isReadOnly => _readOnly;
 
+  /// Read-only because the center's subscription lapsed, not because of the account.
+  bool get isBillingLock => _billingLock;
+
+  /// The sentence to show for the current lock.
+  String get lockMessage => _billingLock ? kBillingLockMessage : kViewerMessage;
+
   /// Messages from the platform owner (maintenance, updates), shown to everyone.
   List<({String title, String? body, String level})> notices = const [];
 
   String get _key => 'access_ro:$_userId:$_orgId';
+  String get _billingKey => 'access_bl:$_userId:$_orgId';
 
   Future<void> bind(SupabaseClient client, String? orgId) async {
     _client = client;
@@ -49,12 +60,12 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
       _observing = true;
     }
     if (user == null || orgId == null) {
-      _set(false);
+      _set(false, billing: false);
       return;
     }
     try {
       final prefs = await SharedPreferences.getInstance();
-      _set(prefs.getBool(_key) ?? false);
+      _set(prefs.getBool(_key) ?? false, billing: prefs.getBool(_billingKey) ?? false);
     } catch (_) {}
     await refresh();
   }
@@ -64,10 +75,13 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
     if (client == null || _userId == null || _orgId == null) return;
     try {
       final data = await client.rpc('my_access', params: {'p_org': _orgId});
-      final ro = (data as Map<String, dynamic>)['is_read_only'] == true;
-      _set(ro);
+      final map = data as Map<String, dynamic>;
+      final ro = map['is_read_only'] == true;
+      final billing = ro && map['reason'] == 'billing';
+      _set(ro, billing: billing);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_key, ro);
+      await prefs.setBool(_billingKey, billing);
     } catch (_) {
       // offline / old server: keep the last known answer
     }
@@ -83,15 +97,16 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
     } catch (_) {}
   }
 
-  void _set(bool value) {
-    if (_readOnly == value) return;
+  void _set(bool value, {required bool billing}) {
+    if (_readOnly == value && _billingLock == billing) return;
     _readOnly = value;
+    _billingLock = billing;
     notifyListeners();
   }
 
   /// Throws the sentence a viewer should read. Call BEFORE the offline queue.
   void ensureCanWrite() {
-    if (_readOnly) throw StateError(kViewerMessage);
+    if (_readOnly) throw StateError(lockMessage);
   }
 
   @override
@@ -117,12 +132,13 @@ class StatusBanners extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!isVisible(context)) return const SizedBox.shrink();
-    final viewer = context.watch<AccessController>().isReadOnly;
+    final access = context.watch<AccessController>();
+    final viewer = access.isReadOnly;
     final sync = context.watch<SyncService>();
     final syncShown = sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
     final notices = context.watch<AccessController>().notices;
     Color noticeColor(String level) => level == 'critical' ? Colors.red.shade700 : (level == 'warning' ? Colors.orange.shade800 : Colors.blue.shade700);
-    final top = notices.isNotEmpty ? noticeColor(notices.first.level) : (viewer ? Colors.amber.shade800 : (sync.failedCount > 0 ? Colors.red.shade700 : Colors.orange.shade800));
+    final top = notices.isNotEmpty ? noticeColor(notices.first.level) : (viewer ? (access.isBillingLock ? Colors.red.shade700 : Colors.amber.shade800) : (sync.failedCount > 0 ? Colors.red.shade700 : Colors.orange.shade800));
 
     return ColoredBox(
       color: top,
@@ -145,13 +161,13 @@ class StatusBanners extends StatelessWidget {
             ),
           if (viewer)
             Material(
-              color: Colors.amber.shade800,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              color: access.isBillingLock ? Colors.red.shade700 : Colors.amber.shade800,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Row(children: [
-                  Icon(Icons.visibility_rounded, size: 16, color: Colors.white),
-                  SizedBox(width: 8),
-                  Expanded(child: Text(kViewerMessage, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
+                  Icon(access.isBillingLock ? Icons.lock_clock_rounded : Icons.visibility_rounded, size: 16, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(access.lockMessage, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
                 ]),
               ),
             ),

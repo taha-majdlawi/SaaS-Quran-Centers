@@ -129,6 +129,7 @@ export async function savePlan(formData: FormData) {
       p_code: s(formData, 'code'),
       p_name: s(formData, 'name'),
       p_price_cents: Math.round(Number(s(formData, 'price') || '0') * 100),
+      p_yearly_cents: s(formData, 'yearlyPrice') === '' ? null : Math.round(Number(s(formData, 'yearlyPrice')) * 100),
       p_currency: s(formData, 'currency') || 'USD',
       p_max_students: num(formData, 'maxStudents'),
       p_max_teachers: num(formData, 'maxTeachers'),

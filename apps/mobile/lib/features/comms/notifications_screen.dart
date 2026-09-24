@@ -23,6 +23,7 @@ import 'comms_repository.dart';
       'attendance_reminder' => (icon: Icons.fact_check_rounded, color: const Color(0xFF00897B)),
       'student_idle' => (icon: Icons.notifications_active_rounded, color: const Color(0xFFEF6C00)),
       'deletion_request' || 'deletion_reviewed' => (icon: Icons.privacy_tip_rounded, color: const Color(0xFF546E7A)),
+      'billing_reminder' || 'billing_reviewed' => (icon: Icons.receipt_long_rounded, color: const Color(0xFF6A1B9A)),
       'manual' => (icon: Icons.mark_email_unread_rounded, color: const Color(0xFF6D4C41)),
       'test' => (icon: Icons.science_rounded, color: const Color(0xFF546E7A)),
       _ => (icon: Icons.notifications_rounded, color: const Color(0xFF546E7A)),

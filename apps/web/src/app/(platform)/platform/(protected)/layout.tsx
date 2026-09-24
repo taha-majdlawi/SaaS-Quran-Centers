@@ -34,6 +34,9 @@ export default async function PlatformProtectedLayout({ children }: { children: 
           <a href="/plans" className="rounded px-3 py-2 hover:bg-gray-800">
             الخطط والحدود
           </a>
+          <a href="/billing" className="rounded px-3 py-2 hover:bg-gray-800">
+            المدفوعات والاشتراكات
+          </a>
           <a href="/feature-flags" className="rounded px-3 py-2 hover:bg-gray-800">
             مفاتيح الميزات
           </a>

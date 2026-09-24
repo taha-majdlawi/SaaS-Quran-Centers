@@ -426,7 +426,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     } on PostgrestException catch (e) {
       _failLocal(localId, e.message);
     } on StorageException catch (e) {
-      _failLocal(localId, e.message.contains('row-level security') ? kViewerMessage : 'تعذّر رفع الصورة');
+      _failLocal(localId, e.message.contains('row-level security') ? AccessController.instance.lockMessage : 'تعذّر رفع الصورة');
     } on StateError catch (e) {
       _failLocal(localId, e.message);
     } catch (_) {
