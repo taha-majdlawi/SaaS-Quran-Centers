@@ -36,12 +36,38 @@ const PUBLIC_PLATFORM_PATHS = new Set(['/login']);
  * by @supabase/ssr so Server Components always see an up-to-date session
  * instead of an expired one.
  */
+/**
+ * A Server Action that ends in redirect() is rendered by Next itself through an
+ * internal fetch to the app's own origin - which drops the subdomain, so the
+ * redirect target used to render as the root-domain route: the marketing page
+ * after the platform login, a 404 after saving any tenant form. The original
+ * host rides along on the rewritten request under this header (Next forwards
+ * request headers into that internal fetch) and is honoured only when the
+ * request did not itself arrive on a tenant/platform subdomain.
+ */
+const FORWARDED_HOST_HEADER = 'x-bustan-host';
+
+function isSubdomainOfRoot(bareHost: string, bareRoot: string): boolean {
+  return bareHost.endsWith(`.${bareRoot}`) || (bareRoot === 'localhost' && bareHost.endsWith('.localhost'));
+}
+
 export async function middleware(req: NextRequest) {
-  const hostname = (req.headers.get('host') ?? '').toLowerCase();
+  const bareRoot = ROOT_DOMAIN.split(':')[0];
+  const requestHost = (req.headers.get('host') ?? '').toLowerCase();
+  const carriedHost = (req.headers.get(FORWARDED_HOST_HEADER) ?? '').toLowerCase();
+  const hostname =
+    carriedHost && !isSubdomainOfRoot(requestHost.split(':')[0], bareRoot) && isSubdomainOfRoot(carriedHost.split(':')[0], bareRoot)
+      ? carriedHost
+      : requestHost;
   const url = req.nextUrl.clone();
 
   const bareHost = hostname.split(':')[0];
-  const bareRoot = ROOT_DOMAIN.split(':')[0];
+  // the rewritten request carries its real host (see FORWARDED_HOST_HEADER)
+  const rewriteTo = (target: URL) => {
+    const headers = new Headers(req.headers);
+    headers.set(FORWARDED_HOST_HEADER, hostname);
+    return NextResponse.rewrite(target, { request: { headers } });
+  };
 
   const isRootDomain =
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
@@ -59,13 +85,13 @@ export async function middleware(req: NextRequest) {
     if (subdomain === 'admin') {
       scope = 'platform';
       url.pathname = `/platform${req.nextUrl.pathname}`;
-      response = NextResponse.rewrite(url);
+      response = rewriteTo(url);
     } else if (RESERVED_SUBDOMAINS.has(subdomain)) {
       response = NextResponse.next();
     } else {
       scope = 'tenant';
       url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
-      response = NextResponse.rewrite(url);
+      response = rewriteTo(url);
     }
   }
 
