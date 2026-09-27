@@ -196,6 +196,8 @@ begin
   end;
 
   -- ===== chat delete: sender-only, tombstone blocks further edits, due-reviews is staff-only
+  -- (skipped when the platform switched chat off for this center - e.g. its plan closes it)
+  if public.platform_feature_enabled(v_org, 'chat') then
   begin
     declare v_msg uuid; v_thread uuid; r2 jsonb;
     begin
@@ -219,6 +221,7 @@ begin
       reset role;
     end;
   end;
+  end if;
 
   -- ===== teacher circle scoping (0051): a teacher sees/writes only their own circle's data
   begin
