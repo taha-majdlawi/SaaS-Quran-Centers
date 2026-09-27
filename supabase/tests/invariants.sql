@@ -6,6 +6,7 @@
 do $$
 declare
   v_org uuid; v_adm uuid; v_tch uuid; v_stu uuid; v_sp uuid; v_circle uuid; v_grade text;
+  v_adm_is_owner boolean := false;
   v_fail text[] := '{}'; v_n integer; v_before integer; v_after integer; v_cert uuid; r jsonb;
   v_exempt text[] := array['account_access', 'account_admin_grants', 'audit_log', 'deletion_requests', 'device_tokens',
                            'notification_prefs', 'notifications', 'quran_bookmarks', 'quran_positions', 'calendar_reminders', 'weekly_digests_sent', 'attendance_reminders_sent',
@@ -13,7 +14,11 @@ declare
                            'billing_requests'];
 begin
   select id into v_org from public.organizations where slug = 'eqraa';
-  select user_id into v_adm from public.organization_members where organization_id = v_org and role = 'admin' and status = 'active' limit 1;
+  -- prefer an admin who is NOT also a platform owner: an owner may legitimately use the platform console,
+  -- so the "center admins cannot" checks below only mean something for a plain admin
+  select m.user_id into v_adm from public.organization_members m where m.organization_id = v_org and m.role = 'admin' and m.status = 'active'
+   order by exists (select 1 from public.platform_owners po where po.user_id = m.user_id) limit 1;
+  v_adm_is_owner := exists (select 1 from public.platform_owners where user_id = v_adm);
   select user_id into v_tch from public.organization_members where organization_id = v_org and role = 'teacher' and status = 'active' limit 1;
   select user_id into v_stu from public.organization_members where organization_id = v_org and role = 'student' and status = 'active' limit 1;
   select id, circle_id, total_points into v_sp, v_circle, v_before from public.students_profile where organization_id = v_org and circle_id is not null limit 1;
@@ -76,12 +81,14 @@ begin
   if public.verify_certificate('tabean', r ->> 'serial') is not null then v_fail := v_fail || text 'verify leaks across centers'; end if;
   begin perform public.issue_certificate(v_org, v_sp, 'serd', 'x y'); v_fail := v_fail || text 'generic serd cert allowed'; exception when others then null; end;
 
-  -- ===== the platform console is closed to center admins
-  begin perform public.platform_org_detail(v_org); v_fail := v_fail || text 'admin can read platform_org_detail'; exception when others then null; end;
-  begin perform public.platform_set_feature(v_org, 'chat', false); v_fail := v_fail || text 'admin can switch features'; exception when others then null; end;
-  begin perform public.platform_users(); v_fail := v_fail || text 'admin can list all accounts'; exception when others then null; end;
-  begin perform public.platform_save_plan(null, 'zz', 'zz', 0, 'USD', 1, 1, '{}'::jsonb, true); v_fail := v_fail || text 'admin can edit plans'; exception when others then null; end;
-  begin perform public.platform_save_notice(null, 'zz zz', null, 'info', true, null); v_fail := v_fail || text 'admin can publish platform notices'; exception when others then null; end;
+  -- ===== the platform console is closed to center admins (only checkable with a plain admin)
+  if not v_adm_is_owner then
+    begin perform public.platform_org_detail(v_org); v_fail := v_fail || text 'admin can read platform_org_detail'; exception when others then null; end;
+    begin perform public.platform_set_feature(v_org, 'chat', false); v_fail := v_fail || text 'admin can switch features'; exception when others then null; end;
+    begin perform public.platform_users(); v_fail := v_fail || text 'admin can list all accounts'; exception when others then null; end;
+    begin perform public.platform_save_plan(null, 'zz', 'zz', 0, 'USD', 1, 1, '{}'::jsonb, true); v_fail := v_fail || text 'admin can edit plans'; exception when others then null; end;
+    begin perform public.platform_save_notice(null, 'zz zz', null, 'info', true, null); v_fail := v_fail || text 'admin can publish platform notices'; exception when others then null; end;
+  end if;
 
   -- ===== reports + dashboard summary work
   r := public.center_report(v_org, current_date - 30, current_date);
@@ -319,7 +326,9 @@ begin
     select v_org, id, 'monthly', 0, 'USD', 'cash' from public.plans limit 1;
     get diagnostics v_n = row_count; if v_n > 0 then v_fail := v_fail || text 'billing_requests directly writable'; end if;
   exception when others then null; end;
-  begin perform public.platform_record_payment(v_org, (select id from public.plans limit 1), 'yearly', 0, 'cash'); v_fail := v_fail || text 'center admin recorded own payment'; exception when others then null; end;
+  if not v_adm_is_owner then
+    begin perform public.platform_record_payment(v_org, (select id from public.plans limit 1), 'yearly', 0, 'cash'); v_fail := v_fail || text 'center admin recorded own payment'; exception when others then null; end;
+  end if;
   reset role;
 
   -- ===== the anonymous door is exactly three functions
