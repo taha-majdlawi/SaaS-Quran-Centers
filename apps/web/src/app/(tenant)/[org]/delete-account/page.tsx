@@ -1,30 +1,31 @@
 import { LegalPage } from '@/components/legal-page';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 export default async function DeleteAccountPage({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params;
+  const { t } = await getI18n();
   return (
-    <LegalPage orgSlug={org} title="طلب حذف الحساب والبيانات">
+    <LegalPage orgSlug={org} title={t.legal.deleteTitle}>
       {({ name, contactEmail }) => (
         <>
           <p>
-            لطلب حذف حسابك أو بيانات ابنك المرتبطة بـ{name} (الاسم، وسجل الحضور والتسميع والسرد، والرسائل)، تواصل مع الإدارة
+            {fmt(t.legal.delete1, { name })}
             {contactEmail ? (
               <>
                 {' '}
-                عبر{' '}
+                {t.legal.viaEmail}{' '}
                 <a href={`mailto:${contactEmail}`} className="text-brand hover:underline" dir="ltr">
                   {contactEmail}
                 </a>
               </>
             ) : (
-              ' عبر وسائل التواصل المعلنة للمركز'
+              ` ${t.legal.viaChannels}`
             )}
             .
           </p>
-          <p>تُحذف البيانات بعد التحقق من الطلب، عدا ما يلزم الاحتفاظ به لأغراض قانونية أو مالية.</p>
-          <p>
-            وإن كان لديك حساب يمكنك تقديم الطلب مباشرة من التطبيق أو الموقع: «حسابي وبياناتي» ← «طلب حذف حسابي وبياناتي»، وتصلك نتيجة المراجعة بإشعار.
-          </p>
+          <p>{t.legal.delete2}</p>
+          <p>{t.legal.delete3}</p>
         </>
       )}
     </LegalPage>

@@ -7,7 +7,7 @@ export default async function PlatformLoginPage({ searchParams }: { searchParams
   const { error } = await searchParams;
 
   return (
-    <AuthCard title="لوحة مالك المنصة" subtitle="بستان القرآن" error={error}>
+    <AuthCard title="لوحة مالك المنصة" subtitle="بستان القرآن" error={error} languages={false}>
       <form action={signInToPlatform} className="flex flex-col gap-3">
         <label className={authLabelClass}>
           البريد الإلكتروني

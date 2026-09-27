@@ -1,5 +1,7 @@
 import { OrgLogo } from '@/components/org-logo';
 import { getPublicSite } from '@/lib/tenant/public-site';
+import { getI18n } from '@/lib/i18n/server';
+import { LanguageSwitcher } from '@/lib/i18n/client';
 
 /**
  * Shared chrome for the public pages every center needs (privacy, support,
@@ -15,7 +17,8 @@ export async function LegalPage({
   children: (site: { name: string; contactEmail: string | null }) => React.ReactNode;
 }) {
   const site = await getPublicSite(orgSlug);
-  const name = site?.name ?? 'بستان القرآن';
+  const { t } = await getI18n();
+  const name = site?.name ?? t.common.brand;
 
   return (
     <div
@@ -32,9 +35,12 @@ export async function LegalPage({
           <OrgLogo name={name} logoUrl={site?.logo_url} size={32} />
           {name}
         </a>
-        <a href="/login" className="text-sm text-brand hover:underline">
-          تسجيل الدخول
-        </a>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <a href="/login" className="text-sm text-brand hover:underline">
+            {t.common.login}
+          </a>
+        </div>
       </header>
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-6 py-12">
         <h1 className="text-2xl font-bold">{title}</h1>

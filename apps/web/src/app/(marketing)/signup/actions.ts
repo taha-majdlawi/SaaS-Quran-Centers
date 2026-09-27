@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
 
 const RESERVED_SLUGS = new Set(['www', 'admin', 'api', 'app', 'platform']);
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -11,13 +12,14 @@ export async function signUpAndCreateOrganization(formData: FormData) {
   const slug = (formData.get('slug') as string)?.trim().toLowerCase();
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
+  const { t } = await getI18n();
 
   if (!orgName || !slug || !email || !password) {
-    redirect(`/signup?error=${encodeURIComponent('كل الحقول مطلوبة')}`);
+    redirect(`/signup?error=${encodeURIComponent(t.signup.errorRequired)}`);
   }
   if (!SLUG_PATTERN.test(slug) || RESERVED_SLUGS.has(slug)) {
     redirect(
-      `/signup?error=${encodeURIComponent('الرابط غير صالح - حروف إنجليزية صغيرة وأرقام وشرطات فقط، بدون كلمات محجوزة')}`,
+      `/signup?error=${encodeURIComponent(t.signup.errorSlug)}`,
     );
   }
 
@@ -26,14 +28,20 @@ export async function signUpAndCreateOrganization(formData: FormData) {
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
 
   if (signUpError) {
-    redirect(`/signup?error=${encodeURIComponent(signUpError.message)}`);
+    // Supabase answers in English; the two common cases get the viewer's language
+    const message = /already registered/i.test(signUpError.message)
+      ? t.signup.errorEmailTaken
+      : /password/i.test(signUpError.message)
+        ? t.signup.errorWeakPassword
+        : signUpError.message;
+    redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
 
   if (!signUpData.session) {
     // "Confirm email" is on for this project - org creation resumes after
     // the visitor confirms and logs in (not wired yet in this skeleton).
     redirect(
-      `/signup?error=${encodeURIComponent('تحقق من بريدك لتأكيد الحساب أولًا - راجعنا بعد التأكيد لإكمال إنشاء المركز')}`,
+      `/signup?error=${encodeURIComponent(t.signup.errorConfirmEmail)}`,
     );
   }
 
@@ -43,7 +51,7 @@ export async function signUpAndCreateOrganization(formData: FormData) {
   });
 
   if (orgError) {
-    const message = orgError.code === '23505' ? 'هذا الرابط مستخدم من قبل، جرّب رابط آخر' : orgError.message;
+    const message = orgError.code === '23505' ? t.signup.errorSlugTaken : orgError.message;
     redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
 

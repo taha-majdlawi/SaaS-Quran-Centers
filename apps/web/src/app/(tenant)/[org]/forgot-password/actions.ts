@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { toLoginEmail, LOGIN_DOMAIN } from '@/lib/accounts/login-id';
+import { getI18n } from '@/lib/i18n/server';
 
 export interface ForgotPasswordState {
   error?: string;
@@ -20,9 +21,10 @@ export async function requestPasswordReset(
 ): Promise<ForgotPasswordState> {
   const orgSlug = formData.get('orgSlug') as string;
   const identifier = ((formData.get('identifier') as string) ?? '').trim();
+  const { t } = await getI18n();
 
   if (!identifier) {
-    return { error: 'أدخل رقم الهوية أو البريد الإلكتروني' };
+    return { error: t.forgot.errorEmpty };
   }
 
   const email = toLoginEmail(orgSlug, identifier);
@@ -31,7 +33,7 @@ export async function requestPasswordReset(
   // real mail - there is nothing to send a reset link to. Their only path
   // back in is a center admin resetting the password from member management.
   if (email.endsWith(`.${LOGIN_DOMAIN}`)) {
-    return { error: 'هذا الحساب لا يملك بريدًا إلكترونيًا لاستعادة كلمة السر - اطلب من إدارة المركز إعادة تعيينها من صفحة الأعضاء' };
+    return { error: t.forgot.errorNoEmail };
   }
 
   const supabase = await createClient();

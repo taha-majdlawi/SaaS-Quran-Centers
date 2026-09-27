@@ -3,18 +3,20 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { toLoginEmail } from '@/lib/accounts/login-id';
+import { getI18n } from '@/lib/i18n/server';
 
 export async function signInToTenant(formData: FormData) {
   const orgSlug = formData.get('orgSlug') as string;
   const identifier = (formData.get('identifier') as string) ?? '';
   const password = formData.get('password') as string;
+  const { t } = await getI18n();
 
   const supabase = await createClient();
 
   const { data: org } = await supabase.from('organizations').select('id').eq('slug', orgSlug).maybeSingle();
 
   if (!org) {
-    redirect(`/login?error=${encodeURIComponent('المركز غير موجود')}`);
+    redirect(`/login?error=${encodeURIComponent(t.login.errorNoCenter)}`);
   }
 
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -23,7 +25,7 @@ export async function signInToTenant(formData: FormData) {
   });
 
   if (signInError || !signInData.user) {
-    redirect(`/login?error=${encodeURIComponent('البريد الإلكتروني أو كلمة السر غير صحيحة')}`);
+    redirect(`/login?error=${encodeURIComponent(t.login.errorCredentials)}`);
   }
 
   const { data: membership } = await supabase
@@ -36,7 +38,7 @@ export async function signInToTenant(formData: FormData) {
 
   if (!membership) {
     await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent('حسابك غير مرتبط بهذا المركز')}`);
+    redirect(`/login?error=${encodeURIComponent(t.login.errorNotMember)}`);
   }
 
   redirect('/dashboard');

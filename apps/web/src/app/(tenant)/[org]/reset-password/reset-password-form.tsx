@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 type Status = 'checking' | 'ready' | 'invalid';
 
@@ -12,7 +13,7 @@ type Status = 'checking' | 'ready' | 'invalid';
  * the browser client parses it on init and fires PASSWORD_RECOVERY, there is
  * nothing to read server-side (see forgot-password/actions.ts for why).
  */
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ t }: { t: Dictionary['reset'] }) {
   const [status, setStatus] = useState<Status>('checking');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -48,11 +49,11 @@ export function ResetPasswordForm() {
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError('كلمة السر يجب ألا تقل عن 8 خانات');
+      setError(t.errorShort);
       return;
     }
     if (password !== confirm) {
-      setError('كلمتا السر غير متطابقتين');
+      setError(t.errorMismatch);
       return;
     }
     setSubmitting(true);
@@ -60,7 +61,7 @@ export function ResetPasswordForm() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setSubmitting(false);
     if (updateError) {
-      setError('تعذّر تحديث كلمة السر، جرّب طلب رابط جديد');
+      setError(t.errorFailed);
       return;
     }
     await supabase.auth.signOut();
@@ -69,17 +70,17 @@ export function ResetPasswordForm() {
   }
 
   if (status === 'checking') {
-    return <p className="py-6 text-center text-sm text-gray-500">جاري التحقق من الرابط...</p>;
+    return <p className="py-6 text-center text-sm text-gray-500">{t.checking}</p>;
   }
 
   if (status === 'invalid') {
     return (
       <div className="flex flex-col gap-3 text-center">
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          هذا الرابط غير صالح أو انتهت صلاحيته، اطلب رابطًا جديدًا
+          {t.invalid}
         </p>
         <a href="/forgot-password" className="text-sm font-semibold text-brand">
-          طلب رابط جديد
+          {t.requestNew}
         </a>
       </div>
     );
@@ -88,7 +89,7 @@ export function ResetPasswordForm() {
   if (done) {
     return (
       <p className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">
-        تم تحديث كلمة السر، جاري تحويلك لتسجيل الدخول...
+        {t.done}
       </p>
     );
   }
@@ -97,7 +98,7 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-center text-sm text-red-600">{error}</p>}
       <label className={authLabelClass}>
-        كلمة السر الجديدة
+        {t.newPassword}
         <input
           type="password"
           required
@@ -108,7 +109,7 @@ export function ResetPasswordForm() {
         />
       </label>
       <label className={authLabelClass}>
-        تأكيد كلمة السر
+        {t.confirm}
         <input
           type="password"
           required
@@ -119,7 +120,7 @@ export function ResetPasswordForm() {
         />
       </label>
       <button type="submit" disabled={submitting} className={`mt-2 ${authButtonClass}`}>
-        {submitting ? 'جاري الحفظ...' : 'حفظ كلمة السر'}
+        {submitting ? t.saving : t.submit}
       </button>
     </form>
   );

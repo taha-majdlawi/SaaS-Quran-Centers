@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
+/* Direction comes from <html dir> (app/layout.tsx): rtl for Arabic, ltr for
+   English. A fixed `direction` here would override it for every language. */
+html:not([dir]) {
   direction: rtl;
 }

@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
 
 /** Invitee has no account yet - create one, then accept in the same request. */
 export async function signUpAndAcceptInvitation(formData: FormData) {
@@ -20,7 +21,7 @@ export async function signUpAndAcceptInvitation(formData: FormData) {
     // "Confirm email" is on for this project - no session yet, so
     // accept_invitation (which requires auth.uid()) would fail silently.
     redirect(
-      `/join?token=${token}&error=${encodeURIComponent('تحقق من بريدك لتأكيد الحساب أولًا، ثم افتح رابط الدعوة من جديد لإكمال الانضمام')}`,
+      `/join?token=${token}&error=${encodeURIComponent((await getI18n()).t.join.errorConfirmEmail)}`,
     );
   }
 

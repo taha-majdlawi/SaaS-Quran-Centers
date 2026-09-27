@@ -1,4 +1,5 @@
 import { OrgLogo } from '@/components/org-logo';
+import { LanguageSwitcher } from '@/lib/i18n/client';
 
 export function AuthCard({
   title,
@@ -7,6 +8,7 @@ export function AuthCard({
   children,
   footer,
   brand,
+  languages = true,
 }: {
   title: string;
   subtitle?: string;
@@ -15,10 +17,13 @@ export function AuthCard({
   footer?: React.ReactNode;
   /** The center this screen belongs to (name + logo) - replaces the platform mark. */
   brand?: { name: string; logoUrl?: string | null };
+  /** Show the language picker (off for the Arabic-only platform console). */
+  languages?: boolean;
 }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+      <div className="relative w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        {languages && <LanguageSwitcher className="absolute end-3 top-3" />}
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex justify-center">
             <OrgLogo name={brand?.name ?? 'ب'} logoUrl={brand?.logoUrl} size={56} />

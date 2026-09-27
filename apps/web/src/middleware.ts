@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { authCookieDomain } from './lib/supabase/cookie-options';
+import { I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE, isI18nReady, isLocale } from './lib/i18n/config';
 
 const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase();
 
@@ -62,12 +63,23 @@ export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
 
   const bareHost = hostname.split(':')[0];
-  // the rewritten request carries its real host (see FORWARDED_HOST_HEADER)
-  const rewriteTo = (target: URL) => {
+  // ?lang=en in a link: this request renders in it, and it is remembered (cookie set below)
+  const langParam = req.nextUrl.searchParams.get('lang');
+  const forcedLang = isLocale(langParam) ? langParam : null;
+  // What the page learns about its request: its real host (see FORWARDED_HOST_HEADER),
+  // which part of the product it is, and whether it may render in the viewer's language.
+  const requestHeaders = (scopeName: 'marketing' | 'tenant' | 'platform') => {
     const headers = new Headers(req.headers);
     headers.set(FORWARDED_HOST_HEADER, hostname);
-    return NextResponse.rewrite(target, { request: { headers } });
+    headers.set('x-bustan-scope', scopeName);
+    headers.delete(I18N_READY_HEADER);
+    headers.delete(LANG_OVERRIDE_HEADER);
+    if (isI18nReady(scopeName, req.nextUrl.pathname)) headers.set(I18N_READY_HEADER, '1');
+    if (forcedLang) headers.set(LANG_OVERRIDE_HEADER, forcedLang);
+    return headers;
   };
+  const rewriteTo = (target: URL, scopeName: 'tenant' | 'platform') =>
+    NextResponse.rewrite(target, { request: { headers: requestHeaders(scopeName) } });
 
   const isRootDomain =
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
@@ -76,7 +88,7 @@ export async function middleware(req: NextRequest) {
   let scope: 'platform' | 'tenant' | null = null;
 
   if (isRootDomain) {
-    response = NextResponse.next();
+    response = NextResponse.next({ request: { headers: requestHeaders('marketing') } });
   } else {
     const subdomain = bareHost.endsWith(`.${bareRoot}`)
       ? bareHost.slice(0, -(`.${bareRoot}`.length))
@@ -85,13 +97,13 @@ export async function middleware(req: NextRequest) {
     if (subdomain === 'admin') {
       scope = 'platform';
       url.pathname = `/platform${req.nextUrl.pathname}`;
-      response = rewriteTo(url);
+      response = rewriteTo(url, 'platform');
     } else if (RESERVED_SUBDOMAINS.has(subdomain)) {
-      response = NextResponse.next();
+      response = NextResponse.next({ request: { headers: requestHeaders('marketing') } });
     } else {
       scope = 'tenant';
       url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
-      response = rewriteTo(url);
+      response = rewriteTo(url, 'tenant');
     }
   }
 
@@ -126,6 +138,11 @@ export async function middleware(req: NextRequest) {
       response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
       return redirectResponse;
     }
+  }
+
+  // remember a ?lang= choice for every subdomain, like the viewer's own switcher does
+  if (forcedLang) {
+    response.cookies.set(LOCALE_COOKIE, forcedLang, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax', domain: authCookieDomain() });
   }
 
   // Baseline security headers on every response - clickjacking, MIME

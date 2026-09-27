@@ -1,30 +1,30 @@
 import { LegalPage } from '@/components/legal-page';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 export default async function SupportPage({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params;
+  const { t } = await getI18n();
   return (
-    <LegalPage orgSlug={org} title="الدعم والمساعدة">
+    <LegalPage orgSlug={org} title={t.legal.supportTitle}>
       {({ name, contactEmail }) => (
         <>
           <p>
-            إن واجهتك مشكلة في الدخول أو في استخدام التطبيق، تواصل مع إدارة {name}
+            {fmt(t.legal.support1, { name })}
             {contactEmail ? (
               <>
                 {' '}
-                عبر{' '}
+                {t.legal.viaEmail}{' '}
                 <a href={`mailto:${contactEmail}`} className="text-brand hover:underline" dir="ltr">
                   {contactEmail}
                 </a>
               </>
             ) : (
-              ' مباشرة'
+              ` ${t.legal.directly}`
             )}
             .
           </p>
-          <p>
-            للدخول تحتاج: <b>رمز المركز</b> + <b>رقم الدخول أو البريد</b> + <b>كلمة السر</b> التي سلّمتها لك الإدارة. إن نسيتَ
-            كلمة السر تطلب الإدارة تغييرها لك.
-          </p>
+          <p>{t.legal.support2}</p>
         </>
       )}
     </LegalPage>

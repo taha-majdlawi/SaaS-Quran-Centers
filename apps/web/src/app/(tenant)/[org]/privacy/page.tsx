@@ -1,25 +1,22 @@
 import { LegalPage } from '@/components/legal-page';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 export default async function PrivacyPage({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params;
+  const { t } = await getI18n();
   return (
-    <LegalPage orgSlug={org} title="سياسة الخصوصية">
+    <LegalPage orgSlug={org} title={t.legal.privacyTitle}>
       {({ name }) => (
         <>
+          <p>{fmt(t.legal.privacy1, { name })}</p>
+          <p>{t.legal.privacy2}</p>
           <p>
-            يجمع {name} المعلومات اللازمة فقط لإدارة تسجيل الطلاب ومتابعة تقدمهم: الاسم، وبيانات التواصل، وسجلات التسميع
-            والسرد والحضور الخاصة بهذا المركز.
-          </p>
-          <p>
-            هذه البيانات مقصورة على مركزك، ولا يصل إليها أي مركز آخر على المنصة؛ فكل مركز معزول عن غيره تمامًا. ولا يرى
-            الطالب أو ولي الأمر إلا بيانات ابنه هو.
-          </p>
-          <p>
-            لا تُشارَك بياناتك مع أي جهة لأغراض تسويقية. ويمكن لولي الأمر أو الطالب طلب الاطلاع على بياناته أو حذفها عبر{' '}
+            {t.legal.privacy3Before}{' '}
             <a href="/delete-account" className="text-brand hover:underline">
-              صفحة طلب الحذف
+              {t.legal.privacy3Link}
             </a>{' '}
-            أو بالتواصل مع إدارة المركز.
+            {t.legal.privacy3After}
           </p>
         </>
       )}
