@@ -1,3 +1,5 @@
+import { ar } from '@/lib/i18n/dictionaries/ar';
+
 // Billing phase 1 (manual payments, migration 0066) - shapes + labels shared by
 // the center's /billing page, the tenant banner and the platform console.
 
@@ -72,8 +74,19 @@ export const STATE_LABELS: Record<string, string> = {
   expired: 'منتهي',
   suspended: 'موقوف',
   cancelled: 'ملغى',
-  free: 'الخطة المجانية',
+  free: 'الخطة المجانية 🌱',
 };
+
+/**
+ * The garden ladder (0068): plans, cheapest first, are the stages of a growing
+ * orchard - بذرة -> غرسة -> شجرة -> بستان. Picked by position, so a plan the
+ * owner renames in the console keeps its icon and tagline.
+ */
+export const GARDEN_STAGES = ar.marketing.stages;
+export const gardenStage = (i: number) => GARDEN_STAGES[Math.max(0, Math.min(i, GARDEN_STAGES.length - 1))];
+
+/** The upgrade call-to-action used wherever a plan limit is reached. */
+export const UPGRADE_CTA = '🌿 اسقِ بستانك — انتقل لخطة أكبر';
 
 export const money = (cents: number, currency: string) =>
   `${(cents / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })} ${currency}`;
@@ -98,16 +111,16 @@ export function billingBanner(b: BillingState | null | undefined, isStaff: boole
       text:
         b.state === 'suspended' || b.state === 'cancelled'
           ? 'المركز موقوف — البيانات للاطّلاع فقط. تواصل مع إدارة المنصة'
-          : `${ended} ${what} — البيانات للاطّلاع فقط حتى التجديد`,
+          : `🍂 ${ended} ${what} — البيانات للاطّلاع فقط حتى تسقي بستانك بالتجديد`,
     };
   }
   if (!isStaff) return null;
   if (b.state === 'grace') {
     const next = b.free_plan_available ? 'ينتقل المركز للخطة المجانية (أو للقراءة فقط إن تجاوز حدودها)' : 'يتحول المركز للقراءة فقط';
-    return { tone: 'red', text: `${ended} ${what} — ${next} في ${fmtDay(b.grace_ends)}` };
+    return { tone: 'red', text: `🍂 ${ended} ${what} — بستانك ينتظر السقاية: ${next} في ${fmtDay(b.grace_ends)}` };
   }
   if ((b.state === 'trial' || b.state === 'active') && b.days_left != null && b.days_left <= 7) {
-    return { tone: 'amber', text: `${ends} ${what} خلال ${b.days_left} ${b.days_left === 1 ? 'يوم' : 'أيام'}` };
+    return { tone: 'amber', text: `🌿 ${ends} ${what} خلال ${b.days_left} ${b.days_left === 1 ? 'يوم' : 'أيام'} — اسقِ بستانك بالتجديد` };
   }
   return null;
 }
@@ -119,7 +132,7 @@ export function usageBanner(u: Usage | null | undefined): { tone: 'red' | 'amber
   let full = false;
   if (u.students_left != null && u.students_left <= 5) {
     full ||= u.students_left === 0;
-    parts.push(u.students_left === 0 ? `وصل المركز للحد الأقصى من الطلاب (${u.max_students})` : `تبقى ${countText(u.students_left, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم`);
+    parts.push(u.students_left === 0 ? `🌳 امتلأ بستانك: وصل المركز للحد الأقصى من الطلاب (${u.max_students})` : `تبقى ${countText(u.students_left, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم`);
   }
   if (u.teachers_left != null && u.teachers_left <= 1) {
     full ||= u.teachers_left === 0;

@@ -11,7 +11,7 @@ void main() {
 
   test('capacity: few students left, teachers full', () {
     final w = planWarningsFrom(access(usage: {'students_left': 3, 'max_students': 100, 'teachers_left': 0, 'max_teachers': 8}));
-    expect(w.map((e) => e.text), ['تبقى 3 طلاب يمكن إضافتهم ضمن الخطة', 'وصل المركز للحد الأقصى من المعلمين (8)']);
+    expect(w.map((e) => e.text), ['🌿 تبقى 3 طلاب يمكن إضافتهم ضمن الخطة', '🌳 وصل المركز للحد الأقصى من المعلمين (8)']);
     expect(w.last.urgent, isTrue);
   });
 
@@ -20,6 +20,6 @@ void main() {
     expect(planWarningsFrom(access(usage: u, billing: {'enforced': false, 'state': 'trial', 'kind': 'trial', 'days_left': 2})), isEmpty);
     expect(planWarningsFrom(access(usage: u, billing: {'enforced': true, 'state': 'active', 'kind': 'paid', 'days_left': 20})), isEmpty);
     final w = planWarningsFrom(access(usage: u, billing: {'enforced': true, 'state': 'trial', 'kind': 'trial', 'days_left': 1}));
-    expect(w.single.text, 'تنتهي الفترة التجريبية خلال يوم واحد');
+    expect(w.single.text, '🌿 تنتهي الفترة التجريبية خلال يوم واحد');
   });
 }

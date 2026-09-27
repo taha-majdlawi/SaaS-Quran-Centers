@@ -88,7 +88,7 @@ export default async function TenantProtectedLayout({
             {capacity.text}
             {org.myRole === 'admin' && (
               <a href="/billing" className="ms-2 underline">
-                ترقية الخطة
+                🌿 اسقِ بستانك — انتقل لخطة أكبر
               </a>
             )}
           </div>

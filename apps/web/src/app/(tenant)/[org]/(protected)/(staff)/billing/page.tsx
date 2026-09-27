@@ -9,7 +9,9 @@ import {
   REQUEST_STATUS,
   REQUEST_STYLES,
   STATE_LABELS,
+  UPGRADE_CTA,
   countText,
+  gardenStage,
   fmtDay,
   money,
   type BillingPlan,
@@ -29,7 +31,7 @@ interface Overview {
 }
 
 const OK: Record<string, string> = {
-  submitted: 'وصل إشعار الدفع ✓ — سيُفعَّل الاشتراك فور تأكيد إدارة المنصة استلام المبلغ',
+  submitted: 'وصل إشعار الدفع ✓ — سيُسقى بستانك ويُفعَّل الاشتراك فور تأكيد إدارة المنصة استلام المبلغ 💧',
   cancelled: 'أُلغي إشعار الدفع',
 };
 const input = 'mt-1 w-full rounded border px-3 py-2 text-sm';
@@ -87,7 +89,7 @@ export default async function BillingPage({
           <p className="mt-2 text-sm text-red-700">يتحول المركز للقراءة فقط في {fmtDay(b.grace_ends)} إن لم يُجدَّد الاشتراك.</p>
         )}
         {b.state === 'free' && (
-          <p className="mt-3 text-sm text-gray-600">المركز على الخطة المجانية بحدودها — رقِّ الخطة لإضافة المزيد من الطلاب والمعلمين.</p>
+          <p className="mt-3 text-sm text-gray-600">🌱 بذرتك مغروسة على الخطة المجانية بحدودها — اسقِها بخطة أكبر لتتسع لمزيد من الطلاب والمعلمين.</p>
         )}
         {b.locked && (
           <p className="mt-2 text-sm font-semibold text-red-700">
@@ -119,12 +121,17 @@ export default async function BillingPage({
       )}
 
       <section>
-        <h2 className="mb-2 font-semibold">الخطط</h2>
+        <h2 className="mb-1 font-semibold">مراحل البستان</h2>
+        <p className="mb-3 text-xs text-gray-500">من البذرة إلى البستان — اختر المرحلة التي تناسب مركزك، وانتقل للأكبر متى كبر.</p>
         {o.plans.length ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            {o.plans.map((p) => (
+            {o.plans.map((p, i) => (
               <div key={p.id} className={`rounded-lg border bg-white p-4 text-sm ${o.current_plan?.id === p.id ? 'border-brand' : ''}`}>
-                <p className="text-base font-bold">{p.name}</p>
+                <p className="text-base font-bold">
+                  {gardenStage(i).icon} {p.name}
+                  {o.current_plan?.id === p.id && <span className="ms-2 rounded-full bg-brand/10 px-2 py-0.5 text-xs text-brand">خطتك الحالية</span>}
+                </p>
+                <p className="mt-0.5 text-xs text-gray-500">{gardenStage(i).tagline}</p>
                 {p.is_free ? (
                   <p className="mt-1 font-bold text-green-700">مجانًا</p>
                 ) : (
@@ -163,7 +170,7 @@ export default async function BillingPage({
 
       {!pending && payable.length > 0 && (
         <section className="rounded-lg border bg-white p-4">
-          <h2 className="mb-1 font-semibold">دفعتَ؟ أبلغنا</h2>
+          <h2 className="mb-1 font-semibold">💧 سقيتَ بستانك؟ أبلغنا بدفعتك</h2>
           <p className="mb-3 text-xs text-gray-500">بعد التحويل أو الدفع، املأ هذا النموذج ليُفعَّل الاشتراك فور تأكيد الاستلام.</p>
           <form action={submitPayment} className="grid gap-3 sm:grid-cols-2">
             <input type="hidden" name="orgId" value={org.id} />
@@ -254,7 +261,7 @@ function UsageMeter({ label, used, max, left, unit, warnAt }: { label: string; u
         </div>
       )}
       <p className={`mt-2 text-xs ${left === 0 ? 'font-semibold text-red-700' : left != null && left <= warnAt ? 'font-semibold text-amber-700' : 'text-gray-500'}`}>
-        {max == null ? 'بلا حد في خطتك' : left === 0 ? 'وصلت للحد الأقصى — رقِّ الخطة للإضافة' : `تبقى ${countText(left ?? 0, unit[0], unit[1], unit[2])} يمكن إضافتهم`}
+        {max == null ? 'بلا حد في خطتك' : left === 0 ? `امتلأ البستان — ${UPGRADE_CTA}` : `تبقى ${countText(left ?? 0, unit[0], unit[1], unit[2])} يمكن إضافتهم`}
       </p>
     </div>
   );

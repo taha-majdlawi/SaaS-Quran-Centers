@@ -139,18 +139,18 @@ List<({String text, bool urgent})> planWarningsFrom(Map<String, dynamic> access)
     final what = trial ? 'الفترة التجريبية' : 'اشتراك المركز';
     final days = (b['days_left'] as num?)?.toInt();
     if (b['state'] == 'grace') {
-      out.add((text: '${trial ? 'انتهت' : 'انتهى'} $what — جدّدوا من لوحة التحكم على الويب', urgent: true));
+      out.add((text: '🍂 ${trial ? 'انتهت' : 'انتهى'} $what — بستانكم ينتظر السقاية: جدّدوا من لوحة التحكم على الويب', urgent: true));
     } else if ((b['state'] == 'trial' || b['state'] == 'active') && days != null && days <= 7) {
-      out.add((text: '${trial ? 'تنتهي' : 'ينتهي'} $what خلال ${_count(days, 'يوم', 'يومين', 'أيام')}', urgent: days <= 3));
+      out.add((text: '🌿 ${trial ? 'تنتهي' : 'ينتهي'} $what خلال ${_count(days, 'يوم', 'يومين', 'أيام')}', urgent: days <= 3));
     }
   }
   final sl = (usage['students_left'] as num?)?.toInt();
   if (sl != null && sl <= 5) {
-    out.add((text: sl == 0 ? 'وصل المركز للحد الأقصى من الطلاب (${usage['max_students']})' : 'تبقى ${_count(sl, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم ضمن الخطة', urgent: sl == 0));
+    out.add((text: sl == 0 ? '🌳 امتلأ البستان: وصل المركز للحد الأقصى من الطلاب (${usage['max_students']})' : '🌿 تبقى ${_count(sl, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم ضمن الخطة', urgent: sl == 0));
   }
   final tl = (usage['teachers_left'] as num?)?.toInt();
   if (tl != null && tl <= 1) {
-    out.add((text: tl == 0 ? 'وصل المركز للحد الأقصى من المعلمين (${usage['max_teachers']})' : 'تبقى إضافة معلم واحد فقط ضمن الخطة', urgent: tl == 0));
+    out.add((text: tl == 0 ? '🌳 وصل المركز للحد الأقصى من المعلمين (${usage['max_teachers']})' : '🌿 تبقى إضافة معلم واحد فقط ضمن الخطة', urgent: tl == 0));
   }
   return out;
 }
