@@ -4,7 +4,7 @@ import { SubmitButton } from '@/components/submit-button';
 import { OrgLogo } from '@/components/org-logo';
 import { signOut } from '@/lib/auth/actions';
 import { createClient } from '@/lib/supabase/server';
-import { billingBanner, type BillingState } from '@/lib/billing/format';
+import { billingBanner, usageBanner, type BillingState, type Usage } from '@/lib/billing/format';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'مدير',
@@ -35,10 +35,12 @@ export default async function TenantProtectedLayout({
   // A viewing (read-only) account is told so on every page; the database refuses its writes regardless.
   const supabase = await createClient();
   const { data: access } = await supabase.rpc('my_access', { p_org: org.id });
-  const acc = access as { is_read_only?: boolean; reason?: 'account' | 'billing' | null; billing?: BillingState } | null;
+  const acc = access as { is_read_only?: boolean; reason?: 'account' | 'billing' | null; billing?: BillingState; usage?: Usage | null } | null;
   const viewer = acc?.is_read_only === true && acc.reason !== 'billing';
-  // Subscription state (0066): locked for everyone, expiring-soon for admins only.
-  const billing = billingBanner(acc?.billing, org.myRole === 'admin');
+  // Subscription state (0066/0067): locked for everyone; expiring / grace / capacity for staff.
+  const isStaff = org.myRole === 'admin' || org.myRole === 'teacher';
+  const billing = billingBanner(acc?.billing, isStaff);
+  const capacity = isStaff ? usageBanner(acc?.usage) : null;
   const { data: noticeData } = await supabase.rpc('active_platform_notices');
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
@@ -77,6 +79,16 @@ export default async function TenantProtectedLayout({
             {org.myRole === 'admin' && (
               <a href="/billing" className="ms-2 underline">
                 الاشتراك والدفع
+              </a>
+            )}
+          </div>
+        )}
+        {capacity && (
+          <div className={`px-6 py-2 text-center text-sm font-semibold print:hidden ${capacity.tone === 'red' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-900'}`}>
+            {capacity.text}
+            {org.myRole === 'admin' && (
+              <a href="/billing" className="ms-2 underline">
+                ترقية الخطة
               </a>
             )}
           </div>

@@ -30,6 +30,8 @@ interface Settings {
   grace_days: number;
   instructions: string;
   would_lock: { id: string; name: string; slug: string; status: string; trial_ends_at: string | null }[];
+  would_move_to_free?: { id: string; name: string; slug: string; status: string; trial_ends_at: string | null }[];
+  free_plan?: { id: string; name: string } | null;
 }
 
 const OK: Record<string, string> = {
@@ -209,6 +211,22 @@ export default async function PlatformBillingPage({ searchParams }: { searchPara
                   </>
                 ) : (
                   <p className="mt-1">لن يُقفل أي مركز لو فعّلته الآن.</p>
+                )}
+                {(st.would_move_to_free ?? []).length > 0 && (
+                  <>
+                    <p className="mt-2 font-semibold">
+                      وستنتقل هذه المراكز ({(st.would_move_to_free ?? []).length}) إلى الخطة المجانية «{st.free_plan?.name}» لأن حجمها يناسبها:
+                    </p>
+                    <ul className="mt-1 list-inside list-disc">
+                      {(st.would_move_to_free ?? []).map((o) => (
+                        <li key={o.id}>
+                          <a href={`/organizations/${o.id}` as never} className="underline">
+                            {o.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 )}
               </div>
             )}

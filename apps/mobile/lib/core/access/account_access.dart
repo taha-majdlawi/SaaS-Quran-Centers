@@ -43,6 +43,11 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
   /// The sentence to show for the current lock.
   String get lockMessage => _billingLock ? kBillingLockMessage : kViewerMessage;
 
+  /// Staff-only heads-up from the center's plan (0067): subscription ending
+  /// soon / in grace, or students / teachers nearly at the plan's limit.
+  /// Empty for students and guardians (the server sends no usage to them).
+  List<({String text, bool urgent})> planWarnings = const [];
+
   /// Messages from the platform owner (maintenance, updates), shown to everyone.
   List<({String title, String? body, String level})> notices = const [];
 
@@ -82,6 +87,11 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_key, ro);
       await prefs.setBool(_billingKey, billing);
+      final warnings = planWarningsFrom(map);
+      if (warnings.length != planWarnings.length || warnings.any((w) => !planWarnings.contains(w))) {
+        planWarnings = warnings;
+        notifyListeners();
+      }
     } catch (_) {
       // offline / old server: keep the last known answer
     }
@@ -115,6 +125,36 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
   }
 }
 
+String _count(int n, String one, String two, String many) => n == 1 ? '$one واحد' : (n == 2 ? two : '$n $many');
+
+/// Same rules as the web banner (apps/web/src/lib/billing/format.ts): only for
+/// staff (usage present), only while the platform enforces billing.
+List<({String text, bool urgent})> planWarningsFrom(Map<String, dynamic> access) {
+  final usage = access['usage'];
+  if (usage is! Map) return const [];
+  final out = <({String text, bool urgent})>[];
+  final b = access['billing'];
+  if (b is Map && b['enforced'] == true && b['locked'] != true) {
+    final trial = b['kind'] == 'trial';
+    final what = trial ? 'الفترة التجريبية' : 'اشتراك المركز';
+    final days = (b['days_left'] as num?)?.toInt();
+    if (b['state'] == 'grace') {
+      out.add((text: '${trial ? 'انتهت' : 'انتهى'} $what — جدّدوا من لوحة التحكم على الويب', urgent: true));
+    } else if ((b['state'] == 'trial' || b['state'] == 'active') && days != null && days <= 7) {
+      out.add((text: '${trial ? 'تنتهي' : 'ينتهي'} $what خلال ${_count(days, 'يوم', 'يومين', 'أيام')}', urgent: days <= 3));
+    }
+  }
+  final sl = (usage['students_left'] as num?)?.toInt();
+  if (sl != null && sl <= 5) {
+    out.add((text: sl == 0 ? 'وصل المركز للحد الأقصى من الطلاب (${usage['max_students']})' : 'تبقى ${_count(sl, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم ضمن الخطة', urgent: sl == 0));
+  }
+  final tl = (usage['teachers_left'] as num?)?.toInt();
+  if (tl != null && tl <= 1) {
+    out.add((text: tl == 0 ? 'وصل المركز للحد الأقصى من المعلمين (${usage['max_teachers']})' : 'تبقى إضافة معلم واحد فقط ضمن الخطة', urgent: tl == 0));
+  }
+  return out;
+}
+
 /// The strip(s) under the status bar: "viewing account" and/or "waiting to
 /// upload". Mounted once in MaterialApp.builder rather than in every shell.
 class StatusBanners extends StatelessWidget {
@@ -126,7 +166,7 @@ class StatusBanners extends StatelessWidget {
     if (!context.watch<AuthController>().isAuthenticated) return false;
     final sync = context.watch<SyncService>();
     final access = context.watch<AccessController>();
-    return access.isReadOnly || access.notices.isNotEmpty || sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
+    return access.isReadOnly || access.notices.isNotEmpty || access.planWarnings.isNotEmpty || sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
   }
 
   @override
@@ -138,7 +178,7 @@ class StatusBanners extends StatelessWidget {
     final syncShown = sync.pendingCount + sync.failedCount > 0 || sync.usingCache;
     final notices = context.watch<AccessController>().notices;
     Color noticeColor(String level) => level == 'critical' ? Colors.red.shade700 : (level == 'warning' ? Colors.orange.shade800 : Colors.blue.shade700);
-    final top = notices.isNotEmpty ? noticeColor(notices.first.level) : (viewer ? (access.isBillingLock ? Colors.red.shade700 : Colors.amber.shade800) : (sync.failedCount > 0 ? Colors.red.shade700 : Colors.orange.shade800));
+    final top = notices.isNotEmpty ? noticeColor(notices.first.level) : access.planWarnings.isNotEmpty ? (access.planWarnings.first.urgent ? Colors.red.shade700 : Colors.orange.shade800) : (viewer ? (access.isBillingLock ? Colors.red.shade700 : Colors.amber.shade800) : (sync.failedCount > 0 ? Colors.red.shade700 : Colors.orange.shade800));
 
     return ColoredBox(
       color: top,
@@ -156,6 +196,18 @@ class StatusBanners extends StatelessWidget {
                   Expanded(
                     child: Text('${n.title}${n.body == null ? '' : ' — ${n.body}'}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
+                ]),
+              ),
+            ),
+          for (final w in access.planWarnings)
+            Material(
+              color: w.urgent ? Colors.red.shade700 : Colors.orange.shade800,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(children: [
+                  const Icon(Icons.info_outline_rounded, size: 16, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(w.text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
                 ]),
               ),
             ),

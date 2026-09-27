@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { StudentFormFields } from './student-form-fields';
 import { createStudent } from '../actions';
+import { PlanCapacityNote } from '@/components/plan-capacity-note';
 
 function generatePassword() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
@@ -36,6 +37,7 @@ export default async function NewStudentPage({
   return (
     <div className="max-w-lg">
       <h1 className="mb-6 text-2xl font-bold">إضافة طالب</h1>
+      <PlanCapacityNote orgId={org.id} kind="students" isAdmin={org.myRole === 'admin'} />
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 

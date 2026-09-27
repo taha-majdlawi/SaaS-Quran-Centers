@@ -9,15 +9,18 @@ import {
   REQUEST_STATUS,
   REQUEST_STYLES,
   STATE_LABELS,
+  countText,
   fmtDay,
   money,
   type BillingPlan,
   type BillingRequest,
   type BillingState,
+  type Usage,
 } from '@/lib/billing/format';
 
 interface Overview {
   billing: BillingState;
+  usage: Usage;
   org_status: string;
   current_plan: { id: string; name: string } | null;
   plans: BillingPlan[];
@@ -52,6 +55,7 @@ export default async function BillingPage({
   if (!o) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{loadError?.message ?? 'تعذّر تحميل الاشتراك'}</p>;
   const b = o.billing;
   const pending = o.requests.find((r) => r.status === 'pending');
+  const payable = o.plans.filter((p) => !p.is_free);
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
@@ -76,17 +80,25 @@ export default async function BillingPage({
         {b.until && (
           <p className="mt-3 text-sm">
             {b.state === 'trial' ? 'تنتهي الفترة التجريبية' : b.state === 'active' ? 'الاشتراك ساري حتى' : 'انتهى في'} <b>{fmtDay(b.until)}</b>
-            {b.days_left != null && b.days_left > 0 && <span className="text-gray-500"> (باقي {b.days_left} يوم)</span>}
+            {b.days_left != null && b.days_left > 0 && <span className="text-gray-500"> (باقي {countText(b.days_left, 'يوم', 'يومان', 'أيام')})</span>}
           </p>
         )}
         {b.state === 'grace' && b.enforced && (
           <p className="mt-2 text-sm text-red-700">يتحول المركز للقراءة فقط في {fmtDay(b.grace_ends)} إن لم يُجدَّد الاشتراك.</p>
+        )}
+        {b.state === 'free' && (
+          <p className="mt-3 text-sm text-gray-600">المركز على الخطة المجانية بحدودها — رقِّ الخطة لإضافة المزيد من الطلاب والمعلمين.</p>
         )}
         {b.locked && (
           <p className="mt-2 text-sm font-semibold text-red-700">
             المركز الآن للقراءة فقط: كل البيانات ظاهرة، لكن لا يمكن إضافة أو تعديل شيء حتى يُؤكَّد الدفع.
           </p>
         )}
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        <UsageMeter label="الطلاب" used={o.usage.students} max={o.usage.max_students} left={o.usage.students_left} unit={['طالب', 'طالبان', 'طلاب']} warnAt={5} />
+        <UsageMeter label="المعلمون" used={o.usage.teachers} max={o.usage.max_teachers} left={o.usage.teachers_left} unit={['معلم', 'معلمان', 'معلمين']} warnAt={1} />
       </section>
 
       {pending && (
@@ -113,10 +125,14 @@ export default async function BillingPage({
             {o.plans.map((p) => (
               <div key={p.id} className={`rounded-lg border bg-white p-4 text-sm ${o.current_plan?.id === p.id ? 'border-brand' : ''}`}>
                 <p className="text-base font-bold">{p.name}</p>
+                {p.is_free ? (
+                  <p className="mt-1 font-bold text-green-700">مجانًا</p>
+                ) : (
                 <p className="mt-1">
                   <b>{money(p.price_cents, p.currency)}</b> <span className="text-gray-500">/ شهر</span>
                 </p>
-                {p.yearly_price_cents != null && (
+                )}
+                {!p.is_free && p.yearly_price_cents != null && (
                   <p>
                     <b>{money(p.yearly_price_cents, p.currency)}</b> <span className="text-gray-500">/ سنة</span>
                     {p.yearly_price_cents < p.price_cents * 12 && (
@@ -145,7 +161,7 @@ export default async function BillingPage({
         </section>
       )}
 
-      {!pending && o.plans.length > 0 && (
+      {!pending && payable.length > 0 && (
         <section className="rounded-lg border bg-white p-4">
           <h2 className="mb-1 font-semibold">دفعتَ؟ أبلغنا</h2>
           <p className="mb-3 text-xs text-gray-500">بعد التحويل أو الدفع، املأ هذا النموذج ليُفعَّل الاشتراك فور تأكيد الاستلام.</p>
@@ -153,8 +169,8 @@ export default async function BillingPage({
             <input type="hidden" name="orgId" value={org.id} />
             <label className="text-sm">
               الخطة
-              <select name="plan" required defaultValue={o.current_plan?.id ?? o.plans[0].id} className={input}>
-                {o.plans.map((p) => (
+              <select name="plan" required defaultValue={payable.some((p) => p.id === o.current_plan?.id) ? o.current_plan?.id : payable[0].id} className={input}>
+                {payable.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
@@ -217,6 +233,29 @@ export default async function BillingPage({
           </ul>
         </section>
       )}
+    </div>
+  );
+}
+
+function UsageMeter({ label, used, max, left, unit, warnAt }: { label: string; used: number; max: number | null; left: number | null; unit: [string, string, string]; warnAt: number }) {
+  const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0;
+  const tone = left === 0 ? 'bg-red-500' : left != null && left <= warnAt ? 'bg-amber-500' : 'bg-brand';
+  return (
+    <div className="rounded-lg border bg-white p-4 text-sm">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-semibold">{label}</span>
+        <span dir="ltr" className="font-bold">
+          {used} / {max ?? '∞'}
+        </span>
+      </div>
+      {max != null && (
+        <div className="h-2 overflow-hidden rounded bg-gray-100">
+          <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
+        </div>
+      )}
+      <p className={`mt-2 text-xs ${left === 0 ? 'font-semibold text-red-700' : left != null && left <= warnAt ? 'font-semibold text-amber-700' : 'text-gray-500'}`}>
+        {max == null ? 'بلا حد في خطتك' : left === 0 ? 'وصلت للحد الأقصى — رقِّ الخطة للإضافة' : `تبقى ${countText(left ?? 0, unit[0], unit[1], unit[2])} يمكن إضافتهم`}
+      </p>
     </div>
   );
 }

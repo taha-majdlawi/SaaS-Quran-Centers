@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getPlatformContext } from '@/lib/platform/get-platform-context';
 import { SubmitButton } from '@/components/submit-button';
 import { signOut } from '@/lib/auth/actions';
+import { createClient } from '@/lib/supabase/server';
 
 // Served on admin.{ROOT_DOMAIN} via middleware.ts. Replaces the legacy
 // wep-eqraa-center/dev/ superadmin panel - now manages every tenant instead
@@ -13,6 +14,11 @@ export default async function PlatformProtectedLayout({ children }: { children: 
   // would block every cross-tenant query anyway, so send them to sign in
   // rather than show an empty shell.
   if (!platform.isOwner) redirect('/login');
+
+  // centers needing attention (0067) - the count shows next to the menu entry
+  const supabase = await createClient();
+  const { data: alerts } = await supabase.rpc('platform_billing_alerts');
+  const alertCount = ((alerts as { rows?: unknown[] } | null)?.rows ?? []).length;
 
   return (
     <div className="flex min-h-screen">
@@ -27,6 +33,10 @@ export default async function PlatformProtectedLayout({ children }: { children: 
           </a>
           <a href="/organizations" className="rounded px-3 py-2 hover:bg-gray-800">
             المراكز
+          </a>
+          <a href="/alerts" className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-800">
+            تنبيهات المراكز
+            {alertCount > 0 && <span className="rounded-full bg-red-500 px-2 text-xs font-bold text-white">{alertCount}</span>}
           </a>
           <a href="/users" className="rounded px-3 py-2 hover:bg-gray-800">
             الحسابات

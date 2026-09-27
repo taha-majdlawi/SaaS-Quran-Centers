@@ -276,6 +276,27 @@ $$;
 revoke all on function public.send_billing_reminders() from public, anon, authenticated;
 -- 'billing-reminders' (0066) keeps running daily and now calls the version above.
 
+-- the enforcement switch preview: who would be LOCKED vs moved to the free plan
+create or replace function public.platform_get_billing_settings()
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare v_free uuid := public._free_plan_id();
+begin
+  perform public._plat_guard();
+  return jsonb_build_object(
+    'enforce', public._platform_setting('billing_enforce', 'false') = 'true',
+    'grace_days', coalesce(nullif(public._platform_setting('billing_grace_days', '7'), '')::integer, 7),
+    'instructions', public._platform_setting('billing_instructions', ''),
+    'free_plan', (select jsonb_build_object('id', id, 'name', name) from public.plans where id = v_free),
+    'would_lock', coalesce((select jsonb_agg(jsonb_build_object('id', o.id, 'name', o.name, 'slug', o.slug, 'status', o.status, 'trial_ends_at', o.trial_ends_at) order by o.name)
+                            from public.organizations o
+                            where (public._billing_state(o.id) ->> 'state') in ('suspended', 'cancelled')
+                               or ((public._billing_state(o.id) ->> 'state') = 'expired' and (v_free is null or not public._fits_plan(o.id, v_free)))), '[]'::jsonb),
+    'would_move_to_free', coalesce((select jsonb_agg(jsonb_build_object('id', o.id, 'name', o.name, 'slug', o.slug, 'status', o.status, 'trial_ends_at', o.trial_ends_at) order by o.name)
+                            from public.organizations o
+                            where v_free is not null and (public._billing_state(o.id) ->> 'state') = 'expired' and public._fits_plan(o.id, v_free)), '[]'::jsonb));
+end;
+$$;
+
 -- ---------------------------------------------------------------------
 -- 5. the platform owner's attention list
 -- ---------------------------------------------------------------------

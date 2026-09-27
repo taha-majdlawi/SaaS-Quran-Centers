@@ -1,6 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { SubmitButton } from '@/components/submit-button';
 import { createTeacherDirectly } from './actions';
+import { PlanCapacityNote } from '@/components/plan-capacity-note';
 
 function generatePassword() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 10);
@@ -24,6 +25,7 @@ export default async function NewTeacherPage({
         ينشئ حساب دخول جاهزًا فورًا - بلّغ المعلم رمز المركز ورقم هويته (أو بريده) وكلمة السر، بدون رابط دعوة.
       </p>
 
+      <PlanCapacityNote orgId={org.id} kind="teachers" isAdmin={org.myRole === 'admin'} />
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <form action={createTeacherDirectly} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
