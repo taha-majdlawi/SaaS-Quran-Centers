@@ -4,6 +4,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/widgets/entity_list.dart';
 import '../../core/widgets/ui.dart';
 import 'circles_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class CirclesListScreen extends StatelessWidget {
   const CirclesListScreen({super.key});
@@ -12,20 +13,20 @@ class CirclesListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final repository = CirclesRepository(AppSupabase.client);
     return EntityListScreen<CircleSummary>(
-      title: 'الحلقات',
+      title: tr(context).nav.items['/circles']!,
       loader: repository.fetchCircles,
       searchable: true,
       addPath: '/circles/new',
-      addLabel: 'إضافة حلقة',
+      addLabel: tr(context).org.addCircle,
       emptyIcon: Icons.groups_outlined,
-      emptyTitle: 'لا يوجد حلقات بعد',
-      emptySubtitle: 'أنشئ أول حلقة ثم أضف إليها الطلاب',
+      emptyTitle: tr(context).org.noCircles,
+      emptySubtitle: tr(context).org.noCirclesHint,
       tileBuilder: (context, c) => EntityTile(
         title: c.name,
         subtitle: [
-          c.stageName ?? 'بدون مرحلة',
-          c.teacherName ?? 'بدون معلم',
-          if (c.capacity != null) 'السعة ${c.capacity}',
+          c.stageName ?? tr(context).org.noStage,
+          c.teacherName ?? tr(context).org.noTeacher,
+          if (c.capacity != null) fmt(tr(context).org.capacityN, {'capacity': c.capacity}),
         ].join('  ·  '),
         leading: const TileIcon(Icons.groups_rounded),
         trailing: StatusChip(

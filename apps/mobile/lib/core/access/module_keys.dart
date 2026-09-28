@@ -2,6 +2,10 @@
 /// `0015_module_permissions_and_family_scoping.sql`'s `member_has_module()`.
 /// Keep this list, the web one, and the SQL module-key strings in sync -
 /// they're compared as plain strings, not an enum, on both ends.
+library;
+
+import '../i18n/i18n.dart';
+
 const List<String> kModuleKeys = [
   'students',
   'circles',
@@ -20,21 +24,5 @@ const List<String> kModuleKeys = [
   'certificates',
 ];
 
-/// Arabic labels for the checkboxes on the member-permission editor.
-const Map<String, String> kModuleLabels = {
-  'students': 'الطلاب',
-  'circles': 'الحلقات',
-  'attendance': 'الحضور',
-  'serd': 'السرد القرآني وطلبات التسميع',
-  'points': 'النقاط',
-  'badges': 'الشارات',
-  'market': 'سوق النقاط',
-  'circle-challenges': 'منافسات الحلقات',
-  'activities': 'الأنشطة',
-  'calendar': 'التقويم',
-  'announcements': 'الإعلانات',
-  'chat': 'المحادثات',
-  'notifications': 'الإشعارات',
-  'reports': 'التقارير',
-  'certificates': 'الشهادات',
-};
+/// Labels for the checkboxes on the member-permission editor, in the current language.
+Map<String, String> get kModuleLabels => currentStrings.mem.modules;

@@ -1,7 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-const kMemberRoleLabels = {'admin': 'مدير', 'teacher': 'معلم', 'guardian': 'ولي أمر', 'student': 'طالب'};
-const kMemberStatusLabels = {'active': 'نشط', 'invited': 'مدعو', 'suspended': 'موقوف'};
+import '../../core/i18n/i18n.dart';
+
+Map<String, String> get kMemberRoleLabels => currentStrings.labels.roles;
+Map<String, String> get kMemberStatusLabels => currentStrings.mem.status;
 
 class MemberRow {
   const MemberRow({

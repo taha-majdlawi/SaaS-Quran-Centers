@@ -9,6 +9,7 @@ import '../../core/widgets/ui.dart';
 import '../teacher/circle_roster.dart';
 import '../teacher/teacher_widgets.dart';
 import 'recitation_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class _CircleData {
   const _CircleData({required this.name, required this.students, required this.grades});
@@ -74,7 +75,7 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
             child: CustomScrollView(slivers: [
               teacherHeader(
                 context,
-                title: data?.name ?? 'الحلقة',
+                title: data?.name ?? tr(context).rec.circle,
                 expandedHeight: 150,
                 background: Align(
                   alignment: AlignmentDirectional.bottomStart,
@@ -83,7 +84,7 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
                     child: total == 0
                         ? const SizedBox.shrink()
                         : Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('سمّع اليوم $done من $total', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            Text(fmt(tr(context).rec.doneToday, {'done': done, 'total': total}), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                             const SizedBox(height: 8),
                             SizedBox(
                               width: 220,
@@ -113,7 +114,7 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
                                   },
                                   icon: const Icon(Icons.play_arrow_rounded, size: 20),
                                   style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
-                                  label: const Text('ابدأ الحصة'),
+                                  label: Text(tr(context).teach.startLesson),
                                 ),
                               ),
                               CircleRoster(circleId: widget.circleId, students: data.students, grades: data.grades, onChanged: _reload),

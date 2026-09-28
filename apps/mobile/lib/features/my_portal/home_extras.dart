@@ -288,11 +288,11 @@ TodayPrayers? computeTodayPrayers(Map<String, String> settings) {
 
     final pt = adhan.PrayerTimes.today(adhan.Coordinates(lat, lng), params);
     final entries = [
-      PrayerEntry('الفجر', pt.fajr),
-      PrayerEntry('الظهر', pt.dhuhr),
-      PrayerEntry('العصر', pt.asr),
-      PrayerEntry('المغرب', pt.maghrib),
-      PrayerEntry('العشاء', pt.isha),
+      PrayerEntry(currentStrings.portal.prayers[0], pt.fajr),
+      PrayerEntry(currentStrings.portal.prayers[1], pt.dhuhr),
+      PrayerEntry(currentStrings.portal.prayers[2], pt.asr),
+      PrayerEntry(currentStrings.portal.prayers[3], pt.maghrib),
+      PrayerEntry(currentStrings.portal.prayers[4], pt.isha),
     ];
     final now = DateTime.now();
     var next = entries.indexWhere((e) => e.time.isAfter(now));

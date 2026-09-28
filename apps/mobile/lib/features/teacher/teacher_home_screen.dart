@@ -14,6 +14,7 @@ import '../insights/insights_repository.dart';
 import '../recitation/recitation_repository.dart';
 import 'circle_roster.dart';
 import 'teacher_widgets.dart';
+import '../../core/i18n/i18n.dart';
 
 /// The teacher's home (modelled on the eqraa teacher dashboard): a gradient
 /// greeting header with quick actions, then one expandable card per circle with
@@ -88,12 +89,12 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         child: CustomScrollView(slivers: [
           teacherHeader(
             context,
-            title: _teacherName.isEmpty ? timeGreeting() : '${timeGreeting()}، ${_teacherName.split(' ').first}',
+            title: _teacherName.isEmpty ? timeGreeting() : fmt(tr(context).teach.greeting, {'v': timeGreeting(), 'v2': _teacherName.split(' ').first}),
             actions: [
-              if (tenant.hasModule('students')) IconButton(tooltip: 'بحث عن طالب', onPressed: () => context.push('/students'), icon: const Icon(Icons.person_search_rounded)),
-              if (tenant.hasModule('attendance')) IconButton(tooltip: 'الحضور', onPressed: () => context.push('/attendance'), icon: const Icon(Icons.fact_check_rounded)),
+              if (tenant.hasModule('students')) IconButton(tooltip: tr(context).teach.findStudent, onPressed: () => context.push('/students'), icon: const Icon(Icons.person_search_rounded)),
+              if (tenant.hasModule('attendance')) IconButton(tooltip: tr(context).nav.items['/attendance']!, onPressed: () => context.push('/attendance'), icon: const Icon(Icons.fact_check_rounded)),
               IconButton(
-                tooltip: 'المزامنة',
+                tooltip: tr(context).nav.items['/sync']!,
                 onPressed: () => context.push('/sync'),
                 icon: Badge(
                   isLabelVisible: issues > 0,
@@ -119,9 +120,9 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                 final data = snap.data;
                 if (data == null) return const Padding(padding: EdgeInsets.all(16), child: SkeletonCards(count: 3, height: 96));
                 if (data.circles.isEmpty) {
-                  return const Padding(
+                  return Padding(
                     padding: EdgeInsets.all(24),
-                    child: EmptyState(icon: Icons.groups_outlined, title: 'لم يتم تعيينك لأي حلقة بعد', subtitle: 'اطلب من المشرف إضافتك إلى حلقة، ثم اسحب للأسفل للتحديث.'),
+                    child: EmptyState(icon: Icons.groups_outlined, title: tr(context).teach.noCircle, subtitle: tr(context).teach.noCircleHint),
                   );
                 }
                 final today = data.today;
@@ -133,13 +134,13 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                         margin: const EdgeInsets.only(bottom: 14),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(color: TeacherStyle.goldLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: TeacherStyle.gold.withValues(alpha: 0.4))),
-                        child: const Row(children: [
+                        child: Row(children: [
                           Icon(Icons.event_busy_rounded, color: TeacherStyle.gold),
                           SizedBox(width: 8),
-                          Expanded(child: Text('اليوم ليس من أيام الدوام في مركزك', style: TextStyle(fontSize: 13))),
+                          Expanded(child: Text(tr(context).dash.notWorkingDay, style: TextStyle(fontSize: 13))),
                         ]),
                       ),
-                    SectionLabel('حلقاتك (${data.circles.length})'),
+                    SectionLabel(fmt(tr(context).teach.yourCircles, {'n': data.circles.length})),
                     for (final c in data.circles)
                       _CircleCard(key: ValueKey('${c.id}-$_version'), circle: c, grades: data.grades, onChanged: _reload),
                   ]),
@@ -190,10 +191,10 @@ class _CircleCardState extends State<_CircleCard> {
       await _insights.checkIn(_orgId, widget.circle.id);
       if (mounted) {
         setState(() => _checkedIn = true);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('سُجّل حضورك ✓')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).teach.checkedIn)));
       }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر تسجيل الحضور — تحقّق من الاتصال')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).teach.checkInFailed)));
     }
   }
 
@@ -220,7 +221,7 @@ class _CircleCardState extends State<_CircleCard> {
           ),
           title: Row(children: [
             Expanded(child: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-            IconButton(tooltip: 'شاشة الحلقة', icon: Icon(Icons.open_in_new_rounded, color: brand, size: 20), onPressed: () async {
+            IconButton(tooltip: tr(context).teach.circleScreen, icon: Icon(Icons.open_in_new_rounded, color: brand, size: 20), onPressed: () async {
               await context.push('/circle/${c.id}');
               if (mounted) widget.onChanged();
             }),
@@ -237,7 +238,7 @@ class _CircleCardState extends State<_CircleCard> {
                       visualDensity: VisualDensity.compact,
                       backgroundColor: TeacherStyle.tint(TeacherStyle.gold),
                       side: BorderSide.none,
-                      label: const Text('معلم مساعد', style: TextStyle(color: TeacherStyle.gold, fontSize: 12, fontWeight: FontWeight.w600)),
+                      label: Text(tr(context).teach.assistant, style: TextStyle(color: TeacherStyle.gold, fontSize: 12, fontWeight: FontWeight.w600)),
                       padding: EdgeInsets.zero,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -245,7 +246,7 @@ class _CircleCardState extends State<_CircleCard> {
                     visualDensity: VisualDensity.compact,
                     backgroundColor: TeacherStyle.chip,
                     side: BorderSide.none,
-                    label: Text('المرحلة: ${c.stageName ?? 'عامة'}', style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12)),
+                    label: Text(fmt(tr(context).teach.stage, {'stageName': c.stageName ?? tr(context).teach.general}), style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12)),
                     padding: EdgeInsets.zero,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -254,7 +255,7 @@ class _CircleCardState extends State<_CircleCard> {
                       visualDensity: VisualDensity.compact,
                       backgroundColor: TeacherStyle.tint(TeacherStyle.success),
                       side: BorderSide.none,
-                      label: Text('سمّع $done من ${snap.data!.length}', style: const TextStyle(color: TeacherStyle.success, fontSize: 12, fontWeight: FontWeight.w600)),
+                      label: Text(fmt(tr(context).teach.doneOf, {'done': done, 'n': snap.data!.length}), style: const TextStyle(color: TeacherStyle.success, fontSize: 12, fontWeight: FontWeight.w600)),
                       padding: EdgeInsets.zero,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -277,7 +278,7 @@ class _CircleCardState extends State<_CircleCard> {
                         onPressed: _checkIn,
                         icon: const Icon(Icons.how_to_reg_rounded, size: 18),
                         style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
-                        label: const Text('سجّل حضوري اليوم'),
+                        label: Text(tr(context).teach.checkIn),
                       ),
                     ),
                   Padding(
@@ -289,7 +290,7 @@ class _CircleCardState extends State<_CircleCard> {
                       },
                       icon: const Icon(Icons.play_arrow_rounded, size: 20),
                       style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
-                      label: const Text('ابدأ الحصة'),
+                      label: Text(tr(context).teach.startLesson),
                     ),
                   ),
                   CircleRoster(circleId: c.id, students: students, grades: widget.grades, onChanged: widget.onChanged),

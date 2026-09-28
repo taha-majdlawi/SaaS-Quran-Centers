@@ -10,6 +10,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'recitation_repository.dart';
 import 'recitation_sheet.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Eqraa's "lesson mode": walk the circle one student at a time - record,
 /// mark absent, or postpone. Nothing is written for "later", and closing the
@@ -73,7 +74,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
     if (points == null || !mounted) return;
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
+        SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : fmt(tr(context).teach.savedPoints, {'points': points}))));
     setState(() {
       _recited++;
       _index++;
@@ -90,7 +91,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
         _index++;
       });
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : 'تعذّر حفظ الغياب')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : tr(context).rec.absenceFailed)));
     }
   }
 
@@ -115,7 +116,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
     return Scaffold(
       backgroundColor: TeacherStyle.scaffold,
       appBar: AppBar(
-        title: const Text('وضع الحصة'),
+        title: Text(tr(context).rec.lessonTitle),
         backgroundColor: TeacherStyle.brand(context),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -142,7 +143,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
             child: LinearProgressIndicator(value: _queue.isEmpty ? 0 : _index / _queue.length, minHeight: 8, backgroundColor: TeacherStyle.chip, valueColor: AlwaysStoppedAnimation(brand)),
           ),
           const SizedBox(height: 8),
-          Text('الطالب ${_index + 1} من ${_queue.length}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12.5, color: TeacherStyle.textMuted)),
+          Text(fmt(tr(context).rec.studentXofY, {'v': _index + 1, 'n': _queue.length}), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12.5, color: TeacherStyle.textMuted)),
           const Spacer(),
           Center(
             child: CircleAvatar(
@@ -154,14 +155,14 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
           const SizedBox(height: 16),
           Text(s.fullName, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
           const SizedBox(height: 6),
-          Text('${s.totalPoints} نقطة', textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
+          Text(fmt(tr(context).teach.pointsN, {'totalPoints': s.totalPoints}), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
           if (s.nextPlan != null && s.nextPlan!.trim().isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: TeacherStyle.tint(Colors.teal), borderRadius: BorderRadius.circular(12)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('الخطة المطلوبة منه', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
+                Text(tr(context).rec.plan, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
                 const SizedBox(height: 4),
                 Text(s.nextPlan!, style: const TextStyle(fontSize: 13.5, height: 1.5, color: TeacherStyle.textPrimary)),
               ]),
@@ -171,7 +172,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
           FilledButton.icon(
             onPressed: _record,
             icon: const Icon(Icons.menu_book_rounded),
-            label: const Text('رصد التسميع', style: TextStyle(fontSize: 16)),
+            label: Text(tr(context).rec.recordBtn, style: TextStyle(fontSize: 16)),
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
           ),
           const SizedBox(height: 10),
@@ -180,7 +181,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
               child: OutlinedButton.icon(
                 onPressed: _markAbsent,
                 icon: const Icon(Icons.person_off_rounded, size: 18),
-                label: const Text('غائب'),
+                label: Text(tr(context).rec.absent),
                 style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700, side: BorderSide(color: Colors.red.withValues(alpha: 0.4)), minimumSize: const Size.fromHeight(48)),
               ),
             ),
@@ -189,7 +190,7 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
               child: OutlinedButton.icon(
                 onPressed: _later,
                 icon: const Icon(Icons.skip_next_rounded, size: 18),
-                label: const Text('لاحقًا'),
+                label: Text(tr(context).rec.later),
                 style: OutlinedButton.styleFrom(foregroundColor: TeacherStyle.textMuted, side: const BorderSide(color: TeacherStyle.border), minimumSize: const Size.fromHeight(48)),
               ),
             ),
@@ -210,17 +211,17 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
         children: [
           Icon(noOneWaiting ? Icons.verified_rounded : Icons.task_alt_rounded, size: 64, color: TeacherStyle.success),
           const SizedBox(height: 16),
-          Text(noOneWaiting ? 'لا أحد بانتظار التسميع في هذه الحلقة الآن' : 'انتهت الحصة',
+          Text(noOneWaiting ? tr(context).rec.nobody : tr(context).rec.done,
               textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
           const SizedBox(height: 12),
           if (!noOneWaiting)
-            Text('سمّع $_recited  •  غائب $_absent  •  مؤجَّل ${_postponed.length}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: TeacherStyle.textMuted)),
+            Text(fmt(tr(context).rec.summary, {'_recited': _recited, '_absent': _absent, 'n': _postponed.length}), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: TeacherStyle.textMuted)),
           const SizedBox(height: 24),
           if (_postponed.isNotEmpty) ...[
-            FilledButton.icon(onPressed: _anotherRound, icon: const Icon(Icons.replay_rounded), label: const Text('جولة أخرى على من تبقّى')),
+            FilledButton.icon(onPressed: _anotherRound, icon: Icon(Icons.replay_rounded), label: Text(tr(context).rec.anotherRound)),
             const SizedBox(height: 8),
           ],
-          TextButton(onPressed: () => context.pop(), child: const Text('إنهاء والعودة')),
+          TextButton(onPressed: () => context.pop(), child: Text(tr(context).rec.finish)),
         ],
       ),
     );

@@ -11,6 +11,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Admin: create / edit one market item (priced in the center's currency).
 class MarketItemFormScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
   Future<void> _save() async {
     final price = num.tryParse(_price.text.trim());
     if (_name.text.trim().isEmpty || price == null) {
-      setState(() => _error = 'الاسم والسعر مطلوبان');
+      setState(() => _error = tr(context).mkt.nameRequired);
       return;
     }
     setState(() {
@@ -89,9 +90,9 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
     } on PostgrestException catch (e) {
       setState(() => _error = e.message);
     } on StorageException catch (e) {
-      setState(() => _error = e.message.contains('row-level security') ? 'لا تملك صلاحية رفع الصور' : 'تعذّر رفع الصورة');
+      setState(() => _error = e.message.contains('row-level security') ? tr(context).mkt.noUpload : tr(context).mkt.uploadFailed);
     } catch (e) {
-      setState(() => _error = friendlyError(e, 'تعذّر الحفظ'));
+      setState(() => _error = friendlyError(e, tr(context).set.saveFailed));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -102,8 +103,8 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
       context: context,
       builder: (context) => SafeArea(
         child: Wrap(children: [
-          ListTile(leading: const Icon(Icons.photo_library_rounded), title: const Text('من المعرض'), onTap: () => Navigator.pop(context, ImageSource.gallery)),
-          ListTile(leading: const Icon(Icons.photo_camera_rounded), title: const Text('التقاط صورة'), onTap: () => Navigator.pop(context, ImageSource.camera)),
+          ListTile(leading: Icon(Icons.photo_library_rounded), title: Text(tr(context).set.fromGallery), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ListTile(leading: Icon(Icons.photo_camera_rounded), title: Text(tr(context).set.takePhoto), onTap: () => Navigator.pop(context, ImageSource.camera)),
         ]),
       ),
     );
@@ -113,7 +114,7 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
     final bytes = await file.readAsBytes();
     if (!mounted) return;
     if (bytes.length > 3 * 1024 * 1024) {
-      setState(() => _error = 'الصورة كبيرة (الحد 3 ميغابايت)');
+      setState(() => _error = tr(context).mkt.tooBig3);
       return;
     }
     setState(() {
@@ -127,11 +128,11 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف العنصر'),
-        content: const Text('الطلبات السابقة تحتفظ باسمه وسعره. متأكد؟'),
+        title: Text(tr(context).mkt.deleteItem),
+        content: Text(tr(context).mkt.deleteItemBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -148,7 +149,7 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.itemId == null ? 'عنصر جديد' : 'تعديل عنصر'),
+        title: Text(widget.itemId == null ? tr(context).mkt.newItem : tr(context).mkt.editItem),
         actions: [if (widget.itemId != null) IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: _delete)],
       ),
       body: AsyncBody<MarketOverview>(
@@ -157,9 +158,9 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             if (_error != null) MessageBanner(message: _error!),
-            TextField(controller: _name, decoration: const InputDecoration(labelText: 'الاسم')),
+            TextField(controller: _name, decoration: InputDecoration(labelText: tr(context).mkt.name)),
             const SizedBox(height: 12),
-            TextField(controller: _description, maxLines: 2, decoration: const InputDecoration(labelText: 'الوصف')),
+            TextField(controller: _description, maxLines: 2, decoration: InputDecoration(labelText: tr(context).mkt.description)),
             const SizedBox(height: 12),
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               ClipRRect(
@@ -177,29 +178,29 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Wrap(spacing: 8, runSpacing: 4, children: [
-                  OutlinedButton.icon(onPressed: _saving ? null : _pickImage, icon: const Icon(Icons.upload_rounded, size: 18), label: const Text('رفع من الجهاز')),
+                  OutlinedButton.icon(onPressed: _saving ? null : _pickImage, icon: Icon(Icons.upload_rounded, size: 18), label: Text(tr(context).mkt.uploadDevice)),
                   if (_picked != null || _image.text.trim().isNotEmpty)
                     TextButton(
                       onPressed: _saving ? null : () => setState(() {
                         _picked = null;
                         _image.clear();
                       }),
-                      child: const Text('إزالة الصورة', style: TextStyle(color: Colors.red)),
+                      child: Text(tr(context).mkt.removeImage, style: TextStyle(color: Colors.red)),
                     ),
                 ]),
               ),
             ]),
             const SizedBox(height: 8),
-            TextField(controller: _image, textDirection: TextDirection.ltr, onChanged: (_) => setState(() => _picked = null), decoration: const InputDecoration(labelText: 'أو الصق رابط الصورة (https)')),
+            TextField(controller: _image, textDirection: TextDirection.ltr, onChanged: (_) => setState(() => _picked = null), decoration: InputDecoration(labelText: tr(context).mkt.imageLink)),
             const SizedBox(height: 12),
             Row(children: [
-              Expanded(child: TextField(controller: _price, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'السعر (${o.symbol})'))),
+              Expanded(child: TextField(controller: _price, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: fmt(tr(context).mkt.priceIn, {'symbol': o.symbol})))),
               const SizedBox(width: 10),
-              Expanded(child: TextField(controller: _stock, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'المخزون (فارغ = بلا حد)'))),
+              Expanded(child: TextField(controller: _stock, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).mkt.stock))),
             ]),
-            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('فعّال (يظهر للطلاب)'), value: _active, onChanged: (v) => setState(() => _active = v)),
+            SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).mkt.active), value: _active, onChanged: (v) => setState(() => _active = v)),
             const SizedBox(height: 12),
-            LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+            LoadingButton(label: tr(context).common.save, loading: _saving, onPressed: _save),
           ],
         ),
       ),

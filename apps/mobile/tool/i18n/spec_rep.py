@@ -35,4 +35,11 @@ SPEC = {'rep': ("Reports (the student report is also the portal's).", (
   ('none', 'لا تسميعات في هذه الفترة', 'No recitations in this period'),
   ('circleLine', '{teacher} · {students} طالب\\nتسميعات {recitations} · نقاط {points} · حضور {attendance}', '{teacher} · {students} students\\n{recitations} recitations · {points} points · {attendance} attendance'),
   ('teacherLine', '{recitations} تسميع · {points} نقطة', '{recitations} recitations · {points} points'),
+  ('sumTitle', 'تقرير {center}', '{center} report'),
+  ('sumActive', 'الطلاب النشطون: {students_active}', 'Active students: {students_active}'),
+  ('sumPoints', 'النقاط: {points}', 'Points: {points}'),
+  ('sumAttendance', 'نسبة الحضور: {v}', 'Attendance rate: {v}'),
+  ('sumSerd', 'سرد معتمد: {serd_approved}', 'Approved serd: {serd_approved}'),
+  ('sumRecitations', 'التسميعات: {recitations} ({reciting_students} طالب)', 'Recitations: {recitations} ({reciting_students} students)'),
+  ('sumCircle', '• {name}: {recitations} تسميع، حضور {v}', '• {name}: {recitations} recitations, attendance {v}'),
 ))}

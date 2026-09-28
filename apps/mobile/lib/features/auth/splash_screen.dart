@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Shown while the signed-in user's centers are loading, so no screen is ever
 /// built without an active center.
@@ -18,7 +19,7 @@ class SplashScreen extends StatelessWidget {
               child: Image.asset('assets/brand/icon-source.png', width: 84, height: 84),
             ),
             const SizedBox(height: 18),
-            const Text('بستان القرآن', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+            Text(tr(context).common.appName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
             const SizedBox(height: 28),
             const SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 3)),
           ],

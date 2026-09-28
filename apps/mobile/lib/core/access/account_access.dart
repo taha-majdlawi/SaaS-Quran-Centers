@@ -121,32 +121,32 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
   }
 }
 
-String _count(int n, String one, String two, String many) => n == 1 ? '$one واحد' : (n == 2 ? two : '$n $many');
+String _count(int n, Map<String, String> forms) => n == 1 ? forms['one']! : (n == 2 ? forms['two']! : fmt(forms['many']!, {'n': n}));
 
 /// Same rules as the web banner (apps/web/src/lib/billing/format.ts): only for
 /// staff (usage present), only while the platform enforces billing.
 List<({String text, bool urgent})> planWarningsFrom(Map<String, dynamic> access) {
   final usage = access['usage'];
   if (usage is! Map) return const [];
+  final t = currentStrings.plan;
   final out = <({String text, bool urgent})>[];
   final b = access['billing'];
   if (b is Map && b['enforced'] == true && b['locked'] != true) {
     final trial = b['kind'] == 'trial';
-    final what = trial ? 'الفترة التجريبية' : 'اشتراك المركز';
     final days = (b['days_left'] as num?)?.toInt();
     if (b['state'] == 'grace') {
-      out.add((text: '🍂 ${trial ? 'انتهت' : 'انتهى'} $what — بستانكم ينتظر السقاية: جدّدوا من لوحة التحكم على الويب', urgent: true));
+      out.add((text: trial ? t.graceTrial : t.gracePaid, urgent: true));
     } else if ((b['state'] == 'trial' || b['state'] == 'active') && days != null && days <= 7) {
-      out.add((text: '🌿 ${trial ? 'تنتهي' : 'ينتهي'} $what خلال ${_count(days, 'يوم', 'يومين', 'أيام')}', urgent: days <= 3));
+      out.add((text: fmt(trial ? t.soonTrial : t.soonPaid, {'days': _count(days, t.days)}), urgent: days <= 3));
     }
   }
   final sl = (usage['students_left'] as num?)?.toInt();
   if (sl != null && sl <= 5) {
-    out.add((text: sl == 0 ? '🌳 امتلأ البستان: وصل المركز للحد الأقصى من الطلاب (${usage['max_students']})' : '🌿 تبقى ${_count(sl, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم ضمن الخطة', urgent: sl == 0));
+    out.add((text: sl == 0 ? fmt(t.studentsFull, {'max': usage['max_students']}) : fmt(t.studentsLeft, {'n': _count(sl, t.students)}), urgent: sl == 0));
   }
   final tl = (usage['teachers_left'] as num?)?.toInt();
   if (tl != null && tl <= 1) {
-    out.add((text: tl == 0 ? '🌳 وصل المركز للحد الأقصى من المعلمين (${usage['max_teachers']})' : '🌿 تبقى إضافة معلم واحد فقط ضمن الخطة', urgent: tl == 0));
+    out.add((text: tl == 0 ? fmt(t.teachersFull, {'max': usage['max_teachers']}) : t.oneTeacherLeft, urgent: tl == 0));
   }
   return out;
 }

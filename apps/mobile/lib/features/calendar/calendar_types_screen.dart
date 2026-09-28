@@ -7,6 +7,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'calendar_models.dart';
 import 'calendar_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 const _palette = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#a855f7', '#ec4899', '#64748b'];
 
@@ -33,7 +34,7 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
   Future<void> _run(Future<void> Function() action) async {
     try {
       await action();
-      if (mounted) setState(() { _message = 'تم الحفظ'; _isError = false; _future = _load(); });
+      if (mounted) setState(() { _message = tr(context).cal.saved; _isError = false; _future = _load(); });
     } on PostgrestException catch (e) {
       if (mounted) setState(() { _message = e.message; _isError = true; });
     }
@@ -50,10 +51,10 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setLocal) => AlertDialog(
-          title: Text(t == null ? 'نوع جديد' : 'تعديل النوع'),
+          title: Text(t == null ? tr(context).cal.newType : tr(context).cal.editType),
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              TextField(controller: name, decoration: const InputDecoration(labelText: 'الاسم')),
+              TextField(controller: name, decoration: InputDecoration(labelText: tr(context).cal.name)),
               const SizedBox(height: 12),
               Wrap(spacing: 8, runSpacing: 8, children: [
                 for (final c in _palette)
@@ -66,15 +67,15 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
                     ),
                   ),
               ]),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('يوم دوام'), value: working, onChanged: (v) => setLocal(() => working = v)),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('يُسجَّل فيه'), value: registration, onChanged: (v) => setLocal(() => registration = v)),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('يحتاج موافقة ولي الأمر'), value: consent, onChanged: (v) => setLocal(() => consent = v)),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('فعّال'), value: active, onChanged: (v) => setLocal(() => active = v)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cal.workingDay), value: working, onChanged: (v) => setLocal(() => working = v)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cal.hasRegistration), value: registration, onChanged: (v) => setLocal(() => registration = v)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cal.needsGuardian), value: consent, onChanged: (v) => setLocal(() => consent = v)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cal.active), value: active, onChanged: (v) => setLocal(() => active = v)),
             ]),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: Size(90, 44)), child: Text(tr(context).common.save)),
           ],
         ),
       ),
@@ -83,7 +84,7 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
     name.dispose();
     if (ok != true) return;
     if (n.isEmpty) {
-      setState(() { _message = 'اسم النوع مطلوب'; _isError = true; });
+      setState(() { _message = tr(context).cal.typeNameRequired; _isError = true; });
       return;
     }
     await _run(() => _repository.saveType(_orgId, id: t?.id, name: n, defaultIsWorking: working, color: color, sortOrder: t?.sortOrder ?? nextOrder, isActive: active, supportsRegistration: registration, requiresConsent: consent));
@@ -92,14 +93,14 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('أنواع عناصر التقويم')),
+      appBar: AppBar(title: Text(tr(context).cal.typesTitle)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final range = await _future;
           if (mounted) _edit(null, range.types.length + 1);
         },
         icon: const Icon(Icons.add_rounded),
-        label: const Text('نوع جديد'),
+        label: Text(tr(context).cal.newType),
       ),
       body: AsyncBody<CalRange>(
         future: _future,
@@ -107,7 +108,7 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
         builder: (context, range) => ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
           children: [
-            Text('العناصر السابقة تحتفظ بإعداد نوعها وقت إضافتها، فتعديل النوع لا يغيّر نسب الحضور القديمة.', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            Text(tr(context).cal.typesHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
             const SizedBox(height: 10),
             if (_message != null) MessageBanner(message: _message!, isError: _isError),
             for (final t in range.types)
@@ -116,7 +117,7 @@ class _CalendarTypesScreenState extends State<CalendarTypesScreen> {
                   onTap: () => _edit(t, range.types.length + 1),
                   leading: CircleAvatar(backgroundColor: parseHexColor(t.color), radius: 12),
                   title: Text(t.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text([t.defaultIsWorking ? 'دوام' : 'غير دوام', if (t.supportsRegistration) 'يُسجَّل فيه', if (t.requiresConsent) 'موافقة ولي الأمر', if (!t.isActive) 'غير فعّال'].join('  ·  ')),
+                  subtitle: Text([t.defaultIsWorking ? tr(context).cal.working : tr(context).cal.notWorkingDay, if (t.supportsRegistration) tr(context).cal.hasRegistration, if (t.requiresConsent) tr(context).cal.guardianConsent, if (!t.isActive) tr(context).cal.inactive].join('  ·  ')),
                   trailing: IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: () => _run(() => _repository.deleteType(_orgId, t.id))),
                 ),
               ),

@@ -8,6 +8,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'calendar_models.dart';
 import 'calendar_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class _FormData {
   const _FormData({required this.types, required this.circles, required this.stages, this.entry});
@@ -106,7 +107,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
 
   Future<void> _save() async {
     if (_typeId == null || _title.text.trim().isEmpty) {
-      setState(() => _error = 'اختر النوع واكتب العنوان');
+      setState(() => _error = tr(context).cal.pickTypeTitle);
       return;
     }
     setState(() {
@@ -149,11 +150,11 @@ class _EventFormScreenState extends State<EventFormScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف'),
-        content: const Text('سيُحذف هذا العنصر مع كل التسجيلات عليه. متأكد؟'),
+        title: Text(tr(context).common.delete),
+        content: Text(tr(context).cal.deleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -170,7 +171,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.entryId == null ? 'إضافة إلى التقويم' : 'تعديل'),
+        title: Text(widget.entryId == null ? tr(context).cal.addTitle : tr(context).common.edit),
         actions: [if (widget.entryId != null) IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: _delete)],
       ),
       body: AsyncBody<_FormData>(
@@ -185,17 +186,17 @@ class _EventFormScreenState extends State<EventFormScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _typeId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'النوع'),
+                decoration: InputDecoration(labelText: tr(context).cal.type),
                 items: [
                   for (final t in data.types.where((t) => t.isActive || t.id == _typeId))
-                    DropdownMenuItem(value: t.id, child: Text('${t.name}${t.supportsRegistration ? ' — بتسجيل' : ''}${t.defaultIsWorking ? '' : ' — ليس دوامًا'}')),
+                    DropdownMenuItem(value: t.id, child: Text('${t.name}${t.supportsRegistration ? tr(context).cal.withReg : ''}${t.defaultIsWorking ? '' : tr(context).cal.notWorking}')),
                 ],
                 onChanged: (v) => setState(() => _typeId = v),
               ),
               const SizedBox(height: 12),
-              TextField(controller: _title, decoration: const InputDecoration(labelText: 'العنوان')),
+              TextField(controller: _title, decoration: InputDecoration(labelText: tr(context).cal.titleField)),
               const SizedBox(height: 12),
-              TextField(controller: _description, maxLines: 3, decoration: const InputDecoration(labelText: 'الوصف')),
+              TextField(controller: _description, maxLines: 3, decoration: InputDecoration(labelText: tr(context).cal.description)),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(
@@ -204,7 +205,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                       final p = await _pickDate(_start);
                       if (p != null) setState(() => _start = p);
                     },
-                    child: Text('من: ${d(_start)}'),
+                    child: Text(fmt(tr(context).cal.fromV, {'v': d(_start)})),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -214,7 +215,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                       final p = await _pickDate(_end ?? _start);
                       if (p != null) setState(() => _end = p);
                     },
-                    child: Text('إلى: ${d(_end)}'),
+                    child: Text(fmt(tr(context).cal.toV, {'v': d(_end)})),
                   ),
                 ),
               ]),
@@ -225,14 +226,14 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   if (t != null) setState(() => _time = t);
                 },
                 icon: const Icon(Icons.schedule_rounded, size: 18),
-                label: Text(_time == null ? 'الساعة (اختياري)' : _time!.format(context)),
+                label: Text(_time == null ? tr(context).cal.timeOpt : _time!.format(context)),
               ),
               const SizedBox(height: 12),
-              TextField(controller: _location, decoration: const InputDecoration(labelText: 'المكان')),
-              const SectionTitle('من يراها'),
+              TextField(controller: _location, decoration: InputDecoration(labelText: tr(context).cal.place)),
+              SectionTitle(tr(context).cal.whoSees),
               DropdownButtonFormField<String>(
                 initialValue: _audience,
-                decoration: const InputDecoration(labelText: 'الجمهور'),
+                decoration: InputDecoration(labelText: tr(context).cal.audienceLabel),
                 items: [for (final e in kAudienceLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setState(() => _audience = v ?? 'all'),
               ),
@@ -240,45 +241,45 @@ class _EventFormScreenState extends State<EventFormScreen> {
               DropdownButtonFormField<String?>(
                 initialValue: _circleId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'حلقة محددة'),
-                items: [const DropdownMenuItem<String?>(value: null, child: Text('كل الحلقات')), for (final c in data.circles) DropdownMenuItem<String?>(value: c.id, child: Text(c.name))],
+                decoration: InputDecoration(labelText: tr(context).cal.oneCircle),
+                items: [DropdownMenuItem<String?>(value: null, child: Text(tr(context).cal.allCircles)), for (final c in data.circles) DropdownMenuItem<String?>(value: c.id, child: Text(c.name))],
                 onChanged: (v) => setState(() => _circleId = v),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String?>(
                 initialValue: _stageId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'مرحلة محددة'),
-                items: [const DropdownMenuItem<String?>(value: null, child: Text('كل المراحل')), for (final s in data.stages) DropdownMenuItem<String?>(value: s.id, child: Text(s.name))],
+                decoration: InputDecoration(labelText: tr(context).cal.oneStage),
+                items: [DropdownMenuItem<String?>(value: null, child: Text(tr(context).cal.allStages)), for (final s in data.stages) DropdownMenuItem<String?>(value: s.id, child: Text(s.name))],
                 onChanged: (v) => setState(() => _stageId = v),
               ),
-              const SectionTitle('الدوام'),
+              SectionTitle(tr(context).cal.workingSection),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('تجاوز إعداد النوع'),
-                subtitle: Text(selected == null ? '' : 'النوع يجعله ${selected.defaultIsWorking ? 'يوم دوام' : 'غير دوام'}'),
+                title: Text(tr(context).cal.overrideType),
+                subtitle: Text(selected == null ? '' : fmt(tr(context).cal.typeMakes, {'v': selected.defaultIsWorking ? tr(context).cal.workingDay : tr(context).cal.notWorkingDay})),
                 value: _overrideWorking,
                 onChanged: (v) => setState(() => _overrideWorking = v),
               ),
               if (_overrideWorking)
-                SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('يوم دوام'), value: _isWorking, onChanged: (v) => setState(() => _isWorking = v)),
-              Text('الأيام غير الدوام لا تُحتسب في نسبة حضور الطلاب.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cal.workingDay), value: _isWorking, onChanged: (v) => setState(() => _isWorking = v)),
+              Text(tr(context).cal.offDaysHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
               if (selected?.supportsRegistration ?? false) ...[
-                const SectionTitle('التسجيل'),
-                TextField(controller: _capacity, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'عدد المقاعد (فارغ = بلا حد)')),
+                SectionTitle(tr(context).cal.registrationSection),
+                TextField(controller: _capacity, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).cal.seats)),
                 const SizedBox(height: 8),
                 OutlinedButton(
                   onPressed: () async {
                     final p = await _pickDate(_deadline ?? _start);
                     if (p != null) setState(() => _deadline = p);
                   },
-                  child: Text('إغلاق التسجيل في: ${d(_deadline)}'),
+                  child: Text(fmt(tr(context).cal.closesAt, {'v': d(_deadline)})),
                 ),
-                if (_deadline != null) TextButton(onPressed: () => setState(() => _deadline = null), child: const Text('إزالة الموعد')),
-                SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('التسجيل مفتوح'), value: _registrationOpen, onChanged: (v) => setState(() => _registrationOpen = v)),
+                if (_deadline != null) TextButton(onPressed: () => setState(() => _deadline = null), child: Text(tr(context).cal.removeDeadline)),
+                SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cal.open), value: _registrationOpen, onChanged: (v) => setState(() => _registrationOpen = v)),
               ],
               const SizedBox(height: 16),
-              LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+              LoadingButton(label: tr(context).common.save, loading: _saving, onPressed: _save),
             ],
           );
         },

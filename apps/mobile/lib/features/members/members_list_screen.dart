@@ -7,6 +7,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import 'members_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Mirrors apps/web's /members page: the member table (with edit links),
 /// an invite-by-email form, and the pending-invitation list.
@@ -62,11 +63,11 @@ class _MembersListScreenState extends State<MembersListScreen> {
       await _repository.createInvitation(organizationId: _loadedForOrgId!, email: email, role: _inviteRole);
       _emailController.clear();
       if (mounted) {
-        setState(() { _message = 'تم إنشاء الدعوة'; _isError = false; });
+        setState(() { _message = tr(context).mem.inviteCreated; _isError = false; });
         _reload(_loadedForOrgId!);
       }
     } catch (e) {
-      if (mounted) setState(() { _message = friendlyError(e, 'حدث خطأ أثناء الدعوة'); _isError = true; });
+      if (mounted) setState(() { _message = friendlyError(e, tr(context).mem.inviteError); _isError = true; });
     } finally {
       if (mounted) setState(() => _inviting = false);
     }
@@ -81,7 +82,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('الأعضاء والأدوار')),
+        leading: DrawerLeading(),title: Text(tr(context).nav.items['/members']!)),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -89,7 +90,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
           if (mounted && orgId != null) setState(() => _reload(orgId));
         },
         icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('معلم جديد'),
+        label: Text(tr(context).mem.newTeacher),
       ),
       body: orgId == null
           ? const SizedBox.shrink()
@@ -115,22 +116,22 @@ class _MembersListScreenState extends State<MembersListScreen> {
                                 await context.push('/members/${m.id}');
                                 if (mounted) setState(() => _reload(orgId));
                               },
-                              child: const Text('تعديل'),
+                              child: Text(tr(context).common.edit),
                             ),
                           ),
                         )),
                     const Divider(height: 32),
-                    Text('دعوة عضو جديد', style: Theme.of(context).textTheme.titleMedium),
+                    Text(tr(context).mem.inviteTitle, style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
+                      decoration: InputDecoration(labelText: tr(context).mem.email),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _inviteRole,
-                      decoration: const InputDecoration(labelText: 'الدور'),
+                      decoration: InputDecoration(labelText: tr(context).mem.role),
                       items: kMemberRoleLabels.entries
                           .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                           .toList(),
@@ -141,11 +142,11 @@ class _MembersListScreenState extends State<MembersListScreen> {
                       onPressed: _inviting ? null : _invite,
                       child: _inviting
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('إنشاء دعوة'),
+                          : Text(tr(context).mem.inviteBtn),
                     ),
                     if (_invitations.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      Text('دعوات لسه ما انضمّت', style: Theme.of(context).textTheme.titleSmall),
+                      Text(tr(context).mem.pendingInvites, style: Theme.of(context).textTheme.titleSmall),
                       const SizedBox(height: 8),
                       ..._invitations.map((i) => Text('${i.email} — ${kMemberRoleLabels[i.role] ?? i.role}')),
                     ],

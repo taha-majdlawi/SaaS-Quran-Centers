@@ -15,6 +15,9 @@ const kJuzNames = [
 const kSerdDenNames = {1: 'الجزء كاملاً', 2: 'النصف', 4: 'الربع', 8: 'الثُمن'};
 const _ordinals = ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن'];
 
+/// 'الجزء كاملاً' / 'النصف' ... in the current language.
+String serdDenName(int d) => d <= 1 ? currentStrings.serd.wholeJuz : currentStrings.labels.portionDen['$d'] ?? '$d';
+
 Map<String, String> get kSerdStatusLabels => currentStrings.labels.serdStatus;
 
 /// 'النصف الأول' / '1st half' (the Arabic names stay as they were for the staff screens).

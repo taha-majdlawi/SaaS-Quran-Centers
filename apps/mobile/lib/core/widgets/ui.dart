@@ -249,10 +249,10 @@ class SkeletonCards extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             child: SizedBox(
               height: height,
-              child: const ListTile(
+              child: ListTile(
                 leading: CircleAvatar(radius: 22),
-                title: Text('اسم الطالب الكامل هنا'),
-                subtitle: Text('معلومات إضافية قصيرة'),
+                title: Text(tr(context).ui.skeletonTitle),
+                subtitle: Text(tr(context).ui.skeletonSub),
               ),
             ),
           ),

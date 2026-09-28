@@ -13,13 +13,14 @@ import '../recitation/recitation_repository.dart';
 import '../teacher/teacher_home_screen.dart';
 import 'admin_insights_section.dart';
 import 'attention_section.dart';
+import '../../core/i18n/i18n.dart';
 
-const _roleGreeting = {
-  OrgRole.admin: 'مدير المركز',
-  OrgRole.teacher: 'معلم',
-  OrgRole.guardian: 'ولي أمر',
-  OrgRole.student: 'طالب',
-};
+Map<OrgRole, String> get _roleGreeting => {
+      OrgRole.admin: currentStrings.dash.centerAdmin,
+      OrgRole.teacher: currentStrings.labels.roles['teacher']!,
+      OrgRole.guardian: currentStrings.labels.roles['guardian']!,
+      OrgRole.student: currentStrings.labels.roles['student']!,
+    };
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -82,21 +83,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final quickActions = <_QuickAction>[
       if (tenant.hasModule('attendance'))
-        const _QuickAction(Icons.fact_check_rounded, 'تسجيل الحضور', '/attendance'),
+        _QuickAction(Icons.fact_check_rounded, tr(context).dash.takeAttendance, '/attendance'),
       if (tenant.hasModule('students'))
-        const _QuickAction(Icons.person_add_alt_1_rounded, 'إضافة طالب', '/students/new'),
+        _QuickAction(Icons.person_add_alt_1_rounded, tr(context).dash.addStudent, '/students/new'),
       if (tenant.hasModule('serd'))
-        const _QuickAction(Icons.menu_book_rounded, 'جلسة سرد', '/serd/new'),
+        _QuickAction(Icons.menu_book_rounded, tr(context).dash.serdSession, '/serd/new'),
       if (tenant.hasModule('announcements'))
-        const _QuickAction(Icons.campaign_rounded, 'إعلان جديد', '/announcements/new'),
-      if (tenant.hasModule('chat')) const _QuickAction(Icons.chat_bubble_rounded, 'المحادثات', '/chat'),
+        _QuickAction(Icons.campaign_rounded, tr(context).dash.newAnnouncement, '/announcements/new'),
+      if (tenant.hasModule('chat')) _QuickAction(Icons.chat_bubble_rounded, tr(context).nav.items['/chat']!, '/chat'),
       if (tenant.hasModule('calendar'))
-        const _QuickAction(Icons.calendar_month_rounded, 'التقويم', '/calendar'),
+        _QuickAction(Icons.calendar_month_rounded, tr(context).dash.calendar, '/calendar'),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('لوحة التحكم')),
+        leading: DrawerLeading(),title: Text(tr(context).dash.title)),
       drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -122,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${timeGreeting()}، السلام عليكم',
+                        Text(fmt(tr(context).dash.greeting, {'v': timeGreeting()}),
                             style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 14)),
                         const SizedBox(height: 4),
                         Text(org?.name ?? '',
@@ -139,23 +140,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (isAdmin && org != null) AttentionSection(orgId: org.id),
             if (isAdmin && org != null) AdminInsightsSection(orgId: org.id),
             if (_circlesFuture != null) ...[
-              const SectionTitle('حلقاتك اليوم'),
+              SectionTitle(tr(context).dash.yourCirclesToday),
               AsyncBody<TeacherToday>(
                 future: _circlesFuture!,
                 onRetry: () => setState(() => _reload(_loadedForOrgId!)),
                 builder: (context, today) {
                   if (today.circles.isEmpty) {
-                    return const Padding(
+                    return Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text('لم يتم تعيينك لأي حلقة بعد - اطلب من المشرف إضافتك.'),
+                      child: Text(tr(context).dash.noCircle),
                     );
                   }
                   return Column(
                     children: [
                       if (!today.isWorkingDay)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(bottom: 10),
-                          child: MessageBanner(message: 'اليوم ليس من أيام الدوام في مركزك', isError: false),
+                          child: MessageBanner(message: tr(context).dash.notWorkingDay, isError: false),
                         ),
                       for (final c in today.circles)
                         Padding(
@@ -171,10 +172,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   spacing: 6,
                                   runSpacing: 4,
                                   children: [
-                                    StatusChip(label: '${c.students} طالب', color: Colors.blue),
-                                    StatusChip(label: 'سمّع ${c.recited}', color: Colors.green),
-                                    StatusChip(label: 'حاضر ${c.present}', color: Colors.teal),
-                                    if (c.absent > 0) StatusChip(label: 'غائب ${c.absent}', color: Colors.red),
+                                    StatusChip(label: fmt(tr(context).dash.studentsN, {'students': c.students}), color: Colors.blue),
+                                    StatusChip(label: fmt(tr(context).dash.recitedN, {'recited': c.recited}), color: Colors.green),
+                                    StatusChip(label: fmt(tr(context).dash.presentN, {'present': c.present}), color: Colors.teal),
+                                    if (c.absent > 0) StatusChip(label: fmt(tr(context).dash.absentN, {'absent': c.absent}), color: Colors.red),
                                   ],
                                 ),
                               ),
@@ -198,13 +199,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               builder: (context, stats) {
                 final cards = <Widget>[
                   if (tenant.hasModule('students'))
-                    _StatCard(icon: Icons.people_alt_rounded, label: 'الطلاب', value: stats.students, color: Colors.blue),
+                    _StatCard(icon: Icons.people_alt_rounded, label: tr(context).dash.students, value: stats.students, color: Colors.blue),
                   if (isAdmin)
-                    _StatCard(icon: Icons.school_rounded, label: 'المعلمون', value: stats.teachers, color: Colors.purple),
+                    _StatCard(icon: Icons.school_rounded, label: tr(context).dash.teachers, value: stats.teachers, color: Colors.purple),
                   if (tenant.hasModule('circles'))
-                    _StatCard(icon: Icons.groups_rounded, label: 'الحلقات', value: stats.circles, color: Colors.orange),
+                    _StatCard(icon: Icons.groups_rounded, label: tr(context).dash.circles, value: stats.circles, color: Colors.orange),
                   if (tenant.hasModule('attendance'))
-                    _StatCard(icon: Icons.how_to_reg_rounded, label: 'حضور اليوم', value: stats.presentToday, color: Colors.green),
+                    _StatCard(icon: Icons.how_to_reg_rounded, label: tr(context).dash.todayAttendance, value: stats.presentToday, color: Colors.green),
                 ];
                 if (cards.isEmpty) return const SizedBox.shrink();
                 return GridView.count(
@@ -219,7 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
             if (quickActions.isNotEmpty) ...[
-              const SectionTitle('اختصارات سريعة'),
+              SectionTitle(tr(context).dash.shortcuts),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),

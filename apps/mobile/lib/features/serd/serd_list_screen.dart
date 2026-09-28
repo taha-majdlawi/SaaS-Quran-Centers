@@ -13,6 +13,7 @@ import '../certificates/certificates_repository.dart';
 import 'serd_models.dart';
 import 'serd_repository.dart';
 import 'serd_widgets.dart';
+import '../../core/i18n/i18n.dart';
 
 class _QueueData {
   const _QueueData({this.page, this.scheduled = const [], this.mine = const [], this.students = const []});
@@ -72,7 +73,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
       studentId = await showDialog<String>(
         context: context,
         builder: (context) => SimpleDialog(
-          title: const Text('اربط السرد بطالب'),
+          title: Text(tr(context).serd.linkStudent),
           children: [
             SizedBox(
               height: 320,
@@ -94,7 +95,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
       );
       if (studentId == null) return;
     }
-    await _run(() => _repository.review(row.id, 'approve', studentId: studentId), 'تم الاعتماد');
+    await _run(() => _repository.review(row.id, 'approve', studentId: studentId), currentStrings.serd.approved);
   }
 
   Future<void> _reject(SerdRow row) async {
@@ -102,36 +103,36 @@ class _SerdListScreenState extends State<SerdListScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('رفض السرد'),
-        content: TextField(controller: reason, decoration: const InputDecoration(labelText: 'سبب الرفض (اختياري)')),
+        title: Text(tr(context).serd.rejectTitle),
+        content: TextField(controller: reason, decoration: InputDecoration(labelText: tr(context).serd.rejectReason)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(minimumSize: const Size(90, 44), backgroundColor: Colors.red),
-            child: const Text('رفض'),
+            child: Text(tr(context).serd.reject),
           ),
         ],
       ),
     );
     final text = reason.text.trim();
     reason.dispose();
-    if (ok == true) await _run(() => _repository.review(row.id, 'reject', reason: text.isEmpty ? null : text), 'تم الرفض');
+    if (ok == true) await _run(() => _repository.review(row.id, 'reject', reason: text.isEmpty ? null : text), currentStrings.serd.rejected);
   }
 
   Future<void> _delete(SerdRow row) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف السرد'),
-        content: const Text('سيُحذف هذا السرد وتُخصم نقاطه إن كان معتمدًا. متأكد؟'),
+        title: Text(tr(context).serd.deleteTitle),
+        content: Text(tr(context).serd.deleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
-    if (ok == true) await _run(() => _repository.delete(row.id), 'تم الحذف');
+    if (ok == true) await _run(() => _repository.delete(row.id), currentStrings.serd.deleted);
   }
 
   Widget? _adminActions(SerdRow row, List<StudentSummary> students) {
@@ -143,29 +144,29 @@ class _SerdListScreenState extends State<SerdListScreen> {
           FilledButton.icon(
             onPressed: () => _approve(row, students),
             icon: const Icon(Icons.check_rounded, size: 18),
-            label: const Text('اعتماد'),
+            label: Text(tr(context).serd.approve),
             style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
           ),
           OutlinedButton(
             onPressed: () => _reject(row),
             style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40), foregroundColor: Colors.red),
-            child: const Text('رفض'),
+            child: Text(tr(context).serd.reject),
           ),
         ],
         if (row.status == 'rejected' && row.scorePercent != null)
           OutlinedButton(
             onPressed: () => _approve(row, students),
             style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
-            child: const Text('إعادة اعتماد'),
+            child: Text(tr(context).serd.reapprove),
           ),
         if (row.status == 'approved' && row.studentId != null && row.scorePercent != null && row.scorePercent! >= (row.passPercentApplied ?? 0))
           OutlinedButton.icon(
-            onPressed: () => _run(() => CertificatesRepository(AppSupabase.client).issueSerd(_loadedForOrgId!, row.id), 'صدرت الشهادة — تجدها في شاشة الشهادات'),
+            onPressed: () => _run(() => CertificatesRepository(AppSupabase.client).issueSerd(_loadedForOrgId!, row.id), tr(context).serd.certIssued),
             icon: const Icon(Icons.workspace_premium_rounded, size: 18),
-            label: const Text('إصدار شهادة'),
+            label: Text(tr(context).serd.issueCert),
             style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
           ),
-        TextButton(onPressed: () => _delete(row), child: const Text('حذف', style: TextStyle(color: Colors.red))),
+        TextButton(onPressed: () => _delete(row), child: Text(tr(context).common.delete, style: TextStyle(color: Colors.red))),
       ],
     );
   }
@@ -183,7 +184,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const DrawerLeading(),
-        title: const Text('السرد القرآني'),
+        title: Text(tr(context).nav.items['/serd']!),
         actions: [
           if (isAdmin)
             PopupMenuButton<String>(
@@ -191,10 +192,10 @@ class _SerdListScreenState extends State<SerdListScreen> {
                 await context.push('/serd/$v');
                 if (mounted) _reload();
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'schedule', child: Text('جدولة سرد')),
-                PopupMenuItem(value: 'report', child: Text('التقرير')),
-                PopupMenuItem(value: 'settings', child: Text('الإعدادات')),
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 'schedule', child: Text(tr(context).serd.schedule)),
+                PopupMenuItem(value: 'report', child: Text(tr(context).serd.report)),
+                PopupMenuItem(value: 'settings', child: Text(tr(context).serd.settings)),
               ],
             ),
         ],
@@ -206,7 +207,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
           if (mounted) _reload();
         },
         icon: const Icon(Icons.mic_none_rounded),
-        label: const Text('رصد سرد'),
+        label: Text(tr(context).serd.record),
       ),
       body: _future == null
           ? const SizedBox.shrink()
@@ -226,7 +227,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
 
   List<Widget> _adminBody(_QueueData data) {
     final page = data.page!;
-    const filters = [(null, 'الكل'), ('submitted', 'بانتظار الاعتماد'), ('scheduled', 'مجدول'), ('approved', 'معتمد'), ('rejected', 'مرفوض')];
+    final filters = [(null, tr(context).serd.all), ('submitted', tr(context).serd.pending), ('scheduled', tr(context).serd.scheduled), ('approved', tr(context).serd.approvedChip), ('rejected', tr(context).serd.rejectedChip)];
     final pages = (page.total / 30).ceil().clamp(1, 1 << 30);
     return [
       SingleChildScrollView(
@@ -250,7 +251,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
         ),
       ),
       const SizedBox(height: 12),
-      if (page.rows.isEmpty) const Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.menu_book_outlined, title: 'لا يوجد سرد')),
+      if (page.rows.isEmpty) Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.menu_book_outlined, title: tr(context).serd.empty)),
       for (final r in page.rows)
         Padding(padding: const EdgeInsets.only(bottom: 10), child: SerdSessionCard(row: r, actions: _adminActions(r, data.students))),
       if (pages > 1)
@@ -268,7 +269,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
   List<Widget> _teacherBody(_QueueData data) {
     return [
       if (data.scheduled.isNotEmpty) ...[
-        SectionTitle('سرد مطلوب (${data.scheduled.length})'),
+        SectionTitle(fmt(tr(context).serd.requestedN, {'n': data.scheduled.length})),
         for (final r in data.scheduled)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -278,7 +279,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      r.assignedToMe ? 'مخصّص لك' : 'عام — أي معلم يستطيع رصده${r.overdue ? '  ·  متأخر' : ''}',
+                      r.assignedToMe ? tr(context).serd.assigned : fmt(tr(context).serd.openAny, {'v': r.overdue ? tr(context).serd.overdueSuffix : ''}),
                       style: TextStyle(color: r.overdue ? Colors.red : Colors.grey.shade600, fontSize: 12.5),
                     ),
                   ),
@@ -288,16 +289,16 @@ class _SerdListScreenState extends State<SerdListScreen> {
                       if (mounted) _reload();
                     },
                     style: FilledButton.styleFrom(minimumSize: const Size(90, 40)),
-                    child: const Text('رصد'),
+                    child: Text(tr(context).serd.recordShort),
                   ),
                 ],
               ),
             ),
           ),
       ],
-      const SectionTitle('سردي'),
+      SectionTitle(tr(context).serd.mine),
       if (data.mine.isEmpty)
-        const Padding(padding: EdgeInsets.all(12), child: Text('لم ترصد أي سرد بعد. استخدم زر «رصد سرد».')),
+        Padding(padding: EdgeInsets.all(12), child: Text(tr(context).serd.mineEmpty)),
       for (final r in data.mine) Padding(padding: const EdgeInsets.only(bottom: 10), child: SerdSessionCard(row: r)),
     ];
   }

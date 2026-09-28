@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Shown once after creating an account: the only moment the password is
 /// visible, so it can be copied and handed over.
@@ -10,7 +11,7 @@ Future<void> showCredentialsDialog(
   required String loginId,
   required String password,
 }) {
-  final text = 'رمز المركز: $centerCode\nالرقم / البريد: $loginId\nكلمة السر: $password';
+  final text = fmt(tr(context).ui.credsText, {'centerCode': centerCode, 'loginId': loginId, 'password': password});
   return showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
@@ -27,7 +28,7 @@ Future<void> showCredentialsDialog(
           ),
           const SizedBox(height: 10),
           Text(
-            'هذا العرض الوحيد لكلمة السر - انسخها الآن وسلّمها.',
+            tr(context).ui.credsOnce,
             style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5),
           ),
         ],
@@ -37,16 +38,16 @@ Future<void> showCredentialsDialog(
           onPressed: () async {
             await Clipboard.setData(ClipboardData(text: text));
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم النسخ')));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).ui.copied)));
             }
           },
           icon: const Icon(Icons.copy_rounded),
-          label: const Text('نسخ'),
+          label: Text(tr(context).ui.copy),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context),
           style: FilledButton.styleFrom(minimumSize: const Size(100, 44)),
-          child: const Text('تم'),
+          child: Text(tr(context).ui.done),
         ),
       ],
     ),

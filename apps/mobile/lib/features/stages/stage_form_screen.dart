@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'stages_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class StageFormScreen extends StatefulWidget {
   const StageFormScreen({super.key, this.stageId});
@@ -73,7 +74,7 @@ class _StageFormScreenState extends State<StageFormScreen> {
       if (mounted) context.pop();
     } catch (e) {
       final isDuplicate = e.toString().contains('23505');
-      setState(() => _error = isDuplicate ? 'الاسم أو الكود مستخدم من قبل بهذا المركز' : friendlyError(e, 'حدث خطأ أثناء الحفظ'));
+      setState(() => _error = isDuplicate ? tr(context).org.stageTaken : friendlyError(e, tr(context).stu.saveError));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -83,11 +84,11 @@ class _StageFormScreenState extends State<StageFormScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف المرحلة'),
-        content: const Text('متأكد إنك بدك تحذف هذي المرحلة؟'),
+        title: Text(tr(context).org.deleteStage),
+        content: Text(tr(context).org.deleteStageBody),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => context.pop(true), child: const Text('حذف')),
+          TextButton(onPressed: () => context.pop(false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => context.pop(true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -100,7 +101,7 @@ class _StageFormScreenState extends State<StageFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'تعديل المرحلة' : 'إضافة مرحلة'),
+        title: Text(widget.isEditing ? tr(context).org.editStage : tr(context).org.addStage),
         actions: [if (widget.isEditing) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete)],
       ),
       body: _loading
@@ -115,17 +116,17 @@ class _StageFormScreenState extends State<StageFormScreen> {
                     if (_error != null) MessageBanner(message: _error!),
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'اسم المرحلة',
-                        hintText: 'تمهيدي',
+                      decoration: InputDecoration(
+                        labelText: tr(context).org.stageName,
+                        hintText: tr(context).org.stageNamePh,
                       ),
-                      validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
+                      validator: (v) => (v == null || v.isEmpty) ? tr(context).mem.required : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _codeController,
-                      decoration: const InputDecoration(
-                        labelText: 'كود المرحلة (يستخدم برقم الطالب المقترح)',
+                      decoration: InputDecoration(
+                        labelText: tr(context).org.stageCode,
                         hintText: 'TM',
                       ),
                     ),
@@ -133,14 +134,14 @@ class _StageFormScreenState extends State<StageFormScreen> {
                     TextFormField(
                       controller: _sortOrderController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'ترتيب المرحلة'),
+                      decoration: InputDecoration(labelText: tr(context).org.stageOrder),
                     ),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: _submitting ? null : _submit,
                       child: _submitting
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Text(widget.isEditing ? 'حفظ التعديلات' : 'إضافة المرحلة'),
+                          : Text(widget.isEditing ? tr(context).stu.saveChanges : tr(context).org.addStageBtn),
                     ),
                   ],
                 ),

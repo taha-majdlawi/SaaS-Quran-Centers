@@ -11,8 +11,9 @@ import '../../core/widgets/ui.dart';
 import '../recitation/recitation_repository.dart';
 import 'gatherings_repository.dart';
 import 'student_picker.dart';
+import '../../core/i18n/i18n.dart';
 
-const _types = {'new_memorization': 'حفظ جديد', 'recent_review': 'مراجعة قريبة', 'distant_review': 'مراجعة بعيدة'};
+Map<String, String> get _types => currentStrings.labels.recitationType;
 
 /// A recitation heard from a student outside the teacher's circle: recorded by name, linked by the admin.
 class ExternalRecitationsScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
     } on PostgrestException catch (e) {
       if (mounted) _snack(e.message);
     } catch (_) {
-      if (mounted) _snack('تعذّر تنفيذ العملية — تحقّق من الاتصال');
+      if (mounted) _snack(tr(context).gather.actionFailed);
     }
   }
 
@@ -65,13 +66,13 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
           padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
           child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              const Text('تسميع خارجي', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+              Text(tr(context).gather.extNew, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
-              TextField(controller: name, decoration: const InputDecoration(labelText: 'اسم الطالب')),
+              TextField(controller: name, decoration: InputDecoration(labelText: tr(context).gather.studentName)),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 initialValue: type,
-                decoration: const InputDecoration(labelText: 'النوع'),
+                decoration: InputDecoration(labelText: tr(context).gather.type),
                 items: [for (final e in _types.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setLocal(() => type = v ?? type),
               ),
@@ -79,27 +80,27 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
               DropdownButtonFormField<int>(
                 initialValue: surah,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'السورة'),
+                decoration: InputDecoration(labelText: tr(context).gather.surah),
                 items: [for (var i = 1; i <= 114; i++) DropdownMenuItem(value: i, child: Text('$i. ${surahName(i)}'))],
                 onChanged: (v) => setLocal(() => surah = v ?? surah),
               ),
               const SizedBox(height: 10),
               Row(children: [
-                Expanded(child: TextField(controller: from, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'من آية'))),
+                Expanded(child: TextField(controller: from, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).gather.fromAyah))),
                 const SizedBox(width: 10),
-                Expanded(child: TextField(controller: to, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'إلى آية'))),
+                Expanded(child: TextField(controller: to, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).gather.toAyah))),
               ]),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 initialValue: grade,
-                decoration: const InputDecoration(labelText: 'التقدير'),
+                decoration: InputDecoration(labelText: tr(context).gather.grade),
                 items: [for (final g in _grades) DropdownMenuItem(value: g.key, child: Text(g.label))],
                 onChanged: (v) => setLocal(() => grade = v ?? grade),
               ),
               const SizedBox(height: 10),
-              TextField(controller: notes, decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)')),
+              TextField(controller: notes, decoration: InputDecoration(labelText: tr(context).serd.notesOpt)),
               const SizedBox(height: 14),
-              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('رفع التسميع')),
+              FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).gather.extUpload)),
             ]),
           ),
         ),
@@ -116,14 +117,14 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
           grade: grade,
           notes: notes.text.trim().isEmpty ? null : notes.text.trim(),
           clientRef: const Uuid().v4());
-      return 'رُفع التسميع وينتظر ربط المشرف';
+      return currentStrings.gather.extUploaded;
     });
   }
 
   Future<void> _match(Map<String, dynamic> r, [String? studentId]) async {
     final student = studentId ?? await pickStudent(context, _orgId!, initialQuery: '${r['raw_student_name']}');
     if (student == null) return;
-    await _guard(() async => 'رُبط التسميع وسُجّل للطالب (+${await _repository.matchExternal(r['id'] as String, student)} نقطة)');
+    await _guard(() async => fmt(currentStrings.gather.extLinked, {'v': await _repository.matchExternal(r['id'] as String, student)}));
   }
 
   Future<void> _reject(Map<String, dynamic> r) async {
@@ -131,18 +132,18 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('رفض الطلب'),
-        content: TextField(controller: c, decoration: const InputDecoration(hintText: 'السبب (اختياري)')),
+        title: Text(tr(context).gather.rejectTitle),
+        content: TextField(controller: c, decoration: InputDecoration(hintText: tr(context).gather.reasonOpt)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('رفض')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).gather.reject)),
         ],
       ),
     );
     if (ok == true) {
       await _guard(() async {
         await _repository.rejectExternal(r['id'] as String, c.text.trim().isEmpty ? null : c.text.trim());
-        return 'رُفض الطلب';
+        return currentStrings.gather.rejected;
       });
     }
   }
@@ -158,8 +159,8 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
     }
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('التسميع الخارجي')),
-      floatingActionButton: FloatingActionButton.extended(onPressed: _create, icon: const Icon(Icons.add_rounded), label: const Text('تسميع جديد')),
+      appBar: AppBar(title: Text(tr(context).nav.items['/external-recitations']!)),
+      floatingActionButton: FloatingActionButton.extended(onPressed: _create, icon: Icon(Icons.add_rounded), label: Text(tr(context).gather.extNewShort)),
       body: _future == null
           ? const SizedBox.shrink()
           : AsyncBody<List<Map<String, dynamic>>>(
@@ -168,7 +169,7 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
               builder: (context, list) => RefreshIndicator(
                 onRefresh: () async => _reload(),
                 child: list.isEmpty
-                    ? ListView(children: const [SizedBox(height: 80), EmptyState(icon: Icons.record_voice_over_rounded, title: 'لا طلبات بعد')])
+                    ? ListView(children: [SizedBox(height: 80), EmptyState(icon: Icons.record_voice_over_rounded, title: tr(context).gather.noRequests)])
                     : ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 90), children: [
                         for (final r in list)
                           Card(
@@ -181,13 +182,13 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
                                     visualDensity: VisualDensity.compact,
                                     side: BorderSide.none,
                                     backgroundColor: (r['status'] == 'matched' ? Colors.green : r['status'] == 'rejected' ? Colors.red : Colors.amber).withValues(alpha: 0.18),
-                                    label: Text(r['status'] == 'matched' ? 'رُبط' : r['status'] == 'rejected' ? 'مرفوض' : 'بانتظار الربط', style: const TextStyle(fontSize: 11)),
+                                    label: Text(r['status'] == 'matched' ? tr(context).gather.linked : r['status'] == 'rejected' ? tr(context).gather.rejectedChip : tr(context).gather.pending, style: const TextStyle(fontSize: 11)),
                                   ),
                                 ]),
                                 Text('${_types[r['type']] ?? r['type']} · ${surahName((r['surah'] as num).toInt())} (${r['ayah_from']}–${r['ayah_to']}) · ${r['grade']}${r['teacher_name'] != null ? ' · ${r['teacher_name']}' : ''}',
                                     style: TextStyle(color: scheme.outline, fontSize: 12.5)),
-                                if (r['status'] == 'matched' && r['matched_name'] != null) Text('رُبط بـ ${r['matched_name']}', style: const TextStyle(color: Colors.green, fontSize: 12.5)),
-                                if (r['reject_reason'] != null) Text('السبب: ${r['reject_reason']}', style: const TextStyle(color: Colors.red, fontSize: 12.5)),
+                                if (r['status'] == 'matched' && r['matched_name'] != null) Text(fmt(tr(context).gather.linkedTo, {'matched_name': r['matched_name']}), style: const TextStyle(color: Colors.green, fontSize: 12.5)),
+                                if (r['reject_reason'] != null) Text(fmt(tr(context).gather.reasonV, {'reject_reason': r['reject_reason']}), style: const TextStyle(color: Colors.red, fontSize: 12.5)),
                                 if (_admin && r['status'] == 'pending') ...[
                                   const SizedBox(height: 8),
                                   Wrap(spacing: 6, runSpacing: 4, children: [
@@ -196,8 +197,8 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
                                         label: Text('${s['full_name']}${s['circle'] != null ? ' · ${s['circle']}' : ''} (${((s['score'] as num) * 100).round()}%)', style: const TextStyle(fontSize: 11.5)),
                                         onPressed: () => _match(r, s['student_id'] as String),
                                       ),
-                                    ActionChip(avatar: const Icon(Icons.search_rounded, size: 16), label: const Text('اختيار طالب'), onPressed: () => _match(r)),
-                                    ActionChip(label: const Text('رفض'), onPressed: () => _reject(r)),
+                                    ActionChip(avatar: Icon(Icons.search_rounded, size: 16), label: Text(tr(context).gather.pickStudent), onPressed: () => _match(r)),
+                                    ActionChip(label: Text(tr(context).gather.reject), onPressed: () => _reject(r)),
                                   ]),
                                 ],
                                 if (_admin ? r['status'] != 'matched' : r['status'] == 'pending')
@@ -206,9 +207,9 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
                                     child: TextButton(
                                       onPressed: () => _guard(() async {
                                         await _repository.deleteExternal(r['id'] as String);
-                                        return 'حُذف الطلب';
+                                        return currentStrings.gather.deletedReq;
                                       }),
-                                      child: const Text('حذف'),
+                                      child: Text(tr(context).common.delete),
                                     ),
                                   ),
                               ]),

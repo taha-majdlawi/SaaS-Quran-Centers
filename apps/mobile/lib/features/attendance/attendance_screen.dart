@@ -8,6 +8,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import 'attendance_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 final _dateFormat = DateFormat('yyyy-MM-dd');
 
@@ -59,7 +60,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       final circles = await _repository.fetchCircles(orgId);
       if (mounted) setState(() => _circles = circles);
     } catch (_) {
-      if (mounted) setState(() { _message = 'تعذّر تحميل الحلقات'; _isError = true; });
+      if (mounted) setState(() { _message = tr(context).org.circlesLoadFailed; _isError = true; });
     } finally {
       if (mounted) setState(() => _loadingCircles = false);
     }
@@ -88,7 +89,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() { _message = 'تعذّر تحميل طلاب الحلقة'; _isError = true; });
+      if (mounted) setState(() { _message = tr(context).org.studentsLoadFailed; _isError = true; });
     } finally {
       if (mounted) setState(() => _loadingStudents = false);
     }
@@ -120,9 +121,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         sessionDate: _dateFormat.format(_date),
         statusByStudentId: _statusByStudent,
       );
-      if (mounted) setState(() { _message = queued ? kQueuedMessage : 'تم حفظ الحضور بنجاح'; _isError = false; });
+      if (mounted) setState(() { _message = queued ? kQueuedMessage : tr(context).org.attSaved; _isError = false; });
     } catch (e) {
-      if (mounted) setState(() { _message = e is StateError ? e.message : 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'; _isError = true; });
+      if (mounted) setState(() { _message = e is StateError ? e.message : tr(context).org.saveErrorRetry; _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -134,14 +135,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('الحضور')),
+        leading: DrawerLeading(),title: Text(tr(context).nav.items['/attendance']!)),
       drawer: const AppDrawer(),
       bottomNavigationBar: _students.isEmpty
           ? null
           : SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: LoadingButton(label: 'حفظ الحضور', icon: Icons.save_rounded, loading: _saving, onPressed: _save),
+                child: LoadingButton(label: tr(context).org.saveAtt, icon: Icons.save_rounded, loading: _saving, onPressed: _save),
               ),
             ),
       body: _loadingCircles
@@ -156,7 +157,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       children: [
                         DropdownButtonFormField<String>(
                           initialValue: _circleId,
-                          decoration: const InputDecoration(labelText: 'الحلقة', prefixIcon: Icon(Icons.groups_outlined)),
+                          decoration: InputDecoration(labelText: tr(context).org.circle, prefixIcon: Icon(Icons.groups_outlined)),
                           items: _circles.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                           onChanged: (value) {
                             setState(() => _circleId = value);
@@ -167,7 +168,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         OutlinedButton.icon(
                           onPressed: _pickDate,
                           icon: const Icon(Icons.calendar_today_rounded, size: 18),
-                          label: Text('التاريخ:  ${_dateFormat.format(_date)}'),
+                          label: Text(fmt(tr(context).org.dateV, {'v': _dateFormat.format(_date)})),
                         ),
                       ],
                     ),
@@ -176,20 +177,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 const SizedBox(height: 16),
                 if (_message != null) MessageBanner(message: _message!, isError: _isError),
                 if (_circleId == null)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 40),
                     child: EmptyState(
                       icon: Icons.fact_check_outlined,
-                      title: 'اختر الحلقة لتسجيل الحضور',
-                      subtitle: 'ثم حدّد حالة كل طالب واحفظ',
+                      title: tr(context).org.pickCircle,
+                      subtitle: tr(context).org.pickCircleHint,
                     ),
                   )
                 else if (_loadingStudents)
                   const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()))
                 else if (_students.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 40),
-                    child: EmptyState(icon: Icons.people_outline, title: 'لا يوجد طلاب بهذي الحلقة'),
+                    child: EmptyState(icon: Icons.people_outline, title: tr(context).org.noStudents),
                   )
                 else ...[
                   Wrap(
@@ -210,7 +211,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         }
                       }),
                       icon: const Icon(Icons.done_all_rounded),
-                      label: const Text('تحديد الكل حاضر'),
+                      label: Text(tr(context).org.allPresent),
                     ),
                   ),
                   for (final s in _students)

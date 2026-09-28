@@ -8,6 +8,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'recitation_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Opens the "log a recitation" sheet. Resolves to the total points awarded
 /// (or null if the teacher cancelled).
@@ -128,14 +129,14 @@ class _RecitationSheetState extends State<_RecitationSheet> {
   }
 
   String? _validate() {
-    if (_grade == null) return 'اختر تقييم التلاوة';
+    if (_grade == null) return tr(context).rec.pickGrade;
     for (final p in _parts) {
-      if (p.surah == null) return 'اختر السورة';
+      if (p.surah == null) return tr(context).rec.pickSurah;
       final from = int.tryParse(p.from.text.trim());
       final to = int.tryParse(p.to.text.trim());
-      if (from == null || to == null || from < 1) return 'أدخل نطاق الآيات';
-      if (to < from) return 'آية النهاية يجب أن تكون بعد آية البداية أو تساويها';
-      if (to > ayahCount(p.surah!)) return 'سورة ${surahName(p.surah!)} فيها ${ayahCount(p.surah!)} آية فقط';
+      if (from == null || to == null || from < 1) return tr(context).rec.enterRange;
+      if (to < from) return tr(context).rec.rangeOrder;
+      if (to > ayahCount(p.surah!)) return fmt(tr(context).rec.tooFar, {'v': surahName(p.surah!), 'v2': ayahCount(p.surah!)});
     }
     return null;
   }
@@ -169,7 +170,7 @@ class _RecitationSheetState extends State<_RecitationSheet> {
       } on StateError catch (e) {
         setState(() => _error = e.message);
       } catch (_) {
-        setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
+        setState(() => _error = tr(context).serd.saveFailedNet);
       } finally {
         if (mounted) setState(() => _saving = false);
       }
@@ -210,11 +211,11 @@ class _RecitationSheetState extends State<_RecitationSheet> {
         }
       }
     } on PostgrestException catch (e) {
-      setState(() => _error = saved > 0 ? 'حُفظ $saved، ولم يُحفظ الباقي: ${e.message}' : e.message);
+      setState(() => _error = saved > 0 ? fmt(tr(context).rec.partial, {'saved': saved, 'message': e.message}) : e.message);
     } on StateError catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
-      setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
+      setState(() => _error = tr(context).serd.saveFailedNet);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -240,7 +241,7 @@ class _RecitationSheetState extends State<_RecitationSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(widget.editing == null ? 'تسجيل إنجاز يومي' : 'تعديل التسميع', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text(widget.editing == null ? tr(context).rec.newTitle : tr(context).rec.editTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             Text(widget.studentName, style: TextStyle(color: Colors.grey.shade600)),
             const SizedBox(height: 16),
             if (widget.editing == null && widget.initialSurah != null)
@@ -251,7 +252,7 @@ class _RecitationSheetState extends State<_RecitationSheet> {
                 child: Row(children: [
                   Icon(Icons.replay_circle_filled_rounded, size: 18, color: Colors.amber.shade800),
                   const SizedBox(width: 8),
-                  Expanded(child: Text('مُعبّأ من جدول المراجعة المقترح — عدّله إن لزم', style: TextStyle(fontSize: 12, color: Colors.amber.shade900))),
+                  Expanded(child: Text(tr(context).rec.prefilled, style: TextStyle(fontSize: 12, color: Colors.amber.shade900))),
                 ]),
               ),
             if (_error != null) MessageBanner(message: _error!),
@@ -259,12 +260,12 @@ class _RecitationSheetState extends State<_RecitationSheet> {
               OutlinedButton.icon(
                 onPressed: _pickDate,
                 icon: const Icon(Icons.event_rounded, size: 18),
-                label: Text(isToday ? 'تاريخ التسميع: اليوم' : 'تاريخ التسميع: ${_date.year}/${_date.month}/${_date.day}'),
+                label: Text(isToday ? tr(context).rec.dateToday : fmt(tr(context).rec.dateV, {'year': _date.year, 'month': _date.month, 'day': _date.day})),
               ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _type,
-              decoration: const InputDecoration(labelText: 'نوع الإنجاز', prefixIcon: Icon(Icons.bookmark_outline)),
+              decoration: InputDecoration(labelText: tr(context).rec.type, prefixIcon: Icon(Icons.bookmark_outline)),
               items: kAchievementTypes.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
               onChanged: (v) => setState(() => _type = v ?? _type),
             ),
@@ -294,9 +295,9 @@ class _RecitationSheetState extends State<_RecitationSheet> {
               TextButton.icon(
                 onPressed: () => setState(() => _parts.add(_PartInput())),
                 icon: const Icon(Icons.add_circle_outline),
-                label: const Text('إضافة سورة أخرى لنفس الجلسة'),
+                label: Text(tr(context).rec.addSurah),
               ),
-            const SectionTitle('تقييم التلاوة'),
+            SectionTitle(tr(context).rec.grade),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -313,10 +314,10 @@ class _RecitationSheetState extends State<_RecitationSheet> {
             TextField(
               controller: _notes,
               maxLines: 2,
-              decoration: const InputDecoration(labelText: 'ملاحظات الشيخ (اختياري)', prefixIcon: Icon(Icons.edit_note_rounded)),
+              decoration: InputDecoration(labelText: tr(context).rec.notes, prefixIcon: Icon(Icons.edit_note_rounded)),
             ),
             const SizedBox(height: 20),
-            LoadingButton(label: widget.editing == null ? 'حفظ التسميع' : 'حفظ التعديل', icon: Icons.check_rounded, loading: _saving, onPressed: _save),
+            LoadingButton(label: widget.editing == null ? tr(context).rec.saveBtn : tr(context).rec.saveEdit, icon: Icons.check_rounded, loading: _saving, onPressed: _save),
           ],
         ),
       ),
@@ -357,7 +358,7 @@ class _PartEditor extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onPickSurah,
                   icon: const Icon(Icons.menu_book_rounded, size: 18),
-                  label: Text(part.surah == null ? 'اختر السورة' : 'سورة ${surahName(part.surah!)}'),
+                  label: Text(part.surah == null ? tr(context).rec.pickSurah : fmt(tr(context).stu.surahV, {'v': surahName(part.surah!)})),
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
                 ),
               ),
@@ -371,7 +372,7 @@ class _PartEditor extends StatelessWidget {
                 child: TextField(
                   controller: part.from,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'من آية'),
+                  decoration: InputDecoration(labelText: tr(context).rec.fromAyah),
                 ),
               ),
               const SizedBox(width: 10),
@@ -379,7 +380,7 @@ class _PartEditor extends StatelessWidget {
                 child: TextField(
                   controller: part.to,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'إلى آية', helperText: max == null ? null : 'الحد $max'),
+                  decoration: InputDecoration(labelText: tr(context).rec.toAyah, helperText: max == null ? null : fmt(tr(context).rec.maxV, {'max': max})),
                 ),
               ),
             ],
@@ -417,7 +418,7 @@ class _SurahPickerState extends State<_SurahPicker> {
               child: TextField(
                 autofocus: true,
                 onChanged: (v) => setState(() => _query = v.trim()),
-                decoration: const InputDecoration(hintText: 'ابحث باسم السورة أو رقمها', prefixIcon: Icon(Icons.search_rounded)),
+                decoration: InputDecoration(hintText: tr(context).rec.searchSurah, prefixIcon: Icon(Icons.search_rounded)),
               ),
             ),
             Expanded(
@@ -428,7 +429,7 @@ class _SurahPickerState extends State<_SurahPicker> {
                   return ListTile(
                     leading: CircleAvatar(radius: 16, child: Text('$n', style: const TextStyle(fontSize: 12))),
                     title: Text(surahName(n)),
-                    subtitle: Text('${ayahCount(n)} آية'),
+                    subtitle: Text(fmt(tr(context).rec.ayahsN, {'v': ayahCount(n)})),
                     onTap: () => Navigator.pop(context, n),
                   );
                 },

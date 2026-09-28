@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../supabase/supabase_client.dart';
+import '../../core/i18n/i18n.dart';
 
 class AccountsApiException implements Exception {
   const AccountsApiException(this.message);
@@ -27,7 +28,7 @@ class AccountsApi {
 
   Future<Map<String, dynamic>> _post(Map<String, dynamic> body) async {
     final token = AppSupabase.client.auth.currentSession?.accessToken;
-    if (token == null) throw const AccountsApiException('انتهت الجلسة، سجّل الدخول من جديد');
+    if (token == null) throw AccountsApiException(currentStrings.ui.sessionEnded);
 
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
@@ -40,13 +41,13 @@ class AccountsApi {
       final text = await response.transform(utf8.decoder).join();
       final decoded = text.isEmpty ? <String, dynamic>{} : jsonDecode(text) as Map<String, dynamic>;
       if (response.statusCode >= 400) {
-        throw AccountsApiException((decoded['error'] as String?) ?? 'تعذّر تنفيذ الطلب');
+        throw AccountsApiException((decoded['error'] as String?) ?? currentStrings.ui.requestFailed);
       }
       return decoded;
     } on AccountsApiException {
       rethrow;
     } catch (_) {
-      throw const AccountsApiException('تعذّر الاتصال بالخادم، تأكد من الإنترنت وحاول مرة أخرى');
+      throw AccountsApiException(currentStrings.auth.serverDown);
     } finally {
       client.close();
     }

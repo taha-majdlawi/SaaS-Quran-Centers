@@ -7,6 +7,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import 'points_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Recitation grades + points. Only the admin edits; a teacher with the
 /// 'points' module can look. Editing never rewrites past recitations.
@@ -53,7 +54,7 @@ class _PointsScreenState extends State<PointsScreen> {
         _controllers[g.key] = (TextEditingController(text: g.label), TextEditingController(text: '${g.points}'));
       }
     } catch (_) {
-      _message = 'تعذّر تحميل التقديرات';
+      _message = currentStrings.org.gradesLoadFailed;
       _isError = true;
     }
     if (mounted) setState(() => _loading = false);
@@ -74,7 +75,7 @@ class _PointsScreenState extends State<PointsScreen> {
     if ((newKey.isNotEmpty || newLabel.isNotEmpty) &&
         (!RegExp(r'^[a-z0-9_]{1,40}$').hasMatch(newKey) || newLabel.isEmpty)) {
       setState(() {
-        _message = 'المفتاح حروف إنجليزية صغيرة/أرقام/_ فقط، والاسم مطلوب';
+        _message = tr(context).org.keyRule;
         _isError = true;
       });
       return;
@@ -109,9 +110,9 @@ class _PointsScreenState extends State<PointsScreen> {
       _newLabel.clear();
       _newPoints.clear();
       await _load();
-      if (mounted) setState(() { _message = 'تم حفظ التقديرات'; _isError = false; });
+      if (mounted) setState(() { _message = tr(context).org.gradesSaved; _isError = false; });
     } catch (e) {
-      if (mounted) setState(() { _message = friendlyError(e, 'حدث خطأ أثناء الحفظ'); _isError = true; });
+      if (mounted) setState(() { _message = friendlyError(e, tr(context).stu.saveError); _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -123,7 +124,7 @@ class _PointsScreenState extends State<PointsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('تقديرات التسميع والنقاط')),
+        leading: DrawerLeading(),title: Text(tr(context).org.gradesTitle)),
       drawer: const AppDrawer(),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -131,7 +132,7 @@ class _PointsScreenState extends State<PointsScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 Text(
-                  'أسماء التقديرات وعدد النقاط لكل تقدير. تُحفظ النقاط على كل تسميع لحظة تسجيله، فتغييرها يسري على التسميعات القادمة فقط.',
+                  tr(context).org.gradesHint,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
@@ -149,7 +150,7 @@ class _PointsScreenState extends State<PointsScreen> {
                               child: TextField(
                                 controller: _controllers[g.key]!.$1,
                                 enabled: isAdmin,
-                                decoration: const InputDecoration(labelText: 'الاسم'),
+                                decoration: InputDecoration(labelText: tr(context).org.name),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -159,7 +160,7 @@ class _PointsScreenState extends State<PointsScreen> {
                                 controller: _controllers[g.key]!.$2,
                                 enabled: isAdmin,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(labelText: 'النقاط'),
+                                decoration: InputDecoration(labelText: tr(context).org.points),
                               ),
                             ),
                             Switch(
@@ -172,11 +173,11 @@ class _PointsScreenState extends State<PointsScreen> {
                     ),
                   ),
                 if (isAdmin) ...[
-                  const SectionTitle('إضافة تقدير جديد'),
+                  SectionTitle(tr(context).org.addGrade),
                   TextField(
                     controller: _newKey,
                     textDirection: TextDirection.ltr,
-                    decoration: const InputDecoration(labelText: 'المفتاح (مثل outstanding)'),
+                    decoration: InputDecoration(labelText: tr(context).org.keyField),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -185,7 +186,7 @@ class _PointsScreenState extends State<PointsScreen> {
                         flex: 3,
                         child: TextField(
                           controller: _newLabel,
-                          decoration: const InputDecoration(labelText: 'الاسم (مثل متميز)'),
+                          decoration: InputDecoration(labelText: tr(context).org.nameField),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -194,17 +195,17 @@ class _PointsScreenState extends State<PointsScreen> {
                         child: TextField(
                           controller: _newPoints,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'النقاط'),
+                          decoration: InputDecoration(labelText: tr(context).org.points),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  LoadingButton(label: 'حفظ التقديرات', loading: _saving, onPressed: _save),
+                  LoadingButton(label: tr(context).org.saveGrades, loading: _saving, onPressed: _save),
                 ] else
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
-                    child: Text('بس المدير يقدر يعدّل التقديرات والنقاط.', style: TextStyle(color: Colors.grey.shade600)),
+                    child: Text(tr(context).org.gradesAdminOnly, style: TextStyle(color: Colors.grey.shade600)),
                   ),
               ],
             ),

@@ -10,6 +10,7 @@ import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 const _palette = ['#f59e0b', '#ef4444', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#14b8a6', '#64748b'];
 
@@ -113,7 +114,7 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
 
   Future<void> _save() async {
     if (_name.text.trim().isEmpty) {
-      _say('اسم الشارة مطلوب', error: true);
+      _say(tr(context).badgesStaff.nameRequired, error: true);
       return;
     }
     setState(() => _saving = true);
@@ -146,22 +147,22 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (context) => _NamePicker(items: data.students, title: 'اختر الطالب'),
+      builder: (context) => _NamePicker(items: data.students, title: tr(context).badgesStaff.pickStudent),
     );
-    if (picked != null) await _run(() => _repository.awardBadge(widget.badgeId!, picked.id), 'مُنحت الشارة');
+    if (picked != null) await _run(() => _repository.awardBadge(widget.badgeId!, picked.id), currentStrings.badgesStaff.awarded);
   }
 
   Future<void> _pickCircle(_FormData data) async {
     final picked = await showModalBottomSheet<({String id, String name})>(
       context: context,
       showDragHandle: true,
-      builder: (context) => _NamePicker(items: data.circles, title: 'اختر الحلقة'),
+      builder: (context) => _NamePicker(items: data.circles, title: tr(context).badgesStaff.pickCircle),
     );
     if (picked != null) {
       try {
         final n = await _repository.awardToCircle(widget.badgeId!, picked.id);
         if (mounted) {
-          _say('مُنحت لـ $n طالب');
+          _say(fmt(tr(context).badgesStaff.awardedN, {'n': n}));
           setState(() => _future = _load());
         }
       } on PostgrestException catch (e) {
@@ -174,11 +175,11 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف الشارة'),
-        content: const Text('تُحذف من كل الطلاب. متأكد؟'),
+        title: Text(tr(context).badgesStaff.deleteTitle),
+        content: Text(tr(context).badgesStaff.deleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -196,7 +197,7 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
     final admin = _isAdmin;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.badgeId == null ? 'شارة جديدة' : 'الشارة'),
+        title: Text(widget.badgeId == null ? tr(context).badgesStaff.newTitle : tr(context).badgesStaff.badge),
         actions: [if (admin && widget.badgeId != null) IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: _delete)],
       ),
       body: AsyncBody<_FormData>(
@@ -207,9 +208,9 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
             if (_message != null) MessageBanner(message: _message!, isError: _isError),
             if (admin) ...[
               Row(children: [
-                SizedBox(width: 72, child: TextField(controller: _icon, textAlign: TextAlign.center, style: const TextStyle(fontSize: 26), maxLength: 4, decoration: const InputDecoration(counterText: '', labelText: 'رمز'))),
+                SizedBox(width: 72, child: TextField(controller: _icon, textAlign: TextAlign.center, style: TextStyle(fontSize: 26), maxLength: 4, decoration: InputDecoration(counterText: '', labelText: tr(context).badgesStaff.icon))),
                 const SizedBox(width: 10),
-                Expanded(child: TextField(controller: _name, decoration: const InputDecoration(labelText: 'الاسم'))),
+                Expanded(child: TextField(controller: _name, decoration: InputDecoration(labelText: tr(context).badgesStaff.name))),
               ]),
               const SizedBox(height: 10),
               Wrap(spacing: 8, children: [
@@ -224,12 +225,12 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
                   ),
               ]),
               const SizedBox(height: 12),
-              TextField(controller: _description, maxLines: 2, decoration: const InputDecoration(labelText: 'الوصف')),
+              TextField(controller: _description, maxLines: 2, decoration: InputDecoration(labelText: tr(context).badgesStaff.description)),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _rule,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'القاعدة'),
+                decoration: InputDecoration(labelText: tr(context).badgesStaff.rule),
                 items: [for (final e in kRuleLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setState(() => _rule = v ?? 'manual'),
               ),
@@ -239,8 +240,8 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
                   controller: _threshold,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'قيمة الشرط',
-                    helperText: _rule == 'juz_complete' ? 'رقم الجزء (1–30)' : (_rule == 'weekly_attendance' ? 'نسبة % (1–100)' : 'العدد المطلوب'),
+                    labelText: tr(context).badgesStaff.threshold,
+                    helperText: _rule == 'juz_complete' ? tr(context).badgesStaff.juzNo : (_rule == 'weekly_attendance' ? tr(context).badgesStaff.percent : tr(context).badgesStaff.count),
                   ),
                 ),
               ],
@@ -248,35 +249,35 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _param,
-                  decoration: const InputDecoration(labelText: 'التقدير'),
+                  decoration: InputDecoration(labelText: tr(context).badgesStaff.grade),
                   items: [for (final g in data.grades.entries) DropdownMenuItem(value: g.key, child: Text(g.value))],
                   onChanged: (v) => setState(() => _param = v),
                 ),
               ],
               const SizedBox(height: 12),
-              TextField(controller: _duration, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'مدة الشارة بالأيام (فارغ = دائمة)')),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('فعّالة'), value: _active, onChanged: (v) => setState(() => _active = v)),
+              TextField(controller: _duration, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).badgesStaff.duration)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).badgesStaff.active), value: _active, onChanged: (v) => setState(() => _active = v)),
               const SizedBox(height: 8),
-              LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+              LoadingButton(label: tr(context).common.save, loading: _saving, onPressed: _save),
             ],
             if (widget.badgeId != null) ...[
-              const SectionTitle('منح الشارة يدويًا'),
+              SectionTitle(tr(context).badgesStaff.giveManually),
               Wrap(spacing: 8, runSpacing: 8, children: [
-                FilledButton.tonalIcon(onPressed: () => _pickStudent(data), icon: const Icon(Icons.person_add_alt_1_rounded), label: const Text('لطالب')),
-                if (admin) OutlinedButton.icon(onPressed: () => _pickCircle(data), icon: const Icon(Icons.groups_rounded), label: const Text('لحلقة كاملة')),
+                FilledButton.tonalIcon(onPressed: () => _pickStudent(data), icon: Icon(Icons.person_add_alt_1_rounded), label: Text(tr(context).badgesStaff.toStudent)),
+                if (admin) OutlinedButton.icon(onPressed: () => _pickCircle(data), icon: Icon(Icons.groups_rounded), label: Text(tr(context).badgesStaff.toCircle)),
               ]),
               if (admin) ...[
-                SectionTitle('حاملو الشارة (${data.holders.length})'),
-                if (data.holders.isEmpty) const Padding(padding: EdgeInsets.all(12), child: Text('لم تُمنح لأحد بعد')),
+                SectionTitle(fmt(tr(context).badgesStaff.holdersN, {'n': data.holders.length})),
+                if (data.holders.isEmpty) Padding(padding: EdgeInsets.all(12), child: Text(tr(context).badgesStaff.noHolders)),
                 for (final h in data.holders)
                   Card(
                     child: ListTile(
                       leading: InitialAvatar(h.name, radius: 18),
                       title: Text(h.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      subtitle: Text('${formatDate(h.awardedAt)}  ·  ${h.manual ? 'يدوي' : 'تلقائي'}${h.expiresAt == null ? '' : '  ·  تنتهي ${formatDate(h.expiresAt)}'}'),
+                      subtitle: Text('${formatDate(h.awardedAt)}  ·  ${h.manual ? tr(context).badgesStaff.manual : tr(context).badgesStaff.auto}${h.expiresAt == null ? '' : fmt(tr(context).badgesStaff.expiresSuffix, {'date': formatDate(h.expiresAt)})}'),
                       trailing: TextButton(
-                        onPressed: () => _run(() => _repository.awardBadge(widget.badgeId!, h.studentId, revoke: true), 'سُحبت الشارة'),
-                        child: const Text('سحب', style: TextStyle(color: Colors.red)),
+                        onPressed: () => _run(() => _repository.awardBadge(widget.badgeId!, h.studentId, revoke: true), tr(context).badgesStaff.revoked),
+                        child: Text(tr(context).badgesStaff.revoke, style: TextStyle(color: Colors.red)),
                       ),
                     ),
                   ),

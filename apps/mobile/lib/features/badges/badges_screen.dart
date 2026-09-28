@@ -10,6 +10,7 @@ import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class _BadgesData {
   const _BadgesData(this.badges, this.grades);
@@ -47,16 +48,16 @@ class _BadgesScreenState extends State<BadgesScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const DrawerLeading(),
-        title: const Text('الشارات'),
+        title: Text(tr(context).nav.items['/badges']!),
         actions: [
           if (isAdmin)
             IconButton(
-              tooltip: 'إعادة تقييم الكل',
+              tooltip: tr(context).badgesStaff.reevaluate,
               icon: const Icon(Icons.refresh_rounded),
               onPressed: () async {
                 try {
                   await _repository.evaluateAll(_orgId!);
-                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أُعيد تقييم الشارات لكل الطلاب')));
+                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).badgesStaff.reevaluated)));
                 } on PostgrestException catch (e) {
                   if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
                 }
@@ -72,7 +73,7 @@ class _BadgesScreenState extends State<BadgesScreen> {
                 if (mounted) setState(() => _load(_orgId!));
               },
               icon: const Icon(Icons.add_rounded),
-              label: const Text('شارة جديدة'),
+              label: Text(tr(context).badgesStaff.newTitle),
             )
           : null,
       body: _future == null
@@ -85,9 +86,9 @@ class _BadgesScreenState extends State<BadgesScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                   children: [
-                    Text('الشارات التلقائية تُمنح فور تحقق شرطها. اليدوية يمنحها المشرف، أو المعلم لطلاب حلقته.', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                    Text(tr(context).badgesStaff.intro, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                     const SizedBox(height: 10),
-                    if (data.badges.isEmpty) const Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.emoji_events_outlined, title: 'لا توجد شارات بعد')),
+                    if (data.badges.isEmpty) Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.emoji_events_outlined, title: tr(context).badgesStaff.empty)),
                     for (final b in data.badges)
                       Card(
                         child: ListTile(
@@ -99,8 +100,8 @@ class _BadgesScreenState extends State<BadgesScreen> {
                           title: Text(b.name, style: TextStyle(fontWeight: FontWeight.w800, color: b.isActive ? null : Colors.grey)),
                           subtitle: Text([
                             ruleText(b.ruleType, b.threshold, b.param, data.grades),
-                            if (b.durationDays != null) 'تنتهي بعد ${b.durationDays} يوم',
-                            if (!b.isActive) 'غير فعّالة',
+                            if (b.durationDays != null) fmt(tr(context).badgesStaff.expiresAfter, {'durationDays': b.durationDays}),
+                            if (!b.isActive) tr(context).badgesStaff.inactive,
                           ].join('  ·  ')),
                         ),
                       ),

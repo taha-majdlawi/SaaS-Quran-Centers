@@ -19,6 +19,7 @@ const kTextSettingKeys = [
   'prayer_calc_method',
   'prayer_madhab',
   'quran_reciters',
+  'default_language',
   'quran_default_reciter',
 ];
 

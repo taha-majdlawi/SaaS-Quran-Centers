@@ -22,6 +22,7 @@ import '../serd/serd_models.dart';
 import '../serd/serd_repository.dart';
 import '../serd/serd_widgets.dart';
 import '../teacher/teacher_widgets.dart';
+import '../../core/i18n/i18n.dart';
 
 class _FileData {
   const _FileData({
@@ -103,7 +104,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       grades: data.grades,
     );
     if (points != null && mounted) {
-      _toast(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة');
+      _toast(points == kQueuedPoints ? kQueuedMessage : fmt(tr(context).teach.savedPoints, {'points': points}));
       _reload();
     }
   }
@@ -117,7 +118,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       editing: entry,
     );
     if (done != null && mounted) {
-      _toast('تم تعديل التسميع');
+      _toast(tr(context).stu.recEdited);
       _reload();
     }
   }
@@ -126,11 +127,11 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف التسميع'),
-        content: const Text('سيُحذف هذا التسميع وتُخصم نقاطه من رصيد الطالب. هل أنت متأكد؟'),
+        title: Text(tr(context).stu.recDeleteTitle),
+        content: Text(tr(context).stu.recDeleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -138,7 +139,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     try {
       await _recitations.deleteRecitation(entry.id);
       if (mounted) {
-        _toast('تم الحذف');
+        _toast(tr(context).stu.deleted);
         _reload();
       }
     } on PostgrestException catch (e) {
@@ -151,18 +152,18 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     final saved = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('الخطة القادمة'),
+        title: Text(tr(context).stu.nextPlan),
         content: TextField(
           controller: controller,
           maxLines: 3,
-          decoration: const InputDecoration(hintText: 'مثال: حفظ سورة الملك من الآية 1 إلى 15'),
+          decoration: InputDecoration(hintText: tr(context).stu.planPh),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr(context).common.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
             style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
-            child: const Text('حفظ'),
+            child: Text(tr(context).common.save),
           ),
         ],
       ),
@@ -172,7 +173,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     try {
       await _recitations.setStudentPlan(orgId: _orgId, studentId: widget.studentId, plan: saved);
       if (mounted) {
-        _toast('تم حفظ الخطة');
+        _toast(tr(context).stu.planSaved);
         _reload();
       }
     } on PostgrestException catch (e) {
@@ -184,7 +185,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     try {
       await AccountsApi().linkGuardian(orgId: _orgId, studentId: widget.studentId, guardianMemberId: memberId);
       if (mounted) {
-        _toast('تم تحديث الربط');
+        _toast(tr(context).stu.linkUpdated);
         _reload();
       }
     } on AccountsApiException catch (e) {
@@ -196,14 +197,14 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     final picked = await showDialog<String>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('اختر ولي الأمر'),
+        title: Text(tr(context).stu.pickGuardian),
         children: [
           for (final g in data.guardians)
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, g.id),
               child: Text(g.fullName ?? g.email ?? '—'),
             ),
-          if (data.guardians.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لا يوجد أولياء أمور بعد')),
+          if (data.guardians.isEmpty) Padding(padding: EdgeInsets.all(16), child: Text(tr(context).stu.noGuardians)),
         ],
       ),
     );
@@ -218,35 +219,35 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حساب ولي أمر جديد'),
+        title: Text(tr(context).stu.newGuardian),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: name, decoration: const InputDecoration(labelText: 'اسم ولي الأمر')),
+              TextField(controller: name, decoration: InputDecoration(labelText: tr(context).stu.guardianName)),
               const SizedBox(height: 10),
               TextField(
                 controller: identifier,
                 textDirection: TextDirection.ltr,
-                decoration: const InputDecoration(labelText: 'رقم الدخول أو البريد'),
+                decoration: InputDecoration(labelText: tr(context).stu.loginId),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: phone,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'الجوال (اختياري)'),
+                decoration: InputDecoration(labelText: tr(context).stu.phoneOpt),
               ),
               const SizedBox(height: 10),
-              TextField(controller: password, decoration: const InputDecoration(labelText: 'كلمة السر (8 أحرف على الأقل)')),
+              TextField(controller: password, decoration: InputDecoration(labelText: tr(context).stu.password8)),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
-            child: const Text('إنشاء'),
+            child: Text(tr(context).stu.create),
           ),
         ],
       ),
@@ -258,7 +259,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     password.dispose();
     if (ok != true || !mounted) return;
     if (values.$1.isEmpty || values.$2.isEmpty || values.$4.length < 8) {
-      _toast('أكمل الاسم ورقم الدخول وكلمة سر من 8 أحرف على الأقل');
+      _toast(tr(context).stu.guardianIncomplete);
       return;
     }
     try {
@@ -275,7 +276,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       _reload();
       await showCredentialsDialog(
         context,
-        title: 'تم إنشاء حساب ولي الأمر',
+        title: tr(context).stu.guardianCreated,
         centerCode: org.slug,
         loginId: created.loginId,
         password: values.$4,
@@ -298,7 +299,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
               : FloatingActionButton.extended(
                   onPressed: () => _addRecitation(data),
                   icon: const Icon(Icons.mic_none_rounded),
-                  label: const Text('رصد تسميع'),
+                  label: Text(tr(context).teach.record),
                 ),
           body: snapshot.hasError
               ? ErrorState(onRetry: _reload)
@@ -324,10 +325,10 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     final brand = TeacherStyle.brand(context);
     final last = data.entries.isEmpty ? null : data.entries.first;
     final stats = <Widget>[
-      StatCard(icon: Icons.mic_rounded, label: 'كل التسميعات', value: '${d.totalRecitations}', color: brand),
-      StatCard(icon: Icons.date_range_rounded, label: 'هذا الأسبوع', value: '${d.thisWeek}', color: TeacherStyle.blue),
-      StatCard(icon: Icons.local_fire_department_rounded, label: 'سلسلة الأيام', value: '${d.currentStreak}', color: TeacherStyle.warning),
-      StatCard(icon: Icons.how_to_reg_rounded, label: 'الحضور الأسبوعي', value: d.weeklyAttendance == null ? '—' : '${d.weeklyAttendance}%', color: TeacherStyle.success),
+      StatCard(icon: Icons.mic_rounded, label: tr(context).stu.allRecitations, value: '${d.totalRecitations}', color: brand),
+      StatCard(icon: Icons.date_range_rounded, label: tr(context).dash.thisWeek, value: '${d.thisWeek}', color: TeacherStyle.blue),
+      StatCard(icon: Icons.local_fire_department_rounded, label: tr(context).stu.streak, value: '${d.currentStreak}', color: TeacherStyle.warning),
+      StatCard(icon: Icons.how_to_reg_rounded, label: tr(context).stu.weeklyAttendance, value: d.weeklyAttendance == null ? '—' : '${d.weeklyAttendance}%', color: TeacherStyle.success),
     ];
 
     return RefreshIndicator(
@@ -341,7 +342,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           centerTitle: true,
           actions: [
             IconButton(
-              tooltip: 'تعديل البيانات',
+              tooltip: tr(context).stu.editDetails,
               icon: const Icon(Icons.edit_outlined),
               onPressed: () async {
                 await context.push('/students/${widget.studentId}');
@@ -362,7 +363,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
                   const SizedBox(width: 4),
-                  Text('${d.totalPoints} نقطة', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text(fmt(tr(context).teach.pointsN, {'totalPoints': d.totalPoints}), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
                 ]),
                 const SizedBox(height: 2),
                 Text('${d.studentCode}${d.circleName == null ? '' : '  ·  ${d.circleName}'}', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
@@ -384,7 +385,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
             children: stats,
           ),
           if (last != null) ...[
-            const SectionTitle('آخر تسميع'),
+            SectionTitle(tr(context).stu.lastRecitation),
             Builder(builder: (context) {
               final color = TeacherStyle.gradeColor(data.grades, last.grade);
               return Container(
@@ -398,7 +399,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                   Row(children: [
                     Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)), child: Icon(Icons.menu_book_rounded, color: color, size: 20)),
                     const SizedBox(width: 10),
-                    Expanded(child: Text('سورة ${surahName(last.surah)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                    Expanded(child: Text(fmt(tr(context).stu.surahV, {'v': surahName(last.surah)}), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
@@ -406,7 +407,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                     ),
                   ]),
                   const SizedBox(height: 10),
-                  Text('${kAchievementTypes[last.type] ?? last.type} • من آية ${last.ayahFrom} إلى ${last.ayahTo}', style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 13)),
+                  Text(fmt(tr(context).stu.recLine, {'type': kAchievementTypes[last.type] ?? last.type, 'ayahFrom': last.ayahFrom, 'ayahTo': last.ayahTo}), style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 13)),
                   const SizedBox(height: 6),
                   Text(formatDate(last.createdAt), style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12)),
                   if (last.notes != null && last.notes!.trim().isNotEmpty) ...[
@@ -417,7 +418,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
               );
             }),
           ],
-          const SectionTitle('التقدّم'),
+          SectionTitle(tr(context).stu.progress),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -427,8 +428,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${d.totalParts} من 30 جزءًا', style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text('الحضور الأسبوعي: ${d.weeklyAttendance == null ? '—' : '${d.weeklyAttendance}%'}'),
+                      Text(fmt(tr(context).stu.partsOf30, {'totalParts': d.totalParts}), style: const TextStyle(fontWeight: FontWeight.w700)),
+                      Text(fmt(tr(context).stu.weeklyAttendanceV, {'v': d.weeklyAttendance == null ? '—' : '${d.weeklyAttendance}%'})),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -438,33 +439,33 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '${d.totalRecitations} تسميعات  ·  سلسلة ${d.currentStreak} يوم (الأطول ${d.longestStreak})  ·  آخر تسميع ${formatDate(d.lastRecitationAt)}',
+                    fmt(tr(context).stu.statsLine, {'totalRecitations': d.totalRecitations, 'currentStreak': d.currentStreak, 'longestStreak': d.longestStreak, 'v': formatDate(d.lastRecitationAt)}),
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5),
                   ),
                 ],
               ),
             ),
           ),
-          const SectionTitle('الخطة القادمة'),
+          SectionTitle(tr(context).stu.nextPlan),
           Card(
             child: ListTile(
-              title: Text(d.nextPlan == null || d.nextPlan!.isEmpty ? 'لم تُحدَّد خطة بعد' : d.nextPlan!),
+              title: Text(d.nextPlan == null || d.nextPlan!.isEmpty ? tr(context).stu.noPlan : d.nextPlan!),
               trailing: IconButton(icon: const Icon(Icons.edit_note_rounded), onPressed: () => _editPlan(d)),
             ),
           ),
-          const SectionTitle('بيانات التواصل'),
+          SectionTitle(tr(context).stu.contact),
           Card(
             child: Column(
               children: [
-                info(Icons.school_rounded, 'الشيخ', d.teacherName),
-                info(Icons.stairs_rounded, 'المرحلة', d.stageName),
-                info(Icons.phone_outlined, 'الجوال', d.phone),
-                info(Icons.home_outlined, 'العنوان', d.address),
+                info(Icons.school_rounded, tr(context).stu.sheikh, d.teacherName),
+                info(Icons.stairs_rounded, tr(context).stu.stage, d.stageName),
+                info(Icons.phone_outlined, tr(context).stu.phone2, d.phone),
+                info(Icons.home_outlined, tr(context).stu.addressLabel, d.address),
               ],
             ),
           ),
           if (context.read<TenantController>().active?.role == OrgRole.admin) ...[
-            const SectionTitle('ولي الأمر'),
+            SectionTitle(tr(context).stu.guardian),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),
@@ -473,8 +474,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                   children: [
                     Text(
                       data.guardianMemberId == null
-                          ? 'لا يوجد ولي أمر مرتبط'
-                          : 'المرتبط: ${data.guardians.where((g) => g.id == data.guardianMemberId).map((g) => g.fullName ?? g.email).firstOrNull ?? '—'}',
+                          ? tr(context).stu.noGuardian
+                          : fmt(tr(context).stu.linkedTo, {'v': data.guardians.where((g) => g.id == data.guardianMemberId).map((g) => g.fullName ?? g.email).firstOrNull ?? '—'}),
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 10),
@@ -486,15 +487,15 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                           FilledButton.tonalIcon(
                             onPressed: _createGuardian,
                             icon: const Icon(Icons.person_add_alt_1_rounded),
-                            label: const Text('حساب جديد'),
+                            label: Text(tr(context).stu.newAccount),
                           ),
                         OutlinedButton.icon(
                           onPressed: () => _pickGuardian(data),
                           icon: const Icon(Icons.link_rounded),
-                          label: const Text('ربط بموجود'),
+                          label: Text(tr(context).stu.linkExisting),
                         ),
                         if (data.guardianMemberId != null)
-                          TextButton(onPressed: () => _linkGuardian(null), child: const Text('فك الربط')),
+                          TextButton(onPressed: () => _linkGuardian(null), child: Text(tr(context).stu.unlink)),
                       ],
                     ),
                   ],
@@ -502,12 +503,12 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
               ),
             ),
           ],
-          const SectionTitle('السرد القرآني'),
+          SectionTitle(tr(context).nav.items['/serd']!),
           SerdSummaryCard(summary: data.serd),
           StudentNotesSection(orgId: _orgId, studentId: widget.studentId),
-          const SectionTitle('سجل التسميع'),
+          SectionTitle(tr(context).stu.log),
           if (data.entries.isEmpty)
-            const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد', style: TextStyle(color: TeacherStyle.textMuted)))
+            Padding(padding: EdgeInsets.all(12), child: Text(tr(context).stu.noRecitations, style: TextStyle(color: TeacherStyle.textMuted)))
           else
             for (final e in data.entries)
               Container(
@@ -530,7 +531,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                   ]),
                   PopupMenuButton<String>(
                     onSelected: (v) => v == 'edit' ? _edit(data, e) : _delete(e),
-                    itemBuilder: (context) => const [PopupMenuItem(value: 'edit', child: Text('تعديل')), PopupMenuItem(value: 'delete', child: Text('حذف'))],
+                    itemBuilder: (context) => [PopupMenuItem(value: 'edit', child: Text(tr(context).common.edit)), PopupMenuItem(value: 'delete', child: Text(tr(context).common.delete))],
                     icon: const Icon(Icons.more_vert_rounded, size: 18, color: TeacherStyle.textMuted),
                   ),
                 ]),

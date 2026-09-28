@@ -11,6 +11,7 @@ import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Admin: the points market. Items, orders (deliver / cancel - a cancel refunds
 /// the balance and restores stock), student wallets, and the points -> currency
@@ -54,21 +55,21 @@ class _MarketScreenState extends State<MarketScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('سعر تحويل النقاط'),
+        title: Text(tr(context).mkt.rateTitle),
         content: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: ppu, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'كل (نقطة)')),
+            TextField(controller: ppu, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).mkt.perPoints)),
             const SizedBox(height: 10),
-            TextField(controller: value, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '= (قيمة)')),
+            TextField(controller: value, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(context).mkt.equals)),
             const SizedBox(height: 10),
-            TextField(controller: symbol, maxLength: 8, decoration: const InputDecoration(labelText: 'رمز العملة')),
+            TextField(controller: symbol, maxLength: 8, decoration: InputDecoration(labelText: tr(context).mkt.currency)),
             const SizedBox(height: 4),
-            Text('يسري التغيير على النقاط التي تُحوَّل بعده فقط؛ ما تحوّل سابقًا يبقى بقيمته.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(tr(context).mkt.rateHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
           ]),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: Size(90, 44)), child: Text(tr(context).common.save)),
         ],
       ),
     );
@@ -78,25 +79,25 @@ class _MarketScreenState extends State<MarketScreen> {
     symbol.dispose();
     if (ok != true) return;
     if (v.$1 == null || v.$2 == null || v.$3.isEmpty) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أدخل أرقامًا صحيحة ورمز العملة')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).mkt.rateInvalid)));
       return;
     }
-    await _run(() => _repository.saveConfig(_orgId!, pointsPerUnit: v.$1!, unitValue: v.$2!, symbol: v.$3), 'تم حفظ السعر');
+    await _run(() => _repository.saveConfig(_orgId!, pointsPerUnit: v.$1!, unitValue: v.$2!, symbol: v.$3), currentStrings.mkt.rateSaved);
   }
 
   Future<void> _confirmCancel(Purchase p) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('إلغاء الطلب'),
-        content: const Text('يُعاد الرصيد والمخزون. متأكد؟'),
+        title: Text(tr(context).mkt.cancelOrder),
+        content: Text(tr(context).mkt.cancelOrderBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('لا')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('نعم')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).mkt.no)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).mkt.yes)),
         ],
       ),
     );
-    if (ok == true) await _run(() => _repository.setPurchaseStatus(p.id, 'cancelled'), 'أُلغي الطلب');
+    if (ok == true) await _run(() => _repository.setPurchaseStatus(p.id, 'cancelled'), currentStrings.mkt.orderCancelled);
   }
 
   @override
@@ -108,7 +109,7 @@ class _MarketScreenState extends State<MarketScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('سوق النقاط')),
+        leading: DrawerLeading(),title: Text(tr(context).nav.items['/market']!)),
       drawer: const AppDrawer(),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
@@ -117,11 +118,11 @@ class _MarketScreenState extends State<MarketScreen> {
                 if (mounted) setState(() => _load(_orgId!));
               },
               icon: const Icon(Icons.add_rounded),
-              label: const Text('عنصر جديد'),
+              label: Text(tr(context).mkt.newItem),
             )
           : null,
       body: !isAdmin
-          ? const EmptyState(icon: Icons.lock_outline_rounded, title: 'إدارة السوق للمدير فقط')
+          ? EmptyState(icon: Icons.lock_outline_rounded, title: tr(context).mkt.adminOnly)
           : _future == null
               ? const SizedBox.shrink()
               : AsyncBody<MarketOverview>(
@@ -135,9 +136,9 @@ class _MarketScreenState extends State<MarketScreen> {
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                           child: SegmentedButton<int>(
                             segments: [
-                              const ButtonSegment(value: 0, label: Text('العناصر')),
-                              ButtonSegment(value: 1, label: Text(pending > 0 ? 'الطلبات ($pending)' : 'الطلبات')),
-                              const ButtonSegment(value: 2, label: Text('الأرصدة')),
+                              ButtonSegment(value: 0, label: Text(tr(context).mkt.items)),
+                              ButtonSegment(value: 1, label: Text(pending > 0 ? fmt(tr(context).mkt.ordersN, {'pending': pending}) : tr(context).mkt.orders)),
+                              ButtonSegment(value: 2, label: Text(tr(context).mkt.balances)),
                             ],
                             selected: {_tab},
                             onSelectionChanged: (s) => setState(() {
@@ -158,7 +159,7 @@ class _MarketScreenState extends State<MarketScreen> {
     switch (_tab) {
       case 1:
         return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [
-          if (o.purchases.isEmpty) const Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.receipt_long_outlined, title: 'لا توجد طلبات')),
+          if (o.purchases.isEmpty) Padding(padding: EdgeInsets.only(top: 60), child: EmptyState(icon: Icons.receipt_long_outlined, title: tr(context).mkt.noOrders)),
           for (final p in o.purchases)
             Card(
               child: Padding(
@@ -176,14 +177,14 @@ class _MarketScreenState extends State<MarketScreen> {
                       child: Wrap(spacing: 8, children: [
                         if (p.status == 'pending')
                           FilledButton(
-                            onPressed: () => _run(() => _repository.setPurchaseStatus(p.id, 'fulfilled'), 'تم التسليم'),
+                            onPressed: () => _run(() => _repository.setPurchaseStatus(p.id, 'fulfilled'), tr(context).mkt.delivered),
                             style: FilledButton.styleFrom(minimumSize: const Size(0, 38)),
-                            child: const Text('تم التسليم'),
+                            child: Text(tr(context).mkt.delivered),
                           ),
                         OutlinedButton(
                           onPressed: () => _confirmCancel(p),
                           style: OutlinedButton.styleFrom(foregroundColor: Colors.red, minimumSize: const Size(0, 38)),
-                          child: const Text('إلغاء'),
+                          child: Text(tr(context).common.cancel),
                         ),
                       ]),
                     ),
@@ -204,7 +205,7 @@ class _MarketScreenState extends State<MarketScreen> {
                   child: ListTile(
                     leading: InitialAvatar(w.name),
                     title: Text(w.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text('${w.wallet.earnedPoints} نقطة  ·  المصروف ${money(w.wallet.spent, o.symbol)}'),
+                    subtitle: Text(fmt(tr(context).mkt.walletLine, {'earnedPoints': w.wallet.earnedPoints, 'v': money(w.wallet.spent, o.symbol)})),
                     trailing: Text(money(w.wallet.balance, o.symbol), style: const TextStyle(fontWeight: FontWeight.w800)),
                   ),
                 ),
@@ -213,18 +214,18 @@ class _MarketScreenState extends State<MarketScreen> {
         );
       default:
         return ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 96), children: [
-          if (!o.enabled) const MessageBanner(message: 'السوق معطّل حاليًا (يُفعَّل من إعدادات المركز)', isError: false),
+          if (!o.enabled) MessageBanner(message: tr(context).mkt.disabled, isError: false),
           Card(
             child: ListTile(
               leading: const Icon(Icons.currency_exchange_rounded),
-              title: Text('كل ${o.pointsPerUnit} نقطة = ${money(o.unitValue, o.symbol)}', style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: const Text('سعر تحويل النقاط إلى عملة'),
+              title: Text(fmt(tr(context).mkt.rateLine, {'pointsPerUnit': o.pointsPerUnit, 'v': money(o.unitValue, o.symbol)}), style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(tr(context).mkt.rateSub),
               trailing: const Icon(Icons.edit_outlined),
               onTap: () => _editConfig(o),
             ),
           ),
-          const SectionTitle('العناصر'),
-          if (o.items.isEmpty) const Padding(padding: EdgeInsets.all(20), child: Center(child: Text('لا توجد عناصر بعد'))),
+          SectionTitle(tr(context).mkt.items),
+          if (o.items.isEmpty) Padding(padding: EdgeInsets.all(20), child: Center(child: Text(tr(context).mkt.noItems))),
           for (final i in o.items)
             Card(
               child: ListTile(
@@ -239,7 +240,7 @@ class _MarketScreenState extends State<MarketScreen> {
                   if (mounted) setState(() => _load(_orgId!));
                 },
                 title: Text(i.name, style: TextStyle(fontWeight: FontWeight.w700, color: i.isActive ? null : Colors.grey)),
-                subtitle: Text('${i.stock == null ? 'مخزون غير محدود' : 'المخزون: ${i.stock}'}${i.isActive ? '' : '  ·  غير فعّال'}'),
+                subtitle: Text('${i.stock == null ? tr(context).mkt.unlimited : fmt(tr(context).mkt.stockN, {'n': i.stock})}${i.isActive ? '' : tr(context).mkt.inactiveSuffix}'),
                 trailing: Text(money(i.price, o.symbol), style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
             ),

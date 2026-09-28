@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/i18n/i18n.dart';
 
 /// System-tray messages while the app is closed or in the background are shown by Android
 /// itself (the server sends a "notification" message); this only has to exist and be top-level.
@@ -86,10 +87,10 @@ class PushService {
         },
       );
       final android = _local.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-      await android?.createNotificationChannel(const AndroidNotificationChannel(
+      await android?.createNotificationChannel(AndroidNotificationChannel(
         _channelId,
-        'إشعارات بستان القرآن',
-        description: 'الرسائل والتذكيرات والاعتمادات',
+        currentStrings.ui.channelName,
+        description: currentStrings.ui.channelDesc,
         importance: Importance.high,
       ));
 
@@ -101,8 +102,8 @@ class PushService {
           id: m.hashCode & 0x7fffffff,
           title: n.title,
           body: n.body,
-          notificationDetails: const NotificationDetails(
-            android: AndroidNotificationDetails(_channelId, 'إشعارات بستان القرآن', importance: Importance.high, priority: Priority.high),
+          notificationDetails: NotificationDetails(
+            android: AndroidNotificationDetails(_channelId, currentStrings.ui.channelName, importance: Importance.high, priority: Priority.high),
           ),
           payload: jsonEncode(m.data),
         );

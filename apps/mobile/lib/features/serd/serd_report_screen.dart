@@ -6,6 +6,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'serd_models.dart';
 import 'serd_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Admin report over a date range; every figure measures APPROVED sessions.
 class SerdReportScreen extends StatefulWidget {
@@ -80,7 +81,7 @@ class _SerdReportScreenState extends State<SerdReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('تقرير السرد')),
+      appBar: AppBar(title: Text(tr(context).serd.reportTitle)),
       body: AsyncBody<SerdReport>(
         future: _future,
         onRetry: () => setState(() => _future = _load()),
@@ -88,9 +89,9 @@ class _SerdReportScreenState extends State<SerdReportScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             Row(children: [
-              Expanded(child: OutlinedButton(onPressed: () => _pick(true), child: Text('من: ${_d(_from, r.raw['from'] as String)}'))),
+              Expanded(child: OutlinedButton(onPressed: () => _pick(true), child: Text(fmt(tr(context).cal.fromV, {'v': _d(_from, r.raw['from'] as String)})))),
               const SizedBox(width: 10),
-              Expanded(child: OutlinedButton(onPressed: () => _pick(false), child: Text('إلى: ${_d(_to, r.raw['to'] as String)}'))),
+              Expanded(child: OutlinedButton(onPressed: () => _pick(false), child: Text(fmt(tr(context).cal.toV, {'v': _d(_to, r.raw['to'] as String)})))),
             ]),
             const SizedBox(height: 12),
             GridView.count(
@@ -101,20 +102,20 @@ class _SerdReportScreenState extends State<SerdReportScreen> {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               children: [
-                _kpi('إجمالي الجلسات', '${r.total}'),
-                _kpi('معتمد', '${r.approved}'),
-                _kpi('بانتظار', '${r.pending}'),
-                _kpi('مرفوض', '${r.rejected}'),
-                _kpi('متوسط الدرجة', r.averageScore == null ? '—' : '${r.averageScore}%'),
-                _kpi('نقاط ممنوحة', '${r.points}'),
+                _kpi(tr(context).serd.totalSessions, '${r.total}'),
+                _kpi(tr(context).serd.approvedChip, '${r.approved}'),
+                _kpi(tr(context).serd.waiting, '${r.pending}'),
+                _kpi(tr(context).serd.rejectedChip, '${r.rejected}'),
+                _kpi(tr(context).serd.avgScore, r.averageScore == null ? '—' : '${r.averageScore}%'),
+                _kpi(tr(context).serd.pointsGiven, '${r.points}'),
               ],
             ),
             const SizedBox(height: 12),
-            _list('الأجزاء المعتمدة', r.list('by_juz'), (e) => 'جزء ${e['juz']} — ${kJuzNames[(e['juz'] as num).toInt() - 1]}', 'count'),
+            _list(tr(context).serd.approvedParts, r.list('by_juz'), (e) => fmt(tr(context).serd.juzLine, {'juz': e['juz'], 'v': kJuzNames[(e['juz'] as num).toInt() - 1]}), 'count'),
             const SizedBox(height: 10),
-            _list('أكثر الأخطاء (معتمد)', r.list('by_error_type'), (e) => e['name'] as String, 'total'),
+            _list(tr(context).serd.topErrors, r.list('by_error_type'), (e) => e['name'] as String, 'total'),
             const SizedBox(height: 10),
-            _list('المستمعون', r.list('by_examiner'), (e) => e['name'] as String, 'count'),
+            _list(tr(context).serd.examiners, r.list('by_examiner'), (e) => e['name'] as String, 'count'),
           ],
         ),
       ),

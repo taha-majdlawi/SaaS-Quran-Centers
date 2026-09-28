@@ -239,7 +239,7 @@ class RecitationRepository {
     final outcome = await SyncService.instance.submit(
       'log_recitation',
       params,
-      label: 'تسميع ${studentName ?? ''} — سورة ${part.surah} (${part.ayahFrom}–${part.ayahTo})',
+      label: fmt(currentStrings.rec.outboxRecitation, {'studentName': studentName ?? '', 'surah': part.surah, 'ayahFrom': part.ayahFrom, 'ayahTo': part.ayahTo}),
     );
     if (outcome.queued) return const RecitationResult(pointsAwarded: 0, newTotalPoints: null, wasDuplicate: false, queued: true);
     final result = outcome.data as Map<String, dynamic>;
@@ -267,7 +267,7 @@ class RecitationRepository {
           {'organization_id': orgId, 'student_id': studentId, 'circle_id': circleId, 'session_date': today, 'status': status},
         ],
       },
-      label: 'حضور ${studentName ?? ''}: $status',
+      label: fmt(currentStrings.rec.outboxAttendance, {'studentName': studentName ?? '', 'status': status}),
       orderKey: 'att:$studentId:$today',
     );
     return outcome.queued;

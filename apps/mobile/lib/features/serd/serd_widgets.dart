@@ -40,30 +40,30 @@ class SerdSessionCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            Text('${serdPartsLabel(row.parts)}  (${serdJuzEquivalent(row.totalEighths)} جزء)'),
+            Text(fmt(tr(context).serd.partsLine, {'v': serdPartsLabel(row.parts), 'v2': serdJuzEquivalent(row.totalEighths)})),
             const SizedBox(height: 4),
             Text(
               [
                 formatDate(row.sessionDate),
-                if (row.examinerName != null) 'المستمع: ${row.examinerName}',
-                if (row.circleTeacherName != null) 'معلم الحلقة: ${row.circleTeacherName}',
+                if (row.examinerName != null) fmt(tr(context).serd.examiner, {'examinerName': row.examinerName}),
+                if (row.circleTeacherName != null) fmt(tr(context).serd.circleTeacher, {'circleTeacherName': row.circleTeacherName}),
                 if (row.status == 'scheduled')
-                  row.assignedTeacherName != null ? 'مسند إلى ${row.assignedTeacherName}' : 'مفتوح لأي معلم',
+                  row.assignedTeacherName != null ? fmt(tr(context).serd.assignedTo, {'assignedTeacherName': row.assignedTeacherName}) : tr(context).serd.openToAny,
               ].join('  ·  '),
               style: grey,
             ),
             if (row.studentId == null && row.status != 'scheduled')
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 6),
-                child: StatusChip(label: 'غير مرتبط بطالب', color: Colors.orange),
+                child: StatusChip(label: tr(context).serd.noStudent, color: Colors.orange),
               ),
             if (row.scorePercent != null) ...[
               const SizedBox(height: 6),
               Text.rich(TextSpan(children: [
-                const TextSpan(text: 'الدرجة: '),
+                TextSpan(text: tr(context).serd.scoreLabel),
                 TextSpan(text: '${row.scorePercent}%', style: const TextStyle(fontWeight: FontWeight.w800)),
                 if (row.status == 'approved')
-                  TextSpan(text: '  ·  ${row.passed ? 'نجح' : 'يعيد'} (حد النجاح ${row.passApplied})  ·  +${row.pointsAwarded} نقطة'),
+                  TextSpan(text: fmt(tr(context).serd.resultLine, {'v': row.passed ? tr(context).serd.passed : tr(context).serd.repeat, 'passApplied': row.passApplied, 'pointsAwarded': row.pointsAwarded})),
               ])),
             ],
             if (row.errors.isNotEmpty)
@@ -76,7 +76,7 @@ class SerdSessionCard extends StatelessWidget {
             if (row.rejectReason != null && row.rejectReason!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('سبب الرفض: ${row.rejectReason}', style: const TextStyle(color: Colors.red, fontSize: 12.5)),
+                child: Text(fmt(tr(context).serd.rejectReasonV, {'rejectReason': row.rejectReason}), style: const TextStyle(color: Colors.red, fontSize: 12.5)),
               ),
             if (actions != null) ...[const Divider(height: 22), actions!],
           ],
@@ -208,7 +208,7 @@ class _SerdPartsEditorState extends State<SerdPartsEditor> {
   }
 
   List<({int den, int index, String label})> get _options => [
-        (den: 1, index: 1, label: 'كامل'),
+        (den: 1, index: 1, label: tr(context).serd.whole),
         for (final d in const [2, 4, 8])
           if (widget.denominators.contains(d))
             for (var i = 1; i <= d; i++) (den: d, index: i, label: serdPortionLabel(d, i)),
@@ -243,7 +243,7 @@ class _SerdPartsEditorState extends State<SerdPartsEditor> {
                           }
                         },
                         icon: const Icon(Icons.menu_book_rounded, size: 18),
-                        label: Text(_rows[i].juz == null ? 'اختر الجزء' : 'جزء ${_rows[i].juz} — ${kJuzNames[_rows[i].juz! - 1]}'),
+                        label: Text(_rows[i].juz == null ? tr(context).serd.pickJuz : fmt(tr(context).serd.juzLine2, {'juz': _rows[i].juz, 'v': kJuzNames[_rows[i].juz! - 1]})),
                         style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
                       ),
                     ),
@@ -284,7 +284,7 @@ class _SerdPartsEditorState extends State<SerdPartsEditor> {
         TextButton.icon(
           onPressed: () => setState(() => _rows.add(_PartInput())),
           icon: const Icon(Icons.add_circle_outline),
-          label: const Text('إضافة جزء آخر'),
+          label: Text(tr(context).serd.addJuz),
         ),
       ],
     );

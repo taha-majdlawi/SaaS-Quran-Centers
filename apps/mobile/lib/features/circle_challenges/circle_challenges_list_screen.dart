@@ -10,6 +10,7 @@ import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Circle-vs-circle challenges. Circles are ranked by the AVERAGE PER STUDENT
 /// (never a raw sum), so a small circle is not beaten by its size alone.
@@ -37,7 +38,7 @@ class _CircleChallengesListScreenState extends State<CircleChallengesListScreen>
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('منافسات الحلقات')),
+        leading: DrawerLeading(),title: Text(tr(context).nav.items['/circle-challenges']!)),
       drawer: const AppDrawer(),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
@@ -46,7 +47,7 @@ class _CircleChallengesListScreenState extends State<CircleChallengesListScreen>
                 if (mounted) setState(() => _future = _repository.challenges(_orgId!));
               },
               icon: const Icon(Icons.add_rounded),
-              label: const Text('منافسة جديدة'),
+              label: Text(tr(context).ins.newChallenge),
             )
           : null,
       body: _future == null
@@ -55,7 +56,7 @@ class _CircleChallengesListScreenState extends State<CircleChallengesListScreen>
               future: _future!,
               onRetry: () => setState(() => _future = _repository.challenges(_orgId!)),
               builder: (context, list) => list.isEmpty
-                  ? const EmptyState(icon: Icons.leaderboard_outlined, title: 'لا توجد منافسات')
+                  ? EmptyState(icon: Icons.leaderboard_outlined, title: tr(context).ins.noChallenges)
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                       children: [

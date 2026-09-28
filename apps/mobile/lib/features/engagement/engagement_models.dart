@@ -6,16 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/i18n/i18n.dart';
 
-const kRuleLabels = {
-  'manual': 'يدوية (يمنحها المشرف)',
-  'points_threshold': 'الوصول إلى عدد نقاط',
-  'recitations_count': 'عدد التسميعات',
-  'grade_count': 'عدد التسميعات بتقدير معيّن',
-  'streak_days': 'أيام متتالية بتسميع',
-  'weekly_attendance': 'نسبة الحضور الأسبوعية',
-  'juz_complete': 'إتمام جزء كامل في السرد',
-  'serd_passed_count': 'عدد السرد الناجح',
-};
+Map<String, String> get kRuleLabels => currentStrings.badgesStaff.rules;
 
 Map<String, String> get kMetricLabels => currentStrings.labels.metric;
 

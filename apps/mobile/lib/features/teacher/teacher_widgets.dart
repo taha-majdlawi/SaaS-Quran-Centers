@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/teacher_style.dart';
 import '../recitation/recitation_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// The gradient, collapsing page header of the teacher screens.
 SliverAppBar teacherHeader(
@@ -93,7 +94,7 @@ class Pill extends StatelessWidget {
       );
 }
 
-const attendanceLabels = {'present': 'حاضر', 'absent': 'غائب', 'late': 'متأخر', 'excused': 'بعذر'};
+Map<String, String> get attendanceLabels => currentStrings.labels.attendance;
 const attendanceColors = <String, Color>{
   'present': TeacherStyle.success,
   'absent': TeacherStyle.danger,
@@ -144,7 +145,7 @@ class TeacherStudentTile extends StatelessWidget {
                   Row(mainAxisSize: MainAxisSize.min, children: [
                     const Icon(Icons.star_rounded, size: 15, color: Colors.amber),
                     const SizedBox(width: 3),
-                    Text('${student.totalPoints} نقطة', style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12.5)),
+                    Text(fmt(tr(context).teach.pointsN, {'totalPoints': student.totalPoints}), style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12.5)),
                     const SizedBox(width: 10),
                     Text(student.studentCode, textDirection: TextDirection.ltr, style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 11.5)),
                   ]),
@@ -156,21 +157,21 @@ class TeacherStudentTile extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(start: 58, top: 8),
                 child: Wrap(spacing: 8, runSpacing: 4, children: [
                   if (student.recitedToday > 0)
-                    Pill(color: brand, icon: Icons.check_circle_rounded, label: student.recitedToday > 1 ? 'سمّع اليوم ×${student.recitedToday}' : 'سمّع اليوم'),
+                    Pill(color: brand, icon: Icons.check_circle_rounded, label: student.recitedToday > 1 ? fmt(tr(context).teach.recitedTodayN, {'recitedToday': student.recitedToday}) : tr(context).teach.recitedToday),
                   if (att != null) Pill(color: attendanceColors[att] ?? TeacherStyle.textMuted, icon: Icons.how_to_reg_rounded, label: attendanceLabels[att] ?? att),
                   if (dueReviews.isNotEmpty)
                     GestureDetector(
                       onTap: onRecordDue,
-                      child: Pill(color: TeacherStyle.gold, icon: Icons.replay_circle_filled_rounded, label: 'مراجعة مستحقة (${dueReviews.length})'),
+                      child: Pill(color: TeacherStyle.gold, icon: Icons.replay_circle_filled_rounded, label: fmt(tr(context).teach.dueReviews, {'n': dueReviews.length})),
                     ),
                 ]),
               ),
             const SizedBox(height: 10),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               PopupMenuButton<String>(
-                tooltip: 'تسجيل حضور',
+                tooltip: tr(context).teach.takeAttendance,
                 onSelected: onAttendance,
-                itemBuilder: (context) => [for (final e in attendanceLabels.entries) PopupMenuItem(value: e.key, child: Text('حضور: ${e.value}'))],
+                itemBuilder: (context) => [for (final e in attendanceLabels.entries) PopupMenuItem(value: e.key, child: Text(fmt(tr(context).teach.attendanceIs, {'value': e.value})))],
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(color: TeacherStyle.tint(TeacherStyle.success), borderRadius: BorderRadius.circular(10)),
@@ -181,7 +182,7 @@ class TeacherStudentTile extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRecord,
                 icon: const Icon(Icons.edit_note_rounded, size: 16),
-                label: const Text('رصد تسميع', style: TextStyle(fontSize: 12)),
+                label: Text(tr(context).teach.record, style: TextStyle(fontSize: 12)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(0, 38),
                   backgroundColor: brand,

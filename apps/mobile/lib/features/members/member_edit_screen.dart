@@ -10,6 +10,7 @@ import '../../core/access/module_keys.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'members_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Mirrors apps/web's members/[id] page: edit role/status/permissions,
 /// with a self-edit/self-delete guard, or remove the member from the org.
@@ -74,7 +75,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       );
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = friendlyError(e, 'حدث خطأ أثناء الحفظ'));
+      setState(() => _error = friendlyError(e, tr(context).stu.saveError));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -92,7 +93,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
   Future<void> _resetPassword() async {
     final password = _newPassword.text.trim();
     if (password.length < 8) {
-      setState(() => _error = 'كلمة السر 8 أحرف على الأقل');
+      setState(() => _error = tr(context).mem.password8);
       return;
     }
     setState(() {
@@ -104,7 +105,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       await AccountsApi().resetPassword(orgId: org.id, memberId: widget.memberId, password: password);
       _newPassword.clear();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تغيير كلمة السر')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).mem.passwordChanged)));
       }
     } on AccountsApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -123,10 +124,10 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       await _repository.setViewer(orgId, _member!.userId, value);
       if (mounted) {
         setState(() => _viewer = value);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('حُفظت حالة الحساب')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).mem.accountSaved)));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = e is PostgrestException ? e.message : 'تعذّر الحفظ');
+      if (mounted) setState(() => _error = e is PostgrestException ? e.message : tr(context).set.saveFailed);
     } finally {
       if (mounted) setState(() => _savingViewer = false);
     }
@@ -136,11 +137,11 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف من المركز'),
-        content: Text('متأكد إنك بدك تحذف "${_member?.fullName ?? _member?.email}" من المركز؟ رح يفقد كل صلاحياته هنا فورًا.'),
+        title: Text(tr(context).mem.removeTitle),
+        content: Text(fmt(tr(context).mem.removeBody, {'fullName': _member?.fullName ?? _member?.email})),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => context.pop(true), child: const Text('حذف')),
+          TextButton(onPressed: () => context.pop(false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => context.pop(true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -152,14 +153,14 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('تعديل عضو')),
+      appBar: AppBar(title: Text(tr(context).mem.editTitle)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _isSelf
-              ? const Padding(
+              ? Padding(
                   padding: EdgeInsets.all(24),
                   child: Center(
-                    child: Text('لا يمكنك تعديل أو حذف صلاحياتك الخاصة من هنا - اطلب من مدير آخر إن وجد.'),
+                    child: Text(tr(context).mem.selfNote),
                   ),
                 )
               : ListView(
@@ -170,14 +171,14 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                     if (_error != null) MessageBanner(message: _error!),
                     DropdownButtonFormField<String>(
                       initialValue: _role,
-                      decoration: const InputDecoration(labelText: 'الدور'),
+                      decoration: InputDecoration(labelText: tr(context).mem.role),
                       items: kMemberRoleLabels.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
                       onChanged: (v) => setState(() => _role = v ?? _role),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _status,
-                      decoration: const InputDecoration(labelText: 'الحالة'),
+                      decoration: InputDecoration(labelText: tr(context).mem.statusLabel),
                       items: kMemberStatusLabels.entries
                           .where((e) => e.key != 'invited')
                           .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
@@ -186,7 +187,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                     ),
                     if (_role == 'teacher') ...[
                       const SizedBox(height: 16),
-                      Text('الوحدات التي يمكنه الوصول لها', style: Theme.of(context).textTheme.titleSmall),
+                      Text(tr(context).mem.modulesTitle, style: Theme.of(context).textTheme.titleSmall),
                       Wrap(
                         spacing: 4,
                         children: kModuleKeys.map((key) {
@@ -209,27 +210,27 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                       onPressed: _submitting ? null : _submit,
                       child: _submitting
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('حفظ التعديلات'),
+                          : Text(tr(context).stu.saveChanges),
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('حساب عرض فقط'),
-                      subtitle: const Text('يرى ولا يعدّل: يبقى دوره كما هو لكن لا يُحفظ له أي تغيير في هذا المركز.'),
+                      title: Text(tr(context).mem.viewOnly),
+                      subtitle: Text(tr(context).mem.viewOnlyHint),
                       value: _viewer,
                       onChanged: _savingViewer ? null : _saveViewer,
                     ),
-                    const SectionTitle('تغيير كلمة السر'),
+                    SectionTitle(tr(context).mem.changePassword),
                     TextField(
                       controller: _newPassword,
-                      decoration: const InputDecoration(labelText: 'كلمة سر جديدة (8 أحرف على الأقل)'),
+                      decoration: InputDecoration(labelText: tr(context).mem.newPassword),
                     ),
                     const SizedBox(height: 10),
-                    LoadingButton(label: 'تغيير كلمة السر', loading: _resetting, onPressed: _resetPassword),
+                    LoadingButton(label: tr(context).mem.changePassword, loading: _resetting, onPressed: _resetPassword),
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: _remove,
                       style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                      child: const Text('حذف من المركز'),
+                      child: Text(tr(context).mem.removeTitle),
                     ),
                   ],
                 ),

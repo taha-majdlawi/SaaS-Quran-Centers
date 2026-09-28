@@ -1,6 +1,8 @@
 import 'package:bustan_alquran_app/core/data/quran_data.dart';
+import 'package:bustan_alquran_app/core/access/module_keys.dart';
 import 'package:bustan_alquran_app/core/i18n/i18n.dart';
-import 'package:bustan_alquran_app/core/tenant/organization.dart';
+import 'package:bustan_alquran_app/features/attendance/attendance_repository.dart';
+import 'package:bustan_alquran_app/features/members/members_repository.dart';
 import 'package:bustan_alquran_app/features/my_portal/record_extras.dart';
 import 'package:bustan_alquran_app/features/serd/serd_models.dart';
 import 'package:bustan_alquran_app/features/serd/serd_widgets.dart';
@@ -15,16 +17,20 @@ void main() {
     expect(fmt('{a} of {b}', {'a': 3}), '3 of {b}');
   });
 
-  test('only students and guardians get their chosen language', () async {
+  test('the chosen language wins over the center default', () async {
     final c = LocaleController.instance;
-    await c.choose('en');
-    expect(c.effective(OrgRole.student), 'en');
-    expect(c.effective(OrgRole.guardian), 'en');
-    expect(c.effective(OrgRole.teacher), 'ar');
-    expect(c.effective(OrgRole.admin), 'ar');
-    expect(c.effective(null), 'ar');
+    await c.bindCenter('org-a', (_) async => 'en');
+    expect(c.hasChoice, isFalse);
+    expect(c.effective, 'en'); // nothing chosen yet: the center's default
     await c.choose('ar');
-    expect(c.effective(OrgRole.student), 'ar');
+    expect(c.effective, 'ar');
+    await c.bindCenter('org-b', (_) async => 'en');
+    expect(c.effective, 'ar');
+    await c.choose('en');
+    expect(c.effective, 'en');
+    await c.bindCenter(null, (_) async => null);
+    expect(c.effective, 'en');
+    await c.choose('ar');
   });
 
   test('every label map has the same keys in every language', () {
@@ -50,6 +56,15 @@ void main() {
     expect(surahName(18), 'Al-Kahf');
     expect(surahNameArabic(18), 'الكهف');
     expect(const SerdPart(juz: 3, den: 2, index: 1, juzName: 'تلك الرسل').label, 'Juz 3 (1st half)');
+  });
+
+  test('staff label tables follow the current language', () {
+    expect(kModuleLabels['serd'], 'السرد القرآني وطلبات التسميع');
+    currentStrings = S.en;
+    expect(kModuleLabels['serd'], 'Quran serd & recitation requests');
+    expect(kAttendanceStatusOptions['excused'], 'Excused');
+    expect(kMemberStatusLabels['invited'], 'Invited');
+    expect(S.en.nav.items.keys.toSet(), S.ar.nav.items.keys.toSet());
   });
 
   testWidgets('portal pieces render in English, left to right', (tester) async {

@@ -7,13 +7,9 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import 'students_repository.dart';
+import '../../core/i18n/i18n.dart';
 
-const kStudentStatusLabels = {
-  'active': 'نشط',
-  'paused': 'متوقف',
-  'graduated': 'تخرّج',
-  'withdrawn': 'منسحب',
-};
+Map<String, String> get kStudentStatusLabels => currentStrings.stu.status;
 
 const _statusColors = <String, MaterialColor>{
   'active': Colors.green,
@@ -49,13 +45,13 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف الطالب'),
-        content: Text('سيتم حذف "${student.fullName}" وكل ملفه (الحضور، السرد، النقاط...). لا يمكن التراجع.'),
+        title: Text(tr(context).stu.deleteTitle),
+        content: Text(fmt(tr(context).stu.deleteBody, {'fullName': student.fullName})),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => context.pop(false), child: Text(tr(context).common.cancel)),
           TextButton(
             onPressed: () => context.pop(true),
-            child: Text('حذف', style: TextStyle(color: Colors.red.shade700)),
+            child: Text(tr(context).common.delete, style: TextStyle(color: Colors.red.shade700)),
           ),
         ],
       ),
@@ -74,12 +70,12 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('الطلاب')),
+        leading: DrawerLeading(),title: Text(tr(context).stu.title)),
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _open('/students/new'),
         icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('إضافة طالب'),
+        label: Text(tr(context).stu.add),
       ),
       body: Column(
         children: [
@@ -87,8 +83,8 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: TextField(
               onChanged: (v) => setState(() => _query = v.trim()),
-              decoration: const InputDecoration(
-                hintText: 'ابحث بالاسم أو رقم الطالب',
+              decoration: InputDecoration(
+                hintText: tr(context).stu.searchPh,
                 prefixIcon: Icon(Icons.search_rounded),
               ),
             ),
@@ -103,14 +99,14 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                     : all.where((s) => s.fullName.contains(_query) || s.studentCode.toLowerCase().contains(_query.toLowerCase())).toList();
 
                 if (all.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                     icon: Icons.people_alt_outlined,
-                    title: 'لا يوجد طلاب بعد',
-                    subtitle: 'ابدأ بإضافة أول طالب من الزر بالأسفل',
+                    title: tr(context).stu.empty,
+                    subtitle: tr(context).stu.emptyHint,
                   );
                 }
                 if (students.isEmpty) {
-                  return const EmptyState(icon: Icons.search_off_rounded, title: 'لا نتائج مطابقة');
+                  return EmptyState(icon: Icons.search_off_rounded, title: tr(context).stu.noMatch);
                 }
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -130,7 +126,7 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                           title: Text(s.fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 4),
-                            child: Text('${s.studentCode}  ·  ${s.circleName ?? "بدون حلقة"}'),
+                            child: Text('${s.studentCode}  ·  ${s.circleName ?? tr(context).stu.noCircle}'),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -141,9 +137,9 @@ class _StudentsListScreenState extends State<StudentsListScreen> {
                               ),
                               PopupMenuButton<String>(
                                 onSelected: (v) => v == 'delete' ? _delete(s) : _open('/students/${s.id}'),
-                                itemBuilder: (context) => const [
-                                  PopupMenuItem(value: 'edit', child: Text('تعديل البيانات')),
-                                  PopupMenuItem(value: 'delete', child: Text('حذف الطالب وملفه')),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem(value: 'edit', child: Text(tr(context).stu.editDetails)),
+                                  PopupMenuItem(value: 'delete', child: Text(tr(context).stu.deleteWithFile)),
                                 ],
                               ),
                             ],

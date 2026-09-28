@@ -1,13 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/i18n/i18n.dart';
 
-const kAuditActionLabels = {'delete': 'حذف', 'update': 'تعديل', 'create': 'إضافة'};
-const kAuditTableLabels = {
-  'students_profile': 'طالب',
-  'circles': 'حلقة',
-  'stages': 'مرحلة',
-  'serd_sessions': 'جلسة سرد',
-  'organization_members': 'عضو',
-};
+Map<String, String> get kAuditActionLabels => currentStrings.ins.auditActions;
+Map<String, String> get kAuditTableLabels => currentStrings.ins.auditTables;
 
 class AuditEntry {
   const AuditEntry({

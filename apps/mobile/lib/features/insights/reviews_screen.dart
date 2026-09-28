@@ -7,6 +7,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'insights_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Spaced-review schedule: the surahs each student should review today (interval grows with good grades).
 class ReviewsScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       _future = _repository.dueReviews(orgId);
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('المراجعة المقترحة اليوم')),
+      appBar: AppBar(title: Text(tr(context).ins.reviewsTitle)),
       body: _future == null
           ? const SizedBox.shrink()
           : AsyncBody<List<DueReview>>(
@@ -43,9 +44,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 return RefreshIndicator(
                   onRefresh: () async => setState(() => _future = _repository.dueReviews(_orgId!)),
                   child: list.isEmpty
-                      ? ListView(children: const [SizedBox(height: 80), EmptyState(icon: Icons.task_alt_rounded, title: 'لا مراجعات مستحقة اليوم ✓')])
+                      ? ListView(children: [SizedBox(height: 80), EmptyState(icon: Icons.task_alt_rounded, title: tr(context).ins.noReviews)])
                       : ListView(padding: const EdgeInsets.all(16), children: [
-                          Text('كل سورة تُقترح بعد فاصل يكبر مع التقدير الجيد ويعود ليوم واحد مع الضعيف.',
+                          Text(tr(context).ins.reviewsHint,
                               style: TextStyle(fontSize: 12.5, color: Theme.of(context).colorScheme.outline)),
                           const SizedBox(height: 10),
                           for (final e in byStudent.entries)
@@ -63,7 +64,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                                         padding: EdgeInsets.zero,
                                         side: BorderSide.none,
                                         backgroundColor: (r.daysOverdue > 3 ? Colors.red : Colors.amber).withValues(alpha: 0.15),
-                                        label: Text('${surahName(r.surah)}${r.daysOverdue > 0 ? ' · متأخرة ${r.daysOverdue}' : ''}', style: const TextStyle(fontSize: 11.5)),
+                                        label: Text('${surahName(r.surah)}${r.daysOverdue > 0 ? fmt(tr(context).ins.overdueSuffix, {'n': r.daysOverdue}) : ''}', style: const TextStyle(fontSize: 11.5)),
                                       ),
                                   ]),
                                 ),

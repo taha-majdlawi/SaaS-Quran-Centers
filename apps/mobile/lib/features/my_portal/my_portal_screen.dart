@@ -647,7 +647,7 @@ class _AccountTab extends StatelessWidget {
   }
 }
 
-/// The app language (students and guardians; staff screens stay Arabic).
+/// The app language picker (the portal's account tab; staff have it in the drawer).
 class LanguagePicker extends StatelessWidget {
   const LanguagePicker({super.key});
 
@@ -663,7 +663,7 @@ class LanguagePicker extends StatelessWidget {
           Expanded(child: Text(tr(context).portal.languageHint, style: const TextStyle(fontWeight: FontWeight.w700))),
           SegmentedButton<String>(
             segments: [for (final l in kLocales) ButtonSegment(value: l, label: Text(kLocaleNames[l]!))],
-            selected: {locale.chosen},
+            selected: {locale.effective},
             showSelectedIcon: false,
             onSelectionChanged: (s) => locale.choose(s.first),
           ),

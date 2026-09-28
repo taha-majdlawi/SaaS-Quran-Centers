@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
+import '../../core/i18n/i18n.dart';
 
-const _days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+List<String> get _days => currentStrings.labels.weekdays;
 
 /// Admin: the weekly family digest (on/off, day, hour) - saved on its own, like the web card.
 class DigestTile extends StatelessWidget {
@@ -17,7 +18,7 @@ class DigestTile extends StatelessWidget {
     try {
       s = await AppSupabase.client.rpc('get_digest_settings', params: {'p_org': orgId}) as Map<String, dynamic>;
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(content: Text('تعذّر تحميل الإعداد')));
+      messenger.showSnackBar(SnackBar(content: Text(currentStrings.set.loadOne)));
       return;
     }
     if (!context.mounted) return;
@@ -31,25 +32,25 @@ class DigestTile extends StatelessWidget {
         builder: (context, setSheet) => Padding(
           padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('ملخص الأسبوع للأسر', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text(tr(context).set.digestTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
-            Text('إشعار أسبوعي لكل أسرة: ما سمّع ابنها وحضوره ونقاطه، بتوقيت المركز.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('تفعيل الملخص الأسبوعي'), value: enabled, onChanged: (v) => setSheet(() => enabled = v)),
+            Text(tr(context).set.digestHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).set.digestEnable), value: enabled, onChanged: (v) => setSheet(() => enabled = v)),
             DropdownButtonFormField<int>(
               initialValue: dow,
-              decoration: const InputDecoration(labelText: 'اليوم'),
+              decoration: InputDecoration(labelText: tr(context).set.day),
               items: [for (var i = 0; i < 7; i++) DropdownMenuItem(value: i, child: Text(_days[i]))],
               onChanged: (v) => setSheet(() => dow = v ?? dow),
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<int>(
               initialValue: hour,
-              decoration: const InputDecoration(labelText: 'الساعة'),
+              decoration: InputDecoration(labelText: tr(context).set.hour),
               items: [for (var h = 0; h < 24; h++) DropdownMenuItem(value: h, child: Text('${h.toString().padLeft(2, '0')}:00'))],
               onChanged: (v) => setSheet(() => hour = v ?? hour),
             ),
             const SizedBox(height: 12),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.save)),
           ]),
         ),
       ),
@@ -57,9 +58,9 @@ class DigestTile extends StatelessWidget {
     if (ok != true) return;
     try {
       await AppSupabase.client.rpc('set_digest_settings', params: {'p_org': orgId, 'p_enabled': enabled, 'p_dow': dow, 'p_hour': hour});
-      messenger.showSnackBar(const SnackBar(content: Text('حُفظ إعداد الملخص الأسبوعي')));
+      messenger.showSnackBar(SnackBar(content: Text(currentStrings.set.digestSaved)));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : 'تعذّر الحفظ')));
+      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : currentStrings.set.saveFailed)));
     }
   }
 
@@ -68,8 +69,8 @@ class DigestTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.mark_email_read_rounded),
-      title: const Text('ملخص الأسبوع للأسر'),
-      subtitle: const Text('اليوم والساعة وتفعيله'),
+      title: Text(tr(context).set.digestTitle),
+      subtitle: Text(tr(context).set.digestSub),
       trailing: const Icon(Icons.chevron_left_rounded),
       onTap: () => _open(context),
     );
@@ -97,7 +98,7 @@ class AttendanceReminderTile extends StatelessWidget {
         if (r['key'] == 'attendance_reminder_hour') hour = int.tryParse('${r['value']}') ?? 11;
       }
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(content: Text('تعذّر تحميل الإعداد')));
+      messenger.showSnackBar(SnackBar(content: Text(currentStrings.set.loadOne)));
       return;
     }
     if (!context.mounted) return;
@@ -107,17 +108,17 @@ class AttendanceReminderTile extends StatelessWidget {
         builder: (context, setSheet) => Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('تذكير المعلم بالحضور', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-            Text('في أيام الدوام، بعد الساعة المحددة، يصل المعلم تذكير واحد إن لم يُسجَّل حضور حلقته.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('تفعيل التذكير'), value: enabled, onChanged: (v) => setSheet(() => enabled = v)),
+            Text(tr(context).set.attTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text(tr(context).set.attHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).set.attEnable), value: enabled, onChanged: (v) => setSheet(() => enabled = v)),
             DropdownButtonFormField<int>(
               initialValue: hour.clamp(0, 20),
-              decoration: const InputDecoration(labelText: 'بعد الساعة'),
+              decoration: InputDecoration(labelText: tr(context).set.afterHour),
               items: [for (var h = 0; h <= 20; h++) DropdownMenuItem(value: h, child: Text('${h.toString().padLeft(2, '0')}:00'))],
               onChanged: (v) => setSheet(() => hour = v ?? hour),
             ),
             const SizedBox(height: 12),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.save)),
           ]),
         ),
       ),
@@ -128,9 +129,9 @@ class AttendanceReminderTile extends StatelessWidget {
         {'organization_id': orgId, 'key': 'attendance_reminder_enabled', 'value': enabled ? 'true' : 'false'},
         {'organization_id': orgId, 'key': 'attendance_reminder_hour', 'value': '$hour'},
       ], onConflict: 'organization_id,key');
-      messenger.showSnackBar(const SnackBar(content: Text('حُفظ إعداد التذكير')));
+      messenger.showSnackBar(SnackBar(content: Text(currentStrings.set.attSaved)));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : 'تعذّر الحفظ')));
+      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : currentStrings.set.saveFailed)));
     }
   }
 
@@ -139,8 +140,8 @@ class AttendanceReminderTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.alarm_rounded),
-      title: const Text('تذكير المعلم بتسجيل الحضور'),
-      subtitle: const Text('تفعيله والساعة'),
+      title: Text(tr(context).set.attTitle2),
+      subtitle: Text(tr(context).set.attSub),
       trailing: const Icon(Icons.chevron_left_rounded),
       onTap: () => _open(context),
     );

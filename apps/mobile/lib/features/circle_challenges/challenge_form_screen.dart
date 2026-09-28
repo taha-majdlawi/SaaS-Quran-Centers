@@ -8,6 +8,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Admin: create / edit a challenge.
 class ChallengeFormScreen extends StatefulWidget {
@@ -48,7 +49,7 @@ class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
-      setState(() => _error = 'عنوان المنافسة مطلوب');
+      setState(() => _error = tr(context).ins.challengeTitleRequired);
       return;
     }
     setState(() {
@@ -77,30 +78,30 @@ class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
   Widget build(BuildContext context) {
     String d(DateTime v) => '${v.year}/${v.month}/${v.day}';
     return Scaffold(
-      appBar: AppBar(title: Text(widget.challenge == null ? 'منافسة جديدة' : 'تعديل المنافسة')),
+      appBar: AppBar(title: Text(widget.challenge == null ? tr(context).ins.newChallenge : tr(context).ins.editChallenge)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           if (_error != null) MessageBanner(message: _error!),
-          TextField(controller: _title, decoration: const InputDecoration(labelText: 'العنوان')),
+          TextField(controller: _title, decoration: InputDecoration(labelText: tr(context).ins.title)),
           const SizedBox(height: 12),
-          TextField(controller: _description, maxLines: 2, decoration: const InputDecoration(labelText: 'الوصف')),
+          TextField(controller: _description, maxLines: 2, decoration: InputDecoration(labelText: tr(context).ins.description)),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: _metric,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'المقياس'),
+            decoration: InputDecoration(labelText: tr(context).ins.metric),
             items: [for (final e in kMetricLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
             onChanged: (v) => setState(() => _metric = v ?? 'points'),
           ),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: OutlinedButton(onPressed: () => _pick(true), child: Text('من: ${d(_start)}'))),
+            Expanded(child: OutlinedButton(onPressed: () => _pick(true), child: Text(fmt(tr(context).cal.fromV, {'v': d(_start)})))),
             const SizedBox(width: 8),
-            Expanded(child: OutlinedButton(onPressed: () => _pick(false), child: Text('إلى: ${d(_end)}'))),
+            Expanded(child: OutlinedButton(onPressed: () => _pick(false), child: Text(fmt(tr(context).cal.toV, {'v': d(_end)})))),
           ]),
           const SizedBox(height: 20),
-          LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+          LoadingButton(label: tr(context).common.save, loading: _saving, onPressed: _save),
         ],
       ),
     );

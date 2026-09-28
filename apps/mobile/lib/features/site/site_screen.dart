@@ -7,6 +7,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/widgets/app_drawer.dart';
 import 'site_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Mirrors apps/web's /site page - the public marketing page content.
 class SiteScreen extends StatefulWidget {
@@ -66,9 +67,9 @@ class _SiteScreenState extends State<SiteScreen> {
         heroBody: _heroBodyController.text.trim().isEmpty ? null : _heroBodyController.text.trim(),
         contactEmail: _contactEmailController.text.trim().isEmpty ? null : _contactEmailController.text.trim(),
       );
-      if (mounted) setState(() { _message = 'تم حفظ الإعدادات'; _isError = false; });
+      if (mounted) setState(() { _message = tr(context).set.saved; _isError = false; });
     } catch (e) {
-      if (mounted) setState(() { _message = 'حدث خطأ أثناء الحفظ'; _isError = true; });
+      if (mounted) setState(() { _message = tr(context).stu.saveError; _isError = true; });
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -85,7 +86,7 @@ class _SiteScreenState extends State<SiteScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('الموقع العام')),
+        leading: DrawerLeading(),title: Text(tr(context).nav.items['/site']!)),
       drawer: const AppDrawer(),
       body: _loading || org == null
           ? const Center(child: CircularProgressIndicator())
@@ -95,14 +96,14 @@ class _SiteScreenState extends State<SiteScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'صفحة تعريفية عامة عن مركزك، تُعرض للزوار غير المسجّلين.',
+                    tr(context).org.siteIntro,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 16),
                   if (_message != null) MessageBanner(message: _message!, isError: _isError),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('فعّل الصفحة العامة'),
+                    title: Text(tr(context).org.siteEnable),
                     value: _publicSiteEnabled,
                     onChanged: isAdmin ? (v) => setState(() => _publicSiteEnabled = v) : null,
                   ),
@@ -110,21 +111,21 @@ class _SiteScreenState extends State<SiteScreen> {
                   TextField(
                     controller: _heroTitleController,
                     enabled: isAdmin,
-                    decoration: const InputDecoration(labelText: 'عنوان رئيسي'),
+                    decoration: InputDecoration(labelText: tr(context).org.heroTitle),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _heroBodyController,
                     enabled: isAdmin,
                     maxLines: 4,
-                    decoration: const InputDecoration(labelText: 'نص تعريفي'),
+                    decoration: InputDecoration(labelText: tr(context).org.heroBody),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _contactEmailController,
                     enabled: isAdmin,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'بريد التواصل'),
+                    decoration: InputDecoration(labelText: tr(context).org.contactEmail),
                   ),
                   if (isAdmin) ...[
                     const SizedBox(height: 20),
@@ -132,11 +133,11 @@ class _SiteScreenState extends State<SiteScreen> {
                       onPressed: _saving ? null : () => _save(org.id),
                       child: _saving
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('حفظ الإعدادات'),
+                          : Text(tr(context).set.saveSettings),
                     ),
                   ] else ...[
                     const SizedBox(height: 12),
-                    Text('بس المدير يقدر يعدّل إعدادات الموقع العام.', style: Theme.of(context).textTheme.bodySmall),
+                    Text(tr(context).org.siteAdminOnly, style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ],
               ),

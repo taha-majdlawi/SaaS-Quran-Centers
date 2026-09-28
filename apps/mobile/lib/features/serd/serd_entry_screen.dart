@@ -11,6 +11,7 @@ import '../students/students_repository.dart';
 import 'serd_models.dart';
 import 'serd_repository.dart';
 import 'serd_widgets.dart';
+import '../../core/i18n/i18n.dart';
 
 class _EntryData {
   const _EntryData({required this.setup, required this.students, this.task});
@@ -95,11 +96,11 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
   Future<void> _submit(_EntryData data) async {
     final task = data.task;
     if (task == null && _student == null && _name.text.trim().isEmpty) {
-      setState(() => _error = 'اختر الطالب أو اكتب اسمه');
+      setState(() => _error = tr(context).serd.pickOrType);
       return;
     }
     if (task == null && _parts.isEmpty) {
-      setState(() => _error = 'اختر جزءًا واحدًا على الأقل');
+      setState(() => _error = tr(context).serd.pickPart);
       return;
     }
     setState(() {
@@ -119,14 +120,14 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(outcome.queued ? kQueuedMessage : 'أُرسل للاعتماد ✓  الدرجة ${outcome.score ?? ''}%')));
+          content: Text(outcome.queued ? kQueuedMessage : fmt(tr(context).serd.sentScore, {'score': outcome.score ?? ''}))));
       context.pop();
     } on PostgrestException catch (e) {
       setState(() => _error = e.message);
     } on StateError catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
-      setState(() => _error = 'تعذّر الحفظ، تأكد من الإنترنت وحاول مرة أخرى');
+      setState(() => _error = tr(context).serd.saveFailedNet);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -135,7 +136,7 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.sessionId == null ? 'رصد سرد جديد' : 'رصد سرد مجدول')),
+      appBar: AppBar(title: Text(widget.sessionId == null ? tr(context).serd.newTitle : tr(context).serd.scheduledTitle)),
       body: FutureBuilder<_EntryData>(
         future: _future,
         builder: (context, snapshot) {
@@ -163,22 +164,22 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
                 OutlinedButton.icon(
                   onPressed: () => _pickStudent(data.students),
                   icon: const Icon(Icons.person_search_rounded),
-                  label: Text(_student == null ? 'اختر الطالب' : '${_student!.fullName}  ·  ${_student!.studentCode}'),
+                  label: Text(_student == null ? tr(context).serd.pickStudent : '${_student!.fullName}  ·  ${_student!.studentCode}'),
                   style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                 ),
                 if (_student == null) ...[
                   const SizedBox(height: 10),
                   TextField(
                     controller: _name,
-                    decoration: const InputDecoration(
-                      labelText: 'أو اكتب اسم الطالب (من خارج حلقاتك)',
+                    decoration: InputDecoration(
+                      labelText: tr(context).serd.typeName,
                       prefixIcon: Icon(Icons.edit_outlined),
                     ),
                   ),
                 ] else
                   Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: TextButton(onPressed: () => setState(() => _student = null), child: const Text('إلغاء الاختيار')),
+                    child: TextButton(onPressed: () => setState(() => _student = null), child: Text(tr(context).serd.clearPick)),
                   ),
               ],
               const SizedBox(height: 12),
@@ -193,20 +194,20 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
                   if (picked != null) setState(() => _date = picked);
                 },
                 icon: const Icon(Icons.event_rounded, size: 18),
-                label: Text('تاريخ السرد: ${_date.year}/${_date.month}/${_date.day}'),
+                label: Text(fmt(tr(context).serd.dateLine, {'year': _date.year, 'month': _date.month, 'day': _date.day})),
               ),
-              const SectionTitle('الأجزاء المسرودة'),
+              SectionTitle(tr(context).serd.parts),
               SerdPartsEditor(
                 denominators: setup.pickerDenominators,
                 initial: task?.parts ?? const [],
                 onChanged: (p) => _parts = p,
               ),
-              const SectionTitle('عدد الأخطاء'),
+              SectionTitle(tr(context).serd.errors),
               for (final t in setup.errorTypes.where((t) => t.isActive))
                 Card(
                   child: ListTile(
                     title: Text(t.name),
-                    subtitle: Text('كل ${t.errorsPerUnit} = ${t.percentPerUnit}%'),
+                    subtitle: Text(fmt(tr(context).serd.perRule2, {'errorsPerUnit': t.errorsPerUnit, 'percentPerUnit': t.percentPerUnit})),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -234,7 +235,7 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
-                  'الدرجة المتوقعة: ${score.toStringAsFixed(score % 1 == 0 ? 0 : 2)}%  ·  حد النجاح ${setup.passPercent}%',
+                  fmt(tr(context).serd.expected, {'v': score.toStringAsFixed(score % 1 == 0 ? 0 : 2), 'passPercent': setup.passPercent}),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -242,10 +243,10 @@ class _SerdEntryScreenState extends State<SerdEntryScreen> {
               TextField(
                 controller: _notes,
                 maxLines: 2,
-                decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)', prefixIcon: Icon(Icons.edit_note_rounded)),
+                decoration: InputDecoration(labelText: tr(context).serd.notesOpt, prefixIcon: Icon(Icons.edit_note_rounded)),
               ),
               const SizedBox(height: 20),
-              LoadingButton(label: 'إرسال للاعتماد', icon: Icons.send_rounded, loading: _saving, onPressed: () => _submit(data)),
+              LoadingButton(label: tr(context).serd.submit, icon: Icons.send_rounded, loading: _saving, onPressed: () => _submit(data)),
             ],
           );
         },
@@ -281,18 +282,18 @@ class _StudentPickerState extends State<_StudentPicker> {
               child: TextField(
                 autofocus: true,
                 onChanged: (v) => setState(() => _query = v.trim()),
-                decoration: const InputDecoration(hintText: 'ابحث باسم الطالب أو رقمه', prefixIcon: Icon(Icons.search_rounded)),
+                decoration: InputDecoration(hintText: tr(context).teach.searchPh, prefixIcon: Icon(Icons.search_rounded)),
               ),
             ),
             Expanded(
               child: items.isEmpty
-                  ? const EmptyState(icon: Icons.search_off_rounded, title: 'لا نتائج')
+                  ? EmptyState(icon: Icons.search_off_rounded, title: tr(context).serd.noResults)
                   : ListView.builder(
                       itemCount: items.length,
                       itemBuilder: (context, i) => ListTile(
                         leading: InitialAvatar(items[i].fullName),
                         title: Text(items[i].fullName),
-                        subtitle: Text('${items[i].studentCode}  ·  ${items[i].circleName ?? 'بدون حلقة'}'),
+                        subtitle: Text('${items[i].studentCode}  ·  ${items[i].circleName ?? tr(context).serd.noCircle}'),
                         onTap: () => Navigator.pop(context, items[i]),
                       ),
                     ),

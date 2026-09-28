@@ -10,6 +10,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'students_list_screen.dart' show kStudentStatusLabels;
 import 'students_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 final _dateFormat = DateFormat('yyyy-MM-dd');
 
@@ -137,7 +138,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_circleId == null) {
-      setState(() => _error = 'يجب اختيار حلقة للطالب');
+      setState(() => _error = tr(context).stu.circleRequired);
       return;
     }
 
@@ -179,7 +180,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           final slug = context.read<TenantController>().active!.organization.slug;
           await showCredentialsDialog(
             context,
-            title: 'تم إنشاء حساب الطالب',
+            title: tr(context).stu.accountCreated,
             centerCode: slug,
             loginId: created.loginId,
             password: _passwordController.text.trim(),
@@ -201,7 +202,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     } on AccountsApiException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = e.toString().contains('23505') ? 'رقم الطالب مستخدم من قبل بهذا المركز' : friendlyError(e, 'حدث خطأ أثناء الحفظ'));
+      setState(() => _error = e.toString().contains('23505') ? tr(context).stu.codeTaken : friendlyError(e, tr(context).stu.saveError));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -211,13 +212,13 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف الطالب'),
-        content: const Text('سيتم حذف الطالب وكل ملفه (الحضور، السرد، النقاط...). لا يمكن التراجع.'),
+        title: Text(tr(context).stu.deleteTitle),
+        content: Text(tr(context).stu.deleteBodyPlain),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => context.pop(false), child: Text(tr(context).common.cancel)),
           TextButton(
             onPressed: () => context.pop(true),
-            child: Text('حذف', style: TextStyle(color: Colors.red.shade700)),
+            child: Text(tr(context).common.delete, style: TextStyle(color: Colors.red.shade700)),
           ),
         ],
       ),
@@ -234,7 +235,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'تعديل بيانات طالب' : 'إضافة طالب'),
+        title: Text(widget.isEditing ? tr(context).stu.editTitle : tr(context).stu.add),
         actions: [
           if (widget.isEditing) IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: _delete),
         ],
@@ -249,32 +250,32 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (_error != null) MessageBanner(message: _error!),
-                    const SectionTitle('بيانات الطالب'),
+                    SectionTitle(tr(context).stu.details),
                     TextFormField(
                       controller: _fullNameController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(labelText: 'الاسم الكامل', prefixIcon: Icon(Icons.person_outline)),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل اسم الطالب' : null,
+                      decoration: InputDecoration(labelText: tr(context).stu.fullName, prefixIcon: Icon(Icons.person_outline)),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? tr(context).stu.nameRequired : null,
                     ),
                     const SizedBox(height: 12),
                     InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: _pickBirthDate,
                       child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'تاريخ الميلاد (اختياري)',
+                        decoration: InputDecoration(
+                          labelText: tr(context).stu.birthDate,
                           prefixIcon: Icon(Icons.cake_outlined),
                         ),
-                        child: Text(_birthDate == null ? 'اضغط للاختيار' : _dateFormat.format(_birthDate!)),
+                        child: Text(_birthDate == null ? tr(context).stu.tapToPick : _dateFormat.format(_birthDate!)),
                       ),
                     ),
-                    const SectionTitle('المرحلة والحلقة'),
+                    SectionTitle(tr(context).stu.stageCircle),
                     if (_stages.isNotEmpty) ...[
                       DropdownButtonFormField<String>(
                         initialValue: _stageId,
-                        decoration: const InputDecoration(labelText: 'المرحلة', prefixIcon: Icon(Icons.stairs_outlined)),
+                        decoration: InputDecoration(labelText: tr(context).stu.stage, prefixIcon: Icon(Icons.stairs_outlined)),
                         items: [
-                          const DropdownMenuItem(value: null, child: Text('كل المراحل')),
+                          DropdownMenuItem(value: null, child: Text(tr(context).stu.allStages)),
                           ..._stages.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))),
                         ],
                         onChanged: _onStageChanged,
@@ -284,14 +285,14 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                     DropdownButtonFormField<String>(
                       key: ValueKey('circle-${_stageId ?? 'all'}'),
                       initialValue: circles.any((c) => c.id == _circleId) ? _circleId : null,
-                      decoration: const InputDecoration(labelText: 'الحلقة (مطلوب)', prefixIcon: Icon(Icons.groups_outlined)),
+                      decoration: InputDecoration(labelText: tr(context).stu.circleReq, prefixIcon: Icon(Icons.groups_outlined)),
                       items: circles.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                       onChanged: (value) => setState(() => _circleId = value),
                     ),
                     if (circles.isEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 6, right: 4),
-                        child: Text('لا توجد حلقات هنا - أنشئ حلقة أولًا من قسم الحلقات',
+                        child: Text(tr(context).stu.noCircles,
                             style: TextStyle(color: Colors.orange.shade800, fontSize: 12.5)),
                       ),
                     const SizedBox(height: 12),
@@ -299,8 +300,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       controller: _studentCodeController,
                       textDirection: TextDirection.ltr,
                       decoration: InputDecoration(
-                        labelText: 'رقم الطالب',
-                        helperText: widget.isEditing ? null : 'يُقترح تلقائيًا عند اختيار المرحلة، ويمكنك تعديله',
+                        labelText: tr(context).stu.code,
+                        helperText: widget.isEditing ? null : tr(context).stu.codeHint,
                         prefixIcon: const Icon(Icons.tag_rounded),
                         suffixIcon: _suggestingCode
                             ? const Padding(
@@ -309,47 +310,47 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                               )
                             : null,
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل رقم الطالب' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? tr(context).stu.codeRequired : null,
                     ),
-                    const SectionTitle('بيانات التواصل'),
+                    SectionTitle(tr(context).stu.contact),
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       textDirection: TextDirection.ltr,
-                      decoration: const InputDecoration(labelText: 'رقم الجوال (اختياري)', prefixIcon: Icon(Icons.phone_outlined)),
+                      decoration: InputDecoration(labelText: tr(context).stu.phone, prefixIcon: Icon(Icons.phone_outlined)),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _whatsappController,
                       keyboardType: TextInputType.phone,
                       textDirection: TextDirection.ltr,
-                      decoration: const InputDecoration(labelText: 'رقم الواتساب (اختياري)', prefixIcon: Icon(Icons.chat_outlined)),
+                      decoration: InputDecoration(labelText: tr(context).stu.whatsapp, prefixIcon: Icon(Icons.chat_outlined)),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _addressController,
-                      decoration: const InputDecoration(labelText: 'العنوان (اختياري)', prefixIcon: Icon(Icons.home_outlined)),
+                      decoration: InputDecoration(labelText: tr(context).stu.address, prefixIcon: Icon(Icons.home_outlined)),
                     ),
                     if (!widget.isEditing) ...[
-                      const SectionTitle('حساب دخول الطالب'),
+                      SectionTitle(tr(context).stu.login),
                       TextFormField(
                         controller: _passwordController,
                         textDirection: TextDirection.ltr,
-                        decoration: const InputDecoration(
-                          labelText: 'كلمة السر',
-                          helperText: 'اتركها فارغة لإنشاء الملف بدون حساب دخول',
+                        decoration: InputDecoration(
+                          labelText: tr(context).stu.password,
+                          helperText: tr(context).stu.passwordHint,
                           prefixIcon: Icon(Icons.lock_outline),
                         ),
-                        validator: (v) => (v != null && v.trim().isNotEmpty && v.trim().length < 8) ? '8 خانات على الأقل' : null,
+                        validator: (v) => (v != null && v.trim().isNotEmpty && v.trim().length < 8) ? tr(context).stu.min8 : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         textDirection: TextDirection.ltr,
-                        decoration: const InputDecoration(
-                          labelText: 'بريد إلكتروني حقيقي (اختياري)',
-                          helperText: 'بدونه يدخل الطالب برقمه مع رمز المركز',
+                        decoration: InputDecoration(
+                          labelText: tr(context).stu.email,
+                          helperText: tr(context).stu.emailHint,
                           prefixIcon: Icon(Icons.mail_outline),
                         ),
                       ),
@@ -358,7 +359,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _status,
-                        decoration: const InputDecoration(labelText: 'الحالة', prefixIcon: Icon(Icons.flag_outlined)),
+                        decoration: InputDecoration(labelText: tr(context).stu.statusLabel, prefixIcon: Icon(Icons.flag_outlined)),
                         items: kStudentStatusLabels.entries
                             .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                             .toList(),
@@ -367,7 +368,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                     ],
                     const SizedBox(height: 28),
                     LoadingButton(
-                      label: widget.isEditing ? 'حفظ التعديلات' : 'إضافة الطالب',
+                      label: widget.isEditing ? tr(context).stu.saveChanges : tr(context).stu.addBtn,
                       loading: _submitting,
                       onPressed: _submit,
                     ),

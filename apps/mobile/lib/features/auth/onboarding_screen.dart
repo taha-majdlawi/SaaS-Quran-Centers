@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/i18n/i18n.dart';
 
 const _signupUrl = 'https://bustan-alquran.com/signup';
 const _seenPrefKey = 'onboarding_seen';
@@ -35,21 +36,21 @@ class _Slide {
   final String body;
 }
 
-const _slides = [
+List<_Slide> get _slides => [
   _Slide(
     icon: Icons.menu_book_rounded,
-    title: 'سجّل التسميع والحفظ',
-    body: 'كل حلقة، كل طالب، كل صفحة حُفظت أو رُوجعت — بلمسة واحدة من المعلم، وبتقدير وتاريخ محفوظَين دائمًا.',
+    title: currentStrings.auth.ob1,
+    body: currentStrings.auth.ob1Body,
   ),
   _Slide(
     icon: Icons.chat_bubble_rounded,
-    title: 'تواصل مباشر مع المركز',
-    body: 'رسائل وإعلانات وإشعارات فورية بين الإدارة والمعلمين والطلاب وأولياء الأمور، كل مركز بخصوصيته.',
+    title: currentStrings.auth.ob2,
+    body: currentStrings.auth.ob2Body,
   ),
   _Slide(
     icon: Icons.emoji_events_rounded,
-    title: 'نقاط وشارات تحفّز الاستمرار',
-    body: 'كل تسميع يستحق نقاطًا، وكل إنجاز شارة — سوق صغير وحلقات منافسة تجعل الحفظ عادة يومية محببة.',
+    title: currentStrings.auth.ob3,
+    body: currentStrings.auth.ob3Body,
   ),
 ];
 
@@ -86,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final ok = await launchUrl(Uri.parse(_signupUrl), mode: LaunchMode.externalApplication);
     if (!mounted) return;
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('افتح $_signupUrl من متصفحك لتسجيل مركز جديد')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(fmt(tr(context).auth.openSignup, {'_signupUrl': _signupUrl}))));
     }
     context.go('/login');
   }
@@ -113,7 +114,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               alignment: AlignmentDirectional.centerEnd,
               child: TextButton(
                 onPressed: () => _finish('/login'),
-                child: Text('تخطي', style: TextStyle(color: Colors.grey.shade500)),
+                child: Text(tr(context).auth.skip, style: TextStyle(color: Colors.grey.shade500)),
               ),
             ),
             Expanded(
@@ -149,14 +150,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: FilledButton(
                     onPressed: _next,
                     style: FilledButton.styleFrom(backgroundColor: brand, minimumSize: const Size.fromHeight(52)),
-                    child: Text(isLast ? 'تسجيل الدخول' : 'التالي'),
+                    child: Text(isLast ? tr(context).auth.signInBtn : tr(context).auth.next),
                   ),
                 ),
                 if (isLast) ...[
                   const SizedBox(height: 10),
                   TextButton(
                     onPressed: _openSignup,
-                    child: Text('تسجيل مركز جديد على الموقع ↗', style: TextStyle(color: Colors.grey.shade600)),
+                    child: Text(tr(context).auth.registerCenter, style: TextStyle(color: Colors.grey.shade600)),
                   ),
                 ],
               ]),

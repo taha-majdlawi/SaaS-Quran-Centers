@@ -7,6 +7,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'gatherings_repository.dart';
 import 'student_picker.dart';
+import '../../core/i18n/i18n.dart';
 
 class _Data {
   const _Data(this.detail, this.suggestions);
@@ -47,7 +48,7 @@ class _GatheringDetailScreenState extends State<GatheringDetailScreen> {
     } on PostgrestException catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر تنفيذ العملية — تحقّق من الاتصال')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).gather.actionFailed)));
     }
   }
 
@@ -56,7 +57,7 @@ class _GatheringDetailScreenState extends State<GatheringDetailScreen> {
     if (student == null) return;
     await _do(() async {
       final r = await _repository.matchEntry(entryId, student);
-      return r['center_attendance'] == true ? 'رُبط الاسم وسُجّل حضور الطالب' : '${r['note'] ?? 'رُبط الاسم'}';
+      return r['center_attendance'] == true ? currentStrings.gather.linkedAttended : '${r['note'] ?? currentStrings.gather.okLinked}';
     });
   }
 
@@ -65,22 +66,22 @@ class _GatheringDetailScreenState extends State<GatheringDetailScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('إضافة اسم'),
-        content: TextField(controller: c, autofocus: true, decoration: const InputDecoration(hintText: 'الاسم')),
+        title: Text(tr(context).gather.addName),
+        content: TextField(controller: c, autofocus: true, decoration: InputDecoration(hintText: tr(context).gather.name)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('إضافة')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).gather.add)),
         ],
       ),
     );
-    if (ok == true && c.text.trim().isNotEmpty) await _do(() => _repository.addEntry(widget.gatheringId, c.text.trim()), ok: 'أُضيف الاسم');
+    if (ok == true && c.text.trim().isNotEmpty) await _do(() => _repository.addEntry(widget.gatheringId, c.text.trim()), ok: currentStrings.gather.nameAdded);
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('النشاط')),
+      appBar: AppBar(title: Text(tr(context).gather.activity)),
       body: AsyncBody<_Data>(
         future: _future,
         onRetry: _reload,
@@ -93,13 +94,13 @@ class _GatheringDetailScreenState extends State<GatheringDetailScreen> {
             child: ListView(padding: const EdgeInsets.all(16), children: [
               Text('${d['title']}', style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
-              Text('${d['session_date']}${d['activity_type_label'] != null ? ' · ${d['activity_type_label']}' : ''}${d['location'] != null ? ' · ${d['location']}' : ''} · رفعه ${d['teacher_name'] ?? '—'}',
+              Text(fmt(tr(context).gather.metaLine, {'session_date': d['session_date'], 'v': d['activity_type_label'] != null ? ' · ${d['activity_type_label']}' : '', 'v2': d['location'] != null ? ' · ${d['location']}' : '', 'v3': d['teacher_name'] ?? '—'}),
                   style: TextStyle(color: scheme.outline, fontSize: 12.5)),
               if (d['notes'] != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('${d['notes']}')),
               const SizedBox(height: 14),
               Row(children: [
-                Expanded(child: Text('الأسماء (${entries.length})', style: const TextStyle(fontWeight: FontWeight.w800))),
-                TextButton.icon(onPressed: _addName, icon: const Icon(Icons.add_rounded, size: 18), label: const Text('إضافة اسم')),
+                Expanded(child: Text(fmt(tr(context).gather.namesN, {'n': entries.length}), style: const TextStyle(fontWeight: FontWeight.w800))),
+                TextButton.icon(onPressed: _addName, icon: Icon(Icons.add_rounded, size: 18), label: Text(tr(context).gather.addName)),
               ]),
               for (final e in entries)
                 Card(
@@ -112,15 +113,15 @@ class _GatheringDetailScreenState extends State<GatheringDetailScreen> {
                           IconButton(
                             visualDensity: VisualDensity.compact,
                             icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                            onPressed: () => _do(() => _repository.deleteEntry(e['id'] as String), ok: 'حُذف الاسم'),
+                            onPressed: () => _do(() => _repository.deleteEntry(e['id'] as String), ok: tr(context).gather.nameDeleted),
                           ),
                       ]),
                       if (e['status'] == 'matched')
-                        Text('رُبط: ${e['matched_name']} (${e['matched_code']})${e['matched_circle'] != null ? ' · ${e['matched_circle']}' : ''}', style: const TextStyle(color: Colors.green, fontSize: 12.5))
+                        Text(fmt(tr(context).gather.linkedLine, {'matched_name': e['matched_name'], 'matched_code': e['matched_code'], 'v': e['matched_circle'] != null ? ' · ${e['matched_circle']}' : ''}), style: const TextStyle(color: Colors.green, fontSize: 12.5))
                       else if (e['status'] == 'skipped')
-                        Text('تُجوهل', style: TextStyle(color: scheme.outline, fontSize: 12.5))
+                        Text(tr(context).gather.skipped, style: TextStyle(color: scheme.outline, fontSize: 12.5))
                       else
-                        Text('بانتظار الربط', style: TextStyle(color: Colors.amber.shade800, fontSize: 12.5)),
+                        Text(tr(context).gather.pending, style: TextStyle(color: Colors.amber.shade800, fontSize: 12.5)),
                       if (admin && e['status'] == 'pending') ...[
                         const SizedBox(height: 8),
                         Wrap(spacing: 6, runSpacing: 4, children: [
@@ -129,17 +130,17 @@ class _GatheringDetailScreenState extends State<GatheringDetailScreen> {
                               label: Text('${s['full_name']}${s['circle'] != null ? ' · ${s['circle']}' : ''} (${((s['score'] as num) * 100).round()}%)', style: const TextStyle(fontSize: 11.5)),
                               onPressed: () => _do(() async {
                                 final r = await _repository.matchEntry(e['id'] as String, s['student_id'] as String);
-                                return r['center_attendance'] == true ? 'رُبط الاسم وسُجّل حضور الطالب' : '${r['note'] ?? 'رُبط الاسم'}';
+                                return r['center_attendance'] == true ? currentStrings.gather.linkedAttended : '${r['note'] ?? currentStrings.gather.okLinked}';
                               }),
                             ),
-                          ActionChip(avatar: const Icon(Icons.search_rounded, size: 16), label: const Text('اختيار طالب'), onPressed: () => _match(e['id'] as String, e['raw_name'] as String)),
-                          ActionChip(label: const Text('تجاهل'), onPressed: () => _do(() => _repository.skipEntry(e['id'] as String), ok: 'تُجوهل الاسم')),
+                          ActionChip(avatar: Icon(Icons.search_rounded, size: 16), label: Text(tr(context).gather.pickStudent), onPressed: () => _match(e['id'] as String, e['raw_name'] as String)),
+                          ActionChip(label: Text(tr(context).gather.skip), onPressed: () => _do(() => _repository.skipEntry(e['id'] as String), ok: tr(context).gather.nameSkipped)),
                         ]),
                       ],
                       if (admin && e['status'] != 'pending')
                         Align(
                           alignment: AlignmentDirectional.centerStart,
-                          child: TextButton(onPressed: () => _do(() => _repository.unmatchEntry(e['id'] as String)), child: const Text('إلغاء الربط')),
+                          child: TextButton(onPressed: () => _do(() => _repository.unmatchEntry(e['id'] as String)), child: Text(tr(context).gather.unlink)),
                         ),
                     ]),
                   ),

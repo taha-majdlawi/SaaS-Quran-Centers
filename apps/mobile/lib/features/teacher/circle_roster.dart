@@ -11,6 +11,7 @@ import '../insights/insights_repository.dart';
 import '../recitation/recitation_repository.dart';
 import '../recitation/recitation_sheet.dart';
 import 'teacher_widgets.dart';
+import '../../core/i18n/i18n.dart';
 
 enum _Filter { all, notYet, done }
 
@@ -82,7 +83,7 @@ class _CircleRosterState extends State<CircleRoster> {
     );
     if (points != null && mounted) {
       HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : 'تم الحفظ ✓  +$points نقطة')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(points == kQueuedPoints ? kQueuedMessage : fmt(tr(context).teach.savedPoints, {'points': points}))));
       widget.onChanged();
       _loadDue();
     }
@@ -97,7 +98,7 @@ class _CircleRosterState extends State<CircleRoster> {
         widget.onChanged();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : 'تعذّر حفظ الحضور')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e is StateError ? e.message : tr(context).teach.attendanceFailed)));
     }
   }
 
@@ -123,9 +124,9 @@ class _CircleRosterState extends State<CircleRoster> {
     final students = widget.students;
 
     if (students.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Text('لا يوجد طلاب في هذه الحلقة بعد.\nاطلب من المشرف إضافة الطلاب إليها.', textAlign: TextAlign.center, style: TextStyle(color: TeacherStyle.textMuted, fontSize: 13)),
+        child: Text(tr(context).teach.noStudents, textAlign: TextAlign.center, style: TextStyle(color: TeacherStyle.textMuted, fontSize: 13)),
       );
     }
 
@@ -140,7 +141,7 @@ class _CircleRosterState extends State<CircleRoster> {
               style: const TextStyle(fontSize: 13.5),
               decoration: InputDecoration(
                 isDense: true,
-                hintText: 'ابحث باسم الطالب أو رقمه',
+                hintText: tr(context).teach.searchPh,
                 hintStyle: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted),
                 prefixIcon: const Icon(Icons.search_rounded, size: 18, color: TeacherStyle.textMuted),
                 suffixIcon: _query.isEmpty
@@ -161,7 +162,7 @@ class _CircleRosterState extends State<CircleRoster> {
                 child: Wrap(spacing: 6, children: [
                   for (final f in _Filter.values)
                     ChoiceChip(
-                      label: Text(switch (f) { _Filter.all => 'الكل', _Filter.notYet => 'لم يسمّع اليوم', _Filter.done => 'سمّع اليوم' }, style: const TextStyle(fontSize: 11.5)),
+                      label: Text(switch (f) { _Filter.all => tr(context).teach.all, _Filter.notYet => tr(context).teach.notToday, _Filter.done => tr(context).teach.recitedToday }, style: const TextStyle(fontSize: 11.5)),
                       selected: _filter == f,
                       onSelected: (_) => setState(() => _filter = f),
                       showCheckmark: false,
@@ -174,17 +175,17 @@ class _CircleRosterState extends State<CircleRoster> {
                 ]),
               ),
               PopupMenuButton<_Sort>(
-                tooltip: 'ترتيب القائمة',
+                tooltip: tr(context).teach.sort,
                 initialValue: _sort,
                 onSelected: (v) => setState(() => _sort = v),
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: _Sort.name, child: Text('أبجديًا')),
-                  PopupMenuItem(value: _Sort.longestWait, child: Text('من لم يسمّع أولًا')),
-                  PopupMenuItem(value: _Sort.points, child: Text('الأعلى نقاطًا')),
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: _Sort.name, child: Text(tr(context).teach.alpha)),
+                  PopupMenuItem(value: _Sort.longestWait, child: Text(tr(context).teach.notFirst)),
+                  PopupMenuItem(value: _Sort.points, child: Text(tr(context).teach.topPoints)),
                 ],
                 child: const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Icon(Icons.sort_rounded, size: 18, color: TeacherStyle.textMuted)),
               ),
-              if (visible.length != students.length) Text('${visible.length} من ${students.length}', style: const TextStyle(fontSize: 11.5, color: TeacherStyle.textMuted)),
+              if (visible.length != students.length) Text(fmt(tr(context).teach.xOfY, {'n': visible.length, 'n2': students.length}), style: const TextStyle(fontSize: 11.5, color: TeacherStyle.textMuted)),
             ]),
             const SizedBox(height: 4),
           ]),
@@ -193,7 +194,7 @@ class _CircleRosterState extends State<CircleRoster> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           child: Column(children: [
-            const Text('لا يطابق أحد ما اخترته.', style: TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
+            Text(tr(context).teach.noMatch, style: TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
             TextButton.icon(
               onPressed: () => setState(() {
                 _search.clear();
@@ -201,7 +202,7 @@ class _CircleRosterState extends State<CircleRoster> {
                 _filter = _Filter.all;
               }),
               icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
-              label: const Text('إظهار كل الطلاب'),
+              label: Text(tr(context).teach.showAll),
             ),
           ]),
         )

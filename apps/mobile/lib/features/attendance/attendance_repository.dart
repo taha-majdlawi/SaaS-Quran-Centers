@@ -1,13 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/sync_service.dart';
+import '../../core/i18n/i18n.dart';
 
-const kAttendanceStatusOptions = {
-  'present': 'حاضر',
-  'absent': 'غائب',
-  'excused': 'مستأذن',
-  'late': 'متأخر',
-};
+Map<String, String> get kAttendanceStatusOptions => currentStrings.org.attStatus;
 
 class CirclePickerOption {
   const CirclePickerOption({required this.id, required this.name});
@@ -84,7 +80,7 @@ class AttendanceRepository {
     final outcome = await SyncService.instance.submit(
       'attendance',
       {'rows': rows},
-      label: 'كشف حضور $sessionDate (${rows.length} طالب)',
+      label: fmt(currentStrings.org.outboxAttendance, {'sessionDate': sessionDate, 'n': rows.length}),
     );
     return outcome.queued;
   }

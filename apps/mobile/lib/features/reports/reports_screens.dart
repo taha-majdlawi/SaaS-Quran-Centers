@@ -96,15 +96,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
   String _summary(Map<String, dynamic> r, String center) {
     final t = r['totals'] as Map<String, dynamic>;
     final b = StringBuffer()
-      ..writeln('تقرير $center')
+      ..writeln(fmt(currentStrings.rep.sumTitle, {'center': center}))
       ..writeln('${r['from']} → ${r['to']}')
-      ..writeln('الطلاب النشطون: ${t['students_active']}')
-      ..writeln('التسميعات: ${t['recitations']} (${t['reciting_students']} طالب)')
-      ..writeln('النقاط: ${t['points']}')
-      ..writeln('نسبة الحضور: ${reportPct(t['attendance_rate'])}')
-      ..writeln('سرد معتمد: ${t['serd_approved']}');
+      ..writeln(fmt(currentStrings.rep.sumActive, {'students_active': t['students_active']}))
+      ..writeln(fmt(currentStrings.rep.sumRecitations, {'recitations': t['recitations'], 'reciting_students': t['reciting_students']}))
+      ..writeln(fmt(currentStrings.rep.sumPoints, {'points': t['points']}))
+      ..writeln(fmt(currentStrings.rep.sumAttendance, {'v': reportPct(t['attendance_rate'])}))
+      ..writeln(fmt(currentStrings.rep.sumSerd, {'serd_approved': t['serd_approved']}));
     for (final c in _list(r['circles'])) {
-      b.writeln('• ${c['name']}: ${c['recitations']} تسميع، حضور ${reportPct(c['attendance_rate'])}');
+      b.writeln(fmt(currentStrings.rep.sumCircle, {'name': c['name'], 'recitations': c['recitations'], 'v': reportPct(c['attendance_rate'])}));
     }
     return b.toString();
   }

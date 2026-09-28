@@ -4,10 +4,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/offline/sync_service.dart';
+import '../../core/i18n/i18n.dart';
 
-const kRoleLabels = {'admin': 'مدير', 'teacher': 'معلم', 'student': 'طالب', 'guardian': 'ولي أمر'};
+Map<String, String> get kRoleLabels => currentStrings.labels.roles;
 
-const kAudienceLabels = {'all': 'الجميع', 'teachers': 'المعلمون', 'students': 'الطلاب', 'guardians': 'أولياء الأمور'};
+Map<String, String> get kAudienceLabels => currentStrings.labels.audience;
 
 class ChatThreadRow {
   const ChatThreadRow({

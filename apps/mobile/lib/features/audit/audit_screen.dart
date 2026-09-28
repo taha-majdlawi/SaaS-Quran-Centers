@@ -5,6 +5,7 @@ import '../../core/widgets/entity_list.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import 'audit_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class AuditScreen extends StatelessWidget {
   const AuditScreen({super.key});
@@ -13,11 +14,11 @@ class AuditScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final repository = AuditRepository(AppSupabase.client);
     return EntityListScreen<AuditEntry>(
-      title: 'سجل العمليات',
+      title: tr(context).nav.items['/audit']!,
       loader: repository.fetchLog,
       emptyIcon: Icons.history_rounded,
-      emptyTitle: 'لا يوجد عمليات مسجّلة بعد',
-      emptySubtitle: 'تظهر هنا عمليات الحذف والتعديل الحساسة',
+      emptyTitle: tr(context).ins.noAudit,
+      emptySubtitle: tr(context).ins.auditHint,
       tileBuilder: (context, e) {
         final isDelete = e.action == 'delete';
         return EntityTile(

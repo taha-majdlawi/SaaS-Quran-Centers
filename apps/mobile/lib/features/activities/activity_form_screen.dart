@@ -7,6 +7,7 @@ import '../../core/auth/auth_controller.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'activities_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class ActivityFormScreen extends StatefulWidget {
   const ActivityFormScreen({super.key, this.activityId});
@@ -96,7 +97,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
       }
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = friendlyError(e, 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'));
+      setState(() => _error = friendlyError(e, tr(context).org.saveErrorRetry));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -106,11 +107,11 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف النشاط'),
-        content: const Text('متأكد إنك بدك تحذف هذا النشاط؟'),
+        title: Text(tr(context).org.deleteActivity),
+        content: Text(tr(context).org.deleteActivityBody),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => context.pop(true), child: const Text('حذف')),
+          TextButton(onPressed: () => context.pop(false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => context.pop(true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -123,7 +124,7 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'تعديل النشاط' : 'نشاط جديد'),
+        title: Text(widget.isEditing ? tr(context).org.editActivity : tr(context).org.newActivity),
         actions: [if (widget.isEditing) IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete)],
       ),
       body: _loading
@@ -138,27 +139,27 @@ class _ActivityFormScreenState extends State<ActivityFormScreen> {
                     if (_error != null) MessageBanner(message: _error!),
                     TextFormField(
                       controller: _titleController,
-                      decoration: const InputDecoration(labelText: 'العنوان'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
+                      decoration: InputDecoration(labelText: tr(context).org.title),
+                      validator: (v) => (v == null || v.isEmpty) ? tr(context).mem.required : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'الوصف'),
+                      decoration: InputDecoration(labelText: tr(context).org.description),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       onPressed: _pickScheduledAt,
                       icon: const Icon(Icons.event),
-                      label: Text(_scheduledAt == null ? 'الموعد (اختياري)' : _scheduledAt.toString()),
+                      label: Text(_scheduledAt == null ? tr(context).org.whenOpt : _scheduledAt.toString()),
                     ),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: _submitting ? null : _submit,
                       child: _submitting
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Text(widget.isEditing ? 'حفظ التعديلات' : 'إضافة النشاط'),
+                          : Text(widget.isEditing ? tr(context).stu.saveChanges : tr(context).org.addActivity),
                     ),
                   ],
                 ),

@@ -6,8 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
+import '../../core/i18n/i18n.dart';
 
-const _roleLabels = {'admin': 'مدير', 'teacher': 'معلم', 'guardian': 'ولي أمر', 'student': 'طالب'};
+Map<String, String> get _roleLabels => currentStrings.labels.roles;
 
 /// Opened from an invitation link (`https://CENTER.bustan-alquran.com/join?token=...`):
 /// shows who invited you, then either confirms (already signed in), signs in with the
@@ -59,13 +60,13 @@ class _JoinScreenState extends State<JoinScreen> {
       if (!signedIn) {
         final email = inv['email'] as String;
         final password = _password.text;
-        if (password.length < 8) throw StateError('كلمة السر 8 أحرف على الأقل');
+        if (password.length < 8) throw StateError(tr(context).mem.password8);
         if (_haveAccount) {
           await client.auth.signInWithPassword(email: email, password: password);
         } else {
           final res = await client.auth.signUp(email: email, password: password);
           if (res.session == null) {
-            throw StateError('تحقق من بريدك لتأكيد الحساب أولًا، ثم افتح رابط الدعوة من جديد لإكمال الانضمام');
+            throw StateError(currentStrings.auth.confirmEmail);
           }
         }
       }
@@ -80,7 +81,7 @@ class _JoinScreenState extends State<JoinScreen> {
     } on StateError catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'تعذّر إكمال الانضمام، تأكد من الإنترنت وحاول مرة أخرى');
+      if (mounted) setState(() => _error = tr(context).auth.joinFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -90,7 +91,7 @@ class _JoinScreenState extends State<JoinScreen> {
   Widget build(BuildContext context) {
     final signedIn = AppSupabase.client.auth.currentUser != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('الانضمام إلى مركز')),
+      appBar: AppBar(title: Text(tr(context).auth.joinTitle)),
       body: FutureBuilder<Map<String, dynamic>?>(
         future: _future,
         builder: (context, snap) {
@@ -98,10 +99,10 @@ class _JoinScreenState extends State<JoinScreen> {
           if (snap.connectionState != ConnectionState.done) return const Center(child: CircularProgressIndicator());
           final inv = snap.data;
           if (inv == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.link_off_rounded,
-              title: 'الدعوة غير صالحة',
-              subtitle: 'منتهية أو استُخدمت من قبل. اطلب من مدير المركز دعوة جديدة.',
+              title: tr(context).auth.invalidInvite,
+              subtitle: tr(context).auth.invalidBody,
             );
           }
           final role = _roleLabels[inv['role']] ?? '${inv['role']}';
@@ -109,36 +110,36 @@ class _JoinScreenState extends State<JoinScreen> {
             const SizedBox(height: 12),
             Icon(Icons.mail_rounded, size: 56, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 12),
-            Text('دعوة من ${inv['organization_name']}', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-            Text('للانضمام كـ $role', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
+            Text(fmt(tr(context).auth.inviteFrom, {'organization_name': inv['organization_name']}), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+            Text(fmt(tr(context).auth.asRole, {'role': role}), textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
             const SizedBox(height: 20),
             if (_error != null) MessageBanner(message: _error!),
             if (signedIn) ...[
-              Text('مسجّل دخول بـ ${AppSupabase.client.auth.currentUser?.email ?? ''}', textAlign: TextAlign.center),
+              Text(fmt(tr(context).auth.signedInAs, {'email': AppSupabase.client.auth.currentUser?.email ?? ''}), textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              LoadingButton(label: 'تأكيد الانضمام', loading: _busy, onPressed: () => _accept(inv, signedIn: true)),
+              LoadingButton(label: tr(context).auth.confirmJoin, loading: _busy, onPressed: () => _accept(inv, signedIn: true)),
             ] else ...[
               TextField(
                 controller: TextEditingController(text: '${inv['email']}'),
                 readOnly: true,
                 textDirection: TextDirection.ltr,
-                decoration: const InputDecoration(labelText: 'البريد الإلكتروني (من الدعوة)'),
+                decoration: InputDecoration(labelText: tr(context).auth.inviteEmail),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _password,
                 obscureText: true,
-                decoration: InputDecoration(labelText: _haveAccount ? 'كلمة سر حسابك' : 'أنشئ كلمة سر (8 أحرف على الأقل)'),
+                decoration: InputDecoration(labelText: _haveAccount ? tr(context).auth.yourPassword : tr(context).auth.createPassword),
               ),
               const SizedBox(height: 12),
               LoadingButton(
-                label: _haveAccount ? 'دخول والانضمام' : 'إنشاء الحساب والانضمام',
+                label: _haveAccount ? tr(context).auth.signInJoin : tr(context).auth.createJoin,
                 loading: _busy,
                 onPressed: () => _accept(inv, signedIn: false),
               ),
               TextButton(
                 onPressed: _busy ? null : () => setState(() => _haveAccount = !_haveAccount),
-                child: Text(_haveAccount ? 'ليس لدي حساب' : 'لدي حساب بالفعل'),
+                child: Text(_haveAccount ? tr(context).auth.noAccount : tr(context).auth.haveAccount),
               ),
             ],
           ]);

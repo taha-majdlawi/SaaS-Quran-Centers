@@ -45,7 +45,7 @@ Future<void> main() async {
   // Has the animated intro already played on this device?
   final onboarding = await OnboardingGate.load();
 
-  // The chosen app language (students and guardians; staff screens are Arabic).
+  // The app language the person chose on this device (else the center's default).
   await LocaleController.instance.load();
 
   runApp(BustanAlQuranApp(sync: sync, onboarding: onboarding));
@@ -152,10 +152,19 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AccessController.instance.bind(AppSupabase.client, accessOrg);
       if (accessOrg != null) PushService.instance.register(AppSupabase.client, accessOrg);
+      LocaleController.instance.bindCenter(accessOrg, (orgId) async {
+        final row = await AppSupabase.client
+            .from('organization_settings')
+            .select('value')
+            .eq('organization_id', orgId)
+            .eq('key', 'default_language')
+            .maybeSingle();
+        return row?['value'] as String?;
+      });
     });
 
-    // Students and guardians see their chosen language; everyone else Arabic.
-    final lang = context.watch<LocaleController>().effective(auth.isAuthenticated ? tenant.active?.role : null);
+    // The person's choice, else the center's default language, else Arabic.
+    final lang = context.watch<LocaleController>().effective;
     final strings = lang == 'en' ? S.en : S.ar;
     currentStrings = strings;
 

@@ -7,19 +7,12 @@ import 'org_avatar.dart';
 import '../auth/auth_controller.dart';
 import '../tenant/organization.dart';
 import '../tenant/tenant_controller.dart';
-
-const _roleLabels = {
-  OrgRole.admin: 'مدير',
-  OrgRole.teacher: 'معلم',
-  OrgRole.guardian: 'ولي أمر',
-  OrgRole.student: 'طالب',
-};
+import '../../core/i18n/i18n.dart';
 
 class _NavItem {
-  const _NavItem(this.icon, this.label, this.path, {this.module, this.adminOnly = false});
+  const _NavItem(this.icon, this.path, {this.module, this.adminOnly = false});
 
   final IconData icon;
-  final String label;
   final String path;
   final String? module;
   final bool adminOnly;
@@ -28,6 +21,7 @@ class _NavItem {
 class _NavSection {
   const _NavSection(this.title, this.items);
 
+  /// key into tr(context).nav.sections
   final String? title;
   final List<_NavItem> items;
 }
@@ -37,42 +31,42 @@ class _NavSection {
 /// admin-only entries stay hidden from everyone else.
 const _sections = [
   _NavSection(null, [
-    _NavItem(Icons.space_dashboard_rounded, 'لوحة التحكم', '/dashboard'),
-    _NavItem(Icons.sync_rounded, 'المزامنة', '/sync'),
+    _NavItem(Icons.space_dashboard_rounded, '/dashboard'),
+    _NavItem(Icons.sync_rounded, '/sync'),
   ]),
-  _NavSection('التعليم', [
-    _NavItem(Icons.people_alt_rounded, 'الطلاب', '/students', module: 'students'),
-    _NavItem(Icons.groups_rounded, 'الحلقات', '/circles', adminOnly: true),
-    _NavItem(Icons.fact_check_rounded, 'الحضور', '/attendance', module: 'attendance'),
-    _NavItem(Icons.groups_2_rounded, 'المجالس والأنشطة', '/gatherings', module: 'attendance'),
-    _NavItem(Icons.record_voice_over_rounded, 'التسميع الخارجي', '/external-recitations', module: 'students'),
-    _NavItem(Icons.replay_circle_filled_rounded, 'المراجعة المقترحة', '/reviews'),
-    _NavItem(Icons.search_rounded, 'بحث شامل', '/search'),
-    _NavItem(Icons.auto_stories_rounded, 'المصحف', '/quran'),
-    _NavItem(Icons.menu_book_rounded, 'السرد القرآني', '/serd', module: 'serd'),
-    _NavItem(Icons.stairs_rounded, 'المراحل', '/stages', adminOnly: true),
+  _NavSection('teaching', [
+    _NavItem(Icons.people_alt_rounded, '/students', module: 'students'),
+    _NavItem(Icons.groups_rounded, '/circles', adminOnly: true),
+    _NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),
+    _NavItem(Icons.groups_2_rounded, '/gatherings', module: 'attendance'),
+    _NavItem(Icons.record_voice_over_rounded, '/external-recitations', module: 'students'),
+    _NavItem(Icons.replay_circle_filled_rounded, '/reviews'),
+    _NavItem(Icons.search_rounded, '/search'),
+    _NavItem(Icons.auto_stories_rounded, '/quran'),
+    _NavItem(Icons.menu_book_rounded, '/serd', module: 'serd'),
+    _NavItem(Icons.stairs_rounded, '/stages', adminOnly: true),
   ]),
-  _NavSection('التحفيز', [
-    _NavItem(Icons.stars_rounded, 'النقاط', '/points', module: 'points'),
-    _NavItem(Icons.emoji_events_rounded, 'الشارات', '/badges', module: 'badges'),
-    _NavItem(Icons.storefront_rounded, 'سوق النقاط', '/market', module: 'market'),
-    _NavItem(Icons.leaderboard_rounded, 'منافسات الحلقات', '/circle-challenges', module: 'circle-challenges'),
+  _NavSection('motivation', [
+    _NavItem(Icons.stars_rounded, '/points', module: 'points'),
+    _NavItem(Icons.emoji_events_rounded, '/badges', module: 'badges'),
+    _NavItem(Icons.storefront_rounded, '/market', module: 'market'),
+    _NavItem(Icons.leaderboard_rounded, '/circle-challenges', module: 'circle-challenges'),
   ]),
-  _NavSection('التواصل', [
-    _NavItem(Icons.event_note_rounded, 'الأنشطة', '/activities', module: 'activities'),
-    _NavItem(Icons.campaign_rounded, 'الإعلانات', '/announcements', module: 'announcements'),
-    _NavItem(Icons.calendar_month_rounded, 'التقويم', '/calendar', module: 'calendar'),
-    _NavItem(Icons.chat_bubble_rounded, 'المحادثات', '/chat', module: 'chat'),
-    _NavItem(Icons.notifications_rounded, 'الإشعارات', '/notifications', module: 'notifications'),
-    _NavItem(Icons.insights_rounded, 'التقارير', '/reports', module: 'reports'),
-    _NavItem(Icons.workspace_premium_rounded, 'الشهادات', '/certificates', module: 'certificates'),
+  _NavSection('comms', [
+    _NavItem(Icons.event_note_rounded, '/activities', module: 'activities'),
+    _NavItem(Icons.campaign_rounded, '/announcements', module: 'announcements'),
+    _NavItem(Icons.calendar_month_rounded, '/calendar', module: 'calendar'),
+    _NavItem(Icons.chat_bubble_rounded, '/chat', module: 'chat'),
+    _NavItem(Icons.notifications_rounded, '/notifications', module: 'notifications'),
+    _NavItem(Icons.insights_rounded, '/reports', module: 'reports'),
+    _NavItem(Icons.workspace_premium_rounded, '/certificates', module: 'certificates'),
   ]),
-  _NavSection('إدارة المركز', [
-    _NavItem(Icons.admin_panel_settings_rounded, 'الأعضاء والأدوار', '/members', adminOnly: true),
-    _NavItem(Icons.privacy_tip_rounded, 'طلبات حذف البيانات', '/deletion-requests', adminOnly: true),
-    _NavItem(Icons.history_rounded, 'سجل العمليات', '/audit', adminOnly: true),
-    _NavItem(Icons.public_rounded, 'الموقع العام', '/site', adminOnly: true),
-    _NavItem(Icons.settings_rounded, 'إعدادات المركز', '/settings', adminOnly: true),
+  _NavSection('admin', [
+    _NavItem(Icons.admin_panel_settings_rounded, '/members', adminOnly: true),
+    _NavItem(Icons.privacy_tip_rounded, '/deletion-requests', adminOnly: true),
+    _NavItem(Icons.history_rounded, '/audit', adminOnly: true),
+    _NavItem(Icons.public_rounded, '/site', adminOnly: true),
+    _NavItem(Icons.settings_rounded, '/settings', adminOnly: true),
   ]),
 ];
 
@@ -113,7 +107,7 @@ class AppDrawer extends StatelessWidget {
               children: [
                 OrgAvatar(name: org?.name ?? 'ب', logoUrl: org?.logoUrl, brandColor: org?.primaryColor, size: 56, onDark: true),
                 const SizedBox(height: 14),
-                Text(org?.name ?? 'بستان القرآن',
+                Text(org?.name ?? tr(context).common.appName,
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 4),
                 Text(email,
@@ -127,7 +121,7 @@ class AppDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    _roleLabels[membership?.role] ?? '',
+                    tr(context).labels.roles[membership?.role.name] ?? '',
                     style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -148,10 +142,16 @@ class AppDrawer extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.translate_rounded),
+                  title: Text(tr(context).common.language),
+                  trailing: Text(kLocaleNames[context.watch<LocaleController>().effective]!, style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700)),
+                  onTap: () => _pickLanguage(context),
+                ),
                 if (tenant.hasMultipleOrganizations)
                   ListTile(
                     leading: const Icon(Icons.swap_horiz_rounded),
-                    title: const Text('تبديل المركز'),
+                    title: Text(tr(context).nav.switchCenter),
                     onTap: () {
                       Navigator.pop(context);
                       context.go('/select-organization');
@@ -159,7 +159,7 @@ class AppDrawer extends StatelessWidget {
                   ),
                 ListTile(
                   leading: Icon(Icons.logout_rounded, color: Colors.red.shade600),
-                  title: Text('تسجيل خروج', style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.w600)),
+                  title: Text(tr(context).common.signOut, style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.w600)),
                   onTap: () => context.read<AuthController>().signOut(),
                 ),
               ],
@@ -169,6 +169,25 @@ class AppDrawer extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _pickLanguage(BuildContext context) async {
+    final locale = context.read<LocaleController>();
+    final lang = await showDialog<String>(
+      context: context,
+      builder: (c) => SimpleDialog(
+        title: Text(tr(c).common.language),
+        children: [
+          for (final l in kLocales)
+            ListTile(
+              title: Text(kLocaleNames[l]!),
+              trailing: l == locale.effective ? Icon(Icons.check_rounded, color: Theme.of(c).colorScheme.primary) : null,
+              onTap: () => Navigator.pop(c, l),
+            ),
+        ],
+      ),
+    );
+    if (lang != null) await locale.choose(lang);
   }
 
   List<Widget> _buildSection(
@@ -185,7 +204,7 @@ class AppDrawer extends StatelessWidget {
       if (section.title != null)
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
-          child: Text(section.title!,
+          child: Text(tr(context).nav.sections[section.title!] ?? section.title!,
               style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.w700)),
         ),
       for (final item in items)
@@ -197,7 +216,7 @@ class AppDrawer extends StatelessWidget {
             selectedTileColor: scheme.primary.withValues(alpha: 0.1),
             selectedColor: scheme.primary,
             leading: Icon(item.icon, size: 22),
-            title: Text(item.label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            title: Text(tr(context).nav.items[item.path] ?? item.path, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
               // the dashboard is the root; everything else opens ON TOP of it (so there is a back
@@ -230,7 +249,7 @@ class DrawerLeading extends StatelessWidget {
     if (canPop) return const BackButton();
     final scaffold = Scaffold.maybeOf(context);
     if (scaffold != null && scaffold.hasDrawer) {
-      return IconButton(icon: const Icon(Icons.menu_rounded), tooltip: 'القائمة', onPressed: scaffold.openDrawer);
+      return IconButton(icon: Icon(Icons.menu_rounded), tooltip: tr(context).nav.menu, onPressed: scaffold.openDrawer);
     }
     return const SizedBox.shrink();
   }

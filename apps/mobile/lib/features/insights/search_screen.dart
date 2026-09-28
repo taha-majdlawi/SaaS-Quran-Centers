@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'insights_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// One box that finds a student (name or number), a teacher or a circle.
 class GlobalSearchScreen extends StatefulWidget {
@@ -47,7 +48,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         final r = await _repository.search(orgId, value.trim());
         if (mounted) setState(() => _results = r);
       } catch (_) {
-        if (mounted) setState(() => _error = 'تعذّر البحث. تحقّق من الاتصال.');
+        if (mounted) setState(() => _error = tr(context).ins.searchFailed);
       } finally {
         if (mounted) setState(() => _loading = false);
       }
@@ -72,27 +73,27 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           controller: _controller,
           autofocus: true,
           onChanged: _onChanged,
-          decoration: const InputDecoration(hintText: 'ابحث: طالب، رقم الطالب، معلم، حلقة', border: InputBorder.none, filled: false),
+          decoration: InputDecoration(hintText: tr(context).ins.searchPh, border: InputBorder.none, filled: false),
         ),
       ),
       body: ListView(padding: const EdgeInsets.all(16), children: [
         if (_loading) const LinearProgressIndicator(),
         if (_error != null) Text(_error!),
-        if (empty) const Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text('لا نتائج'))),
+        if (empty) Padding(padding: EdgeInsets.only(top: 60), child: Center(child: Text(tr(context).ins.noResults))),
         if (r != null) ...[
-          _section('الطلاب', [
+          _section(tr(context).ins.students, [
             for (final s in r.students)
               ListTile(
                 title: Text('${s['name']}'),
-                subtitle: Text('${s['code']} · ${s['circle'] ?? 'بدون حلقة'}'),
+                subtitle: Text('${s['code']} · ${s['circle'] ?? tr(context).ins.noCircle}'),
                 onTap: () => context.push('/students/${s['id']}/file'),
               ),
           ]),
-          _section('المعلمون والمشرفون', [
+          _section(tr(context).ins.staff, [
             for (final t in r.teachers)
-              ListTile(title: Text('${t['name']}'), subtitle: Text(t['role'] == 'admin' ? 'مشرف' : 'معلم'), onTap: () => context.push('/members/${t['id']}')),
+              ListTile(title: Text('${t['name']}'), subtitle: Text(t['role'] == 'admin' ? tr(context).ins.admin : tr(context).ins.teacher), onTap: () => context.push('/members/${t['id']}')),
           ]),
-          _section('الحلقات', [
+          _section(tr(context).ins.circles, [
             for (final c in r.circles) ListTile(title: Text('${c['name']}'), onTap: () => context.push('/circle/${c['id']}')),
           ]),
         ],

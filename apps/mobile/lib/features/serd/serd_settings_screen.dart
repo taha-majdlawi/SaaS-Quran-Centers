@@ -7,6 +7,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'serd_models.dart';
 import 'serd_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class _SettingsData {
   const _SettingsData(this.setup, this.stages);
@@ -61,7 +62,7 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
       await action();
       if (mounted) {
         setState(() {
-          _message = 'تم الحفظ';
+          _message = tr(context).serd.saved;
           _isError = false;
           _future = _load();
         });
@@ -75,9 +76,9 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
     return Wrap(
       spacing: 8,
       children: [
-        const Chip(label: Text('الجزء كاملاً (دائمًا)')),
+        Chip(label: Text(tr(context).serd.wholeAlways)),
         for (final d in const [2, 4, 8])
-          FilterChip(label: Text(kSerdDenNames[d]!), selected: selected.contains(d), onSelected: (v) => onChanged(d, v)),
+          FilterChip(label: Text(serdDenName(d)), selected: selected.contains(d), onSelected: (v) => onChanged(d, v)),
       ],
     );
   }
@@ -91,20 +92,20 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setLocal) => AlertDialog(
-          title: Text(existing == null ? 'نوع خطأ جديد' : 'تعديل نوع الخطأ'),
+          title: Text(existing == null ? tr(context).serd.newErrorType : tr(context).serd.editErrorType),
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextField(controller: name, decoration: const InputDecoration(labelText: 'الاسم')),
+              TextField(controller: name, decoration: InputDecoration(labelText: tr(context).serd.name)),
               const SizedBox(height: 10),
-              TextField(controller: per, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'كل (عدد أخطاء)')),
+              TextField(controller: per, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).serd.perErrors)),
               const SizedBox(height: 10),
-              TextField(controller: pct, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '= خصم %')),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('فعّال'), value: active, onChanged: (v) => setLocal(() => active = v)),
+              TextField(controller: pct, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(context).serd.deductPct)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).serd.active), value: active, onChanged: (v) => setLocal(() => active = v)),
             ]),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: Size(90, 44)), child: Text(tr(context).common.save)),
           ],
         ),
       ),
@@ -115,7 +116,7 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
     pct.dispose();
     if (ok != true) return;
     if (values.$1.isEmpty || values.$2 == null || values.$3 == null) {
-      setState(() { _message = 'أكمل الاسم والأرقام'; _isError = true; });
+      setState(() { _message = tr(context).serd.fillAll; _isError = true; });
       return;
     }
     await _run(() => _repository.saveErrorType(
@@ -139,16 +140,16 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
           title: Text(stage.name),
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('المقادير المسموحة لهذه المرحلة'),
+              Text(tr(context).serd.stagePortions),
               const SizedBox(height: 8),
               _denChips(dens, (d, v) => setLocal(() => v ? dens.add(d) : dens.remove(d))),
               const SizedBox(height: 12),
-              TextField(controller: pass, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'حد نجاح خاص % (اتركه فارغًا للعام)')),
+              TextField(controller: pass, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(context).serd.stagePass)),
             ]),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: Size(90, 44)), child: Text(tr(context).common.save)),
           ],
         ),
       ),
@@ -162,7 +163,7 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('إعدادات السرد')),
+      appBar: AppBar(title: Text(tr(context).serd.settingsTitle)),
       body: AsyncBody<_SettingsData>(
         future: _future,
         onRetry: () => setState(() => _future = _load()),
@@ -171,17 +172,17 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text('التغييرات تسري على السرد القادم فقط؛ السرد السابق يحتفظ بدرجته ونقاطه وحد نجاحه.', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              Text(tr(context).serd.settingsHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               const SizedBox(height: 12),
               if (_message != null) MessageBanner(message: _message!, isError: _isError),
-              const SectionTitle('عام للمركز'),
+              SectionTitle(tr(context).serd.general),
               Row(children: [
-                Expanded(child: TextField(controller: _pass, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'حد النجاح %'))),
+                Expanded(child: TextField(controller: _pass, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(context).serd.passPct))),
                 const SizedBox(width: 10),
-                Expanded(child: TextField(controller: _points, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'نقاط الجزء الكامل'))),
+                Expanded(child: TextField(controller: _points, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).serd.wholePoints))),
               ]),
               const SizedBox(height: 12),
-              const Text('المقادير المسموحة افتراضيًا'),
+              Text(tr(context).serd.defaultPortions),
               const SizedBox(height: 8),
               _denChips(_dens, (d, v) => setState(() => v ? _dens.add(d) : _dens.remove(d))),
               const SizedBox(height: 12),
@@ -190,19 +191,19 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
                   final pass = num.tryParse(_pass.text.trim());
                   final pts = int.tryParse(_points.text.trim());
                   if (pass == null || pts == null) {
-                    setState(() { _message = 'أدخل أرقامًا صحيحة'; _isError = true; });
+                    setState(() { _message = tr(context).serd.wholeNumbers; _isError = true; });
                     return;
                   }
                   _run(() => _repository.saveSettings(_orgId, passPercent: pass, pointsPerJuz: pts, denominators: _dens.toList()));
                 },
-                child: const Text('حفظ الإعدادات العامة'),
+                child: Text(tr(context).serd.saveGeneral),
               ),
-              const SectionTitle('أنواع الأخطاء وأوزانها'),
+              SectionTitle(tr(context).serd.errorTypes),
               for (var i = 0; i < data.setup.errorTypes.length; i++)
                 Card(
                   child: ListTile(
                     title: Text(data.setup.errorTypes[i].name),
-                    subtitle: Text('كل ${data.setup.errorTypes[i].errorsPerUnit} = ${data.setup.errorTypes[i].percentPerUnit}%${data.setup.errorTypes[i].isActive ? '' : '  ·  غير فعّال'}'),
+                    subtitle: Text(fmt(tr(context).serd.perRule, {'errorsPerUnit': data.setup.errorTypes[i].errorsPerUnit, 'percentPerUnit': data.setup.errorTypes[i].percentPerUnit, 'v': data.setup.errorTypes[i].isActive ? '' : tr(context).serd.inactiveSuffix})),
                     onTap: () => _editErrorType(data.setup.errorTypes[i], i + 1),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline_rounded),
@@ -213,18 +214,18 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
               OutlinedButton.icon(
                 onPressed: () => _editErrorType(null, data.setup.errorTypes.length + 1),
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('نوع خطأ جديد'),
+                label: Text(tr(context).serd.newErrorType),
               ),
-              const SectionTitle('حسب المرحلة'),
-              Text('مرحلة الصغار قد تسرد نصف جزء أو ربعه ولها حد نجاح خاص.', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              SectionTitle(tr(context).serd.byStage),
+              Text(tr(context).serd.byStageHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               const SizedBox(height: 8),
               for (final st in data.stages)
                 Card(
                   child: ListTile(
                     title: Text(st.name),
                     subtitle: Text(policies[st.id] == null
-                        ? 'الإعداد العام'
-                        : '${policies[st.id]!.denominators.map((d) => kSerdDenNames[d]).join('، ')}${policies[st.id]!.passPercent == null ? '' : '  ·  نجاح ${policies[st.id]!.passPercent}%'}'),
+                        ? tr(context).serd.usesGeneral
+                        : '${policies[st.id]!.denominators.map(serdDenName).join(tr(context).common.listSep)}${policies[st.id]!.passPercent == null ? '' : fmt(tr(context).serd.passSuffix, {'n': policies[st.id]!.passPercent})}'),
                     trailing: const Icon(Icons.chevron_left_rounded),
                     onTap: () => _editStage(st, policies[st.id]),
                   ),

@@ -4,6 +4,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import 'insights_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Append-only notes on a student, for the supervisor and the student's teacher (never shown to the student).
 class StudentNotesSection extends StatefulWidget {
@@ -27,19 +28,19 @@ class _StudentNotesSectionState extends State<StudentNotesSection> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setLocal) => AlertDialog(
-          title: const Text('ملاحظة جديدة'),
+          title: Text(tr(context).ins.newNote),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: body, maxLines: 4, maxLength: 1000, decoration: const InputDecoration(hintText: 'مثال: يستعجل في أواخر الآيات')),
+            TextField(controller: body, maxLines: 4, maxLength: 1000, decoration: InputDecoration(hintText: tr(context).ins.notePh)),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               value: guardianVisible,
               onChanged: (v) => setLocal(() => guardianVisible = v ?? false),
-              title: const Text('ظاهرة لولي الأمر', style: TextStyle(fontSize: 13)),
+              title: Text(tr(context).ins.guardianVisible, style: TextStyle(fontSize: 13)),
             ),
           ]),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.save)),
           ],
         ),
       ),
@@ -49,7 +50,7 @@ class _StudentNotesSectionState extends State<StudentNotesSection> {
       await _repository.addNote(widget.orgId, widget.studentId, body.text.trim(), guardianVisible: guardianVisible);
       if (mounted) setState(() => _future = _repository.notes(widget.orgId, widget.studentId));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر حفظ الملاحظة')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).ins.noteFailed)));
     }
   }
 
@@ -58,15 +59,15 @@ class _StudentNotesSectionState extends State<StudentNotesSection> {
     final scheme = Theme.of(context).colorScheme;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        const Expanded(child: SectionTitle('ملاحظات المعلم')),
-        TextButton.icon(onPressed: _add, icon: const Icon(Icons.add_rounded, size: 18), label: const Text('إضافة')),
+        Expanded(child: SectionTitle(tr(context).ins.notesTitle)),
+        TextButton.icon(onPressed: _add, icon: Icon(Icons.add_rounded, size: 18), label: Text(tr(context).ui.add)),
       ]),
       FutureBuilder<List<StudentNote>>(
         future: _future,
         builder: (context, snap) {
           final notes = snap.data;
           if (notes == null) return const SizedBox.shrink();
-          if (notes.isEmpty) return Text('لا ملاحظات بعد', style: TextStyle(color: scheme.outline, fontSize: 13));
+          if (notes.isEmpty) return Text(tr(context).ins.noNotes, style: TextStyle(color: scheme.outline, fontSize: 13));
           return Column(children: [
             for (final n in notes)
               Container(
@@ -77,7 +78,7 @@ class _StudentNotesSectionState extends State<StudentNotesSection> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(n.body, style: const TextStyle(fontSize: 13.5, height: 1.4)),
                   const SizedBox(height: 4),
-                  Text('${n.author ?? '—'} · ${formatDate(n.createdAt)}${n.visibility == 'guardian_visible' ? ' · ظاهرة لولي الأمر' : ''}',
+                  Text('${n.author ?? '—'} · ${formatDate(n.createdAt)}${n.visibility == 'guardian_visible' ? tr(context).ins.guardianVisibleSuffix : ''}',
                       style: TextStyle(fontSize: 11.5, color: scheme.outline)),
                 ]),
               ),

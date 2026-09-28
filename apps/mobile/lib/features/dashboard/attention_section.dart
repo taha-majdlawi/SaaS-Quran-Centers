@@ -6,6 +6,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/widgets/ui.dart';
 import '../gatherings/gatherings_repository.dart';
 import '../reports/reports_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Admin dashboard: what needs a decision or a call today, and the week in
 /// numbers - one RPC (`admin_attention`), cached so it still shows offline.
@@ -67,18 +68,18 @@ class _AttentionSectionState extends State<AttentionSection> {
         final week = a['week'] as Map<String, dynamic>;
         final pend = _pendingNow;
         final waiting = [
-          ('سرد بانتظار الاعتماد', a['serd_submitted'] as int, '/serd'),
-          ('طلبات سوق بانتظار القرار', a['market_pending'] as int, '/market'),
-          ('مجالس بانتظار ربط الأسماء', pend['gatherings'] ?? 0, '/gatherings'),
-          ('تسميع خارجي بانتظار الربط', pend['external'] ?? 0, '/external-recitations'),
+          (tr(context).dash.waitSerd, a['serd_submitted'] as int, '/serd'),
+          (tr(context).dash.waitMarket, a['market_pending'] as int, '/market'),
+          (tr(context).dash.waitGatherings, pend['gatherings'] ?? 0, '/gatherings'),
+          (tr(context).dash.waitExternal, pend['external'] ?? 0, '/external-recitations'),
         ].where((w) => w.$2 > 0).toList();
         final inactive = _list(a['inactive_students']);
         final upcoming = _list(a['upcoming']);
 
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SectionTitle('يحتاج انتباهك'),
+          SectionTitle(tr(context).dash.needsYou),
           if (waiting.isEmpty)
-            const Padding(padding: EdgeInsets.symmetric(vertical: 4), child: Text('لا شيء ينتظر قرارك ✓'))
+            Padding(padding: EdgeInsets.symmetric(vertical: 4), child: Text(tr(context).dash.nothingWaiting))
           else
             for (final w in waiting)
               Card(
@@ -91,33 +92,33 @@ class _AttentionSectionState extends State<AttentionSection> {
                 ),
               ),
           if (inactive.isNotEmpty) ...[
-            SectionTitle('لم يسمّعوا منذ أسبوعين (${a['inactive_total']})'),
+            SectionTitle(fmt(tr(context).dash.inactiveN, {'inactive_total': a['inactive_total']})),
             for (final s in inactive)
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 title: Text('${s['name']}'),
-                subtitle: Text('${s['circle'] ?? '—'} · ${s['last_at'] == null ? 'لم يسمّع بعد' : reportDay(s['last_at'])}'),
+                subtitle: Text('${s['circle'] ?? '—'} · ${s['last_at'] == null ? tr(context).dash.notYet : reportDay(s['last_at'])}'),
                 trailing: const Icon(Icons.chevron_left_rounded),
                 onTap: () => context.push('/students/${s['id']}/report'),
               ),
           ],
-          const SectionTitle('هذا الأسبوع'),
+          SectionTitle(tr(context).dash.thisWeek),
           Wrap(spacing: 8, runSpacing: 8, children: [
-            StatusChip(label: 'تسميعات ${week['recitations']}', color: Colors.green),
-            StatusChip(label: 'طلاب سمّعوا ${week['reciting_students']}', color: Colors.blue),
-            StatusChip(label: 'نقاط ${week['points']}', color: Colors.orange),
-            StatusChip(label: 'حضور ${reportPct(week['attendance_rate'])}', color: Colors.teal),
+            StatusChip(label: fmt(tr(context).dash.weekRecitations, {'recitations': week['recitations']}), color: Colors.green),
+            StatusChip(label: fmt(tr(context).dash.weekReciting, {'reciting_students': week['reciting_students']}), color: Colors.blue),
+            StatusChip(label: fmt(tr(context).dash.weekPoints, {'points': week['points']}), color: Colors.orange),
+            StatusChip(label: fmt(tr(context).dash.weekAttendance, {'v': reportPct(week['attendance_rate'])}), color: Colors.teal),
           ]),
           if (upcoming.isNotEmpty) ...[
-            const SectionTitle('فعاليات قادمة'),
+            SectionTitle(tr(context).dash.upcomingEvents),
             for (final e in upcoming)
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.event_rounded),
                 title: Text('${e['title']}'),
-                subtitle: Text('${reportDay(e['start_date'])} · مسجّل ${e['registered']}${e['capacity'] != null ? '/${e['capacity']}' : ''}'),
+                subtitle: Text('${reportDay(e['start_date'])} · ${tr(context).dash.registered} ${e['registered']}${e['capacity'] != null ? '/${e['capacity']}' : ''}'),
                 onTap: () => context.push('/calendar/${e['id']}'),
               ),
           ],

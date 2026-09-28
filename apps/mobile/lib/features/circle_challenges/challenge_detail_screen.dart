@@ -11,6 +11,7 @@ import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
 import 'challenge_form_screen.dart';
+import '../../core/i18n/i18n.dart';
 
 /// The live board of one challenge: circles ranked by average per student.
 class ChallengeDetailScreen extends StatefulWidget {
@@ -34,11 +35,11 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف المنافسة'),
-        content: const Text('متأكد؟'),
+        title: Text(tr(context).ins.deleteChallenge),
+        content: Text(tr(context).ins.sure),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -56,7 +57,7 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
     final isAdmin = context.watch<TenantController>().active?.role == OrgRole.admin;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المنافسة'),
+        title: Text(tr(context).ins.challenge),
         actions: [
           if (isAdmin)
             FutureBuilder<ChallengeBoard>(
@@ -88,14 +89,14 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
               const SizedBox(height: 4),
               Text('${kMetricLabels[b.challenge.metric]}\n${formatDate(b.challenge.startsOn)} — ${formatDate(b.challenge.endsOn)}  ·  ${kChallengeStatus[b.challenge.status]}', style: TextStyle(color: Colors.grey.shade600)),
               const SizedBox(height: 14),
-              if (b.rows.isEmpty) const EmptyState(icon: Icons.groups_outlined, title: 'لا توجد حلقات فيها طلاب بعد'),
+              if (b.rows.isEmpty) EmptyState(icon: Icons.groups_outlined, title: tr(context).ins.noCircles),
               for (final r in b.rows)
                 Card(
                   color: r.mine ? Colors.green.shade50 : null,
                   child: ListTile(
                     leading: Text(r.rank == 1 ? '🥇' : (r.rank == 2 ? '🥈' : (r.rank == 3 ? '🥉' : '${r.rank}')), style: const TextStyle(fontSize: 24)),
                     title: Text(r.circleName, style: const TextStyle(fontWeight: FontWeight.w800)),
-                    subtitle: Text('${r.students} طالب  ·  المجموع ${r.total}'),
+                    subtitle: Text(fmt(tr(context).ins.boardLine, {'students': r.students, 'total': r.total})),
                     trailing: Text('${r.average}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.primary)),
                   ),
                 ),

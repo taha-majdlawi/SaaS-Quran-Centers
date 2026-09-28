@@ -3,17 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
-import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
+import '../../core/i18n/i18n.dart';
 
-const _roleLabels = {
-  OrgRole.admin: 'مدير',
-  OrgRole.teacher: 'معلم',
-  OrgRole.guardian: 'ولي أمر',
-  OrgRole.student: 'طالب',
-};
+Map<String, String> get _roleLabels => currentStrings.labels.roles;
 
 /// Shown when the signed-in user has zero or more than one active center -
 /// picking one sets TenantController.active and continues to the app.
@@ -26,10 +21,10 @@ class OrgPickerScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('اختر المركز'),
+        title: Text(tr(context).auth.pickCenter),
         actions: [
           IconButton(
-            tooltip: 'تسجيل خروج',
+            tooltip: tr(context).common.signOut,
             icon: const Icon(Icons.logout_rounded),
             onPressed: () => context.read<AuthController>().signOut(),
           ),
@@ -40,10 +35,10 @@ class OrgPickerScreen extends StatelessWidget {
           : tenant.loadFailed
               ? ErrorState(onRetry: tenant.loadMemberships)
               : tenant.memberships.isEmpty
-                  ? const EmptyState(
+                  ? EmptyState(
                       icon: Icons.location_city_outlined,
-                      title: 'حسابك غير مرتبط بأي مركز بعد',
-                      subtitle: 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر',
+                      title: tr(context).auth.noCenters,
+                      subtitle: tr(context).auth.noCentersHint,
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
@@ -63,7 +58,7 @@ class OrgPickerScreen extends StatelessWidget {
                             title: Text(membership.organization.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                             subtitle: Padding(
                               padding: const EdgeInsets.only(top: 4),
-                              child: Text(_roleLabels[membership.role] ?? ''),
+                              child: Text(_roleLabels[membership.role.name] ?? ''),
                             ),
                             trailing: const Icon(Icons.chevron_left_rounded),
                             onTap: () async {

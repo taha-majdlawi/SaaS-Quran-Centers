@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/offline/sync_service.dart';
 import 'serd_models.dart';
+import '../../core/i18n/i18n.dart';
 
 class SerdListPage {
   const SerdListPage({required this.total, required this.rows});
@@ -87,7 +88,7 @@ class SerdRepository {
     final outcome = await SyncService.instance.submit(
       'serd_submit',
       params,
-      label: 'سرد ${studentName ?? ''} — ${parts.length} جزء',
+      label: fmt(currentStrings.serd.outboxLabel, {'studentName': studentName ?? '', 'n': parts.length}),
     );
     if (outcome.queued) return (score: null, queued: true);
     return (score: _map(outcome.data)['score_percent'] as num?, queued: false);

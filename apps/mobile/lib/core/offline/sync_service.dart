@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'outbox.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Was this failure "no usable network" (retry later) rather than a refusal by
 /// the server (a rule the user has to see)?
@@ -21,7 +22,7 @@ bool isNetworkError(Object e) {
 }
 
 /// Shown when a save was kept on the phone because there is no connection.
-const kQueuedMessage = 'حُفظ على جهازك وسيُرفع تلقائيًا عند عودة الاتصال';
+String get kQueuedMessage => currentStrings.ui.savedOffline;
 
 /// What the recitation sheet returns when everything it saved is still waiting on the phone.
 const kQueuedPoints = -1;

@@ -8,6 +8,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
 import 'login_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -94,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final center = _center ?? await _lookupCenter(_centerController.text);
       if (center == null) {
-        setState(() => _error = 'لم نجد مركزًا بهذا الرمز، تأكد من الرمز وحاول مرة أخرى');
+        setState(() => _error = tr(context).auth.noCenter);
         return;
       }
       await _repository.signInToCenter(
@@ -103,11 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
     } on WrongCredentialsException {
-      setState(() => _error = 'رقم الدخول / البريد أو كلمة السر غير صحيحة');
+      setState(() => _error = tr(context).auth.badLogin);
     } on NotCenterMemberException {
-      setState(() => _error = 'هذا الحساب غير مسجّل في ${_center?.name ?? 'هذا المركز'}');
+      setState(() => _error = fmt(tr(context).auth.notMember, {'v': _center?.name ?? tr(context).auth.thisCenter}));
     } catch (_) {
-      setState(() => _error = 'تعذّر الاتصال بالخادم، تأكد من الإنترنت وحاول مرة أخرى');
+      setState(() => _error = tr(context).auth.serverDown);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -118,13 +119,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _openForgotPassword() async {
     final slug = (_center?.slug ?? _centerController.text).trim().toLowerCase();
     if (slug.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('أدخل رمز المركز أولًا')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).auth.codeFirst)));
       return;
     }
     final uri = Uri.parse('https://$slug.bustan-alquran.com/forgot-password');
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر فتح الصفحة، حاول من المتصفح')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).auth.openFailed)));
     }
   }
 
@@ -168,14 +169,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    Text(_center?.name ?? 'بستان القرآن',
+                    Text(_center?.name ?? tr(context).common.appName,
                         textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 6),
-                    Text('سجّل دخولك إلى مركزك',
+                    Text(tr(context).auth.signInTitle,
                         textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: Colors.grey.shade600)),
                     const SizedBox(height: 28),
                     if (_error != null) MessageBanner(message: _error!),
-                    Text('١. المركز', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
+                    Text(tr(context).auth.step1, style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _centerController,
@@ -185,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       autocorrect: false,
                       textDirection: TextDirection.ltr,
                       decoration: InputDecoration(
-                        labelText: 'رمز المركز',
+                        labelText: tr(context).auth.centerCode,
                         hintText: 'eqraa',
                         prefixIcon: const Icon(Icons.location_city_outlined),
                         suffixIcon: _lookingUp
@@ -197,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ? Icon(Icons.check_circle, color: brand)
                                 : null,
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل رمز المركز' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? tr(context).auth.enterCode : null,
                     ),
                     const SizedBox(height: 8),
                     AnimatedSwitcher(
@@ -225,20 +226,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? Padding(
                                   key: const ValueKey('missing'),
                                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: Text('لا يوجد مركز بهذا الرمز',
+                                  child: Text(tr(context).auth.noCenterShort,
                                       style: TextStyle(color: Colors.red.shade700)),
                                 )
                               : Padding(
                                   key: const ValueKey('hint'),
                                   padding: const EdgeInsets.symmetric(horizontal: 4),
                                   child: Text(
-                                    'رمز المركز هو أول جزء من رابط مركزك، مثال: eqraa من eqraa.bustan-alquran.com',
+                                    tr(context).auth.codeHint,
                                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5),
                                   ),
                                 ),
                     ),
                     const SizedBox(height: 22),
-                    Text('٢. حسابك', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
+                    Text(tr(context).auth.step2, style: TextStyle(fontWeight: FontWeight.w700, color: Colors.grey.shade800)),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
@@ -246,11 +247,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.username],
                       textDirection: TextDirection.ltr,
-                      decoration: const InputDecoration(
-                        labelText: 'رقم الهوية / الطالب أو البريد',
+                      decoration: InputDecoration(
+                        labelText: tr(context).auth.loginId,
                         prefixIcon: Icon(Icons.badge_outlined),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'أدخل رقمك أو بريدك' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? tr(context).auth.enterId : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -260,20 +261,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       autofillHints: const [AutofillHints.password],
                       onFieldSubmitted: (_) => _submit(),
                       decoration: InputDecoration(
-                        labelText: 'كلمة السر',
+                        labelText: tr(context).auth.password,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(_showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                           onPressed: () => setState(() => _showPassword = !_showPassword),
                         ),
                       ),
-                      validator: (v) => (v == null || v.isEmpty) ? 'أدخل كلمة السر' : null,
+                      validator: (v) => (v == null || v.isEmpty) ? tr(context).auth.enterPassword : null,
                     ),
                     Align(
                       alignment: AlignmentDirectional.centerEnd,
                       child: TextButton(
                         onPressed: _openForgotPassword,
-                        child: const Text('نسيت كلمة السر؟'),
+                        child: Text(tr(context).auth.forgot),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -283,11 +284,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: _submitting
                           ? const SizedBox(
                               width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                          : Text(_center != null ? 'دخول إلى ${_center!.name}' : 'دخول'),
+                          : Text(_center != null ? fmt(tr(context).auth.signInTo, {'name': _center!.name}) : tr(context).auth.signIn),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'الدخول للمعلمين والإدارة وأولياء الأمور والطلاب، كلٌّ حسب صلاحياته في المركز.',
+                      tr(context).auth.whoHint,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey.shade500, fontSize: 12.5),
                     ),

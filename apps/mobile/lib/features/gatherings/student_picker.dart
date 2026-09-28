@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../insights/insights_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// Search-as-you-type dialog that returns the chosen student's id (or null).
 Future<String?> pickStudent(BuildContext context, String orgId, {String initialQuery = ''}) => showDialog<String>(
@@ -58,14 +59,14 @@ class _StudentPickerState extends State<_StudentPicker> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('اختر الطالب'),
+      title: Text(tr(context).gather.pickStudentTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(
             controller: _controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'اسم الطالب أو رقمه', prefixIcon: Icon(Icons.search_rounded)),
+            decoration: InputDecoration(hintText: tr(context).gather.searchPh, prefixIcon: Icon(Icons.search_rounded)),
             onChanged: (v) {
               _debounce?.cancel();
               _debounce = Timer(const Duration(milliseconds: 350), () => _search(v));
@@ -78,14 +79,14 @@ class _StudentPickerState extends State<_StudentPicker> {
                 ListTile(
                   dense: true,
                   title: Text('${s['name']}'),
-                  subtitle: Text('${s['code']} · ${s['circle'] ?? 'بدون حلقة'}'),
+                  subtitle: Text('${s['code']} · ${s['circle'] ?? tr(context).gather.noCircle}'),
                   onTap: () => Navigator.pop(context, s['id'] as String),
                 ),
             ]),
           ),
         ]),
       ),
-      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء'))],
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(tr(context).common.cancel))],
     );
   }
 }

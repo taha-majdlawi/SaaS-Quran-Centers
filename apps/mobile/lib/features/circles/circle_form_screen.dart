@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'circles_repository.dart';
+import '../../core/i18n/i18n.dart';
 
 /// One screen for both add and edit - mirrors apps/web's circles/new and
 /// circles/[id] pages.
@@ -108,7 +109,7 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
       }
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = friendlyError(e, 'حدث خطأ أثناء الحفظ - حاول مرة أخرى'));
+      setState(() => _error = friendlyError(e, tr(context).org.saveErrorRetry));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -118,11 +119,11 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف الحلقة'),
-        content: const Text('متأكد إنك بدك تحذف هذي الحلقة؟ لا يمكن التراجع.'),
+        title: Text(tr(context).org.deleteCircle),
+        content: Text(tr(context).org.deleteCircleBody),
         actions: [
-          TextButton(onPressed: () => context.pop(false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => context.pop(true), child: const Text('حذف')),
+          TextButton(onPressed: () => context.pop(false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => context.pop(true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -136,7 +137,7 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'تعديل الحلقة' : 'إضافة حلقة'),
+        title: Text(widget.isEditing ? tr(context).org.editCircle : tr(context).org.addCircle),
         actions: [
           if (widget.isEditing)
             IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
@@ -154,15 +155,15 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                     if (_error != null) MessageBanner(message: _error!),
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'اسم الحلقة'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
+                      decoration: InputDecoration(labelText: tr(context).org.circleName),
+                      validator: (v) => (v == null || v.isEmpty) ? tr(context).mem.required : null,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _stageId,
-                      decoration: const InputDecoration(labelText: 'المرحلة'),
+                      decoration: InputDecoration(labelText: tr(context).org.stage),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('بدون مرحلة')),
+                        DropdownMenuItem(value: null, child: Text(tr(context).org.noStage)),
                         ..._stages.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))),
                       ],
                       onChanged: (value) => setState(() => _stageId = value),
@@ -170,9 +171,9 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _teacherId,
-                      decoration: const InputDecoration(labelText: 'المعلم'),
+                      decoration: InputDecoration(labelText: tr(context).org.teacher),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('بدون معلم')),
+                        DropdownMenuItem(value: null, child: Text(tr(context).org.noTeacher)),
                         ..._teachers.map((t) => DropdownMenuItem(value: t.userId, child: Text(t.label))),
                       ],
                       onChanged: (value) => setState(() => _teacherId = value),
@@ -181,13 +182,13 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                     TextFormField(
                       controller: _capacityController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'السعة (عدد الطلاب)'),
+                      decoration: InputDecoration(labelText: tr(context).org.capacity),
                     ),
                     if (widget.isEditing) ...[
                       const SizedBox(height: 16),
-                      const Text('المعلمون المساعدون', style: TextStyle(fontWeight: FontWeight.w700)),
+                      Text(tr(context).org.assistants, style: TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 4),
-                      const Text('يرثون صلاحيات معلم هذه الحلقة عليها فقط ويظهرون بوسم «معلم مساعد».', style: TextStyle(fontSize: 12)),
+                      Text(tr(context).org.assistantsHint, style: TextStyle(fontSize: 12)),
                       const SizedBox(height: 6),
                       Wrap(spacing: 6, runSpacing: 4, children: [
                         for (final t in _teachers.where((t) => t.userId != _teacherId))
@@ -196,12 +197,12 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                             selected: _assistants.contains(t.userId),
                             onSelected: (v) => setState(() => v ? _assistants.add(t.userId) : _assistants.remove(t.userId)),
                           ),
-                        if (_teachers.where((t) => t.userId != _teacherId).isEmpty) const Text('لا معلمون آخرون في المركز'),
+                        if (_teachers.where((t) => t.userId != _teacherId).isEmpty) Text(tr(context).org.noOtherTeachers),
                       ]),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: _status,
-                        decoration: const InputDecoration(labelText: 'الحالة'),
+                        decoration: InputDecoration(labelText: tr(context).org.status),
                         items: kCircleStatusLabels.entries
                             .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                             .toList(),
@@ -217,7 +218,7 @@ class _CircleFormScreenState extends State<CircleFormScreen> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                          : Text(widget.isEditing ? 'حفظ التعديلات' : 'إضافة الحلقة'),
+                          : Text(widget.isEditing ? tr(context).stu.saveChanges : tr(context).org.addCircleBtn),
                     ),
                   ],
                 ),

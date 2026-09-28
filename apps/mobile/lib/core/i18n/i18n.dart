@@ -1,25 +1,32 @@
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../tenant/organization.dart';
 import 'strings.dart';
 
 export 'strings.dart';
 
-/// The app's languages (docs/I18N.md). Only the student / guardian screens are
-/// translated so far, so staff always get Arabic - [LocaleController.effective]
-/// decides per signed-in role, like the web's "translated screens" list.
+/// The app's languages (docs/I18N.md). Every screen is translated; the
+/// Quran text, surah headers and certificate wording stay Arabic by design.
 const kLocales = ['ar', 'en'];
 const kLocaleNames = {'ar': 'العربية', 'en': 'English'};
 
-/// The person's chosen language, remembered on the device.
+/// The app language: the person's own choice (remembered on the device), else
+/// their center's default language (organization_settings.default_language),
+/// else Arabic - the same order as the web.
 class LocaleController extends ChangeNotifier {
   LocaleController._();
   static final instance = LocaleController._();
   static const _key = 'app_lang';
 
-  String _chosen = 'ar';
-  String get chosen => _chosen;
+  String? _chosen;
+  String? _centerDefault;
+  String? _centerOrg;
+
+  /// The language showing right now.
+  String get effective => _chosen ?? _centerDefault ?? 'ar';
+
+  /// Whether the person picked a language themselves (else the center's default applies).
+  bool get hasChoice => _chosen != null;
 
   Future<void> load() async {
     try {
@@ -37,9 +44,20 @@ class LocaleController extends ChangeNotifier {
     } catch (_) {}
   }
 
-  /// The language the app shows right now: the choice for students and
-  /// guardians (their screens are translated), Arabic for everyone else.
-  String effective(OrgRole? role) => role == OrgRole.student || role == OrgRole.guardian ? _chosen : 'ar';
+  /// Follow the signed-in center's default language; [fetch] reads it (null = none set).
+  Future<void> bindCenter(String? orgId, Future<String?> Function(String orgId) fetch) async {
+    if (orgId == _centerOrg) return;
+    _centerOrg = orgId;
+    final before = effective;
+    _centerDefault = null;
+    if (orgId != null) {
+      try {
+        final v = await fetch(orgId);
+        if (orgId == _centerOrg && kLocales.contains(v)) _centerDefault = v;
+      } catch (_) {}
+    }
+    if (effective != before) notifyListeners();
+  }
 }
 
 /// Carries the current strings down the tree; [S.of] reads it (and rebuilds on change).

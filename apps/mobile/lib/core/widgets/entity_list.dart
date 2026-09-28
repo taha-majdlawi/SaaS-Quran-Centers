@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../tenant/tenant_controller.dart';
 import 'app_drawer.dart';
 import 'ui.dart';
+import '../../core/i18n/i18n.dart';
 
 /// What one row of an [EntityListScreen] looks like.
 class EntityTile {
@@ -42,7 +43,7 @@ class EntityListScreen<T> extends StatefulWidget {
     required this.emptyTitle,
     this.emptySubtitle,
     this.addPath,
-    this.addLabel = 'إضافة',
+    this.addLabel,
     this.searchable = false,
   });
 
@@ -53,7 +54,8 @@ class EntityListScreen<T> extends StatefulWidget {
   final String emptyTitle;
   final String? emptySubtitle;
   final String? addPath;
-  final String addLabel;
+  /// Defaults to the translated 'Add'.
+  final String? addLabel;
   final bool searchable;
 
   @override
@@ -91,7 +93,7 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
           : FloatingActionButton.extended(
               onPressed: () => _open(widget.addPath!),
               icon: const Icon(Icons.add_rounded),
-              label: Text(widget.addLabel),
+              label: Text(widget.addLabel ?? tr(context).ui.add),
             ),
       body: Column(
         children: [
@@ -100,7 +102,7 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: TextField(
                 onChanged: (v) => setState(() => _query = v.trim()),
-                decoration: const InputDecoration(hintText: 'بحث', prefixIcon: Icon(Icons.search_rounded)),
+                decoration: InputDecoration(hintText: tr(context).ui.search, prefixIcon: Icon(Icons.search_rounded)),
               ),
             ),
           Expanded(
@@ -118,7 +120,7 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
                         return t.title.contains(_query) || (t.searchText?.contains(_query) ?? false);
                       }).toList();
                       if (tiles.isEmpty) {
-                        return const EmptyState(icon: Icons.search_off_rounded, title: 'لا نتائج مطابقة');
+                        return EmptyState(icon: Icons.search_off_rounded, title: tr(context).ui.noMatch);
                       }
                       return RefreshIndicator(
                         onRefresh: () async {

@@ -11,6 +11,7 @@ import '../students/students_repository.dart';
 import 'serd_models.dart';
 import 'serd_repository.dart';
 import 'serd_widgets.dart';
+import '../../core/i18n/i18n.dart';
 
 class _ScheduleData {
   const _ScheduleData({required this.setup, required this.students, required this.teachers});
@@ -62,7 +63,7 @@ class _SerdScheduleScreenState extends State<SerdScheduleScreen> {
 
   Future<void> _save() async {
     if (_studentId == null || _parts.isEmpty) {
-      setState(() => _error = 'اختر الطالب وجزءًا واحدًا على الأقل');
+      setState(() => _error = tr(context).serd.pickBoth);
       return;
     }
     setState(() {
@@ -79,7 +80,7 @@ class _SerdScheduleScreenState extends State<SerdScheduleScreen> {
         teacherId: _teacherId,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت جدولة السرد')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).serd.scheduledOk)));
         context.pop();
       }
     } on PostgrestException catch (e) {
@@ -92,19 +93,19 @@ class _SerdScheduleScreenState extends State<SerdScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('جدولة سرد')),
+      appBar: AppBar(title: Text(tr(context).serd.schedule)),
       body: AsyncBody<_ScheduleData>(
         future: _future,
         builder: (context, data) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text('مهمة تظهر للمعلمين ليرصدها من يتفرغ لها، أو تُسند لمعلم بعينه.', style: TextStyle(color: Colors.grey.shade600)),
+            Text(tr(context).serd.scheduleHint, style: TextStyle(color: Colors.grey.shade600)),
             const SizedBox(height: 14),
             if (_error != null) MessageBanner(message: _error!),
             DropdownButtonFormField<String>(
               initialValue: _studentId,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'الطالب'),
+              decoration: InputDecoration(labelText: tr(context).serd.student),
               items: [
                 for (final s in data.students) DropdownMenuItem(value: s.id, child: Text('${s.fullName} (${s.studentCode})', overflow: TextOverflow.ellipsis)),
               ],
@@ -122,25 +123,25 @@ class _SerdScheduleScreenState extends State<SerdScheduleScreen> {
                 if (picked != null) setState(() => _date = picked);
               },
               icon: const Icon(Icons.event_rounded, size: 18),
-              label: Text('الموعد: ${_date.year}/${_date.month}/${_date.day}'),
+              label: Text(fmt(tr(context).serd.when, {'year': _date.year, 'month': _date.month, 'day': _date.day})),
             ),
-            const SectionTitle('الأجزاء المطلوبة'),
+            SectionTitle(tr(context).serd.partsWanted),
             SerdPartsEditor(denominators: data.setup.pickerDenominators, onChanged: (p) => _parts = p),
             const SizedBox(height: 8),
             DropdownButtonFormField<String?>(
               initialValue: _teacherId,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'إسناد إلى معلم'),
+              decoration: InputDecoration(labelText: tr(context).serd.assign),
               items: [
-                const DropdownMenuItem<String?>(value: null, child: Text('مفتوح لأي معلم')),
+                DropdownMenuItem<String?>(value: null, child: Text(tr(context).serd.openToAny)),
                 for (final t in data.teachers) DropdownMenuItem<String?>(value: t.userId, child: Text(t.fullName ?? t.email ?? '—')),
               ],
               onChanged: (v) => setState(() => _teacherId = v),
             ),
             const SizedBox(height: 12),
-            TextField(controller: _notes, maxLines: 2, decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)')),
+            TextField(controller: _notes, maxLines: 2, decoration: InputDecoration(labelText: tr(context).serd.notesOpt)),
             const SizedBox(height: 20),
-            LoadingButton(label: 'جدولة السرد', icon: Icons.event_available_rounded, loading: _saving, onPressed: _save),
+            LoadingButton(label: tr(context).serd.scheduleBtn, icon: Icons.event_available_rounded, loading: _saving, onPressed: _save),
           ],
         ),
       ),

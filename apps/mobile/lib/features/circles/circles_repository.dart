@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/i18n/i18n.dart';
 
-const kCircleStatusLabels = {'active': 'نشطة', 'archived': 'مؤرشفة'};
+Map<String, String> get kCircleStatusLabels => currentStrings.org.circleStatus;
 
 class CircleSummary {
   const CircleSummary({
