@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 List<Map<String, dynamic>> _list(dynamic v) => [for (final e in (v as List? ?? const [])) Map<String, dynamic>.from(e as Map)];
 
@@ -34,7 +35,7 @@ class InsightsRepository {
   final SupabaseClient _client;
 
   Future<List<DueReview>> dueReviews(String orgId, {String? circleId}) async => [
-        for (final r in _list(await _client.rpc('due_reviews', params: {'p_org': orgId, 'p_circle': circleId})))
+        for (final r in _list((await SyncService.instance.raw('ins.dueReviews:$orgId:$circleId', () => _client.rpc('due_reviews', params: {'p_org': orgId, 'p_circle': circleId})))))
           DueReview(
             studentId: r['student_id'] as String,
             studentName: r['student_name'] as String,
@@ -50,7 +51,7 @@ class InsightsRepository {
   Future<Set<String>> checkedInCircles(String orgId) {
     final memo = _checkedInMemo[orgId];
     if (memo != null && DateTime.now().difference(memo.at) < const Duration(seconds: 20)) return memo.future;
-    Future<Set<String>> fetch() async => {for (final r in _list(await _client.rpc('teacher_today_attendance', params: {'p_org': orgId}))) r['circle_id'] as String};
+    Future<Set<String>> fetch() async => {for (final r in _list((await SyncService.instance.raw('ins.checkedInCircles:$orgId', () => _client.rpc('teacher_today_attendance', params: {'p_org': orgId}))))) r['circle_id'] as String};
     final future = fetch();
     _checkedInMemo[orgId] = (at: DateTime.now(), future: future);
     future.catchError((_) {
@@ -66,7 +67,7 @@ class InsightsRepository {
   }
 
   Future<List<StudentNote>> notes(String orgId, String studentId) async => [
-        for (final n in _list(await _client.rpc('list_student_notes', params: {'p_org': orgId, 'p_student': studentId})))
+        for (final n in _list((await SyncService.instance.raw('ins.notes:$orgId:$studentId', () => _client.rpc('list_student_notes', params: {'p_org': orgId, 'p_student': studentId})))))
           StudentNote(id: n['id'] as String, body: n['body'] as String, visibility: n['visibility'] as String, createdAt: n['created_at'] as String, author: n['author'] as String?),
       ];
 
@@ -82,8 +83,8 @@ class InsightsRepository {
     return SearchResults(students: _list(j['students']), teachers: _list(j['teachers']), circles: _list(j['circles']));
   }
 
-  Future<List<Map<String, dynamic>>> dropoutRisk(String orgId) async => _list(await _client.rpc('admin_dropout_risk', params: {'p_org': orgId, 'p_limit': 8}));
+  Future<List<Map<String, dynamic>>> dropoutRisk(String orgId) async => _list((await SyncService.instance.raw('ins.dropoutRisk:$orgId', () => _client.rpc('admin_dropout_risk', params: {'p_org': orgId, 'p_limit': 8}))));
 
   Future<List<Map<String, dynamic>>> teacherPerformance(String orgId) async =>
-      _list(await _client.rpc('admin_teacher_performance', params: {'p_org': orgId, 'p_days': 7}));
+      _list((await SyncService.instance.raw('ins.teacherPerformance:$orgId', () => _client.rpc('admin_teacher_performance', params: {'p_org': orgId, 'p_days': 7}))));
 }

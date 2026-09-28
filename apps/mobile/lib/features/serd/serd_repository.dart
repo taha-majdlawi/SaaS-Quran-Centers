@@ -38,26 +38,26 @@ class SerdRepository {
   List<SerdRow> _rows(dynamic v) => [for (final r in (v as List? ?? const [])) SerdRow.fromJson(_map(r))];
 
   Future<SerdSetup> fetchSetup(String orgId) async =>
-      SerdSetup.fromJson(_map(await _client.rpc('serd_grading_setup', params: {'p_org': orgId})));
+      SerdSetup.fromJson(_map((await SyncService.instance.raw('serd.fetchSetup:$orgId', () => _client.rpc('serd_grading_setup', params: {'p_org': orgId})))));
 
   Future<SerdListPage> adminList(String orgId, {String? status, int page = 1, int pageSize = 30}) async {
-    final data = _map(await _client.rpc('admin_serd_list', params: {
+    final data = _map((await SyncService.instance.raw('serd.adminList:$orgId:$status:$page:$pageSize', () => _client.rpc('admin_serd_list', params: {
       'p_org': orgId,
       'p_status': status,
       'p_limit': pageSize,
       'p_offset': (page - 1) * pageSize,
-    }));
+    }))));
     return SerdListPage(total: (data['total'] as num).toInt(), rows: _rows(data['rows']));
   }
 
   Future<List<SerdRow>> teacherScheduled(String orgId) async =>
-      _rows(await _client.rpc('teacher_scheduled_serd', params: {'p_org': orgId}));
+      _rows((await SyncService.instance.raw('serd.teacherScheduled:$orgId', () => _client.rpc('teacher_scheduled_serd', params: {'p_org': orgId}))));
 
   Future<List<SerdRow>> teacherMy(String orgId) async =>
-      _rows(await _client.rpc('teacher_my_serd', params: {'p_org': orgId, 'p_limit': 60}));
+      _rows((await SyncService.instance.raw('serd.teacherMy:$orgId', () => _client.rpc('teacher_my_serd', params: {'p_org': orgId, 'p_limit': 60}))));
 
   Future<SerdSummary> studentSummary(String orgId, String studentId) async =>
-      SerdSummary.fromJson(_map(await _client.rpc('serd_student_summary', params: {'p_org': orgId, 'p_student': studentId})));
+      SerdSummary.fromJson(_map((await SyncService.instance.raw('serd.studentSummary:$orgId:$studentId', () => _client.rpc('serd_student_summary', params: {'p_org': orgId, 'p_student': studentId})))));
 
   /// Returns the server-computed score. A fresh client_ref makes a retry (bad
   /// network) safe: the server ignores a repeated one.
@@ -123,10 +123,10 @@ class SerdRepository {
 
   Future<void> delete(String sessionId) => _client.rpc('admin_delete_serd', params: {'p_session': sessionId});
 
-  Future<SerdReport> report(String orgId, {DateTime? from, DateTime? to}) async => SerdReport(_map(await _client.rpc(
+  Future<SerdReport> report(String orgId, {DateTime? from, DateTime? to}) async => SerdReport(_map((await SyncService.instance.raw('serd.report:$orgId:$from:$to', () => _client.rpc(
         'admin_serd_report',
         params: {'p_org': orgId, 'p_from': from == null ? null : _dateOnly(from), 'p_to': to == null ? null : _dateOnly(to)},
-      )));
+      )))));
 
   // ---- settings (admin) ----------------------------------------------------
 
@@ -172,8 +172,8 @@ class SerdRepository {
   }
 
   Future<List<({String id, String name})>> fetchStages(String orgId) async {
-    final rows = await _client.from('stages').select('id, name').eq('organization_id', orgId).order('name');
-    return [for (final r in rows as List) (id: r['id'] as String, name: r['name'] as String)];
+    final rows = (await SyncService.instance.raw('serd.fetchStages:$orgId', () => _client.from('stages').select('id, name').eq('organization_id', orgId).order('name'))) as List<dynamic>;
+    return [for (final r in rows) (id: r['id'] as String, name: r['name'] as String)];
   }
 
   static String _dateOnly(DateTime d) =>

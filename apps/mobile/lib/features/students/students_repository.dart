@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 class StudentSummary {
   const StudentSummary({
@@ -62,13 +63,13 @@ class StudentsRepository {
   final SupabaseClient _client;
 
   Future<List<StudentSummary>> fetchStudents(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('stu.fetchStudents:$organizationId', () => _client
         .from('students_profile')
         .select('id, student_code, full_name, status, circles(name)')
         .eq('organization_id', organizationId)
-        .order('full_name');
+        .order('full_name'))) as List<dynamic>;
 
-    return (rows as List).map((row) {
+    return (rows).map((row) {
       final circle = row['circles'] as Map<String, dynamic>?;
       return StudentSummary(
         id: row['id'] as String,
@@ -81,24 +82,24 @@ class StudentsRepository {
   }
 
   Future<List<CircleOption>> fetchCircles(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('stu.fetchCircles:$organizationId', () => _client
         .from('circles')
         .select('id, name, stage_id')
         .eq('organization_id', organizationId)
-        .order('name');
+        .order('name'))) as List<dynamic>;
 
-    return (rows as List)
+    return (rows)
         .map((r) => CircleOption(id: r['id'] as String, name: r['name'] as String, stageId: r['stage_id'] as String?))
         .toList();
   }
 
   Future<List<StageChoice>> fetchStages(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('stu.fetchStages:$organizationId', () => _client
         .from('stages')
         .select('id, name')
         .eq('organization_id', organizationId)
-        .order('sort_order');
-    return (rows as List).map((r) => StageChoice(id: r['id'] as String, name: r['name'] as String)).toList();
+        .order('sort_order'))) as List<dynamic>;
+    return (rows).map((r) => StageChoice(id: r['id'] as String, name: r['name'] as String)).toList();
   }
 
   /// Same RPC apps/web uses to suggest "{stage_code}-{0001}" for a new student.
@@ -108,11 +109,11 @@ class StudentsRepository {
   }
 
   Future<StudentDetail?> fetchStudent(String id) async {
-    final row = await _client
+    final row = (await SyncService.instance.raw('stu.fetchStudent:$id', () => _client
         .from('students_profile')
         .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address')
         .eq('id', id)
-        .maybeSingle();
+        .maybeSingle())) as Map<String, dynamic>?;
 
     if (row == null) return null;
 

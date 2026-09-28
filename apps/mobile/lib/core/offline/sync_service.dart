@@ -45,7 +45,7 @@ class SubmitOutcome {
 /// the connection returns. Reads that were served from the cache raise
 /// [usingCache] so the UI can say so.
 class SyncService extends ChangeNotifier with WidgetsBindingObserver {
-  SyncService(this._store, {String? Function()? currentUser, Stream<dynamic>? connectivity})
+  SyncService(this._store, {String? Function()? currentUser, Stream<dynamic>? connectivity, this.readTimeout = const Duration(seconds: 12)})
       : _currentUser = currentUser ?? (() => null),
         _connectivity = connectivity;
 
@@ -81,7 +81,15 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     _items = await _store.items();
     notifyListeners();
     WidgetsBinding.instance.addObserver(this);
-    _connectivitySub = (_connectivity ?? Connectivity().onConnectivityChanged).listen((_) => flush());
+    _connectivitySub = (_connectivity ?? Connectivity().onConnectivityChanged).listen((r) {
+      _setOnline(_hasNetwork(r));
+      unawaited(flush());
+    });
+    if (_connectivity == null) {
+      try {
+        _setOnline(_hasNetwork(await Connectivity().checkConnectivity()));
+      } catch (_) {}
+    }
     _timer = Timer.periodic(const Duration(seconds: 60), (_) => flush());
     unawaited(flush());
   }
@@ -97,6 +105,11 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) unawaited(flush());
+  }
+
+  static bool _hasNetwork(dynamic result) {
+    final list = result is List ? result : [result];
+    return list.any((r) => r != ConnectivityResult.none);
   }
 
   bool _hasPendingWithKey(String? key, String user) =>
@@ -121,9 +134,8 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     if (_hasPendingWithKey(orderKey, user)) return _enqueue(user, kind, payload, label, orderKey);
 
     try {
-      final data = send != null ? await send() : await handler!(payload);
-      _usingCache = false;
-      notifyListeners();
+      final data = await (send != null ? send() : handler!(payload)).timeout(readTimeout);
+      _markCache(false);
       return SubmitOutcome(queued: false, data: data);
     } catch (e) {
       if (isNetworkError(e)) return _enqueue(user, kind, payload, label, orderKey);
@@ -197,30 +209,69 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
 
   // ---- read cache ------------------------------------------------------------------
 
+  /// How long a read (or an immediate send) may take before the saved copy is
+  /// used / the write is queued instead - a weak signal should not freeze a screen.
+  final Duration readTimeout;
+
+  bool _online = true;
+
+  /// False while the phone reports no network at all (reads then go straight to the cache).
+  bool get online => _online;
+
+  /// What the phone reports about its network (also called by tests).
+  void reportConnectivity(bool value) => _setOnline(value);
+
+  void _setOnline(bool value) {
+    if (_online == value) return;
+    _online = value;
+    notifyListeners();
+    if (value) unawaited(flush());
+  }
+
   /// Fetches JSON-able data from the network and remembers it; when the network
-  /// is down, serves the last copy (and raises [usingCache]). Throws only when
-  /// there is neither.
+  /// is down (or too slow), serves the last copy and raises [usingCache].
+  /// Throws only when there is neither.
   Future<T> cached<T>(String key, Future<dynamic> Function() fetch, T Function(dynamic json) parse) async {
     final user = _currentUser() ?? '';
     final k = '$user|$key';
-    try {
-      final data = await fetch();
-      await _store.writeCache(k, jsonEncode(data));
-      if (_usingCache) {
-        _usingCache = false;
-        notifyListeners();
+    if (!_online) {
+      final saved = await _store.readCache(k);
+      if (saved != null) {
+        _markCache(true);
+        return parse(jsonDecode(saved));
       }
+      // nothing saved yet: still try the network (the connectivity report can lag)
+    }
+    try {
+      final data = await fetch().timeout(readTimeout);
+      await _store.writeCache(k, jsonEncode(data));
+      _markCache(false);
       return parse(data);
     } catch (e) {
       if (!isNetworkError(e)) rethrow;
       final saved = await _store.readCache(k);
       if (saved == null) rethrow;
-      if (!_usingCache) {
-        _usingCache = true;
-        notifyListeners();
-      }
+      _markCache(true);
       return parse(jsonDecode(saved));
     }
+  }
+
+  /// [cached] for data that is used as it comes (maps / lists straight from the server).
+  Future<dynamic> raw(String key, Future<dynamic> Function() fetch) => cached<dynamic>(key, fetch, (j) => j);
+
+  /// The saved copy of [key] without touching the network (null when there is none).
+  Future<dynamic> peek(String key) async {
+    final saved = await _store.readCache('${_currentUser() ?? ''}|$key');
+    return saved == null ? null : jsonDecode(saved);
+  }
+
+  /// Saves [data] as the copy of [key] (used when a local change should show before the next sync).
+  Future<void> remember(String key, dynamic data) => _store.writeCache('${_currentUser() ?? ''}|$key', jsonEncode(data));
+
+  void _markCache(bool value) {
+    if (_usingCache == value) return;
+    _usingCache = value;
+    notifyListeners();
   }
 
   // ---- what is waiting, for screens that show live state ------------------------

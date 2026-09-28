@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 class StageSummary {
   const StageSummary({required this.id, required this.name, required this.sortOrder, this.code});
@@ -17,12 +18,12 @@ class StagesRepository {
   final SupabaseClient _client;
 
   Future<List<StageSummary>> fetchStages(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('stg.fetchStages:$organizationId', () => _client
         .from('stages')
         .select('id, name, code, sort_order')
         .eq('organization_id', organizationId)
-        .order('sort_order');
-    return (rows as List)
+        .order('sort_order'))) as List<dynamic>;
+    return (rows)
         .map((r) => StageSummary(
               id: r['id'] as String,
               name: r['name'] as String,
@@ -33,7 +34,7 @@ class StagesRepository {
   }
 
   Future<StageSummary?> fetchStage(String id) async {
-    final row = await _client.from('stages').select('id, name, code, sort_order').eq('id', id).maybeSingle();
+    final row = (await SyncService.instance.raw('stg.fetchStage:$id', () => _client.from('stages').select('id, name, code, sort_order').eq('id', id).maybeSingle())) as Map<String, dynamic>?;
     if (row == null) return null;
     return StageSummary(
       id: row['id'] as String,

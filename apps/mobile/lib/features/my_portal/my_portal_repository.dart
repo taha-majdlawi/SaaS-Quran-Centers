@@ -7,6 +7,7 @@ import '../engagement/engagement_models.dart' show BadgeProgress;
 import '../engagement/engagement_repository.dart';
 import '../serd/serd_models.dart';
 import '../settings/settings_repository.dart';
+import '../../core/offline/sync_service.dart';
 
 class PortalStudent {
   const PortalStudent({required this.id, required this.fullName, required this.studentCode});
@@ -160,12 +161,12 @@ class MyPortalRepository {
 
   /// Own record for a student, or every linked child for a guardian (RLS).
   Future<List<PortalStudent>> fetchMyStudents(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('portal.fetchMyStudents:$organizationId', () => _client
         .from('students_profile')
         .select('id, student_code, full_name')
         .eq('organization_id', organizationId)
-        .order('full_name');
-    return (rows as List)
+        .order('full_name'))) as List<dynamic>;
+    return (rows)
         .map((r) => PortalStudent(
               id: r['id'] as String,
               fullName: r['full_name'] as String,
@@ -175,10 +176,10 @@ class MyPortalRepository {
   }
 
   Future<PortalDashboard?> fetchDashboard(String organizationId, String studentId) async {
-    final data = await _client.rpc('get_student_dashboard', params: {
+    final data = (await SyncService.instance.raw('portal.fetchDashboard:$organizationId:$studentId', () => _client.rpc('get_student_dashboard', params: {
       'p_org': organizationId,
       'p_student_id': studentId,
-    }) as Map<String, dynamic>;
+    }))) as Map<String, dynamic>;
     if (data['linked'] != true) return null;
 
     final student = data['student'] as Map<String, dynamic>;
@@ -191,7 +192,7 @@ class MyPortalRepository {
     SerdSummary? serd;
     try {
       serd = SerdSummary.fromJson(
-        await _client.rpc('serd_student_summary', params: {'p_org': organizationId, 'p_student': studentId}) as Map<String, dynamic>,
+        (await SyncService.instance.raw('portal.fetchDashboard:$organizationId:$studentId#1', () => _client.rpc('serd_student_summary', params: {'p_org': organizationId, 'p_student': studentId}))) as Map<String, dynamic>,
       );
     } catch (_) {
       serd = null;
@@ -250,10 +251,10 @@ class MyPortalRepository {
   }
 
   Future<RecordDetail> fetchRecordDetail(String organizationId, String studentId) async {
-    final data = await _client.rpc('student_record_detail', params: {
+    final data = (await SyncService.instance.raw('portal.fetchRecordDetail:$organizationId:$studentId', () => _client.rpc('student_record_detail', params: {
       'p_org': organizationId,
       'p_student': studentId,
-    }) as Map<String, dynamic>;
+    }))) as Map<String, dynamic>;
     return RecordDetail(
       monthlyPoints: (data['monthly_points'] as num).toInt(),
       pointsBreakdown: (data['points_breakdown'] as List)

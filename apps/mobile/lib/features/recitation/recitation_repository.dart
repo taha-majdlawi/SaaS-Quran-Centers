@@ -274,13 +274,13 @@ class RecitationRepository {
   }
 
   Future<List<RecitationEntry>> fetchStudentRecitations(String studentId, {int limit = 60}) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('rec.fetchStudentRecitations:$studentId:$limit', () => _client
         .from('daily_achievements')
         .select('id, achievement_type, surah_from, ayah_from, ayah_to, grade, points_awarded, notes, created_at')
         .eq('student_id', studentId)
         .order('created_at', ascending: false)
-        .limit(limit);
-    return (rows as List)
+        .limit(limit))) as List<dynamic>;
+    return (rows)
         .map((r) => RecitationEntry(
               id: r['id'] as String,
               type: r['achievement_type'] as String,
@@ -320,7 +320,7 @@ class RecitationRepository {
   }
 
   Future<TeacherToday> fetchTeacherToday(String orgId) async {
-    final data = await _client.rpc('get_teacher_today', params: {'p_org': orgId}) as Map<String, dynamic>;
+    final data = (await SyncService.instance.raw('rec.fetchTeacherToday:$orgId', () => _client.rpc('get_teacher_today', params: {'p_org': orgId}))) as Map<String, dynamic>;
     return TeacherToday(
       isWorkingDay: data['is_working_day'] as bool? ?? true,
       circles: [

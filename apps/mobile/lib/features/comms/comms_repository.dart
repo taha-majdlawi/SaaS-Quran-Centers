@@ -217,20 +217,20 @@ class CommsRepository {
   // ---- chat ------------------------------------------------------------------
 
   Future<List<ChatThreadRow>> threads(String orgId) async =>
-      [for (final t in _list(await _client.rpc('chat_threads_list', params: {'p_org': orgId}))) ChatThreadRow.fromJson(t)];
+      [for (final t in _list((await SyncService.instance.raw('comms.threads:$orgId', () => _client.rpc('chat_threads_list', params: {'p_org': orgId}))))) ChatThreadRow.fromJson(t)];
 
   Future<List<ChatContact>> contacts(String orgId) async => [
-        for (final c in _list(await _client.rpc('chat_contacts', params: {'p_org': orgId})))
+        for (final c in _list((await SyncService.instance.raw('comms.contacts:$orgId', () => _client.rpc('chat_contacts', params: {'p_org': orgId})))))
           ChatContact(userId: c['user_id'] as String, name: c['name'] as String, role: c['role'] as String, detail: c['detail'] as String?),
       ];
 
-  Future<int> unreadChat(String orgId) async => (await _client.rpc('chat_unread_count', params: {'p_org': orgId}) as num).toInt();
+  Future<int> unreadChat(String orgId) async => ((await SyncService.instance.raw('comms.unreadChat:$orgId', () => _client.rpc('chat_unread_count', params: {'p_org': orgId}))) as num).toInt();
 
   Future<String?> threadWith(String orgId, String otherId) async =>
       await _client.rpc('chat_thread_with', params: {'p_org': orgId, 'p_other': otherId}) as String?;
 
   Future<List<ChatMessage>> messages(String orgId, String threadId) async => [
-        for (final m in _list(await _client.rpc('chat_thread_messages', params: {'p_org': orgId, 'p_thread': threadId, 'p_after': null, 'p_limit': 80})))
+        for (final m in _list((await SyncService.instance.raw('comms.messages:$orgId:$threadId', () => _client.rpc('chat_thread_messages', params: {'p_org': orgId, 'p_thread': threadId, 'p_after': null, 'p_limit': 80})))))
           ChatMessage.fromJson(m),
       ];
 
@@ -304,12 +304,12 @@ class CommsRepository {
       );
 
   Future<int> unreadNotifications(String orgId) async =>
-      (await _client.rpc('unread_notifications_count', params: {'p_org': orgId}) as num).toInt();
+      ((await SyncService.instance.raw('comms.unreadNotifications:$orgId', () => _client.rpc('unread_notifications_count', params: {'p_org': orgId}))) as num).toInt();
 
   Future<void> markAllRead(String orgId) => _client.rpc('mark_notifications_read', params: {'p_org': orgId, 'p_ids': null});
 
   Future<NotificationPrefs> prefs(String orgId) async {
-    final j = await _client.rpc('my_notification_types', params: {'p_org': orgId}) as Map<String, dynamic>;
+    final j = (await SyncService.instance.raw('comms.prefs:$orgId', () => _client.rpc('my_notification_types', params: {'p_org': orgId}))) as Map<String, dynamic>;
     return NotificationPrefs(
       types: [for (final t in _list(j['types'])) NotificationType(key: t['event_key'] as String, name: t['name'] as String, enabled: t['enabled'] as bool? ?? true)],
       quietFrom: j['quiet_from'] as String? ?? '',
@@ -324,7 +324,7 @@ class CommsRepository {
   // ---- announcements ---------------------------------------------------------------
 
   Future<List<Announcement>> announcements(String orgId) async =>
-      [for (final a in _list(await _client.rpc('list_announcements', params: {'p_org': orgId}))) Announcement.fromJson(a)];
+      [for (final a in _list((await SyncService.instance.raw('comms.announcements:$orgId', () => _client.rpc('list_announcements', params: {'p_org': orgId}))))) Announcement.fromJson(a)];
 
   Future<void> saveAnnouncement(
     String orgId, {
@@ -355,7 +355,7 @@ class CommsRepository {
   Future<List<({String id, String name})>> myCircles(String orgId, {required bool isAdmin, required String userId}) async {
     var q = _client.from('circles').select('id, name').eq('organization_id', orgId);
     if (!isAdmin) {
-      final mine = await _client.rpc('my_circle_ids', params: {'p_org': orgId}) as List;
+      final mine = (await SyncService.instance.raw('comms.myCircles:$orgId:$isAdmin:$userId', () => _client.rpc('my_circle_ids', params: {'p_org': orgId}))) as List;
       if (mine.isEmpty) return [];
       q = q.inFilter('id', [for (final m in mine) m['id'] as String]);
     }

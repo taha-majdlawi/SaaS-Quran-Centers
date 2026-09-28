@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart';
 
 Map<String, String> get kCircleStatusLabels => currentStrings.org.circleStatus;
 
@@ -59,15 +60,15 @@ class CirclesRepository {
   final SupabaseClient _client;
 
   Future<List<CircleSummary>> fetchCircles(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('circ.fetchCircles:$organizationId', () => _client
         .from('circles')
         .select('id, name, capacity, status, teacher_id, stages(name)')
         .eq('organization_id', organizationId)
-        .order('name');
+        .order('name'))) as List<dynamic>;
 
     final teacherNames = await _teacherNamesByUserId(organizationId);
 
-    return (rows as List).map((r) {
+    return (rows).map((r) {
       final stage = r['stages'] as Map<String, dynamic>?;
       final teacherId = r['teacher_id'] as String?;
       return CircleSummary(
@@ -82,16 +83,16 @@ class CirclesRepository {
   }
 
   Future<List<StageOption>> fetchStages(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('circ.fetchStages:$organizationId', () => _client
         .from('stages')
         .select('id, name')
         .eq('organization_id', organizationId)
-        .order('sort_order');
-    return (rows as List).map((r) => StageOption(id: r['id'] as String, name: r['name'] as String)).toList();
+        .order('sort_order'))) as List<dynamic>;
+    return (rows).map((r) => StageOption(id: r['id'] as String, name: r['name'] as String)).toList();
   }
 
   Future<List<TeacherOption>> fetchTeachers(String organizationId) async {
-    final rows = await _client.rpc('list_org_members', params: {'org_id': organizationId});
+    final rows = (await SyncService.instance.raw('circ.fetchTeachers:$organizationId', () => _client.rpc('list_org_members', params: {'org_id': organizationId})));
     return (rows as List)
         .where((r) => r['role'] == 'teacher')
         .map((r) => TeacherOption(
@@ -107,11 +108,11 @@ class CirclesRepository {
   }
 
   Future<CircleDetail?> fetchCircle(String id) async {
-    final row = await _client
+    final row = (await SyncService.instance.raw('circ.fetchCircle:$id', () => _client
         .from('circles')
         .select('id, name, capacity, status, stage_id, teacher_id')
         .eq('id', id)
-        .maybeSingle();
+        .maybeSingle())) as Map<String, dynamic>?;
     if (row == null) return null;
     return CircleDetail(
       id: row['id'] as String,
@@ -158,7 +159,7 @@ class CirclesRepository {
 
   /// User ids of the circle's assistant teachers (admin only).
   Future<Set<String>> fetchAssistants(String orgId, String circleId) async {
-    final rows = await _client.rpc('circle_assistants_list', params: {'p_org': orgId}) as List;
+    final rows = (await SyncService.instance.raw('circ.fetchAssistants:$orgId:$circleId', () => _client.rpc('circle_assistants_list', params: {'p_org': orgId}))) as List;
     return {for (final r in rows) if (r['circle_id'] == circleId) r['user_id'] as String};
   }
 

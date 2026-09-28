@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 /// Where the text and recitations come from (both are public sources; nothing
 /// of either is stored in our database or shipped in the app):
@@ -138,7 +139,7 @@ class QuranRepository {
   final SupabaseClient _client;
 
   Future<ReadingState> state(String orgId) async {
-    final j = await _client.rpc('get_reading_state', params: {'p_org': orgId}) as Map<String, dynamic>;
+    final j = (await SyncService.instance.raw('quran.state:$orgId', () => _client.rpc('get_reading_state', params: {'p_org': orgId}))) as Map<String, dynamic>;
     final pos = j['position'] as Map<String, dynamic>?;
     return ReadingState(
       surah: (pos?['surah'] as num?)?.toInt(),

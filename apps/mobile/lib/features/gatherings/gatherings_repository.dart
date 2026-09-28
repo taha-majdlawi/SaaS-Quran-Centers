@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 List<Map<String, dynamic>> _list(dynamic v) => [for (final e in (v as List? ?? const [])) Map<String, dynamic>.from(e as Map)];
 
@@ -10,17 +11,17 @@ class GatheringsRepository {
   // ---- gatherings ----------------------------------------------------------
 
   Future<List<Map<String, dynamic>>> gatherings(String orgId, {required bool admin}) async =>
-      _list(await _client.rpc(admin ? 'admin_list_gatherings' : 'my_gatherings', params: admin ? {'p_org': orgId, 'p_status': null} : {'p_org': orgId}));
+      _list((await SyncService.instance.raw('gath.gatherings:$orgId:$admin', () => _client.rpc(admin ? 'admin_list_gatherings' : 'my_gatherings', params: admin ? {'p_org': orgId, 'p_status': null} : {'p_org': orgId}))));
 
-  Future<Map<String, dynamic>> gatheringDetail(String id) async => Map<String, dynamic>.from(await _client.rpc('gathering_detail', params: {'p_gathering': id}) as Map);
+  Future<Map<String, dynamic>> gatheringDetail(String id) async => Map<String, dynamic>.from((await SyncService.instance.raw('gath.gatheringDetail:$id', () => _client.rpc('gathering_detail', params: {'p_gathering': id}))) as Map);
 
   Future<Map<String, List<Map<String, dynamic>>>> suggestions(String id) async {
-    final rows = _list(await _client.rpc('admin_suggest_gathering_matches', params: {'p_gathering': id}));
+    final rows = _list((await SyncService.instance.raw('gath.suggestions:$id', () => _client.rpc('admin_suggest_gathering_matches', params: {'p_gathering': id}))));
     return {for (final r in rows) r['entry_id'] as String: _list(r['suggestions'])};
   }
 
   Future<List<Map<String, dynamic>>> activityTypes(String orgId) async =>
-      _list(await _client.from('activity_types').select('id, name').eq('organization_id', orgId).order('name'));
+      _list((await SyncService.instance.raw('gath.activityTypes:$orgId', () => _client.from('activity_types').select('id, name').eq('organization_id', orgId).order('name'))) as List<dynamic>);
 
   Future<int> submitGathering(String orgId,
       {required String title, String? typeId, required DateTime date, String? location, String? notes, required List<String> names}) async {
@@ -46,9 +47,9 @@ class GatheringsRepository {
 
   // ---- external recitations ----------------------------------------------------
 
-  Future<List<Map<String, dynamic>>> externals(String orgId, {required bool admin}) async => _list(await _client.rpc(
+  Future<List<Map<String, dynamic>>> externals(String orgId, {required bool admin}) async => _list((await SyncService.instance.raw('gath.externals:$orgId:$admin', () => _client.rpc(
       admin ? 'admin_list_external_recitations' : 'my_external_recitations',
-      params: admin ? {'p_org': orgId, 'p_status': null} : {'p_org': orgId}));
+      params: admin ? {'p_org': orgId, 'p_status': null} : {'p_org': orgId}))));
 
   Future<void> submitExternal(String orgId,
       {required String name, required String type, required int surah, required int from, required int to, required String grade, String? notes, required String clientRef}) =>
@@ -71,7 +72,7 @@ class GatheringsRepository {
   Future<void> rejectExternal(String id, String? reason) => _client.rpc('admin_reject_external_recitation', params: {'p_id': id, 'p_reason': reason});
 
   Future<Map<String, int>> pendingReviews(String orgId) async {
-    final j = Map<String, dynamic>.from(await _client.rpc('admin_pending_reviews', params: {'p_org': orgId}) as Map);
+    final j = Map<String, dynamic>.from((await SyncService.instance.raw('gath.pendingReviews:$orgId', () => _client.rpc('admin_pending_reviews', params: {'p_org': orgId}))) as Map);
     return {'gatherings': (j['gatherings'] as num).toInt(), 'external': (j['external'] as num).toInt()};
   }
 }

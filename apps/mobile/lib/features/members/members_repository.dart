@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart';
 
 Map<String, String> get kMemberRoleLabels => currentStrings.labels.roles;
 Map<String, String> get kMemberStatusLabels => currentStrings.mem.status;
@@ -44,7 +45,7 @@ class MembersRepository {
   final SupabaseClient _client;
 
   Future<List<MemberRow>> fetchMembers(String organizationId) async {
-    final rows = await _client.rpc('list_org_members', params: {'org_id': organizationId});
+    final rows = (await SyncService.instance.raw('mem.fetchMembers:$organizationId', () => _client.rpc('list_org_members', params: {'org_id': organizationId})));
     return (rows as List)
         .map((r) => MemberRow(
               id: r['id'] as String,
@@ -59,7 +60,7 @@ class MembersRepository {
   }
 
   Future<List<PendingInvitation>> fetchPendingInvitations(String organizationId) async {
-    final rows = await _client.rpc('list_org_invitations', params: {'org_id': organizationId});
+    final rows = (await SyncService.instance.raw('mem.fetchPendingInvitations:$organizationId', () => _client.rpc('list_org_invitations', params: {'org_id': organizationId})));
     return (rows as List)
         .where((r) => r['accepted_at'] == null)
         .map((r) => PendingInvitation(email: r['email'] as String, role: r['role'] as String, token: r['token'] as String))
@@ -89,7 +90,7 @@ class MembersRepository {
 
   /// Is this member's account a viewing (read-only) one? (admin only)
   Future<bool> isViewer(String orgId, String userId) async {
-    final rows = await _client.rpc('list_account_flags', params: {'p_org': orgId}) as List;
+    final rows = (await SyncService.instance.raw('mem.isViewer:$orgId:$userId', () => _client.rpc('list_account_flags', params: {'p_org': orgId}))) as List;
     return rows.any((r) => r['user_id'] == userId);
   }
 

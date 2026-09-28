@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 class WeekdayRow {
   WeekdayRow({required this.dow, required this.label, required this.isWorking, required this.isSerdDay});
@@ -50,12 +51,12 @@ class SettingsRepository {
   }
 
   Future<List<WeekdayRow>> fetchWeekdays(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('set.fetchWeekdays:$organizationId', () => _client
         .from('center_weekdays')
         .select('dow, label, is_working, is_serd_day')
         .eq('organization_id', organizationId)
-        .order('dow');
-    return (rows as List)
+        .order('dow'))) as List<dynamic>;
+    return (rows)
         .map((r) => WeekdayRow(
               dow: r['dow'] as int,
               label: r['label'] as String,
@@ -80,11 +81,11 @@ class SettingsRepository {
   }
 
   Future<Map<String, String>> fetchCenterSettings(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('set.fetchCenterSettings:$organizationId', () => _client
         .from('organization_settings')
         .select('key, value')
-        .eq('organization_id', organizationId);
-    return {for (final r in rows as List) r['key'] as String: (r['value'] as String?) ?? ''};
+        .eq('organization_id', organizationId))) as List<dynamic>;
+    return {for (final r in rows) r['key'] as String: (r['value'] as String?) ?? ''};
   }
 
   Future<void> saveCenterSettings(String organizationId, Map<String, String> values) {

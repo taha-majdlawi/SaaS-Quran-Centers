@@ -90,7 +90,7 @@ class CertificatesRepository {
   Future<void> revoke(String orgId, String id, String? reason) => _client.rpc('revoke_certificate', params: {'p_org': orgId, 'p_id': id, 'p_reason': reason});
 
   Future<CertificateSettings> settings(String orgId) async =>
-      CertificateSettings.fromJson((await _client.rpc('get_certificate_settings', params: {'p_org': orgId})) as Map<String, dynamic>);
+      CertificateSettings.fromJson(((await SyncService.instance.raw('cert.settings:$orgId', () => _client.rpc('get_certificate_settings', params: {'p_org': orgId})))) as Map<String, dynamic>);
 
   Future<void> saveSettings(String orgId, {required String signerName, required String signerTitle, required String footer, required String serdTitle, required bool autoSerd}) {
     return _client.rpc('set_certificate_settings', params: {

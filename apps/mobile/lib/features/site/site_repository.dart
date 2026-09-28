@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 class SiteSettingsData {
   const SiteSettingsData({required this.publicSiteEnabled, this.heroTitle, this.heroBody, this.contactEmail});
@@ -16,11 +17,11 @@ class SiteRepository {
   final SupabaseClient _client;
 
   Future<SiteSettingsData?> fetchSettings(String organizationId) async {
-    final row = await _client
+    final row = (await SyncService.instance.raw('site.fetchSettings:$organizationId', () => _client
         .from('site_settings')
         .select('public_site_enabled, hero_title, hero_body, contact_email')
         .eq('organization_id', organizationId)
-        .maybeSingle();
+        .maybeSingle())) as Map<String, dynamic>?;
     if (row == null) return null;
     return SiteSettingsData(
       publicSiteEnabled: row['public_site_enabled'] as bool,

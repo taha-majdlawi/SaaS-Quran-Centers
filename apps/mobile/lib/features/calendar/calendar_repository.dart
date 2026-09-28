@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'calendar_models.dart';
+import '../../core/offline/sync_service.dart';
 
 /// Mirrors apps/web's calendar/actions.ts. Every rule (audience, seats,
 /// deadline, waiting list, consent, permissions) lives in SQL RPCs, so the
@@ -12,20 +13,20 @@ class CalendarRepository {
 
   Map<String, dynamic> _map(dynamic v) => v as Map<String, dynamic>;
 
-  Future<CalRange> fetchRange(String orgId, DateTime from, DateTime to) async => CalRange.fromJson(_map(await _client.rpc(
+  Future<CalRange> fetchRange(String orgId, DateTime from, DateTime to) async => CalRange.fromJson(_map((await SyncService.instance.raw('cal.fetchRange:$orgId:$from:$to', () => _client.rpc(
         'calendar_range',
         params: {'p_org': orgId, 'p_from': isoDate(from), 'p_to': isoDate(to), 'p_circle': null},
-      )));
+      )))));
 
-  Future<int> reminderHours(String orgId) async => (await _client.rpc('get_reminder_hours', params: {'p_org': orgId})) as int;
+  Future<int> reminderHours(String orgId) async => ((await SyncService.instance.raw('cal.reminderHours:$orgId', () => _client.rpc('get_reminder_hours', params: {'p_org': orgId})))) as int;
 
   Future<void> setReminderHours(String orgId, int hours) => _client.rpc('set_reminder_hours', params: {'p_org': orgId, 'p_hours': hours});
 
   Future<CalEntry> fetchDetails(String orgId, String entryId) async =>
-      CalEntry.fromJson(_map(await _client.rpc('calendar_entry_details', params: {'p_org': orgId, 'p_entry': entryId})));
+      CalEntry.fromJson(_map((await SyncService.instance.raw('cal.fetchDetails:$orgId:$entryId', () => _client.rpc('calendar_entry_details', params: {'p_org': orgId, 'p_entry': entryId})))));
 
   Future<List<Candidate>> fetchCandidates(String orgId, String entryId) async {
-    final rows = await _client.rpc('entry_candidates', params: {'p_org': orgId, 'p_entry': entryId}) as List;
+    final rows = (await SyncService.instance.raw('cal.fetchCandidates:$orgId:$entryId', () => _client.rpc('entry_candidates', params: {'p_org': orgId, 'p_entry': entryId}))) as List;
     return [
       for (final r in rows)
         if (r['registered'] != true)
@@ -39,13 +40,13 @@ class CalendarRepository {
   }
 
   Future<List<({String id, String name})>> fetchCircles(String orgId) async {
-    final rows = await _client.from('circles').select('id, name').eq('organization_id', orgId).order('name');
-    return [for (final r in rows as List) (id: r['id'] as String, name: r['name'] as String)];
+    final rows = (await SyncService.instance.raw('cal.fetchCircles:$orgId', () => _client.from('circles').select('id, name').eq('organization_id', orgId).order('name'))) as List<dynamic>;
+    return [for (final r in rows) (id: r['id'] as String, name: r['name'] as String)];
   }
 
   Future<List<({String id, String name})>> fetchStages(String orgId) async {
-    final rows = await _client.from('stages').select('id, name').eq('organization_id', orgId).order('name');
-    return [for (final r in rows as List) (id: r['id'] as String, name: r['name'] as String)];
+    final rows = (await SyncService.instance.raw('cal.fetchStages:$orgId', () => _client.from('stages').select('id, name').eq('organization_id', orgId).order('name'))) as List<dynamic>;
+    return [for (final r in rows) (id: r['id'] as String, name: r['name'] as String)];
   }
 
   // ---- admin: entries & types ----------------------------------------------

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'engagement_models.dart';
+import '../../core/offline/sync_service.dart';
 
 /// Mirrors apps/web's market / badges / circle-challenges actions. Every rule
 /// (balance, stock, conversion rate, who may award, ranking) lives in SQL RPCs.
@@ -18,7 +19,7 @@ class EngagementRepository {
   // ---- market: family ------------------------------------------------------
 
   Future<StudentMarket> studentMarket(String orgId, String studentId) async =>
-      StudentMarket.fromJson(_map(await _client.rpc('get_student_market', params: {'p_org': orgId, 'p_student': studentId})));
+      StudentMarket.fromJson(_map((await SyncService.instance.raw('eng.studentMarket:$orgId:$studentId', () => _client.rpc('get_student_market', params: {'p_org': orgId, 'p_student': studentId})))));
 
   Future<void> buy(String orgId, String studentId, String itemId) =>
       _client.rpc('purchase_market_item', params: {'p_org': orgId, 'p_student': studentId, 'p_item': itemId});
@@ -28,10 +29,10 @@ class EngagementRepository {
   // ---- market: admin -------------------------------------------------------
 
   Future<MarketOverview> marketOverview(String orgId) async =>
-      MarketOverview.fromJson(_map(await _client.rpc('admin_market_overview', params: {'p_org': orgId})));
+      MarketOverview.fromJson(_map((await SyncService.instance.raw('eng.marketOverview:$orgId', () => _client.rpc('admin_market_overview', params: {'p_org': orgId})))));
 
   Future<List<WalletRow>> marketWallets(String orgId) async {
-    final rows = _list(await _client.rpc('admin_market_wallets', params: {'p_org': orgId}));
+    final rows = _list((await SyncService.instance.raw('eng.marketWallets:$orgId', () => _client.rpc('admin_market_wallets', params: {'p_org': orgId}))));
     return [
       for (final r in rows)
         WalletRow(studentId: r['student_id'] as String, name: r['student_name'] as String, code: (r['student_code'] as String?) ?? '', wallet: Wallet.fromJson(r)),
@@ -73,13 +74,13 @@ class EngagementRepository {
   // ---- badges --------------------------------------------------------------
 
   Future<List<BadgeProgress>> studentBadges(String orgId, String studentId) async => [
-        for (final b in _list(await _client.rpc('get_student_badges', params: {'p_org': orgId, 'p_student': studentId})))
+        for (final b in _list((await SyncService.instance.raw('eng.studentBadges:$orgId:$studentId', () => _client.rpc('get_student_badges', params: {'p_org': orgId, 'p_student': studentId})))))
           BadgeProgress.fromJson(b),
       ];
 
   Future<List<BadgeDef>> badgeDefs(String orgId) async {
-    final rows = await _client.from('badges').select('*').eq('organization_id', orgId).order('sort_order').order('name');
-    return [for (final r in rows as List) BadgeDef.fromJson(r as Map<String, dynamic>)];
+    final rows = (await SyncService.instance.raw('eng.badgeDefs:$orgId', () => _client.from('badges').select('*').eq('organization_id', orgId).order('sort_order').order('name'))) as List<dynamic>;
+    return [for (final r in rows) BadgeDef.fromJson(r as Map<String, dynamic>)];
   }
 
   Future<void> saveBadge(
@@ -121,7 +122,7 @@ class EngagementRepository {
       (await _client.rpc('award_badge_to_circle', params: {'p_badge': badgeId, 'p_circle': circleId}) as num).toInt();
 
   Future<List<BadgeHolder>> badgeHolders(String orgId, String badgeId) async => [
-        for (final h in _list(await _client.rpc('badge_holders', params: {'p_org': orgId, 'p_badge': badgeId})))
+        for (final h in _list((await SyncService.instance.raw('eng.badgeHolders:$orgId:$badgeId', () => _client.rpc('badge_holders', params: {'p_org': orgId, 'p_badge': badgeId})))))
           BadgeHolder(
             studentId: h['student_id'] as String,
             name: h['student_name'] as String,
@@ -135,24 +136,24 @@ class EngagementRepository {
   Future<void> evaluateAll(String orgId) => _client.rpc('evaluate_org_badges', params: {'p_org': orgId});
 
   Future<Map<String, String>> gradeLabels(String orgId) async {
-    final rows = await _client.from('recitation_grades').select('key, label').eq('organization_id', orgId).order('sort_order');
-    return {for (final r in rows as List) r['key'] as String: r['label'] as String};
+    final rows = (await SyncService.instance.raw('eng.gradeLabels:$orgId', () => _client.from('recitation_grades').select('key, label').eq('organization_id', orgId).order('sort_order'))) as List<dynamic>;
+    return {for (final r in rows) r['key'] as String: r['label'] as String};
   }
 
   Future<List<({String id, String name})>> students(String orgId) async {
-    final rows = await _client.from('students_profile').select('id, full_name').eq('organization_id', orgId).order('full_name');
-    return [for (final r in rows as List) (id: r['id'] as String, name: r['full_name'] as String)];
+    final rows = (await SyncService.instance.raw('eng.students:$orgId', () => _client.from('students_profile').select('id, full_name').eq('organization_id', orgId).order('full_name'))) as List<dynamic>;
+    return [for (final r in rows) (id: r['id'] as String, name: r['full_name'] as String)];
   }
 
   Future<List<({String id, String name})>> circles(String orgId) async {
-    final rows = await _client.from('circles').select('id, name').eq('organization_id', orgId).order('name');
-    return [for (final r in rows as List) (id: r['id'] as String, name: r['name'] as String)];
+    final rows = (await SyncService.instance.raw('eng.circles:$orgId', () => _client.from('circles').select('id, name').eq('organization_id', orgId).order('name'))) as List<dynamic>;
+    return [for (final r in rows) (id: r['id'] as String, name: r['name'] as String)];
   }
 
   // ---- leaderboard & challenges ---------------------------------------------
 
   Future<Leaderboard> leaderboard(String orgId) async {
-    final j = _map(await _client.rpc('get_circle_leaderboard', params: {'p_org': orgId, 'p_circle': null}));
+    final j = _map((await SyncService.instance.raw('eng.leaderboard:$orgId', () => _client.rpc('get_circle_leaderboard', params: {'p_org': orgId, 'p_circle': null}))));
     return Leaderboard(
       enabled: j['enabled'] as bool? ?? false,
       circleName: j['circle_name'] as String?,
@@ -164,10 +165,10 @@ class EngagementRepository {
   }
 
   Future<List<Challenge>> challenges(String orgId) async =>
-      [for (final c in _list(await _client.rpc('list_challenges', params: {'p_org': orgId}))) Challenge.fromJson(c)];
+      [for (final c in _list((await SyncService.instance.raw('eng.challenges:$orgId', () => _client.rpc('list_challenges', params: {'p_org': orgId}))))) Challenge.fromJson(c)];
 
   Future<ChallengeBoard> challengeBoard(String orgId, String id) async {
-    final j = _map(await _client.rpc('challenge_board', params: {'p_org': orgId, 'p_challenge': id}));
+    final j = _map((await SyncService.instance.raw('eng.challengeBoard:$orgId:$id', () => _client.rpc('challenge_board', params: {'p_org': orgId, 'p_challenge': id}))));
     return ChallengeBoard(
       challenge: Challenge.fromJson(j),
       rows: [

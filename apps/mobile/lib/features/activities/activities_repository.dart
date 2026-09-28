@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 class ActivitySummary {
   const ActivitySummary({required this.id, required this.title, this.description, this.scheduledAt});
@@ -15,12 +16,12 @@ class ActivitiesRepository {
   final SupabaseClient _client;
 
   Future<List<ActivitySummary>> fetchActivities(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('act.fetchActivities:$organizationId', () => _client
         .from('activities')
         .select('id, title, description, scheduled_at')
         .eq('organization_id', organizationId)
-        .order('scheduled_at', ascending: false);
-    return (rows as List)
+        .order('scheduled_at', ascending: false))) as List<dynamic>;
+    return (rows)
         .map((r) => ActivitySummary(
               id: r['id'] as String,
               title: r['title'] as String,
@@ -31,11 +32,11 @@ class ActivitiesRepository {
   }
 
   Future<ActivitySummary?> fetchActivity(String id) async {
-    final row = await _client
+    final row = (await SyncService.instance.raw('act.fetchActivity:$id', () => _client
         .from('activities')
         .select('id, title, description, scheduled_at')
         .eq('id', id)
-        .maybeSingle();
+        .maybeSingle())) as Map<String, dynamic>?;
     if (row == null) return null;
     return ActivitySummary(
       id: row['id'] as String,

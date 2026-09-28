@@ -125,4 +125,57 @@ void main() {
     expect(sync.pendingCount, 0);
     expect(await store.items(), isEmpty);
   });
+
+  group('read cache', () {
+    test('network first, the saved copy when the network fails', () async {
+      var calls = 0;
+      Future<dynamic> fetch() async {
+        calls++;
+        if (!online) throw const SocketException('offline');
+        return [
+          {'id': 's1', 'name': 'سالم'},
+        ];
+      }
+
+      expect(await sync.raw('students', fetch), [
+        {'id': 's1', 'name': 'سالم'},
+      ]);
+      expect(sync.usingCache, isFalse);
+
+      online = false;
+      final again = await sync.raw('students', fetch);
+      expect(again, [
+        {'id': 's1', 'name': 'سالم'},
+      ]);
+      expect(sync.usingCache, isTrue);
+      expect(calls, 2);
+    });
+
+    test('with no network at all the cache answers without waiting on a request', () async {
+      await sync.raw('grades', () async => [1, 2, 3]);
+      sync.reportConnectivity(false);
+      var called = false;
+      final r = await sync.raw('grades', () async {
+        called = true;
+        return [9];
+      });
+      expect(r, [1, 2, 3]);
+      expect(called, isFalse);
+      sync.reportConnectivity(true);
+    });
+
+    test('a slow request falls back to the saved copy', () async {
+      final quick = SyncService(store, currentUser: () => user, connectivity: const Stream.empty(), readTimeout: const Duration(milliseconds: 50));
+      await quick.raw('today', () async => {'n': 1});
+      final r = await quick.raw('today', () => Future.delayed(const Duration(seconds: 1), () => {'n': 2}));
+      expect(r, {'n': 1});
+    });
+
+    test('each account has its own copies', () async {
+      await sync.raw('mine', () async => 'a');
+      user = 'teacher-b';
+      online = false;
+      await expectLater(sync.raw('mine', () async => throw const SocketException('offline')), throwsA(isA<SocketException>()));
+    });
+  });
 }

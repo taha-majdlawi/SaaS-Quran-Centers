@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/offline/sync_service.dart';
 
 class GradeRow {
   GradeRow({
@@ -27,12 +28,12 @@ class PointsRepository {
   final SupabaseClient _client;
 
   Future<List<GradeRow>> fetchGrades(String organizationId) async {
-    final rows = await _client
+    final rows = (await SyncService.instance.raw('pts.fetchGrades:$organizationId', () => _client
         .from('recitation_grades')
         .select('key, label, points, sort_order, is_active')
         .eq('organization_id', organizationId)
-        .order('sort_order');
-    return (rows as List)
+        .order('sort_order'))) as List<dynamic>;
+    return (rows)
         .map((r) => GradeRow(
               key: r['key'] as String,
               label: r['label'] as String,
