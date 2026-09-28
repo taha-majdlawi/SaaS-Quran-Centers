@@ -77,6 +77,9 @@ abstract class OfflineStore {
 
   Future<String?> readCache(String key);
   Future<void> writeCache(String key, String json);
+
+  /// Drops saved copies not refreshed for [age] (a student who left, an old month).
+  Future<void> pruneCache(Duration age);
 }
 
 /// sqflite-backed store (one small database on the phone).
@@ -137,6 +140,12 @@ class SqliteOfflineStore implements OfflineStore {
   }
 
   @override
+  Future<void> pruneCache(Duration age) async {
+    final cutoff = DateTime.now().subtract(age).toIso8601String();
+    await (await _database).delete('read_cache', where: 'updated_at < ?', whereArgs: [cutoff]);
+  }
+
+  @override
   Future<void> writeCache(String key, String json) async => (await _database).insert(
         'read_cache',
         {'key': key, 'json': json, 'updated_at': DateTime.now().toIso8601String()},
@@ -176,6 +185,9 @@ class MemoryOfflineStore implements OfflineStore {
 
   @override
   Future<String?> readCache(String key) async => _cache[key];
+
+  @override
+  Future<void> pruneCache(Duration age) async {}
 
   @override
   Future<void> writeCache(String key, String json) async => _cache[key] = json;

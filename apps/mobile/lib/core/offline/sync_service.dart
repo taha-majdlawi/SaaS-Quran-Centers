@@ -79,6 +79,10 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> start() async {
     _items = await _store.items();
+    // keep the phone's copy lean: what nobody opened for 45 days goes
+    try {
+      await _store.pruneCache(const Duration(days: 45));
+    } catch (_) {}
     notifyListeners();
     WidgetsBinding.instance.addObserver(this);
     _connectivitySub = (_connectivity ?? Connectivity().onConnectivityChanged).listen((r) {
