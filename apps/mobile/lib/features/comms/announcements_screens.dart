@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/auth/auth_controller.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -41,7 +43,7 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('الإعلانات')),
+        leading: DrawerLeading(),title: Text(tr(context).ann.title)),
       drawer: isStaff ? const AppDrawer() : null,
       floatingActionButton: canWrite
           ? FloatingActionButton.extended(
@@ -50,7 +52,7 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
                 if (mounted) setState(() => _future = _repository.announcements(_orgId!));
               },
               icon: const Icon(Icons.add_rounded),
-              label: const Text('إعلان جديد'),
+              label: Text(tr(context).ann.newTitle),
             )
           : null,
       body: _future == null
@@ -61,7 +63,7 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
               builder: (context, list) => RefreshIndicator(
                 onRefresh: () async => setState(() => _future = _repository.announcements(_orgId!)),
                 child: list.isEmpty
-                    ? ListView(children: const [SizedBox(height: 80), EmptyState(icon: Icons.campaign_outlined, title: 'لا توجد إعلانات')])
+                    ? ListView(children: [SizedBox(height: 80), EmptyState(icon: Icons.campaign_outlined, title: tr(context).ann.none)])
                     : ListView(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                         children: [
@@ -72,7 +74,7 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
                                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                   Row(children: [
                                     Expanded(child: Text('${a.pinned ? '📌 ' : ''}${a.title}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5))),
-                                    if (a.draft) const StatusChip(label: 'مسودة', color: Colors.amber),
+                                    if (a.draft) StatusChip(label: tr(context).ann.draft, color: Colors.amber),
                                   ]),
                                   const SizedBox(height: 6),
                                   Text(a.body),
@@ -95,7 +97,7 @@ class _AnnouncementsListScreenState extends State<AnnouncementsListScreen> {
                                           await context.push('/announcements/${a.id}', extra: a);
                                           if (mounted) setState(() => _future = _repository.announcements(_orgId!));
                                         },
-                                        child: const Text('تعديل'),
+                                        child: Text(tr(context).common.edit),
                                       ),
                                   ]),
                                 ]),
@@ -145,7 +147,7 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty || _body.text.trim().isEmpty) {
-      setState(() => _error = 'العنوان والنص مطلوبان');
+      setState(() => _error = tr(context).ann.required);
       return;
     }
     setState(() {
@@ -176,11 +178,11 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف الإعلان'),
-        content: const Text('متأكد؟'),
+        title: Text(tr(context).ann.deleteTitle),
+        content: Text(tr(context).ann.sure),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حذف')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.delete)),
         ],
       ),
     );
@@ -194,7 +196,7 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
     final admin = _isAdmin;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.announcement == null ? 'إعلان جديد' : 'تعديل إعلان'),
+        title: Text(widget.announcement == null ? tr(context).ann.newTitle : tr(context).ann.editTitle),
         actions: [if (widget.announcement != null) IconButton(icon: const Icon(Icons.delete_outline_rounded), onPressed: _delete)],
       ),
       body: AsyncBody<List<({String id, String name})>>(
@@ -203,13 +205,13 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             if (_error != null) MessageBanner(message: _error!),
-            TextField(controller: _title, decoration: const InputDecoration(labelText: 'العنوان')),
+            TextField(controller: _title, decoration: InputDecoration(labelText: tr(context).ann.fieldTitle)),
             const SizedBox(height: 12),
-            TextField(controller: _body, maxLines: 6, decoration: const InputDecoration(labelText: 'النص')),
+            TextField(controller: _body, maxLines: 6, decoration: InputDecoration(labelText: tr(context).ann.fieldBody)),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: !admin && _audience == 'teachers' ? 'guardians' : _audience,
-              decoration: const InputDecoration(labelText: 'الجمهور'),
+              decoration: InputDecoration(labelText: tr(context).ann.audience),
               items: [for (final e in kAudienceLabels.entries) if (admin || e.key != 'teachers') DropdownMenuItem(value: e.key, child: Text(e.value))],
               onChanged: (v) => setState(() => _audience = v ?? 'all'),
             ),
@@ -217,23 +219,23 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
             DropdownButtonFormField<String?>(
               initialValue: _circleId,
               isExpanded: true,
-              decoration: InputDecoration(labelText: admin ? 'حلقة محددة (اختياري)' : 'حلقتك'),
+              decoration: InputDecoration(labelText: admin ? tr(context).ann.circleOptional : tr(context).ann.yourCircle),
               items: [
-                if (admin) const DropdownMenuItem<String?>(value: null, child: Text('كل الحلقات')),
+                if (admin) DropdownMenuItem<String?>(value: null, child: Text(tr(context).ann.allCircles)),
                 for (final c in circles) DropdownMenuItem<String?>(value: c.id, child: Text(c.name)),
               ],
               onChanged: (v) => setState(() => _circleId = v),
             ),
-            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('تثبيت في الأعلى'), value: _pinned, onChanged: (v) => setState(() => _pinned = v)),
+            SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).ann.pin), value: _pinned, onChanged: (v) => setState(() => _pinned = v)),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('نشر الآن'),
-              subtitle: const Text('يصل إشعار للجمهور عند أول نشر'),
+              title: Text(tr(context).ann.publish),
+              subtitle: Text(tr(context).ann.publishHint),
               value: _publish,
               onChanged: (v) => setState(() => _publish = v),
             ),
             const SizedBox(height: 12),
-            LoadingButton(label: 'حفظ', loading: _saving, onPressed: _save),
+            LoadingButton(label: tr(context).common.save, loading: _saving, onPressed: _save),
           ],
         ),
       ),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -16,7 +18,7 @@ import 'certificates_repository.dart';
 
 String _day(DateTime d) => '${d.toLocal().day}/${d.toLocal().month}/${d.toLocal().year}';
 
-String _msg(Object e) => e is PostgrestException ? e.message : (e is StateError ? e.message : 'تعذّر تنفيذ العملية');
+String _msg(Object e) => e is PostgrestException ? e.message : (e is StateError ? e.message : currentStrings.cert.failed);
 
 // ---------------------------------------------------------------------------
 // List: staff (issue / revoke / template) and the family portal (own only)
@@ -57,35 +59,35 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
           padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
           child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('إصدار شهادة', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+              Text(tr(context).cert.issueTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: studentId,
-                decoration: const InputDecoration(labelText: 'الطالب'),
+                decoration: InputDecoration(labelText: tr(context).cert.student),
                 items: [for (final s in students) DropdownMenuItem(value: s.id, child: Text('${s.fullName} — ${s.studentCode}', overflow: TextOverflow.ellipsis))],
                 onChanged: (v) => setSheet(() => studentId = v),
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 initialValue: kind,
-                decoration: const InputDecoration(labelText: 'النوع'),
+                decoration: InputDecoration(labelText: tr(context).cert.kind),
                 items: [for (final e in kCertificateKindLabels.entries.where((e) => e.key != 'serd')) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setSheet(() => kind = v ?? kind),
               ),
               const SizedBox(height: 10),
-              TextField(controller: title, maxLength: 120, decoration: const InputDecoration(labelText: 'عنوان الشهادة', hintText: 'شهادة تفوّق')),
-              TextField(controller: description, maxLength: 500, maxLines: 2, decoration: const InputDecoration(labelText: 'النص (اختياري)')),
+              TextField(controller: title, maxLength: 120, decoration: InputDecoration(labelText: tr(context).cert.fieldTitle, hintText: tr(context).cert.titleHint)),
+              TextField(controller: description, maxLength: 500, maxLines: 2, decoration: InputDecoration(labelText: tr(context).cert.fieldText)),
               const SizedBox(height: 8),
               FilledButton(
                 onPressed: () {
                   if (studentId == null || title.text.trim().length < 2) return;
                   Navigator.pop(context, true);
                 },
-                child: const Text('إصدار الشهادة'),
+                child: Text(tr(context).cert.issue),
               ),
               const SizedBox(height: 4),
-              Text('شهادة السرد تُصدر من شاشة السرد بعد الاعتماد.', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+              Text(tr(context).cert.serdHint, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
             ]),
           ),
         ),
@@ -95,7 +97,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
     try {
       await _repository.issue(orgId: _orgId!, studentId: studentId!, kind: kind, title: title.text.trim(), description: description.text.trim().isEmpty ? null : description.text.trim());
       if (mounted) {
-        _toast('صدرت الشهادة');
+        _toast(currentStrings.cert.issued);
         _reload();
       }
     } catch (e) {
@@ -108,11 +110,11 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('سحب الشهادة'),
-        content: TextField(controller: reason, decoration: const InputDecoration(labelText: 'السبب (اختياري)')),
+        title: Text(tr(context).cert.revokeTitle),
+        content: TextField(controller: reason, decoration: InputDecoration(labelText: tr(context).cert.reason)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('سحب', style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).cert.revoke, style: TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -120,7 +122,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
     try {
       await _repository.revoke(_orgId!, c.id, reason.text.trim().isEmpty ? null : reason.text.trim());
       if (mounted) {
-        _toast('سُحبت الشهادة');
+        _toast(currentStrings.cert.revoked);
         _reload();
       }
     } catch (e) {
@@ -150,15 +152,15 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
           padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
           child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text('تخصيص الشهادة لمركزك', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-              TextField(controller: name, maxLength: 80, decoration: const InputDecoration(labelText: 'اسم الموقِّع')),
-              TextField(controller: role, maxLength: 80, decoration: const InputDecoration(labelText: 'صفته', hintText: 'مدير المركز')),
-              TextField(controller: footer, maxLength: 200, decoration: const InputDecoration(labelText: 'عبارة أسفل الشهادة')),
-              TextField(controller: serd, maxLength: 120, decoration: const InputDecoration(labelText: 'عنوان شهادة السرد')),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('إصدار شهادة السرد تلقائيًا عند اعتماد جلسة ناجحة'), value: auto, onChanged: (v) => setSheet(() => auto = v)),
-              Text('التغييرات تسري على الشهادات القادمة فقط؛ ما صدر سابقًا يبقى كما هو.', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+              Text(tr(context).cert.customizeTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+              TextField(controller: name, maxLength: 80, decoration: InputDecoration(labelText: tr(context).cert.signer)),
+              TextField(controller: role, maxLength: 80, decoration: InputDecoration(labelText: tr(context).cert.signerRole, hintText: tr(context).cert.signerRoleHint)),
+              TextField(controller: footer, maxLength: 200, decoration: InputDecoration(labelText: tr(context).cert.footer)),
+              TextField(controller: serd, maxLength: 120, decoration: InputDecoration(labelText: tr(context).cert.serdTitle)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).cert.autoSerd), value: auto, onChanged: (v) => setSheet(() => auto = v)),
+              Text(tr(context).cert.futureOnly, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
               const SizedBox(height: 8),
-              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+              FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.save)),
             ]),
           ),
         ),
@@ -167,7 +169,7 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
     if (ok != true) return;
     try {
       await _repository.saveSettings(_orgId!, signerName: name.text, signerTitle: role.text, footer: footer.text, serdTitle: serd.text, autoSerd: auto);
-      if (mounted) _toast('حُفظت الإعدادات');
+      if (mounted) _toast(currentStrings.cert.saved);
     } catch (e) {
       if (mounted) _toast(_msg(e));
     }
@@ -185,18 +187,18 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const DrawerLeading(),
-        title: const Text('الشهادات'),
-        actions: [if (!widget.portal && _isAdmin) IconButton(tooltip: 'تخصيص الشهادة', onPressed: _settings, icon: const Icon(Icons.tune_rounded))],
+        title: Text(tr(context).cert.title),
+        actions: [if (!widget.portal && _isAdmin) IconButton(tooltip: tr(context).cert.customize, onPressed: _settings, icon: const Icon(Icons.tune_rounded))],
       ),
       drawer: widget.portal ? null : const AppDrawer(),
-      floatingActionButton: widget.portal ? null : FloatingActionButton.extended(onPressed: _issue, icon: const Icon(Icons.add_rounded), label: const Text('شهادة')),
+      floatingActionButton: widget.portal ? null : FloatingActionButton.extended(onPressed: _issue, icon: Icon(Icons.add_rounded), label: Text(tr(context).cert.add)),
       body: FutureBuilder<CertificateList>(
         future: _future,
         builder: (context, snap) {
           if (snap.hasError) return ErrorState(onRetry: _reload);
           final data = snap.data;
           if (data == null) return const Center(child: CircularProgressIndicator());
-          if (data.rows.isEmpty) return const EmptyState(icon: Icons.workspace_premium_rounded, title: 'لا توجد شهادات بعد');
+          if (data.rows.isEmpty) return EmptyState(icon: Icons.workspace_premium_rounded, title: tr(context).cert.none);
           return RefreshIndicator(
             onRefresh: () async {
               _reload();
@@ -208,9 +210,9 @@ class _CertificatesScreenState extends State<CertificatesScreen> {
                   child: ListTile(
                     leading: Icon(Icons.workspace_premium_rounded, color: c.revoked ? Colors.grey : Theme.of(context).colorScheme.primary, size: 32),
                     title: Text(c.title, style: TextStyle(fontWeight: FontWeight.w700, decoration: c.revoked ? TextDecoration.lineThrough : null)),
-                    subtitle: Text('${c.recipient} · ${kCertificateKindLabels[c.kind] ?? c.kind} · ${_day(c.issuedAt)}${c.revoked ? ' · ملغاة' : ''}'),
+                    subtitle: Text('${c.recipient} · ${kCertificateKindLabels[c.kind] ?? c.kind} · ${_day(c.issuedAt)}${c.revoked ? tr(context).cert.revokedMark : ''}'),
                     trailing: (!widget.portal && data.canIssue && !c.revoked)
-                        ? IconButton(tooltip: 'سحب', icon: const Icon(Icons.block_rounded, color: Colors.red), onPressed: () => _revoke(c))
+                        ? IconButton(tooltip: tr(context).cert.revoke, icon: const Icon(Icons.block_rounded, color: Colors.red), onPressed: () => _revoke(c))
                         : null,
                     onTap: () => context.push(widget.portal ? '/my/certificates/${c.id}' : '/certificates/${c.id}'),
                   ),
@@ -248,21 +250,23 @@ class _CertificateScreenState extends State<CertificateScreen> {
     _future ??= _repository.get(org.id, widget.certificateId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الشهادة')),
+      appBar: AppBar(title: Text(tr(context).cert.one)),
       body: FutureBuilder<Map<String, dynamic>?>(
         future: _future,
         builder: (context, snap) {
           if (snap.hasError) return ErrorState(onRetry: () => setState(() => _future = _repository.get(org.id, widget.certificateId)));
           if (snap.connectionState != ConnectionState.done) return const Center(child: CircularProgressIndicator());
           final c = snap.data;
-          if (c == null) return const EmptyState(icon: Icons.search_off_rounded, title: 'الشهادة غير موجودة');
+          if (c == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context).cert.notFound);
           final center = c['center'] as Map<String, dynamic>;
           final color = parseBrandColor(center['primary_color'] as String?);
           final revoked = c['revoked_at'] != null;
           final verify = 'https://${center['slug']}.bustan-alquran.com/verify/${c['serial']}';
 
           return ListView(padding: const EdgeInsets.all(16), children: [
-            Container(
+            Directionality(
+              textDirection: TextDirection.rtl,
+              child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: Colors.white, border: Border.all(color: color, width: 6), borderRadius: BorderRadius.circular(4)),
               child: Stack(children: [
@@ -307,17 +311,18 @@ class _CertificateScreenState extends State<CertificateScreen> {
                 ]),
               ]),
             ),
+            ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: verify));
-                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نُسخ رابط التحقق')));
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).cert.linkCopied)));
               },
               icon: const Icon(Icons.link_rounded),
-              label: const Text('نسخ رابط التحقق من الشهادة'),
+              label: Text(tr(context).cert.copyLink),
             ),
             const SizedBox(height: 6),
-            Text('للحصول على نسخة PDF مطبوعة افتح الشهادة من المتصفح واختر «طباعة / حفظ PDF».', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+            Text(tr(context).cert.pdfHint, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
           ]);
         },
       ),

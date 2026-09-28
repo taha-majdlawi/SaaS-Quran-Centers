@@ -11,7 +11,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 ///   * audio - everyayah.com, one MP3 per ayah.
 /// Credit is shown in the reader. The audio base URL lives in [Reciter.ayahUrl]
 /// so it can be swapped in one place.
-const kQuranTextCredit = 'نص المصحف: مشروع تنزيل (tanzil.net) · التلاوات: everyayah.com';
 
 class Reciter {
   const Reciter(this.id, this.name);

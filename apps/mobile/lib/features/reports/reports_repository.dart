@@ -1,12 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-const kReportTypeLabels = {
-  'new_memorization': 'حفظ جديد',
-  'recent_review': 'مراجعة قريبة',
-  'distant_review': 'مراجعة بعيدة',
-};
+import '../../core/i18n/i18n.dart';
 
-const kReportAttendanceLabels = {'present': 'حاضر', 'late': 'متأخر', 'absent': 'غائب', 'excused': 'مستأذن'};
+
+Map<String, String> get kReportTypeLabels => currentStrings.labels.recitationType;
+
+// the staff report says مستأذن (the portal's record says مُعذَر)
+const _reportAttendanceAr = {'present': 'حاضر', 'late': 'متأخر', 'absent': 'غائب', 'excused': 'مستأذن'};
+Map<String, String> get kReportAttendanceLabels => currentStrings.isAr ? _reportAttendanceAr : currentStrings.labels.attendance;
 
 String reportDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';

@@ -3,6 +3,8 @@
 /// previews things - the same split the web uses (lib/serd/format.ts).
 library;
 
+import '../../core/i18n/i18n.dart';
+
 const kJuzNames = [
   'آلم', 'سيقول', 'تلك الرسل', 'لن تنالوا', 'والمحصنات', 'لا يحب الله', 'وإذا سمعوا', 'ولو أننا', 'قال الملأ',
   'واعلموا', 'يعتذرون', 'وما من دابة', 'وما أبرئ', 'ربما', 'سبحان الذي', 'قال ألم', 'اقترب للناس', 'قد أفلح',
@@ -13,14 +15,15 @@ const kJuzNames = [
 const kSerdDenNames = {1: 'الجزء كاملاً', 2: 'النصف', 4: 'الربع', 8: 'الثُمن'};
 const _ordinals = ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن'];
 
-const kSerdStatusLabels = {
-  'scheduled': 'مجدول',
-  'submitted': 'بانتظار الاعتماد',
-  'approved': 'معتمد',
-  'rejected': 'مرفوض',
-};
+Map<String, String> get kSerdStatusLabels => currentStrings.labels.serdStatus;
 
-String serdPortionLabel(int den, int index) => den <= 1 ? '' : '${kSerdDenNames[den] ?? ''} ${_ordinals[index - 1]}';
+/// 'النصف الأول' / '1st half' (the Arabic names stay as they were for the staff screens).
+String serdPortionLabel(int den, int index) {
+  if (den <= 1) return '';
+  final s = currentStrings;
+  if (s.isAr) return '${kSerdDenNames[den] ?? ''} ${_ordinals[index - 1]}';
+  return fmt(s.labels.portion, {'den': s.labels.portionDen['$den'] ?? '', 'ord': s.labels.portionOrd[index - 1]});
+}
 
 /// '3.5' - how much Quran an amount of eighths comes to.
 String serdJuzEquivalent(int eighths) {
@@ -47,13 +50,14 @@ class SerdPart {
   Map<String, dynamic> toJson() => {'juz': juz, 'den': den, 'index': index};
 
   String get label {
-    final base = 'جزء $juz${juzName.isEmpty ? '' : ' — $juzName'}';
+    // juz names are Arabic words: only shown in Arabic
+    final base = '${fmt(currentStrings.labels.juz, {'n': juz})}${juzName.isEmpty || !currentStrings.isAr ? '' : ' — $juzName'}';
     final portion = serdPortionLabel(den, index);
     return portion.isEmpty ? base : '$base ($portion)';
   }
 }
 
-String serdPartsLabel(List<SerdPart> parts) => parts.map((p) => p.label).join('، ');
+String serdPartsLabel(List<SerdPart> parts) => parts.map((p) => p.label).join(currentStrings.common.listSep);
 
 class SerdError {
   const SerdError({required this.name, required this.count, required this.deducted});

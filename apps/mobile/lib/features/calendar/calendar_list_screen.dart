@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -49,7 +51,7 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
     try {
       current = await _repository.reminderHours(orgId);
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(content: Text('تعذّر تحميل الإعداد')));
+      messenger.showSnackBar(SnackBar(content: Text(currentStrings.cal.settingLoadFailed)));
       return;
     }
     if (!mounted) return;
@@ -57,24 +59,24 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('تذكير المسجّلين'),
+        title: Text(tr(context).cal.reminderTitle),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'قبل بدء الفعالية بـ (ساعة) — 0 = إيقاف', helperText: 'يصل التذكير لأولياء أمور الطلاب المسجّلين وللطلاب'),
+          decoration: InputDecoration(labelText: tr(context).cal.reminderHours, helperText: tr(context).cal.reminderHelp),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('حفظ')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.save)),
         ],
       ),
     );
     if (ok != true) return;
     try {
       await _repository.setReminderHours(orgId, int.tryParse(controller.text.trim()) ?? 0);
-      messenger.showSnackBar(const SnackBar(content: Text('حُفظ إعداد التذكير')));
+      messenger.showSnackBar(SnackBar(content: Text(currentStrings.cal.reminderSaved)));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : 'تعذّر الحفظ')));
+      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : currentStrings.cal.saveFailed)));
     }
   }
 
@@ -89,13 +91,13 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const DrawerLeading(),
-        title: const Text('التقويم والفعاليات'),
+        title: Text(tr(context).cal.title),
         actions: [
           if (isAdmin)
-            IconButton(tooltip: 'التذكير قبل الفعالية', icon: const Icon(Icons.notifications_active_rounded), onPressed: _editReminder),
+            IconButton(tooltip: tr(context).cal.reminderTip, icon: const Icon(Icons.notifications_active_rounded), onPressed: _editReminder),
           if (isAdmin)
             IconButton(
-              tooltip: 'أنواع العناصر',
+              tooltip: tr(context).cal.types,
               icon: const Icon(Icons.tune_rounded),
               onPressed: () async {
                 await context.push('/calendar/types');
@@ -112,7 +114,7 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
                 if (mounted) setState(() => _load(_loadedForOrgId!));
               },
               icon: const Icon(Icons.add_rounded),
-              label: const Text('إضافة'),
+              label: Text(tr(context).cal.add),
             )
           : null,
       body: _future == null
@@ -128,9 +130,9 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(onPressed: () => _shift(-1), icon: const Icon(Icons.chevron_right_rounded)),
+                        IconButton(onPressed: () => _shift(-1), icon: Icon(Directionality.of(context) == TextDirection.rtl ? Icons.chevron_right_rounded : Icons.chevron_left_rounded)),
                         Text('${kMonthNames[_month.month - 1]} ${_month.year}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                        IconButton(onPressed: () => _shift(1), icon: const Icon(Icons.chevron_left_rounded)),
+                        IconButton(onPressed: () => _shift(1), icon: Icon(forwardChevron(context))),
                       ],
                     ),
                     _MonthGrid(
@@ -142,11 +144,11 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
-                        'أيام الدوام: ${range.workingDays} من ${range.totalDays}  ·  الرمادي = غير دوام  ·  «سرد» = يوم سرد',
+                        fmt(tr(context).cal.legend, {'working': range.workingDays, 'total': range.totalDays}),
                         style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                       ),
                     ),
-                    SectionTitle(_selectedDay == null ? 'عناصر هذا الشهر' : 'عناصر يوم $_selectedDay'),
+                    SectionTitle(_selectedDay == null ? tr(context).cal.thisMonth : fmt(tr(context).cal.onDay, {'day': _selectedDay})),
                     ..._entryList(range),
                   ],
                 ),
@@ -159,7 +161,7 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
     final entries = _selectedDay == null ? range.entries : range.entries.where((e) => e.covers(_selectedDay!)).toList();
     final serd = _selectedDay == null ? range.serd : range.serd.where((s) => s.date == _selectedDay).toList();
     if (entries.isEmpty && serd.isEmpty) {
-      return const [Padding(padding: EdgeInsets.all(24), child: Center(child: Text('لا يوجد شيء')))];
+      return [Padding(padding: EdgeInsets.all(24), child: Center(child: Text(tr(context).cal.nothing)))];
     }
     return [
       for (final e in entries)
@@ -177,10 +179,10 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
                 [
                   formatDayRange(e.startDate, e.endDate),
                   e.typeName,
-                  if (e.supportsRegistration) e.myRegistered ? 'أنت مسجّل ✓' : '${e.taken}${e.capacity == null ? '' : '/${e.capacity}'} مسجّل',
+                  if (e.supportsRegistration) e.myRegistered ? tr(context).cal.youRegistered : fmt(tr(context).cal.takenShort, {'n': '${e.taken}${e.capacity == null ? '' : '/${e.capacity}'}'}),
                 ].join('  ·  '),
               ),
-              trailing: e.isWorkingDay ? null : const StatusChip(label: 'غير دوام', color: Colors.grey),
+              trailing: e.isWorkingDay ? null : StatusChip(label: tr(context).cal.dayOff, color: Colors.grey),
             ),
           ),
         ),
@@ -188,7 +190,7 @@ class _CalendarListScreenState extends State<CalendarListScreen> {
         Card(
           child: ListTile(
             leading: const Icon(Icons.menu_book_rounded, color: Colors.purple),
-            title: Text('سرد مجدول: ${s.studentName}'),
+            title: Text(fmt(tr(context).cal.serdScheduled, {'name': s.studentName})),
             subtitle: Text(formatDayRange(s.date, s.date)),
           ),
         ),
@@ -221,7 +223,7 @@ class _MonthGrid extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Column(children: [
-            Text(w?.label ?? '$dow', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            Text((tr(context).isAr ? w?.label : null) ?? tr(context).labels.weekdays[dow], style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
             if (w?.isSerdDay ?? false) const Text('●', style: TextStyle(fontSize: 8, color: Colors.purple)),
           ]),
         ),
@@ -270,7 +272,7 @@ class _MonthGrid extends StatelessWidget {
               children: [
                 for (final e in entries.take(3))
                   Container(width: 6, height: 6, margin: const EdgeInsets.symmetric(horizontal: 1), decoration: BoxDecoration(color: e.typeColor, shape: BoxShape.circle)),
-                if (serd) const Text('سرد', style: TextStyle(fontSize: 8, color: Colors.purple)),
+                if (serd) Text(tr(context).cal.serd, style: TextStyle(fontSize: 8, color: Colors.purple)),
               ],
             ),
           ],

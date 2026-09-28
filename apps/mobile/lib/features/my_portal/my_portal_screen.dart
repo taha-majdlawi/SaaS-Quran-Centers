@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
 import '../../core/data/quran_data.dart';
+import '../../core/i18n/i18n.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -70,18 +71,20 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadStudents(org.id));
     }
     final isGuardian = tenant.active?.role == OrgRole.guardian;
+    final t = tr(context);
+    final p = t.portal;
 
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [
           if (org != null) OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34),
           const SizedBox(width: 10),
-          Flexible(child: Text(org?.name ?? 'بستان القرآن', overflow: TextOverflow.ellipsis)),
+          Flexible(child: Text(org?.name ?? t.common.appName, overflow: TextOverflow.ellipsis)),
         ]),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),
-            tooltip: 'تسجيل خروج',
+            tooltip: t.common.signOut,
             onPressed: () => context.read<AuthController>().signOut(),
           ),
         ],
@@ -89,10 +92,10 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'الرئيسية'),
-          NavigationDestination(icon: Icon(Icons.history_edu_outlined), selectedIcon: Icon(Icons.history_edu_rounded), label: 'سجلّي'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_rounded), label: 'حسابي'),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home_rounded), label: p.tabHome),
+          NavigationDestination(icon: const Icon(Icons.history_edu_outlined), selectedIcon: const Icon(Icons.history_edu_rounded), label: p.tabRecord),
+          NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person_rounded), label: p.tabAccount),
         ],
       ),
       body: _loadingStudents
@@ -102,8 +105,8 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
               : _students.isEmpty
                   ? EmptyState(
                       icon: Icons.link_off_rounded,
-                      title: isGuardian ? 'لا يوجد أبناء مرتبطون بحسابك' : 'حسابك غير مرتبط بملف طالب',
-                      subtitle: 'تواصل مع إدارة المركز لربط الحساب',
+                      title: isGuardian ? p.noChildren : p.notLinked,
+                      subtitle: p.askAdmin,
                     )
                   : Column(
                       children: [
@@ -116,7 +119,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                               children: [
                                 for (final s in _students)
                                   Padding(
-                                    padding: const EdgeInsets.only(left: 8),
+                                    padding: const EdgeInsetsDirectional.only(end: 8),
                                     child: ChoiceChip(
                                       label: Text(s.fullName),
                                       selected: s.id == _studentId,
@@ -135,7 +138,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                             onRetry: _reload,
                             builder: (context, data) {
                               if (data == null) {
-                                return const EmptyState(icon: Icons.link_off_rounded, title: 'تعذّر إيجاد ملف الطالب');
+                                return EmptyState(icon: Icons.link_off_rounded, title: p.studentMissing);
                               }
                               return RefreshIndicator(
                                 onRefresh: () async => _reload(),
@@ -161,13 +164,15 @@ class _HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final t = tr(context);
+    final p = t.portal;
     final firstName = data.fullName.split(' ').first;
     final change = data.thisWeek - data.lastWeek;
     final weekText = change > 0
-        ? 'أفضل من الأسبوع الماضي (+$change)'
+        ? fmt(p.weekBetter, {'n': change})
         : change < 0
-            ? 'أقل من الأسبوع الماضي ($change)'
-            : 'ثابت مقارنة بالأسبوع الماضي';
+            ? fmt(p.weekWorse, {'n': change})
+            : p.weekSame;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -176,8 +181,8 @@ class _HomeTab extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
               colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, 0.35)!],
             ),
             borderRadius: BorderRadius.circular(20),
@@ -188,12 +193,12 @@ class _HomeTab extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('مرحبًا، $firstName', style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
+                    Text(fmt(p.hello, {'name': firstName}), style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 6),
                     Text(
                       data.circleName == null
-                          ? 'لم تُسند إلى حلقة بعد'
-                          : '${data.circleName}${data.teacherName == null ? '' : '  ·  الشيخ ${data.teacherName}'}',
+                          ? p.noCircle
+                          : '${data.circleName}${data.teacherName == null ? '' : '  ·  ${fmt(p.sheikh, {'name': data.teacherName})}'}',
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
                     ),
                   ],
@@ -214,7 +219,7 @@ class _HomeTab extends StatelessWidget {
           ),
         ),
         AnnouncementsPreviewCard(announcements: data.announcements),
-        const SectionTitle('تقدّم الحفظ'),
+        SectionTitle(p.progressTitle),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -224,7 +229,7 @@ class _HomeTab extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${data.totalParts} من 30 جزءًا', style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(fmt(p.partsOf30, {'n': data.totalParts}), style: const TextStyle(fontWeight: FontWeight.w700)),
                     Text('${data.progress.toStringAsFixed(data.progress % 1 == 0 ? 0 : 1)}%'),
                   ],
                 ),
@@ -239,7 +244,7 @@ class _HomeTab extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(12)),
-                    child: Text('خطتك القادمة: ${data.nextPlan}'),
+                    child: Text(fmt(p.nextPlan, {'plan': data.nextPlan})),
                   ),
                 ],
               ],
@@ -247,7 +252,7 @@ class _HomeTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        NextGoalsCard(goals: computeGoals(data.totalParts, data.totalPoints)),
+        NextGoalsCard(goals: computeGoals(data.totalParts, data.totalPoints, p)),
         const SizedBox(height: 12),
         UpcomingEventsCard(entries: data.upcoming),
         const SizedBox(height: 12),
@@ -256,9 +261,9 @@ class _HomeTab extends StatelessWidget {
           final today = computeTodayPrayers(data.prayerSettings);
           return today == null
               ? const SizedBox.shrink()
-              : Padding(padding: const EdgeInsets.only(top: 12), child: PrayerTimesCard(today: today));
+              : Padding(padding: const EdgeInsets.only(top: 12), child: PrayerTimesCard(today: today, names: p.prayers));
         }),
-        const SectionTitle('إحصائياتك'),
+        SectionTitle(p.statsTitle),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -267,18 +272,18 @@ class _HomeTab extends StatelessWidget {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           children: [
-            _Stat(icon: Icons.menu_book_rounded, label: 'آيات هذا الأسبوع', value: '${data.ayahsThisWeek}', color: Colors.blue),
+            _Stat(icon: Icons.menu_book_rounded, label: p.statAyahs, value: '${data.ayahsThisWeek}', color: Colors.blue),
             _Stat(
               icon: Icons.how_to_reg_rounded,
-              label: 'الحضور الأسبوعي',
+              label: p.statAttendance,
               value: data.weeklyAttendance == null ? '—' : '${data.weeklyAttendance}%',
               color: Colors.green,
             ),
-            _Stat(icon: Icons.mic_rounded, label: 'إجمالي التسميعات', value: '${data.totalRecitations}', color: Colors.purple),
-            _Stat(icon: Icons.schedule_rounded, label: 'آخر تسميع', value: formatDate(data.lastRecitationAt), color: Colors.orange),
+            _Stat(icon: Icons.mic_rounded, label: p.statTotal, value: '${data.totalRecitations}', color: Colors.purple),
+            _Stat(icon: Icons.schedule_rounded, label: p.statLast, value: formatDate(data.lastRecitationAt), color: Colors.orange),
           ],
         ),
-        const SectionTitle('أسبوعك'),
+        SectionTitle(p.weekTitle),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -292,7 +297,7 @@ class _HomeTab extends StatelessWidget {
                     size: 18,
                   ),
                   const SizedBox(width: 6),
-                  Text('${data.thisWeek} تسميعات هذا الأسبوع', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(fmt(p.weekCount, {'n': data.thisWeek}), style: const TextStyle(fontWeight: FontWeight.w700)),
                 ]),
                 Text(weekText, style: TextStyle(color: Colors.grey.shade600)),
                 const Divider(height: 24),
@@ -300,7 +305,7 @@ class _HomeTab extends StatelessWidget {
                   children: [
                     Icon(Icons.local_fire_department_rounded, color: Colors.deepOrange.shade400),
                     const SizedBox(width: 8),
-                    Text('سلسلتك الحالية: ${data.currentStreak} يوم  ·  أطول سلسلة: ${data.longestStreak}'),
+                    Expanded(child: Text(fmt(p.streak, {'n': data.currentStreak, 'best': data.longestStreak}))),
                   ],
                 ),
                 if (data.currentStreak > 0 && data.currentStreak == data.longestStreak) ...[
@@ -309,7 +314,7 @@ class _HomeTab extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(color: Colors.deepOrange.shade50, borderRadius: BorderRadius.circular(10)),
-                    child: const Text('🎉 رقمك الشخصي الجديد في السلسلة!', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700)),
+                    child: Text(p.streakRecord, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ],
               ],
@@ -323,9 +328,9 @@ class _HomeTab extends StatelessWidget {
         Card(
           child: ListTile(
             leading: const Icon(Icons.calendar_month_rounded),
-            title: const Text('التقويم والفعاليات', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: const Text('الإجازات والرحلات والمسابقات والتسجيل فيها'),
-            trailing: const Icon(Icons.chevron_left_rounded),
+            title: Text(p.calendar, style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(p.calendarSub),
+            trailing: Icon(forwardChevron(context)),
             onTap: () => context.push('/calendar'),
           ),
         ),
@@ -335,7 +340,7 @@ class _HomeTab extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.chat_bubble_rounded),
-                title: const Text('المحادثات', style: TextStyle(fontWeight: FontWeight.w700)),
+                title: Text(p.chat, style: const TextStyle(fontWeight: FontWeight.w700)),
                 onTap: () => context.push('/chat'),
               ),
             ),
@@ -345,7 +350,7 @@ class _HomeTab extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.campaign_rounded),
-                title: const Text('الإعلانات', style: TextStyle(fontWeight: FontWeight.w700)),
+                title: Text(p.announcementsLink, style: const TextStyle(fontWeight: FontWeight.w700)),
                 onTap: () => context.push('/announcements'),
               ),
             ),
@@ -355,8 +360,8 @@ class _HomeTab extends StatelessWidget {
         Card(
           child: ListTile(
             leading: const Icon(Icons.insights_rounded),
-            title: const Text('التقرير', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: const Text('التسميع والحضور والسرد لفترة تختارها'),
+            title: Text(p.report, style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(p.reportSub),
             onTap: () => context.push('/my/report'),
           ),
         ),
@@ -364,30 +369,30 @@ class _HomeTab extends StatelessWidget {
         Card(
           child: ListTile(
             leading: const Icon(Icons.workspace_premium_rounded),
-            title: const Text('الشهادات', style: TextStyle(fontWeight: FontWeight.w700)),
+            title: Text(p.certificates, style: const TextStyle(fontWeight: FontWeight.w700)),
             onTap: () => context.push('/my/certificates'),
           ),
         ),
         Card(
           child: ListTile(
             leading: const Icon(Icons.auto_stories_rounded),
-            title: const Text('المصحف', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: const Text('قراءة واستماع وعلامات'),
+            title: Text(p.quran, style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(p.quranSub),
             onTap: () => context.push('/quran'),
           ),
         ),
         Card(
           child: ListTile(
             leading: const Icon(Icons.privacy_tip_rounded),
-            title: const Text('حسابي وبياناتي', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: const Text('طلب حذف الحساب والبيانات'),
+            title: Text(p.privacy, style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(p.privacySub),
             onTap: () => context.push('/my/privacy'),
           ),
         ),
         Card(
           child: ListTile(
             leading: const Icon(Icons.notifications_rounded),
-            title: const Text('الإشعارات', style: TextStyle(fontWeight: FontWeight.w700)),
+            title: Text(p.notifications, style: const TextStyle(fontWeight: FontWeight.w700)),
             onTap: () => context.push('/notifications'),
           ),
         ),
@@ -397,7 +402,7 @@ class _HomeTab extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.emoji_events_rounded),
-                title: const Text('الشارات', style: TextStyle(fontWeight: FontWeight.w700)),
+                title: Text(p.badges, style: const TextStyle(fontWeight: FontWeight.w700)),
                 onTap: () => context.push('/my/badges'),
               ),
             ),
@@ -407,17 +412,17 @@ class _HomeTab extends StatelessWidget {
             child: Card(
               child: ListTile(
                 leading: const Icon(Icons.storefront_rounded),
-                title: const Text('السوق', style: TextStyle(fontWeight: FontWeight.w700)),
+                title: Text(p.market, style: const TextStyle(fontWeight: FontWeight.w700)),
                 onTap: () => context.push('/my/market'),
               ),
             ),
           ),
         ]),
-        const SectionTitle('السرد القرآني'),
+        SectionTitle(p.serd),
         SerdSummaryCard(summary: data.serd),
-        const SectionTitle('آخر التسميعات'),
+        SectionTitle(p.recent),
         if (data.recent.isEmpty)
-          const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد تسميعات بعد'))
+          Padding(padding: const EdgeInsets.all(12), child: Text(p.noRecitations))
         else
           for (final r in data.recent.take(5)) RecitationTile(r: r),
       ],
@@ -547,6 +552,7 @@ class _RecordTabState extends State<_RecordTab> {
 
   @override
   Widget build(BuildContext context) {
+    final t = tr(context);
     return AsyncBody<_RecordData>(
       future: _future,
       onRetry: () => setState(() => _future = _load()),
@@ -562,10 +568,10 @@ class _RecordTabState extends State<_RecordTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: SegmentedButton<int>(
-                segments: const [
-                  ButtonSegment(value: 0, label: Text('التسميع')),
-                  ButtonSegment(value: 1, label: Text('الحضور')),
-                  ButtonSegment(value: 2, label: Text('السرد')),
+                segments: [
+                  ButtonSegment(value: 0, label: Text(t.record.tabRecitations)),
+                  ButtonSegment(value: 1, label: Text(t.record.tabAttendance)),
+                  ButtonSegment(value: 2, label: Text(t.record.tabSerd)),
                 ],
                 selected: {_segment},
                 onSelectionChanged: (s) => setState(() => _segment = s.first),
@@ -586,7 +592,7 @@ class _RecordTabState extends State<_RecordTab> {
                       PointsBreakdownCard(rows: rd.detail.pointsBreakdown, gradeLabels: rd.gradeLabels),
                       const SizedBox(height: 12),
                       if (rd.detail.recitations.isEmpty)
-                        const Padding(padding: EdgeInsets.all(24), child: EmptyState(icon: Icons.history_edu_outlined, title: 'لا يوجد تسميعات بعد'))
+                        Padding(padding: const EdgeInsets.all(24), child: EmptyState(icon: Icons.history_edu_outlined, title: t.portal.noRecitations))
                       else
                         RecitationsSearchList(recitations: rd.detail.recitations),
                     ],
@@ -608,6 +614,7 @@ class _AccountTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = tr(context).portal;
     Widget row(IconData icon, String label, String? value) => ListTile(
           leading: Icon(icon),
           title: Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
@@ -624,16 +631,44 @@ class _AccountTab extends StatelessWidget {
         Card(
           child: Column(
             children: [
-              row(Icons.tag_rounded, 'رقم الطالب', data.studentCode),
-              row(Icons.groups_rounded, 'الحلقة', data.circleName),
-              row(Icons.stairs_rounded, 'المرحلة', data.stageName),
-              row(Icons.school_rounded, 'الشيخ', data.teacherName),
-              row(Icons.phone_outlined, 'الجوال', data.phone),
-              row(Icons.home_outlined, 'العنوان', data.address),
+              row(Icons.tag_rounded, p.studentCode, data.studentCode),
+              row(Icons.groups_rounded, p.circle, data.circleName),
+              row(Icons.stairs_rounded, p.stage, data.stageName),
+              row(Icons.school_rounded, p.teacher, data.teacherName),
+              row(Icons.phone_outlined, p.phone, data.phone),
+              row(Icons.home_outlined, p.address, data.address),
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        const LanguagePicker(),
       ],
+    );
+  }
+}
+
+/// The app language (students and guardians; staff screens stay Arabic).
+class LanguagePicker extends StatelessWidget {
+  const LanguagePicker({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = context.watch<LocaleController>();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(children: [
+          const Icon(Icons.translate_rounded),
+          const SizedBox(width: 12),
+          Expanded(child: Text(tr(context).portal.languageHint, style: const TextStyle(fontWeight: FontWeight.w700))),
+          SegmentedButton<String>(
+            segments: [for (final l in kLocales) ButtonSegment(value: l, label: Text(kLocaleNames[l]!))],
+            selected: {locale.chosen},
+            showSelectedIcon: false,
+            onSelectionChanged: (s) => locale.choose(s.first),
+          ),
+        ]),
+      ),
     );
   }
 }

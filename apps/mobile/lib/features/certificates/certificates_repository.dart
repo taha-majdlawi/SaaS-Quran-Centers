@@ -1,14 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/i18n/i18n.dart';
 import '../../core/offline/sync_service.dart';
 
-const kCertificateKindLabels = {
-  'serd': 'السرد القرآني',
-  'memorization': 'إتمام حفظ',
-  'excellence': 'تفوّق',
-  'attendance': 'انتظام',
-  'custom': 'مخصّصة',
-};
+Map<String, String> get kCertificateKindLabels => currentStrings.labels.certKind;
 
 class CertificateRow {
   const CertificateRow({required this.id, required this.serial, required this.kind, required this.title, required this.recipient, required this.issuedAt, required this.revoked});

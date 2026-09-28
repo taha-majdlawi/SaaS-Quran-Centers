@@ -6,13 +6,14 @@
 import 'package:flutter/material.dart';
 
 import '../../core/data/quran_data.dart';
+import '../../core/i18n/i18n.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import '../recitation/recitation_repository.dart' show kAchievementTypes;
 import 'my_portal_repository.dart';
 import 'my_portal_screen.dart' show RecitationTile;
 
-const kAttendanceLabels = {'present': 'حاضر', 'absent': 'غائب', 'late': 'متأخر', 'excused': 'مُعذَر'};
+Map<String, String> get kAttendanceLabels => currentStrings.labels.attendance;
 const kAttendanceColors = {
   'present': Colors.green,
   'absent': Colors.red,
@@ -35,17 +36,18 @@ class MonthlySummaryCard extends StatelessWidget {
             Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 11.5), textAlign: TextAlign.center),
           ]),
         );
+    final t = tr(context).record;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(children: [
-          const Align(alignment: Alignment.centerRight, child: Text('هذا الشهر', style: TextStyle(fontWeight: FontWeight.w800))),
+          Align(alignment: AlignmentDirectional.centerStart, child: Text(t.thisMonth, style: const TextStyle(fontWeight: FontWeight.w800))),
           const SizedBox(height: 10),
           Row(children: [
-            cell('تسميعات', '$recitations'),
-            cell('آيات', '$ayahs'),
-            cell('حضور', attendanceRate == null ? '—' : '${(attendanceRate! * 100).round()}%'),
-            cell('نقاط', '$points'),
+            cell(t.recitations, '$recitations'),
+            cell(t.ayahs, '$ayahs'),
+            cell(t.attendance, attendanceRate == null ? '—' : '${(attendanceRate! * 100).round()}%'),
+            cell(t.points, '$points'),
           ]),
         ]),
       ),
@@ -67,7 +69,7 @@ class PointsBreakdownCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('تفصيل النقاط', style: TextStyle(fontWeight: FontWeight.w800)),
+            Text(tr(context).record.breakdown, style: const TextStyle(fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
             for (final r in rows)
               Padding(
@@ -90,7 +92,7 @@ class AttendanceListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (rows.isEmpty) return const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد سجل حضور بعد'));
+    if (rows.isEmpty) return Padding(padding: const EdgeInsets.all(12), child: Text(tr(context).record.noAttendance));
     return Column(
       children: [
         for (final r in rows)
@@ -144,24 +146,25 @@ class _RecitationsSearchListState extends State<RecitationsSearchList> {
       if (_type != null && r.type != _type) return false;
       if (_grade != null && r.gradeLabel != _grade) return false;
       if (_query.trim().isNotEmpty) {
-        final q = _query.trim();
-        final hay = '${surahName(r.surah)} ${r.notes ?? ''}';
+        final q = _query.trim().toLowerCase();
+        final hay = '${surahNameArabic(r.surah)} ${kSurahNamesLatin[r.surah - 1]} ${r.notes ?? ''}'.toLowerCase();
         if (!hay.contains(q)) return false;
       }
       return true;
     }).toList();
     final groups = groupSessions(filtered);
+    final t = tr(context).record;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-          decoration: const InputDecoration(hintText: 'بحث بالسورة أو الملاحظة', prefixIcon: Icon(Icons.search_rounded), isDense: true),
+          decoration: InputDecoration(hintText: t.search, prefixIcon: const Icon(Icons.search_rounded), isDense: true),
           onChanged: (v) => setState(() => _query = v),
         ),
         const SizedBox(height: 10),
         Wrap(spacing: 6, runSpacing: 6, children: [
-          FilterChip(label: const Text('الكل'), selected: _type == null, onSelected: (_) => setState(() => _type = null)),
+          FilterChip(label: Text(t.all), selected: _type == null, onSelected: (_) => setState(() => _type = null)),
           for (final t in kAchievementTypes.entries)
             FilterChip(label: Text(t.value), selected: _type == t.key, onSelected: (_) => setState(() => _type = _type == t.key ? null : t.key)),
           if (grades.isNotEmpty) const SizedBox(width: 4),
@@ -170,7 +173,7 @@ class _RecitationsSearchListState extends State<RecitationsSearchList> {
         ]),
         const SizedBox(height: 12),
         if (groups.isEmpty)
-          const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد نتائج'))
+          Padding(padding: const EdgeInsets.all(12), child: Text(t.noResults))
         else
           for (final g in groups) g.length == 1 ? RecitationTile(r: g.first) : _SessionGroupTile(items: g),
       ],
@@ -188,7 +191,7 @@ class _SessionGroupTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: ExpansionTile(
-        title: Text('${items.length} تسميعات في جلسة واحدة', style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(fmt(tr(context).record.session, {'n': items.length}), style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text('${formatDate(items.first.createdAt)}  ·  ${kAchievementTypes[items.first.type] ?? items.first.type}'),
         trailing: StatusChip(label: '+$totalPoints', color: Colors.green),
         children: [for (final r in items) Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: RecitationTile(r: r))],

@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/i18n/i18n.dart';
+import '../../core/widgets/ui.dart' show forwardChevron;
 import '../calendar/calendar_models.dart';
 import '../comms/comms_repository.dart' show Announcement;
 import '../engagement/engagement_models.dart' show BadgeProgress;
@@ -26,22 +28,22 @@ class StudentGoal {
 /// Always-meaningful next milestones - the whole-Quran target (while short of
 /// it) plus the next round hundred points. Mirrors eqraa's nextGoals exactly
 /// (hardcoded milestones, not a stages/goals table).
-List<StudentGoal> computeGoals(int totalParts, int totalPoints) {
+List<StudentGoal> computeGoals(int totalParts, int totalPoints, SPortal t) {
   final goals = <StudentGoal>[];
   if (totalParts < 30) {
     goals.add(StudentGoal(
-      label: 'لإكمال حفظ القرآن الكريم',
+      label: t.goalQuran,
       remaining: 30 - totalParts,
-      unit: 'جزء',
+      unit: t.unitJuz,
       progress: (totalParts / 30).clamp(0.0, 1.0),
       icon: Icons.auto_stories_rounded,
     ));
   }
   final nextHundred = ((totalPoints ~/ 100) + 1) * 100;
   goals.add(StudentGoal(
-    label: 'للوصول إلى $nextHundred نقطة',
+    label: fmt(t.goalPoints, {'n': nextHundred}),
     remaining: nextHundred - totalPoints,
-    unit: 'نقطة',
+    unit: t.unitPoints,
     progress: ((totalPoints % 100) / 100).clamp(0.0, 1.0),
     icon: Icons.stars_rounded,
   ));
@@ -67,7 +69,7 @@ class NextGoalsCard extends StatelessWidget {
                 Icon(goals[i].icon, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 10),
                 Expanded(child: Text(goals[i].label, style: const TextStyle(fontWeight: FontWeight.w700))),
-                Text('باقي ${goals[i].remaining} ${goals[i].unit}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
+                Text(fmt(tr(context).portal.remaining, {'n': goals[i].remaining, 'unit': goals[i].unit}), style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
               ]),
               const SizedBox(height: 8),
               ClipRRect(borderRadius: BorderRadius.circular(8), child: LinearProgressIndicator(value: goals[i].progress, minHeight: 8)),
@@ -133,7 +135,7 @@ class AnnouncementsPreviewCard extends StatelessWidget {
               Row(children: [
                 Icon(Icons.campaign_rounded, color: Colors.amber.shade800, size: 20),
                 const SizedBox(width: 8),
-                const Text('إعلانات', style: TextStyle(fontWeight: FontWeight.w800)),
+                Text(tr(context).portal.announcements, style: const TextStyle(fontWeight: FontWeight.w800)),
               ]),
               for (final a in visible)
                 Padding(
@@ -166,10 +168,10 @@ class UpcomingEventsCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: const [
-                Icon(Icons.event_rounded, size: 20),
-                SizedBox(width: 8),
-                Text('قريبًا', style: TextStyle(fontWeight: FontWeight.w800)),
+              Row(children: [
+                const Icon(Icons.event_rounded, size: 20),
+                const SizedBox(width: 8),
+                Text(tr(context).portal.upcoming, style: const TextStyle(fontWeight: FontWeight.w800)),
               ]),
               for (final e in entries.take(3))
                 Padding(
@@ -220,9 +222,12 @@ class DailyInspirationCard extends StatelessWidget {
         final now = DateTime.now();
         final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
         final pick = list[dayOfYear % list.length];
+        // an ayah / hadith: Arabic, right to left, in every language
         return Card(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
-          child: Padding(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -232,6 +237,7 @@ class DailyInspirationCard extends StatelessWidget {
                 Text(pick.source, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
               ],
             ),
+          ),
           ),
         );
       },
@@ -298,8 +304,11 @@ TodayPrayers? computeTodayPrayers(Map<String, String> settings) {
 }
 
 class PrayerTimesCard extends StatelessWidget {
-  const PrayerTimesCard({super.key, required this.today});
+  const PrayerTimesCard({super.key, required this.today, this.names});
   final TodayPrayers today;
+
+  /// Fajr..Isha in the viewer's language (strings.portal.prayers); defaults to the Arabic names.
+  final List<String>? names;
 
   @override
   Widget build(BuildContext context) {
@@ -309,14 +318,14 @@ class PrayerTimesCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            for (var i = 0; i < today.entries.length; i++) _prayerCell(today.entries[i], i == today.nextIndex),
+            for (var i = 0; i < today.entries.length; i++) _prayerCell(today.entries[i], i == today.nextIndex, names?[i]),
           ],
         ),
       ),
     );
   }
 
-  Widget _prayerCell(PrayerEntry e, bool isNext) {
+  Widget _prayerCell(PrayerEntry e, bool isNext, String? name) {
     final time = '${e.time.hour.toString().padLeft(2, '0')}:${e.time.minute.toString().padLeft(2, '0')}';
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
@@ -325,7 +334,7 @@ class PrayerTimesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(children: [
-        Text(e.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isNext ? Colors.white : null)),
+        Text(name ?? e.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isNext ? Colors.white : null)),
         const SizedBox(height: 4),
         Text(time, style: TextStyle(fontSize: 13, color: isNext ? const Color(0xFFD4A24C) : Colors.grey.shade600)),
       ]),
@@ -353,10 +362,10 @@ class BadgesPreviewRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const Text('شاراتك', style: TextStyle(fontWeight: FontWeight.w800)),
+                Text(tr(context).portal.yourBadges, style: const TextStyle(fontWeight: FontWeight.w800)),
                 const Spacer(),
                 Text('${earned.length}', style: TextStyle(color: Colors.grey.shade600)),
-                const Icon(Icons.chevron_left_rounded, size: 18),
+                Icon(forwardChevron(context), size: 18),
               ]),
               const SizedBox(height: 10),
               Wrap(

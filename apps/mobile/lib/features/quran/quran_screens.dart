@@ -7,6 +7,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/data/quran_data.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -50,7 +52,7 @@ class _QuranScreenState extends State<QuranScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('المصحف')),
+        leading: DrawerLeading(),title: Text(tr(context).quran.title)),
       drawer: _isStaff(tenant) ? const AppDrawer() : null,
       body: _future == null
           ? const SizedBox.shrink()
@@ -62,7 +64,7 @@ class _QuranScreenState extends State<QuranScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                     child: SegmentedButton<int>(
-                      segments: const [ButtonSegment(value: 0, label: Text('السور')), ButtonSegment(value: 1, label: Text('العلامات'))],
+                      segments: [ButtonSegment(value: 0, label: Text(tr(context).quran.surahs)), ButtonSegment(value: 1, label: Text(tr(context).quran.bookmarks))],
                       selected: {_tab},
                       onSelectionChanged: (s) => setState(() => _tab = s.first),
                     ),
@@ -70,7 +72,7 @@ class _QuranScreenState extends State<QuranScreen> {
                   if (_tab == 0)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      child: TextField(onChanged: (v) => setState(() => _query = v.trim()), decoration: const InputDecoration(hintText: 'ابحث باسم السورة أو رقمها', prefixIcon: Icon(Icons.search_rounded))),
+                      child: TextField(onChanged: (v) => setState(() => _query = v.trim()), decoration: InputDecoration(hintText: tr(context).quran.search, prefixIcon: Icon(Icons.search_rounded))),
                     ),
                   Expanded(
                     child: _tab == 1
@@ -87,9 +89,9 @@ class _QuranScreenState extends State<QuranScreen> {
                                       if (mounted) setState(() => _future = _repository.state(_orgId!));
                                     },
                                     leading: const Icon(Icons.auto_stories_rounded, color: Colors.white),
-                                    title: const Text('أكمل القراءة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                                    subtitle: Text('سورة ${surahName(state!.surah!)} — الآية ${state.ayah}', style: const TextStyle(color: Colors.white70)),
-                                    trailing: const Icon(Icons.chevron_left_rounded, color: Colors.white),
+                                    title: Text(tr(context).quran.continueReading, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                                    subtitle: Text(fmt(tr(context).quran.position, {'surah': surahName(state!.surah!), 'ayah': state.ayah}), style: const TextStyle(color: Colors.white70)),
+                                    trailing: Icon(forwardChevron(context), color: Colors.white),
                                   ),
                                 ),
                               for (final n in surahs)
@@ -99,10 +101,10 @@ class _QuranScreenState extends State<QuranScreen> {
                                     if (mounted) setState(() => _future = _repository.state(_orgId!));
                                   },
                                   leading: CircleAvatar(radius: 18, child: Text(arabicNumber(n), style: const TextStyle(fontSize: 12))),
-                                  title: Text('سورة ${surahName(n)}', style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 20)),
-                                  subtitle: Text('${ayahCount(n)} آية'),
+                                  title: Text('سورة ${surahNameArabic(n)}', style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 20)),
+                                  subtitle: Text('${tr(context).isAr ? '' : '${kSurahNamesLatin[n - 1]}  ·  '}${fmt(tr(context).quran.ayahs, {'n': ayahCount(n)})}'),
                                 ),
-                              const Padding(padding: EdgeInsets.all(16), child: Text(kQuranTextCredit, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11))),
+                              Padding(padding: const EdgeInsets.all(16), child: Text(tr(context).quran.credit, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11))),
                             ],
                           ),
                   ),
@@ -114,13 +116,13 @@ class _QuranScreenState extends State<QuranScreen> {
 
   Widget _bookmarks(ReadingState? state) {
     final list = state?.bookmarks ?? const [];
-    if (list.isEmpty) return const EmptyState(icon: Icons.bookmark_border_rounded, title: 'لا توجد علامات', subtitle: 'اضغط على آية في المصحف لإضافة علامة');
+    if (list.isEmpty) return EmptyState(icon: Icons.bookmark_border_rounded, title: tr(context).quran.noBookmarks, subtitle: tr(context).quran.noBookmarksHint);
     return ListView(padding: const EdgeInsets.all(16), children: [
       for (final b in list)
         Card(
           child: ListTile(
             leading: const Icon(Icons.bookmark_rounded),
-            title: Text('سورة ${surahName(b.surah)} — الآية ${b.ayah}'),
+            title: Text(fmt(tr(context).quran.position, {'surah': surahName(b.surah), 'ayah': b.ayah})),
             onTap: () async {
               await context.push('/quran/${b.surah}?ayah=${b.ayah}');
               if (mounted) setState(() => _future = _repository.state(_orgId!));
@@ -242,7 +244,7 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
       await _player.setUrl(_reciter.ayahUrl(widget.surah, ayah));
       await _player.play();
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر تشغيل التلاوة، تأكد من الإنترنت')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(currentStrings.quran.playFailed)));
     }
   }
 
@@ -277,10 +279,10 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
       showDragHandle: true,
       builder: (context) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('${surahName(widget.surah)} — الآية ${a.number}', style: const TextStyle(fontWeight: FontWeight.w800)),
+          Text(fmt(tr(context).quran.ayahOf, {'surah': surahName(widget.surah), 'ayah': a.number}), style: const TextStyle(fontWeight: FontWeight.w800)),
           ListTile(
             leading: const Icon(Icons.play_arrow_rounded),
-            title: const Text('تشغيل من هنا'),
+            title: Text(tr(context).quran.playFromHere),
             onTap: () {
               Navigator.pop(context);
               _play(a.number);
@@ -288,7 +290,7 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
           ),
           ListTile(
             leading: Icon(marked ? Icons.bookmark_remove_rounded : Icons.bookmark_add_outlined),
-            title: Text(marked ? 'إزالة العلامة' : 'إضافة علامة'),
+            title: Text(marked ? tr(context).quran.unmark : tr(context).quran.mark),
             onTap: () async {
               Navigator.pop(context);
               try {
@@ -299,11 +301,11 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.copy_rounded),
-            title: const Text('نسخ الآية'),
+            title: Text(tr(context).quran.copyAyah),
             onTap: () async {
               Navigator.pop(context);
               await Clipboard.setData(ClipboardData(text: '${a.text} ﴿${arabicNumber(a.number)}﴾ [${surahName(widget.surah)}]'));
-              if (mounted) ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('تم النسخ')));
+              if (mounted) ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(content: Text(currentStrings.quran.copied)));
             },
           ),
         ]),
@@ -337,10 +339,10 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text('سورة ${surahName(widget.surah)}', style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 22)),
+        title: Text('سورة ${surahNameArabic(widget.surah)}', style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 22)),
         actions: [
           IconButton(
-            tooltip: 'تصغير الخط',
+            tooltip: tr(context).quran.smaller,
             icon: const Icon(Icons.text_decrease_rounded),
             onPressed: () async {
               setState(() => _scale = (_scale - 0.1).clamp(0.8, 1.8));
@@ -348,7 +350,7 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
             },
           ),
           IconButton(
-            tooltip: 'تكبير الخط',
+            tooltip: tr(context).quran.bigger,
             icon: const Icon(Icons.text_increase_rounded),
             onPressed: () async {
               setState(() => _scale = (_scale + 0.1).clamp(0.8, 1.8));
@@ -360,7 +362,7 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? ErrorState(message: 'تعذّر تحميل السورة، تأكد من الإنترنت', onRetry: () {
+              ? ErrorState(message: tr(context).quran.loadFailed, onRetry: () {
                   setState(() {
                     _loading = true;
                     _error = null;
@@ -369,7 +371,9 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                 })
               : Column(children: [
                   Expanded(
-                    child: SingleChildScrollView(
+                    child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: SingleChildScrollView(
                       controller: _scroll,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -401,8 +405,9 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                               ),
                             ),
                           ),
-                        const Padding(padding: EdgeInsets.only(top: 16), child: Text(kQuranTextCredit, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11))),
+                        Padding(padding: EdgeInsets.only(top: 16), child: Text(tr(context).quran.credit, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11))),
                       ]),
+                    ),
                     ),
                   ),
                   Material(
@@ -417,19 +422,19 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                               child: TextButton.icon(onPressed: _pickReciter, icon: const Icon(Icons.record_voice_over_rounded, size: 18), label: Text(_reciter.name, overflow: TextOverflow.ellipsis)),
                             ),
                             PopupMenuButton<int>(
-                              tooltip: 'تكرار الآية',
+                              tooltip: tr(context).quran.repeat,
                               initialValue: _repeat,
                               onSelected: (v) => setState(() => _repeat = v),
-                              itemBuilder: (context) => [for (final n in const [1, 2, 3, 5, 10]) PopupMenuItem(value: n, child: Text(n == 1 ? 'بلا تكرار' : 'تكرار الآية $n مرات'))],
+                              itemBuilder: (context) => [for (final n in [1, 2, 3, 5, 10]) PopupMenuItem(value: n, child: Text(n == 1 ? tr(context).quran.noRepeat : fmt(tr(context).quran.repeatN, {'n': n})))],
                               child: Padding(padding: const EdgeInsets.all(8), child: Row(children: [const Icon(Icons.repeat_rounded, size: 18), const SizedBox(width: 4), Text('×$_repeat')])),
                             ),
                           ]),
                           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            IconButton(onPressed: (_current ?? 1) > 1 ? () => _play((_current ?? 1) - 1) : null, icon: const Icon(Icons.skip_next_rounded), tooltip: 'الآية السابقة'),
+                            IconButton(onPressed: (_current ?? 1) > 1 ? () => _play((_current ?? 1) - 1) : null, icon: Icon(Directionality.of(context) == TextDirection.rtl ? Icons.skip_next_rounded : Icons.skip_previous_rounded), tooltip: tr(context).quran.prevAyah),
                             const SizedBox(width: 8),
                             IconButton.filled(iconSize: 32, onPressed: _togglePlay, icon: Icon(_playing ? Icons.pause_rounded : Icons.play_arrow_rounded)),
                             const SizedBox(width: 8),
-                            IconButton(onPressed: (_current ?? 0) < _ayahs.length ? () => _play((_current ?? 0) + 1) : null, icon: const Icon(Icons.skip_previous_rounded), tooltip: 'الآية التالية'),
+                            IconButton(onPressed: (_current ?? 0) < _ayahs.length ? () => _play((_current ?? 0) + 1) : null, icon: Icon(Directionality.of(context) == TextDirection.rtl ? Icons.skip_previous_rounded : Icons.skip_next_rounded), tooltip: tr(context).quran.nextAyah),
                           ]),
                         ]),
                       ),

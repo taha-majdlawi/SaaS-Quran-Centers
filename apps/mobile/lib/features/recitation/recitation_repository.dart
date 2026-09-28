@@ -1,13 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/i18n/i18n.dart';
 import '../../core/offline/sync_service.dart';
 
-const kAchievementTypes = {
-  'new_memorization': 'حفظ جديد',
-  'recent_review': 'مراجعة قريبة',
-  'distant_review': 'مراجعة بعيدة',
-};
+/// Recitation types in the current language (strings.labels.recitationType).
+Map<String, String> get kAchievementTypes => currentStrings.labels.recitationType;
 
 class GradeOption {
   const GradeOption({required this.key, required this.label, required this.points});

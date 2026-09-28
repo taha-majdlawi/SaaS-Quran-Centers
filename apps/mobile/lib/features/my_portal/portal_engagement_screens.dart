@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/i18n/i18n.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/format.dart';
@@ -21,7 +22,7 @@ Widget _childChips(List<PortalStudent> students, String? selected, ValueChanged<
       children: [
         for (final s in students)
           Padding(
-            padding: const EdgeInsets.only(left: 8),
+            padding: const EdgeInsetsDirectional.only(end: 8),
             child: ChoiceChip(label: Text(s.fullName), selected: s.id == selected, onSelected: (_) => onSelect(s.id)),
           ),
       ],
@@ -66,12 +67,14 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = tr(context);
+    final k = t.market;
     return Scaffold(
-      appBar: AppBar(title: const Text('سوق النقاط')),
+      appBar: AppBar(title: Text(k.title)),
       body: AsyncBody<List<PortalStudent>>(
         future: _studentsFuture,
         builder: (context, students) {
-          if (students.isEmpty) return const EmptyState(icon: Icons.link_off_rounded, title: 'لا يوجد ملف طالب مرتبط');
+          if (students.isEmpty) return EmptyState(icon: Icons.link_off_rounded, title: t.portal.noStudent);
           if (_studentId == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) => _select(students.first.id));
             return const Center(child: CircularProgressIndicator());
@@ -83,7 +86,7 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
                 future: _market!,
                 onRetry: () => _select(_studentId!),
                 builder: (context, m) {
-                  if (!m.enabled) return const EmptyState(icon: Icons.storefront_outlined, title: 'السوق غير مفعّل في مركزك حاليًا');
+                  if (!m.enabled) return EmptyState(icon: Icons.storefront_outlined, title: k.disabled);
                   final scheme = Theme.of(context).colorScheme;
                   return RefreshIndicator(
                     onRefresh: () async => _select(_studentId!),
@@ -92,19 +95,19 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, 0.35)!]), borderRadius: BorderRadius.circular(20)),
+                          decoration: BoxDecoration(gradient: LinearGradient(begin: AlignmentDirectional.topStart, end: AlignmentDirectional.bottomEnd, colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, 0.35)!]), borderRadius: BorderRadius.circular(20)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('الرصيد', style: TextStyle(color: Colors.white.withValues(alpha: 0.85))),
+                            Text(k.balance, style: TextStyle(color: Colors.white.withValues(alpha: 0.85))),
                             Text(money(m.wallet.balance, m.symbol), style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),
                             const SizedBox(height: 4),
                             Text(
-                              'من ${m.wallet.earnedPoints} نقطة  ·  المصروف ${money(m.wallet.spent, m.symbol)}${m.wallet.pendingPoints > 0 ? '  ·  ${m.wallet.pendingPoints} نقطة تنتظر اكتمال وحدة تحويل' : ''}',
+                              '${fmt(k.earned, {'n': m.wallet.earnedPoints, 'spent': money(m.wallet.spent, m.symbol)})}${m.wallet.pendingPoints > 0 ? fmt(k.pending, {'n': m.wallet.pendingPoints}) : ''}',
                               style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
                             ),
                           ]),
                         ),
-                        const SectionTitle('المتاح للشراء'),
-                        if (m.items.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لا توجد عناصر حاليًا')),
+                        SectionTitle(k.available),
+                        if (m.items.isEmpty) Padding(padding: const EdgeInsets.all(16), child: Text(k.empty)),
                         for (final i in m.items)
                           Card(
                             child: Padding(
@@ -123,29 +126,29 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
                                   Text(money(i.price, m.symbol), style: TextStyle(fontWeight: FontWeight.w800, color: scheme.primary)),
                                 ]),
                                 if (i.description != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(i.description!, style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5))),
-                                if (i.stock != null) Text('المتبقي: ${i.stock}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                                if (i.stock != null) Text(fmt(k.stock, {'n': i.stock}), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                                 const SizedBox(height: 10),
                                 Builder(builder: (context) {
                                   final out = i.stock != null && i.stock! <= 0;
                                   final afford = m.wallet.balance >= i.price;
                                   return FilledButton(
-                                    onPressed: out || !afford ? null : () => _run(() => _engagement.buy(_orgId, _studentId!, i.id), 'تم الطلب ✓ سيُسلَّم من المركز'),
+                                    onPressed: out || !afford ? null : () => _run(() => _engagement.buy(_orgId, _studentId!, i.id), k.bought),
                                     style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
-                                    child: Text(out ? 'نفد' : (afford ? 'شراء' : 'الرصيد لا يكفي')),
+                                    child: Text(out ? k.soldOut : (afford ? k.buy : k.tooPoor)),
                                   );
                                 }),
                               ]),
                             ),
                           ),
-                        const SectionTitle('طلباتي'),
-                        if (m.purchases.isEmpty) const Padding(padding: EdgeInsets.all(12), child: Text('لا توجد طلبات بعد')),
+                        SectionTitle(k.orders),
+                        if (m.purchases.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(k.noOrders)),
                         for (final p in m.purchases)
                           Card(
                             child: ListTile(
                               title: Text(p.itemName, style: const TextStyle(fontWeight: FontWeight.w700)),
                               subtitle: Text('${money(p.spent, m.symbol)}  ·  ${formatDate(p.createdAt)}'),
                               trailing: p.status == 'pending'
-                                  ? TextButton(onPressed: () => _run(() => _engagement.cancelPurchase(p.id), 'أُلغي الطلب وعاد الرصيد'), child: const Text('إلغاء', style: TextStyle(color: Colors.red)))
+                                  ? TextButton(onPressed: () => _run(() => _engagement.cancelPurchase(p.id), k.cancelled), child: Text(t.common.cancel, style: const TextStyle(color: Colors.red)))
                                   : StatusChip(label: kPurchaseLabels[p.status] ?? p.status, color: kPurchaseColors[p.status] ?? Colors.grey),
                             ),
                           ),
@@ -210,12 +213,14 @@ class _PortalBadgesScreenState extends State<PortalBadgesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = tr(context);
+    final b0 = t.badges;
     return Scaffold(
-      appBar: AppBar(title: const Text('الشارات والمنافسة')),
+      appBar: AppBar(title: Text(b0.title)),
       body: AsyncBody<List<PortalStudent>>(
         future: _studentsFuture,
         builder: (context, students) {
-          if (students.isEmpty) return const EmptyState(icon: Icons.link_off_rounded, title: 'لا يوجد ملف طالب مرتبط');
+          if (students.isEmpty) return EmptyState(icon: Icons.link_off_rounded, title: t.portal.noStudent);
           if (_studentId == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) => _select(students.first.id));
             return const Center(child: CircularProgressIndicator());
@@ -231,8 +236,8 @@ class _PortalBadgesScreenState extends State<PortalBadgesScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      const SectionTitle('شاراتي'),
-                      if (d.badges.isEmpty) const Padding(padding: EdgeInsets.all(16), child: Text('لا توجد شارات في مركزك بعد')),
+                      SectionTitle(b0.mine),
+                      if (d.badges.isEmpty) Padding(padding: const EdgeInsets.all(16), child: Text(b0.none)),
                       for (final b in d.badges)
                         Card(
                           child: Padding(
@@ -249,9 +254,9 @@ class _PortalBadgesScreenState extends State<PortalBadgesScreen> {
                                   Text(b.description ?? ruleText(b.ruleType, b.threshold, b.param, d.grades), style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
                                   const SizedBox(height: 6),
                                   if (b.earned)
-                                    Text('✓ مكتسبة ${formatDate(b.awardedAt)}${b.expiresAt == null ? '' : '  ·  تنتهي ${formatDate(b.expiresAt)}'}', style: const TextStyle(color: Colors.green, fontSize: 12))
+                                    Text('${fmt(b0.earned, {'date': formatDate(b.awardedAt)})}${b.expiresAt == null ? '' : fmt(b0.expires, {'date': formatDate(b.expiresAt)})}', style: const TextStyle(color: Colors.green, fontSize: 12))
                                   else if (b.ruleType == 'manual')
-                                    Text('يمنحها المشرف', style: TextStyle(color: Colors.grey.shade600, fontSize: 12))
+                                    Text(b0.manual, style: TextStyle(color: Colors.grey.shade600, fontSize: 12))
                                   else ...[
                                     ClipRRect(borderRadius: BorderRadius.circular(6), child: LinearProgressIndicator(value: b.fraction, minHeight: 8, color: b.color)),
                                     const SizedBox(height: 2),
@@ -263,7 +268,7 @@ class _PortalBadgesScreenState extends State<PortalBadgesScreen> {
                           ),
                         ),
                       if (d.leaderboard.enabled && d.leaderboard.rows.isNotEmpty) ...[
-                        SectionTitle('لوحة الشرف — ${d.leaderboard.circleName ?? ''}'),
+                        SectionTitle(fmt(b0.board, {'circle': d.leaderboard.circleName ?? ''})),
                         for (final r in d.leaderboard.rows)
                           Card(
                             color: r.isMe ? Colors.green.shade50 : null,
@@ -271,12 +276,12 @@ class _PortalBadgesScreenState extends State<PortalBadgesScreen> {
                               dense: true,
                               leading: Text(r.rank == 1 ? '🥇' : (r.rank == 2 ? '🥈' : (r.rank == 3 ? '🥉' : '${r.rank}')), style: const TextStyle(fontSize: 20)),
                               title: Text(r.name, style: TextStyle(fontWeight: r.isMe ? FontWeight.w800 : FontWeight.w600)),
-                              trailing: Text('${r.points} نقطة', style: const TextStyle(fontWeight: FontWeight.w700)),
+                              trailing: Text(fmt(b0.points, {'n': r.points}), style: const TextStyle(fontWeight: FontWeight.w700)),
                             ),
                           ),
                       ],
                       if (d.board != null && d.challenge != null) ...[
-                        SectionTitle('منافسة الحلقات: ${d.challenge!.title}'),
+                        SectionTitle(fmt(b0.challenge, {'title': d.challenge!.title})),
                         Text('${kMetricLabels[d.challenge!.metric]}  ·  ${kChallengeStatus[d.challenge!.status]}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
                         const SizedBox(height: 6),
                         for (final r in d.board!.rows)

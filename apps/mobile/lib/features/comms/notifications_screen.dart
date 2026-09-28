@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -33,9 +35,9 @@ String _ago(String iso) {
   final t = DateTime.tryParse(iso)?.toLocal();
   if (t == null) return '';
   final d = DateTime.now().difference(t);
-  if (d.inMinutes < 1) return 'الآن';
-  if (d.inMinutes < 60) return 'قبل ${d.inMinutes} دقيقة';
-  if (d.inHours < 24) return 'قبل ${d.inHours} ساعة';
+  if (d.inMinutes < 1) return currentStrings.notif.now;
+  if (d.inMinutes < 60) return fmt(currentStrings.notif.minutesAgo, {'n': d.inMinutes});
+  if (d.inHours < 24) return fmt(currentStrings.notif.hoursAgo, {'n': d.inHours});
   return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 }
 
@@ -44,8 +46,8 @@ String _dayLabel(DateTime t) {
   final today = DateTime(now.year, now.month, now.day);
   final day = DateTime(t.year, t.month, t.day);
   final diff = today.difference(day).inDays;
-  if (diff == 0) return 'اليوم';
-  if (diff == 1) return 'أمس';
+  if (diff == 0) return currentStrings.notif.today;
+  if (diff == 1) return currentStrings.notif.yesterday;
   return '${t.day}/${t.month}/${t.year}';
 }
 
@@ -188,17 +190,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const DrawerLeading(),
-        title: const Text('الإشعارات'),
+        title: Text(tr(context).notif.title),
         actions: [
           IconButton(
             icon: const Icon(Icons.done_all_rounded),
-            tooltip: 'تعليم الكل كمقروء',
+            tooltip: tr(context).notif.markAll,
             onPressed: () async {
               await _repository.markAllRead(_orgId!);
               if (mounted) _reload();
             },
           ),
-          IconButton(icon: const Icon(Icons.tune_rounded), tooltip: 'ما الذي يصلني', onPressed: () => context.push('/notifications/prefs')),
+          IconButton(icon: Icon(Icons.tune_rounded), tooltip: tr(context).notif.prefs, onPressed: () => context.push('/notifications/prefs')),
         ],
       ),
       drawer: isStaff ? const AppDrawer() : null,
@@ -210,7 +212,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               builder: (context, list) => RefreshIndicator(
                 onRefresh: () async => _reload(),
                 child: list.isEmpty
-                    ? ListView(children: const [SizedBox(height: 80), EmptyState(icon: Icons.notifications_none_rounded, title: 'لا توجد إشعارات')])
+                    ? ListView(children: [SizedBox(height: 80), EmptyState(icon: Icons.notifications_none_rounded, title: tr(context).notif.none)])
                     : ListView(padding: const EdgeInsets.all(16), children: _grouped(list, !isStaff)),
               ),
             ),

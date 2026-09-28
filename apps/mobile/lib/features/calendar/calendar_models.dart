@@ -5,18 +5,15 @@ library;
 
 import 'package:flutter/material.dart';
 
-const kAudienceLabels = {'all': 'الجميع', 'teachers': 'المعلمون', 'students': 'الطلاب', 'guardians': 'أولياء الأمور'};
-const kConsentLabels = {'not_required': '—', 'pending': 'بانتظار الموافقة', 'approved': 'موافق', 'declined': 'رفض'};
-const kSourceLabels = {'self': 'سجّل بنفسه', 'guardian': 'سجّله ولي الأمر', 'teacher': 'سجّله المعلم', 'admin': 'سجّله المشرف'};
-const kStateLabels = {
-  'none': 'بلا تسجيل',
-  'ended': 'انتهت',
-  'closed': 'التسجيل مغلق',
-  'full': 'اكتملت المقاعد',
-  'open': 'التسجيل مفتوح',
-};
+import '../../core/i18n/i18n.dart';
 
-const kMonthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+// in the current language (strings.labels)
+Map<String, String> get kAudienceLabels => currentStrings.labels.audience;
+Map<String, String> get kConsentLabels => currentStrings.labels.consent;
+Map<String, String> get kSourceLabels => currentStrings.labels.source;
+Map<String, String> get kStateLabels => currentStrings.labels.registration;
+
+List<String> get kMonthNames => currentStrings.labels.months;
 
 Color parseHexColor(String? hex, [Color fallback = const Color(0xFF64748B)]) {
   if (hex == null || !RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(hex)) return fallback;

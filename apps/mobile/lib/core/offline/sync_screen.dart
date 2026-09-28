@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../widgets/app_drawer.dart';
 import '../widgets/ui.dart';
 import 'outbox.dart';
@@ -23,7 +25,7 @@ class SyncScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('المزامنة')),
+        leading: DrawerLeading(),title: Text(tr(context).sync.title)),
       drawer: const AppDrawer(),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -40,16 +42,16 @@ class SyncScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        sync.pendingCount + sync.failedCount == 0 ? 'كل شيء مرفوع' : 'بانتظار الرفع: ${sync.pendingCount} · تحتاج مراجعة: ${sync.failedCount}',
+                        sync.pendingCount + sync.failedCount == 0 ? tr(context).sync.allUp : fmt(tr(context).sync.counts, {'waiting': sync.pendingCount, 'failed': sync.failedCount}),
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ]),
-                  if (sync.lastSync != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('آخر رفع ناجح: ${_time(sync.lastSync!)}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12))),
+                  if (sync.lastSync != null) Padding(padding: EdgeInsets.only(top: 4), child: Text(fmt(tr(context).sync.lastSync, {'time': _time(sync.lastSync!)}), style: TextStyle(color: Colors.grey.shade600, fontSize: 12))),
                   if (sync.usingCache)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text('تُعرض بيانات محفوظة سابقًا لأن الاتصال غير متاح', style: TextStyle(color: Colors.orange.shade800, fontSize: 12)),
+                      child: Text(tr(context).sync.cached, style: TextStyle(color: Colors.orange.shade800, fontSize: 12)),
                     ),
                   const SizedBox(height: 12),
                   FilledButton.icon(
@@ -57,7 +59,7 @@ class SyncScreen extends StatelessWidget {
                     icon: sync.flushing
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                         : const Icon(Icons.sync_rounded),
-                    label: const Text('ارفع الآن'),
+                    label: Text(tr(context).sync.uploadNow),
                   ),
                 ],
               ),
@@ -65,9 +67,9 @@ class SyncScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 32),
-              child: EmptyState(icon: Icons.cloud_done_rounded, title: 'لا يوجد شيء في الانتظار', subtitle: 'ما تسجّله دون اتصال يظهر هنا حتى يُرفع.'),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: EmptyState(icon: Icons.cloud_done_rounded, title: tr(context).sync.nothing, subtitle: tr(context).sync.nothingHint),
             ),
           for (final item in items) _ItemTile(item: item, sync: sync),
         ],
@@ -90,7 +92,7 @@ class _ItemTile extends StatelessWidget {
       child: ListTile(
         leading: Icon(failed ? Icons.error_outline_rounded : Icons.schedule_rounded, color: failed ? Colors.red : Colors.orange.shade800),
         title: Text(item.label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(failed ? 'رُفض من الخادم: ${item.error ?? ''}' : 'سُجّل ${_time(item.createdAt)} · محاولات: ${item.attempts}'),
+        subtitle: Text(failed ? fmt(tr(context).sync.rejected, {'error': item.error ?? ''}) : fmt(tr(context).sync.queued, {'time': _time(item.createdAt), 'n': item.attempts})),
         isThreeLine: failed,
         trailing: PopupMenuButton<String>(
           onSelected: (v) async {
@@ -102,11 +104,11 @@ class _ItemTile extends StatelessWidget {
               final ok = await showDialog<bool>(
                 context: context,
                 builder: (c) => AlertDialog(
-                  title: const Text('حذف من الانتظار؟'),
-                  content: const Text('لن يُرفع هذا السجل أبدًا.'),
+                  title: Text(tr(context).sync.discardTitle),
+                  content: Text(tr(context).sync.discardBody),
                   actions: [
-                    TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('إلغاء')),
-                    TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('حذف')),
+                    TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c).common.cancel)),
+                    TextButton(onPressed: () => Navigator.pop(c, true), child: Text(tr(c).common.delete)),
                   ],
                 ),
               );
@@ -114,8 +116,8 @@ class _ItemTile extends StatelessWidget {
             }
           },
           itemBuilder: (_) => [
-            const PopupMenuItem(value: 'retry', child: Text('أعد المحاولة')),
-            const PopupMenuItem(value: 'discard', child: Text('حذف')),
+            PopupMenuItem(value: 'retry', child: Text(tr(context).sync.retry)),
+            PopupMenuItem(value: 'discard', child: Text(tr(context).common.delete)),
           ],
         ),
       ),
@@ -138,10 +140,10 @@ class SyncStrip extends StatelessWidget {
     final failed = sync.failedCount;
 
     final text = failed > 0
-        ? 'بعض السجلات رُفضت ($failed) — اضغط للمراجعة'
+        ? fmt(tr(context).sync.stripFailed, {'n': failed})
         : waiting > 0
-            ? 'بانتظار الرفع: $waiting — يُرفع تلقائيًا عند عودة الاتصال'
-            : 'لا يوجد اتصال — تُعرض بيانات محفوظة';
+            ? fmt(tr(context).sync.stripWaiting, {'n': waiting})
+            : tr(context).sync.stripOffline;
     final color = failed > 0 ? Colors.red.shade700 : Colors.orange.shade800;
 
     return Material(

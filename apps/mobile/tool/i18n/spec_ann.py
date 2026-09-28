@@ -1,0 +1,20 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'ann': ('Announcements.', (
+  ('title', 'الإعلانات', 'Announcements'),
+  ('newTitle', 'إعلان جديد', 'New announcement'),
+  ('none', 'لا توجد إعلانات', 'No announcements'),
+  ('draft', 'مسودة', 'Draft'),
+  ('required', 'العنوان والنص مطلوبان', 'Title and text are required'),
+  ('deleteTitle', 'حذف الإعلان', 'Delete announcement'),
+  ('sure', 'متأكد؟', 'Are you sure?'),
+  ('fieldTitle', 'العنوان', 'Title'),
+  ('fieldBody', 'النص', 'Text'),
+  ('audience', 'الجمهور', 'Audience'),
+  ('circleOptional', 'حلقة محددة (اختياري)', 'A specific circle (optional)'),
+  ('allCircles', 'كل الحلقات', 'All circles'),
+  ('pin', 'تثبيت في الأعلى', 'Pin to the top'),
+  ('publish', 'نشر الآن', 'Publish now'),
+  ('publishHint', 'يصل إشعار للجمهور عند أول نشر', 'The audience is notified the first time it’s published'),
+  ('editTitle', 'تعديل إعلان', 'Edit announcement'),
+  ('yourCircle', 'حلقتك', 'Your circle'),
+))}

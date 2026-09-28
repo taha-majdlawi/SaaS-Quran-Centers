@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/i18n.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import 'serd_models.dart';
@@ -99,8 +100,10 @@ class SerdSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = summary;
+    final t = tr(context);
+    final c = t.serdCard;
     if (s == null || s.sessionsCount == 0) {
-      return const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('لا يوجد سرد معتمد بعد')));
+      return Card(child: Padding(padding: const EdgeInsets.all(16), child: Text(c.none)));
     }
     Widget tile(String label, String value) => Expanded(
           child: Column(children: [
@@ -115,19 +118,19 @@ class SerdSummaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              tile('جلسات معتمدة', '${s.sessionsCount}'),
-              tile('المتوسط', s.averageScore == null ? '—' : '${s.averageScore}%'),
-              tile('الأفضل', s.bestScore == null ? '—' : '${s.bestScore}%'),
-              tile('ما سُرد', '${serdJuzEquivalent(s.eighthsTotal)} جزء'),
+              tile(c.sessions, '${s.sessionsCount}'),
+              tile(c.average, s.averageScore == null ? '—' : '${s.averageScore}%'),
+              tile(c.best, s.bestScore == null ? '—' : '${s.bestScore}%'),
+              tile(c.covered, fmt(c.juzCount, {'n': serdJuzEquivalent(s.eighthsTotal)})),
             ]),
             if (s.juzDone.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text('أجزاء مكتملة: ${s.juzDone.map((j) => '$j (${kJuzNames[j - 1]})').join('، ')}',
+              Text(fmt(c.complete, {'list': s.juzDone.map((j) => t.isAr ? '$j (${kJuzNames[j - 1]})' : '$j').join(t.common.listSep)}),
                   style: const TextStyle(fontWeight: FontWeight.w700)),
             ],
             if (s.juzProgress.isNotEmpty) ...[
               const SizedBox(height: 6),
-              Text('جزئي: ${s.juzProgress.map((p) => 'جزء ${p.juz} — ${p.eighths}/8').join('، ')}',
+              Text(fmt(c.partial, {'list': s.juzProgress.map((p) => fmt(c.partialItem, {'juz': p.juz, 'e': p.eighths})).join(t.common.listSep)}),
                   style: TextStyle(color: Colors.grey.shade700)),
             ],
             const Divider(height: 22),

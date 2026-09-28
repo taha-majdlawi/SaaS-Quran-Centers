@@ -4,15 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_controller.dart';
+import '../i18n/i18n.dart';
 import '../offline/sync_screen.dart';
 import '../offline/sync_service.dart';
-
-/// What a viewing account reads at every attempt: it says what the account IS,
-/// not that a check failed (a "no permission" message invites a second try).
-const kViewerMessage = 'هذا حساب عرض — البيانات للاطّلاع فقط';
-
-/// The same lock, when the reason is the center's subscription (0066) rather than the account.
-const kBillingLockMessage = 'انتهى اشتراك المركز — البيانات للاطّلاع فقط حتى التجديد';
 
 /// Is the signed-in person a viewing (read-only) account in the active center?
 ///
@@ -41,7 +35,9 @@ class AccessController extends ChangeNotifier with WidgetsBindingObserver {
   bool get isBillingLock => _billingLock;
 
   /// The sentence to show for the current lock.
-  String get lockMessage => _billingLock ? kBillingLockMessage : kViewerMessage;
+  /// What a locked account reads at every attempt (strings.banners): it says what
+  /// the account IS, not that a check failed. In the viewer's language.
+  String get lockMessage => _billingLock ? currentStrings.banners.billingLock : currentStrings.banners.viewer;
 
   /// Staff-only heads-up from the center's plan (0067): subscription ending
   /// soon / in grace, or students / teachers nearly at the plan's limit.

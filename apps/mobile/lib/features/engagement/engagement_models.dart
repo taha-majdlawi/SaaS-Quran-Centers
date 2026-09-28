@@ -4,6 +4,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/i18n/i18n.dart';
+
 const kRuleLabels = {
   'manual': 'يدوية (يمنحها المشرف)',
   'points_threshold': 'الوصول إلى عدد نقاط',
@@ -15,37 +17,15 @@ const kRuleLabels = {
   'serd_passed_count': 'عدد السرد الناجح',
 };
 
-const kMetricLabels = {
-  'points': 'متوسط النقاط لكل طالب',
-  'recitations': 'متوسط عدد التسميعات لكل طالب',
-  'attendance': 'متوسط أيام الحضور لكل طالب',
-};
+Map<String, String> get kMetricLabels => currentStrings.labels.metric;
 
-const kChallengeStatus = {'upcoming': 'قادمة', 'active': 'جارية', 'ended': 'انتهت'};
-const kPurchaseLabels = {'pending': 'قيد التسليم', 'fulfilled': 'تم التسليم', 'cancelled': 'ملغى'};
+Map<String, String> get kChallengeStatus => currentStrings.labels.challengeStatus;
+Map<String, String> get kPurchaseLabels => currentStrings.labels.purchase;
 const kPurchaseColors = <String, MaterialColor>{'pending': Colors.amber, 'fulfilled': Colors.green, 'cancelled': Colors.grey};
 
 String ruleText(String ruleType, int threshold, String? param, Map<String, String> gradeLabels) {
-  switch (ruleType) {
-    case 'manual':
-      return 'يمنحها المشرف';
-    case 'points_threshold':
-      return '$threshold نقطة';
-    case 'recitations_count':
-      return '$threshold تسميعة';
-    case 'grade_count':
-      return '$threshold تسميعة بتقدير «${gradeLabels[param] ?? param}»';
-    case 'streak_days':
-      return '$threshold أيام متتالية';
-    case 'weekly_attendance':
-      return 'حضور أسبوعي $threshold%';
-    case 'juz_complete':
-      return 'إتمام الجزء $threshold في السرد';
-    case 'serd_passed_count':
-      return '$threshold سرد ناجح';
-    default:
-      return '';
-  }
+  final template = currentStrings.labels.rule[ruleType];
+  return template == null ? '' : fmt(template, {'n': threshold, 'grade': gradeLabels[param] ?? param ?? ''});
 }
 
 String money(num v, String symbol) {

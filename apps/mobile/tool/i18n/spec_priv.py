@@ -1,0 +1,21 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'priv': ('Account & data deletion.', (
+  ('updated', 'تم تحديث الطلب', 'Request updated'),
+  ('updateFailed', 'تعذّر التحديث', 'Could not update'),
+  ('requestsTitle', 'طلبات حذف البيانات', 'Data deletion requests'),
+  ('noRequests', 'لا طلبات', 'No requests'),
+  ('reviewHint', '«موافقة» تعني أنك ستحذف الحساب والبيانات بنفسك، ثم اضغط «اكتمل» ليصل إشعار لصاحب الطلب.', '“Approve” means you will delete the account and data yourself, then press “Deleted” so the requester is notified.'),
+  ('student', 'الطالب: {name}', 'Student: {name}'),
+  ('approve', 'موافقة', 'Approve'),
+  ('reject', 'رفض', 'Decline'),
+  ('done', 'اكتمل الحذف', 'Deleted'),
+  ('confirmTitle', 'طلب حذف الحساب والبيانات', 'Request deletion of the account and data'),
+  ('confirmBody', 'سيُرسل طلبك إلى إدارة المركز لمراجعته. متأكد؟', 'Your request goes to the center’s administration for review. Are you sure?'),
+  ('sendRequest', 'إرسال الطلب', 'Send the request'),
+  ('sendFailed', 'تعذّر إرسال الطلب', 'Could not send the request'),
+  ('title', 'حسابي وبياناتي', 'My account & data'),
+  ('intro', 'يمكنك طلب حذف حسابك وبياناتك من {org}. تراجع الإدارة الطلب ويصلك إشعار بالنتيجة. يخص هذا المركز فقط.', 'You can ask {org} to delete your account and data. The administration reviews the request and you are notified of the outcome. This only concerns this center.'),
+  ('last', 'آخر طلب: {status}', 'Latest request: {status}'),
+  ('reason', 'السبب (اختياري)', 'Reason (optional)'),
+  ('submit', 'طلب حذف حسابي وبياناتي', 'Request deletion of my account and data'),
+))}

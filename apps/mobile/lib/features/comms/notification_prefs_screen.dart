@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -41,7 +43,7 @@ class _NotificationPrefsScreenState extends State<NotificationPrefsScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _types = [for (final x in _types!) x.key == t.key ? x.copyWith(enabled: !value) : x]);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('لم يُحفظ التغيير. تحقّق من الاتصال وأعد المحاولة.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(currentStrings.notif.notSaved)));
     } finally {
       if (mounted) setState(() => _saving.remove(t.key));
     }
@@ -71,7 +73,7 @@ class _NotificationPrefsScreenState extends State<NotificationPrefsScreen> {
       _pushOk = PushService.instance.notificationsAllowed();
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('ما الذي يصلني')),
+      appBar: AppBar(title: Text(tr(context).notif.prefs)),
       body: _future == null
           ? const SizedBox.shrink()
           : AsyncBody<NotificationPrefs>(
@@ -87,20 +89,20 @@ class _NotificationPrefsScreenState extends State<NotificationPrefsScreen> {
                       future: _pushOk,
                       builder: (context, snap) {
                         if (!PushService.instance.isReady) {
-                          return _banner(Icons.cloud_off_rounded, 'الإشعارات الفورية غير مفعّلة في هذه النسخة من التطبيق — تصلك داخل التطبيق فقط.');
+                          return _banner(Icons.cloud_off_rounded, tr(context).notif.noPush);
                         }
                         if (snap.data == false) {
-                          return _banner(Icons.notifications_off_rounded, 'لم يُمنح التطبيق إذن الإشعارات. افتح إعدادات الهاتف ← التطبيقات ← بستان القرآن ← الإشعارات وفعّلها.',
+                          return _banner(Icons.notifications_off_rounded, tr(context).notif.noPermission,
                               color: Colors.orange);
                         }
                         return const SizedBox.shrink();
                       },
                     ),
                     if (prefs.paused)
-                      _banner(Icons.pause_circle_rounded, 'أوقف المركز إرسال الإشعارات مؤقتًا — تبقى القائمة داخل التطبيق تعمل.', color: Colors.orange),
+                      _banner(Icons.pause_circle_rounded, tr(context).notif.paused, color: Colors.orange),
                     if (prefs.quietFrom.isNotEmpty && prefs.quietTo.isNotEmpty)
-                      _banner(Icons.bedtime_rounded, 'لا تصل إشعارات الهاتف بين ${prefs.quietFrom} و${prefs.quietTo} — تُؤجَّل إلى الصباح.'),
-                    const SectionLabel('أنواع الإشعارات'),
+                      _banner(Icons.bedtime_rounded, fmt(tr(context).notif.quiet, {'from': prefs.quietFrom, 'to': prefs.quietTo})),
+                    SectionLabel(tr(context).notif.types),
                     Card(
                       child: Column(children: [
                         for (final t in _types ?? prefs.types)

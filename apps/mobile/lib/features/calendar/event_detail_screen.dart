@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -63,7 +65,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
   Future<void> _copyLink(String token) async {
     await Clipboard.setData(ClipboardData(text: '$_siteBase/consent/$token'));
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ رابط الموافقة')));
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).cal.linkCopied)));
   }
 
   Future<void> _pickCandidate(List<Candidate> candidates) async {
@@ -74,7 +76,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       showDragHandle: true,
       builder: (context) => _CandidatePicker(candidates: candidates),
     );
-    if (picked != null) await _run(() => _repository.register(_orgId, widget.eventId, picked.studentId), 'تم التسجيل');
+    if (picked != null) await _run(() => _repository.register(_orgId, widget.eventId, picked.studentId), currentStrings.cal.registeredDone);
   }
 
   Future<void> _editResult(Participant p) async {
@@ -83,15 +85,15 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('نتيجة ${p.studentName}'),
+        title: Text(fmt(tr(context).cal.resultOf, {'name': p.studentName})),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(controller: rank, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الترتيب')),
+          TextField(controller: rank, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context).cal.rank)),
           const SizedBox(height: 10),
-          TextField(controller: note, decoration: const InputDecoration(labelText: 'ملاحظة')),
+          TextField(controller: note, decoration: InputDecoration(labelText: tr(context).cal.note)),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: Size(90, 44)), child: Text(tr(context).common.save)),
         ],
       ),
     );
@@ -99,7 +101,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final n = note.text.trim();
     rank.dispose();
     note.dispose();
-    if (ok == true) await _run(() => _repository.setResult(p.registrationId, r, n.isEmpty ? null : n), 'حُفظت النتيجة');
+    if (ok == true) await _run(() => _repository.setResult(p.registrationId, r, n.isEmpty ? null : n), currentStrings.cal.resultSaved);
   }
 
   Future<void> _confirm(String title, String body, Future<void> Function() action, String done) async {
@@ -109,8 +111,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         title: Text(title),
         content: Text(body),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('تأكيد')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context).common.confirm)),
         ],
       ),
     );
@@ -122,7 +124,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final isAdmin = _role == OrgRole.admin;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تفاصيل'),
+        title: Text(tr(context).cal.details),
         actions: [
           if (isAdmin)
             IconButton(
@@ -146,29 +148,29 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               children: [
                 _info(e),
                 if (e.supportsRegistration) ...[
-                  const SectionTitle('التسجيل'),
+                  SectionTitle(tr(context).cal.registration),
                   _registrationSummary(e),
                   if (e.mine.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     for (final m in e.mine) _mineCard(e, m),
                   ],
                   if (e.participants.isNotEmpty || _role == OrgRole.admin || _role == OrgRole.teacher) ...[
-                    SectionTitle('المسجّلون (${e.participants.length})'),
+                    SectionTitle(fmt(tr(context).cal.participants, {'n': e.participants.length})),
                     if (data.candidates.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: OutlinedButton.icon(
                           onPressed: () => _pickCandidate(data.candidates),
                           icon: const Icon(Icons.person_add_alt_1_rounded),
-                          label: const Text('تسجيل طالب'),
+                          label: Text(tr(context).cal.registerStudent),
                           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
                         ),
                       ),
                     for (final p in e.participants) _participantCard(e, p, isAdmin),
-                    if (e.participants.isEmpty) const Padding(padding: EdgeInsets.all(12), child: Text('لا يوجد مسجّلون بعد')),
+                    if (e.participants.isEmpty) Padding(padding: EdgeInsets.all(12), child: Text(tr(context).cal.noParticipants)),
                   ],
                   if (e.waitlist.isNotEmpty) ...[
-                    SectionTitle('قائمة الانتظار (${e.waitlist.length})'),
+                    SectionTitle(fmt(tr(context).cal.waitlistCount, {'n': e.waitlist.length})),
                     for (var i = 0; i < e.waitlist.length; i++) ListTile(dense: true, leading: CircleAvatar(radius: 12, child: Text('${i + 1}', style: const TextStyle(fontSize: 11))), title: Text(e.waitlist[i].name)),
                   ],
                 ],
@@ -209,10 +211,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             if (e.location != null) row(Icons.place_outlined, e.location!),
             row(Icons.groups_rounded, [
               kAudienceLabels[e.audience] ?? e.audience,
-              if (e.circleName != null) 'حلقة ${e.circleName}',
-              if (e.stageName != null) 'مرحلة ${e.stageName}',
+              if (e.circleName != null) fmt(tr(context).cal.circle, {'name': e.circleName}),
+              if (e.stageName != null) fmt(tr(context).cal.stage, {'name': e.stageName}),
             ].join('  ·  ')),
-            row(Icons.work_outline_rounded, e.isWorkingDay ? 'يوم دوام' : 'ليس يوم دوام (لا يُحتسب في نسبة الحضور)'),
+            row(Icons.work_outline_rounded, e.isWorkingDay ? tr(context).cal.workDay : tr(context).cal.offDay),
           ],
         ),
       ),
@@ -269,10 +271,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           runSpacing: 6,
           children: [
             Text(kStateLabels[e.registrationState] ?? '', style: const TextStyle(fontWeight: FontWeight.w800)),
-            Text('المسجّلون: ${e.taken}${e.capacity == null ? '' : ' / ${e.capacity}'}'),
-            if (e.waiting > 0) Text('الانتظار: ${e.waiting}'),
-            if (e.registrationDeadline != null) Text('آخر موعد: ${e.registrationDeadline}'),
-            if (e.requiresConsent) const Text('تحتاج موافقة ولي الأمر', style: TextStyle(color: Colors.orange)),
+            Text(fmt(tr(context).cal.taken, {'n': '${e.taken}${e.capacity == null ? '' : ' / ${e.capacity}'}'})),
+            if (e.waiting > 0) Text(fmt(tr(context).cal.waiting, {'n': e.waiting})),
+            if (e.registrationDeadline != null) Text(fmt(tr(context).cal.deadline, {'date': e.registrationDeadline})),
+            if (e.requiresConsent) Text(tr(context).cal.needsConsent, style: TextStyle(color: Colors.orange)),
           ],
         ),
       ),
@@ -287,28 +289,28 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     if (registered) {
       action = familyRegistered && state != 'ended'
           ? OutlinedButton(
-              onPressed: () => _confirm('إلغاء التسجيل', 'إلغاء تسجيل ${m.studentName}؟', () => _repository.unregister(m.registrationId!), 'أُلغي التسجيل'),
+              onPressed: () => _confirm(tr(context).cal.unregister, fmt(tr(context).cal.unregisterQ, {'name': m.studentName}), () => _repository.unregister(m.registrationId!), tr(context).cal.unregistered),
               style: OutlinedButton.styleFrom(foregroundColor: Colors.red, minimumSize: const Size(0, 40)),
-              child: const Text('إلغاء التسجيل'),
+              child: Text(tr(context).cal.unregister),
             )
-          : const Text('سجّله المعلم أو المشرف — للإلغاء تواصل معه', style: TextStyle(fontSize: 12));
+          : Text(tr(context).cal.staffRegistered, style: TextStyle(fontSize: 12));
     } else if (state == 'open') {
       action = FilledButton(
-        onPressed: () => _run(() => _repository.register(_orgId, e.id, m.studentId), 'تم التسجيل'),
+        onPressed: () => _run(() => _repository.register(_orgId, e.id, m.studentId), tr(context).cal.registeredDone),
         style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
-        child: const Text('تسجيل'),
+        child: Text(tr(context).cal.register),
       );
     } else if (state == 'full' && !m.waiting) {
       action = OutlinedButton(
-        onPressed: () => _run(() => _repository.joinWaitlist(_orgId, e.id, m.studentId), 'أُضيف إلى قائمة الانتظار'),
+        onPressed: () => _run(() => _repository.joinWaitlist(_orgId, e.id, m.studentId), tr(context).cal.waitlisted),
         style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
-        child: const Text('انضم لقائمة الانتظار'),
+        child: Text(tr(context).cal.joinWaitlist),
       );
     } else if (m.waiting) {
       action = OutlinedButton(
-        onPressed: () => _run(() => _repository.leaveWaitlist(_orgId, e.id, m.studentId), 'خرج من قائمة الانتظار'),
+        onPressed: () => _run(() => _repository.leaveWaitlist(_orgId, e.id, m.studentId), tr(context).cal.leftWaitlist),
         style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
-        child: const Text('اخرج من قائمة الانتظار'),
+        child: Text(tr(context).cal.leaveWaitlist),
       );
     }
 
@@ -320,20 +322,20 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           children: [
             Row(children: [
               Expanded(child: Text(m.studentName, style: const TextStyle(fontWeight: FontWeight.w800))),
-              if (registered) const StatusChip(label: 'مسجّل ✓', color: Colors.green) else if (m.waiting) const StatusChip(label: 'في الانتظار', color: Colors.amber),
+              if (registered) StatusChip(label: tr(context).cal.registeredChip, color: Colors.green) else if (m.waiting) StatusChip(label: tr(context).cal.waitingChip, color: Colors.amber),
             ]),
             if (registered && e.requiresConsent) ...[
               const SizedBox(height: 8),
               Row(children: [
                 StatusChip(
-                  label: 'موافقة ولي الأمر: ${kConsentLabels[m.consentStatus] ?? ''}',
+                  label: fmt(tr(context).cal.consent, {'status': kConsentLabels[m.consentStatus] ?? ''}),
                   color: m.consentStatus == 'approved' ? Colors.green : (m.consentStatus == 'declined' ? Colors.red : Colors.amber),
                 ),
                 if (m.consentStatus == 'pending' && m.consentToken != null)
-                  TextButton.icon(onPressed: () => _copyLink(m.consentToken!), icon: const Icon(Icons.copy_rounded, size: 16), label: const Text('نسخ الرابط')),
+                  TextButton.icon(onPressed: () => _copyLink(m.consentToken!), icon: Icon(Icons.copy_rounded, size: 16), label: Text(tr(context).cal.copyLink)),
               ]),
             ],
-            if (m.resultRank != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('النتيجة: الترتيب ${m.resultRank}${m.resultNote == null ? '' : ' — ${m.resultNote}'}')),
+            if (m.resultRank != null) Padding(padding: EdgeInsets.only(top: 8), child: Text('${fmt(tr(context).cal.result, {'rank': m.resultRank})}${m.resultNote == null ? '' : ' — ${m.resultNote}'}')),
             if (action != null) Padding(padding: const EdgeInsets.only(top: 10), child: action),
           ],
         ),
@@ -364,18 +366,18 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   color: p.consentStatus == 'approved' ? Colors.green : (p.consentStatus == 'declined' ? Colors.red : Colors.amber),
                 ),
             ]),
-            if (p.resultRank != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text('الترتيب ${p.resultRank}${p.resultNote == null ? '' : ' — ${p.resultNote}'}', style: const TextStyle(fontSize: 12.5))),
+            if (p.resultRank != null) Padding(padding: EdgeInsets.only(top: 6), child: Text('${fmt(tr(context).cal.rankN, {'rank': p.resultRank})}${p.resultNote == null ? '' : ' — ${p.resultNote}'}', style: const TextStyle(fontSize: 12.5))),
             const SizedBox(height: 6),
             Wrap(spacing: 6, runSpacing: 0, children: [
               if (p.consentStatus == 'pending') ...[
-                TextButton(onPressed: () => _copyLink(p.consentToken), child: const Text('نسخ رابط الموافقة')),
-                TextButton(onPressed: () => _run(() => _repository.recordConsent(p.registrationId, 'approved'), 'سُجّلت الموافقة'), child: const Text('موافقة هاتفية')),
-                TextButton(onPressed: () => _run(() => _repository.recordConsent(p.registrationId, 'declined'), 'سُجّل الرفض'), child: const Text('رفض')),
+                TextButton(onPressed: () => _copyLink(p.consentToken), child: Text(tr(context).cal.copyConsent)),
+                TextButton(onPressed: () => _run(() => _repository.recordConsent(p.registrationId, 'approved'), tr(context).cal.consentRecorded), child: Text(tr(context).cal.phoneConsent)),
+                TextButton(onPressed: () => _run(() => _repository.recordConsent(p.registrationId, 'declined'), tr(context).cal.declineRecorded), child: Text(tr(context).cal.decline)),
               ],
-              if (isAdmin) TextButton(onPressed: () => _editResult(p), child: const Text('النتيجة')),
+              if (isAdmin) TextButton(onPressed: () => _editResult(p), child: Text(tr(context).cal.resultBtn)),
               TextButton(
-                onPressed: () => _confirm('إلغاء التسجيل', 'إلغاء تسجيل ${p.studentName}؟', () => _repository.unregister(p.registrationId), 'أُلغي التسجيل'),
-                child: const Text('إلغاء التسجيل', style: TextStyle(color: Colors.red)),
+                onPressed: () => _confirm(tr(context).cal.unregister, fmt(tr(context).cal.unregisterQ, {'name': p.studentName}), () => _repository.unregister(p.registrationId), tr(context).cal.unregistered),
+                child: Text(tr(context).cal.unregister, style: TextStyle(color: Colors.red)),
               ),
             ]),
           ],
@@ -409,7 +411,7 @@ class _CandidatePickerState extends State<_CandidatePicker> {
             child: TextField(
               autofocus: true,
               onChanged: (v) => setState(() => _query = v.trim()),
-              decoration: const InputDecoration(hintText: 'ابحث باسم الطالب أو رقمه', prefixIcon: Icon(Icons.search_rounded)),
+              decoration: InputDecoration(hintText: tr(context).cal.searchStudent, prefixIcon: Icon(Icons.search_rounded)),
             ),
           ),
           Expanded(

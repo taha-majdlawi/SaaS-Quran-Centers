@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../i18n/i18n.dart';
 import '../offline/sync_service.dart' show isNetworkError;
 
 /// Loading / error-with-retry / data states for any Future, so no screen
@@ -31,13 +32,15 @@ class AsyncBody<T> extends StatelessWidget {
 }
 
 class ErrorState extends StatelessWidget {
-  const ErrorState({super.key, this.message = 'تعذّر تحميل البيانات', this.onRetry});
+  const ErrorState({super.key, this.message, this.onRetry});
 
-  final String message;
+  /// Defaults to "could not load the data" in the viewer's language.
+  final String? message;
   final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
+    final t = tr(context).common;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -46,16 +49,16 @@ class ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.wifi_off_rounded, size: 56, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            Text(message, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(message ?? t.loadFailed, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text('تأكد من الاتصال بالإنترنت وحاول مرة أخرى',
+            Text(t.checkConnection,
                 textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('إعادة المحاولة'),
+                label: Text(t.retry),
                 style: FilledButton.styleFrom(minimumSize: const Size(180, 48)),
               ),
             ],
@@ -220,11 +223,11 @@ String friendlyError(Object e, String fallback) {
   if (e is StateError) return e.message;
   if (e is PostgrestException) {
     final m = e.message;
-    if (m.contains('row-level security') || m.contains('permission denied')) return 'لا تملك صلاحية تنفيذ هذه العملية';
-    if (e.code == '23503') return 'لا يمكن تنفيذ العملية لوجود بيانات مرتبطة';
+    if (m.contains('row-level security') || m.contains('permission denied')) return currentStrings.common.noPermission;
+    if (e.code == '23503') return currentStrings.common.linkedData;
     if (e.code == '42501' || e.code == 'P0001') return m;
   }
-  if (isNetworkError(e)) return 'تعذّر الاتصال بالإنترنت، حاول مرة أخرى';
+  if (isNetworkError(e)) return currentStrings.common.offline;
   return fallback;
 }
 
@@ -259,4 +262,8 @@ class SkeletonCards extends StatelessWidget {
 }
 
 /// "صباح الخير" / "مساء الخير" by the hour.
-String timeGreeting() => DateTime.now().hour < 12 ? 'صباح الخير' : 'مساء الخير';
+String timeGreeting() => DateTime.now().hour < 12 ? currentStrings.common.goodMorning : currentStrings.common.goodEvening;
+
+/// A "go forward" chevron that points the right way in both text directions.
+IconData forwardChevron(BuildContext context) =>
+    Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded;

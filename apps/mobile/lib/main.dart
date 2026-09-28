@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'core/access/account_access.dart';
 import 'core/push/push_service.dart';
 import 'core/auth/auth_controller.dart';
+import 'core/i18n/i18n.dart';
 import 'core/offline/offline_setup.dart';
 import 'core/offline/sync_service.dart';
 import 'core/router/app_router.dart';
@@ -43,6 +44,9 @@ Future<void> main() async {
 
   // Has the animated intro already played on this device?
   final onboarding = await OnboardingGate.load();
+
+  // The chosen app language (students and guardians; staff screens are Arabic).
+  await LocaleController.instance.load();
 
   runApp(BustanAlQuranApp(sync: sync, onboarding: onboarding));
 }
@@ -94,6 +98,7 @@ class BustanAlQuranApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: sync),
         ChangeNotifierProvider.value(value: AccessController.instance),
+        ChangeNotifierProvider.value(value: LocaleController.instance),
         ChangeNotifierProvider(create: (_) => AuthController(AppSupabase.client)),
         ChangeNotifierProvider(create: (_) => TenantController(TenantRepository(AppSupabase.client))),
       ],
@@ -149,23 +154,31 @@ class _AppRouterHostState extends State<_AppRouterHost> {
       if (accessOrg != null) PushService.instance.register(AppSupabase.client, accessOrg);
     });
 
+    // Students and guardians see their chosen language; everyone else Arabic.
+    final lang = context.watch<LocaleController>().effective(auth.isAuthenticated ? tenant.active?.role : null);
+    final strings = lang == 'en' ? S.en : S.ar;
+    currentStrings = strings;
+
     return MaterialApp.router(
-      title: 'بستان القرآن',
+      title: strings.common.appName,
       theme: buildAppTheme(parseBrandColor(tenant.active?.organization.primaryColor)),
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
-      locale: const Locale('ar'),
+      locale: Locale(lang),
       builder: (context, child) {
         final bannerShown = StatusBanners.isVisible(context);
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: Column(children: [
-            StatusBanners(onSyncTap: () => _router.push('/sync')),
-            Expanded(
-              // the banners (when shown) already sit under the status bar
-              child: MediaQuery.removePadding(context: context, removeTop: bannerShown, child: child!),
-            ),
-          ]),
+        return StringsScope(
+          strings: strings,
+          child: Directionality(
+            textDirection: strings.isAr ? TextDirection.rtl : TextDirection.ltr,
+            child: Column(children: [
+              StatusBanners(onSyncTap: () => _router.push('/sync')),
+              Expanded(
+                // the banners (when shown) already sit under the status bar
+                child: MediaQuery.removePadding(context: context, removeTop: bannerShown, child: child!),
+              ),
+            ]),
+          ),
         );
       },
     );

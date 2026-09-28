@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/i18n/i18n.dart';
+
 import '../../core/access/account_access.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -86,7 +88,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        leading: const DrawerLeading(),title: const Text('المحادثات')),
+        leading: DrawerLeading(),title: Text(tr(context).chat.title)),
       drawer: _isStaff(tenant) ? const AppDrawer() : null,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -94,7 +96,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           if (mounted) _reload();
         },
         icon: const Icon(Icons.edit_rounded),
-        label: const Text('محادثة جديدة'),
+        label: Text(tr(context).chat.newChat),
       ),
       body: _future == null
           ? const SizedBox.shrink()
@@ -102,7 +104,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               future: _future!,
               onRetry: _reload,
               builder: (context, threads) => threads.isEmpty
-                  ? const EmptyState(icon: Icons.chat_bubble_outline_rounded, title: 'لا توجد محادثات بعد', subtitle: 'ابدأ محادثة جديدة بالزر أدناه')
+                  ? EmptyState(icon: Icons.chat_bubble_outline_rounded, title: tr(context).chat.none, subtitle: tr(context).chat.noneHint)
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                       children: [
@@ -118,9 +120,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                 Flexible(child: Text(t.otherName, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800))),
                                 const SizedBox(width: 6),
                                 Text(kRoleLabels[t.otherRole] ?? '', style: TextStyle(color: Colors.grey.shade500, fontSize: 11.5)),
-                                if (t.muted) const Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.notifications_off_outlined, size: 14, color: Colors.grey)),
+                                if (t.muted) const Padding(padding: EdgeInsetsDirectional.only(start: 4), child: Icon(Icons.notifications_off_outlined, size: 14, color: Colors.grey)),
                               ]),
-                              subtitle: Text(t.lastDeleted ? '🚫 حُذفت رسالة' : '${t.lastMine ? 'أنت: ' : ''}${t.lastBody ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: t.lastDeleted ? const TextStyle(fontStyle: FontStyle.italic) : null),
+                              subtitle: Text(t.lastDeleted ? tr(context).chat.deletedLast : '${t.lastMine ? tr(context).chat.you : ''}${t.lastBody ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: t.lastDeleted ? const TextStyle(fontStyle: FontStyle.italic) : null),
                               trailing: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                                 Text(t.lastAt == null ? '' : formatDate(t.lastAt), style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
                                 if (t.unread > 0)
@@ -159,7 +161,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('محادثة جديدة')),
+      appBar: AppBar(title: Text(tr(context).chat.newChat)),
       body: AsyncBody<List<ChatContact>>(
         future: _future,
         builder: (context, contacts) {
@@ -167,11 +169,11 @@ class _NewChatScreenState extends State<NewChatScreen> {
           return Column(children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: TextField(onChanged: (v) => setState(() => _query = v.trim()), decoration: const InputDecoration(hintText: 'ابحث بالاسم', prefixIcon: Icon(Icons.search_rounded))),
+              child: TextField(onChanged: (v) => setState(() => _query = v.trim()), decoration: InputDecoration(hintText: tr(context).chat.searchName, prefixIcon: Icon(Icons.search_rounded))),
             ),
             Expanded(
               child: items.isEmpty
-                  ? const EmptyState(icon: Icons.person_search_rounded, title: 'لا يوجد من يمكنك مراسلته')
+                  ? EmptyState(icon: Icons.person_search_rounded, title: tr(context).chat.noContacts)
                   : ListView(children: [
                       for (final c in items)
                         ListTile(
@@ -426,11 +428,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     } on PostgrestException catch (e) {
       _failLocal(localId, e.message);
     } on StorageException catch (e) {
-      _failLocal(localId, e.message.contains('row-level security') ? AccessController.instance.lockMessage : 'تعذّر رفع الصورة');
+      _failLocal(localId, e.message.contains('row-level security') ? AccessController.instance.lockMessage : currentStrings.chat.uploadFailed);
     } on StateError catch (e) {
       _failLocal(localId, e.message);
     } catch (_) {
-      _failLocal(localId, 'تعذّر الإرسال، تأكد من الإنترنت وحاول مجددًا');
+      _failLocal(localId, currentStrings.chat.sendFailed);
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -460,7 +462,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       if (threadId != null) _subscribe(threadId);
       _finalizeSent(m.id, messageId);
     } catch (_) {
-      _failLocal(m.id, 'ما زال تعذّر الإرسال');
+      _failLocal(m.id, currentStrings.chat.stillFailing);
     }
   }
 
@@ -471,8 +473,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       context: context,
       builder: (context) => SafeArea(
         child: Wrap(children: [
-          ListTile(leading: const Icon(Icons.photo_library_rounded), title: const Text('من المعرض'), onTap: () => Navigator.pop(context, ImageSource.gallery)),
-          ListTile(leading: const Icon(Icons.photo_camera_rounded), title: const Text('التقاط صورة'), onTap: () => Navigator.pop(context, ImageSource.camera)),
+          ListTile(leading: Icon(Icons.photo_library_rounded), title: Text(tr(context).chat.gallery), onTap: () => Navigator.pop(context, ImageSource.gallery)),
+          ListTile(leading: Icon(Icons.photo_camera_rounded), title: Text(tr(context).chat.camera), onTap: () => Navigator.pop(context, ImageSource.camera)),
         ]),
       ),
     );
@@ -482,7 +484,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final bytes = await picked.readAsBytes();
     if (!mounted) return;
     if (bytes.length > 5 * 1024 * 1024) {
-      setState(() => _error = 'حجم الصورة الأقصى 5 ميغابايت');
+      setState(() => _error = currentStrings.chat.imageSize);
       return;
     }
     final name = picked.name;
@@ -498,11 +500,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('تعديل الرسالة'),
+        title: Text(tr(context).chat.editTitle),
         content: TextField(controller: controller, maxLines: 3),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: const Size(90, 44)), child: const Text('حفظ')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(context, true), style: FilledButton.styleFrom(minimumSize: Size(90, 44)), child: Text(tr(context).common.save)),
         ],
       ),
     );
@@ -528,14 +530,14 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('حذف الرسالة'),
-        content: const Text('تُحذف عندك وعند الطرف الآخر ولا يمكن التراجع.'),
+        title: Text(tr(context).chat.deleteTitle),
+        content: Text(tr(context).chat.deleteBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context).common.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('حذف'),
+            child: Text(tr(context).common.delete),
           ),
         ],
       ),
@@ -552,7 +554,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
     } on PostgrestException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'تعذّر الحذف — تحقّق من الاتصال');
+      if (mounted) setState(() => _error = currentStrings.chat.deleteFailed);
     }
   }
 
@@ -563,8 +565,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       showDragHandle: true,
       builder: (context) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          if (m.editable) ListTile(leading: const Icon(Icons.edit_rounded), title: const Text('تعديل'), onTap: () => Navigator.pop(context, 'edit')),
-          if (m.deletable) ListTile(leading: const Icon(Icons.delete_outline_rounded, color: Colors.red), title: const Text('حذف', style: TextStyle(color: Colors.red)), onTap: () => Navigator.pop(context, 'delete')),
+          if (m.editable) ListTile(leading: Icon(Icons.edit_rounded), title: Text(tr(context).common.edit), onTap: () => Navigator.pop(context, 'edit')),
+          if (m.deletable) ListTile(leading: Icon(Icons.delete_outline_rounded, color: Colors.red), title: Text(tr(context).common.delete, style: TextStyle(color: Colors.red)), onTap: () => Navigator.pop(context, 'delete')),
         ]),
       ),
     );
@@ -588,7 +590,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         actions: [
           if (_thread != null)
             IconButton(
-              tooltip: _thread!.muted ? 'تفعيل التنبيهات' : 'كتم',
+              tooltip: _thread!.muted ? tr(context).chat.unmute : tr(context).chat.mute,
               icon: Icon(_thread!.muted ? Icons.notifications_off_rounded : Icons.notifications_none_rounded),
               onPressed: () async {
                 final next = !_thread!.muted;
@@ -620,7 +622,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _messages.isEmpty
-                  ? const Center(child: Text('ابدأ المحادثة'))
+                  ? Center(child: Text(tr(context).chat.start))
                   : ListView.builder(
                       controller: _scroll,
                       // anchored at the bottom: opens on the newest message and stays there while pictures load
@@ -649,7 +651,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                                     Row(mainAxisSize: MainAxisSize.min, children: [
                                       Icon(Icons.block_rounded, size: 14, color: m.mine ? Colors.white70 : Colors.black45),
                                       const SizedBox(width: 4),
-                                      Text('حُذفت هذه الرسالة', style: TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: m.mine ? Colors.white70 : Colors.black45)),
+                                      Text(tr(context).chat.deleted, style: TextStyle(fontSize: 12.5, fontStyle: FontStyle.italic, color: m.mine ? Colors.white70 : Colors.black45)),
                                     ])
                                   else ...[
                                     if (m.localImage != null)
@@ -662,12 +664,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                                   Row(mainAxisSize: MainAxisSize.min, children: [
                                     Text(
                                       m.failed
-                                          ? 'لم يُرسل — اضغط لإعادة المحاولة'
+                                          ? tr(context).chat.notSent
                                           : m.sending
-                                              ? 'جارٍ الإرسال...'
+                                              ? tr(context).chat.sending
                                               : m.deleted
                                                   ? formatDateTime(m.createdAt)
-                                                  : '${formatDateTime(m.createdAt)}${m.editedAt == null ? '' : ' · عُدّلت'}',
+                                                  : '${formatDateTime(m.createdAt)}${m.editedAt == null ? '' : tr(context).chat.edited}',
                                       style: TextStyle(
                                         fontSize: 10,
                                         color: m.failed ? Colors.red.shade900 : (m.mine ? Colors.white70 : Colors.black45),
@@ -719,14 +721,14 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
               child: Row(children: [
-                IconButton(onPressed: _sending ? null : _pickPicture, icon: const Icon(Icons.image_rounded), tooltip: 'إرفاق صورة'),
+                IconButton(onPressed: _sending ? null : _pickPicture, icon: Icon(Icons.image_rounded), tooltip: tr(context).chat.attach),
                 Expanded(
                   child: TextField(
                     controller: _input,
                     minLines: 1,
                     maxLines: 4,
                     maxLength: 2000,
-                    decoration: InputDecoration(hintText: _attachment != null ? 'أضف تعليقًا (اختياري)...' : 'اكتب رسالتك...', counterText: ''),
+                    decoration: InputDecoration(hintText: _attachment != null ? tr(context).chat.caption : tr(context).chat.write, counterText: ''),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -735,7 +737,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
             ),
           )
         else
-          const Padding(padding: EdgeInsets.all(14), child: Text('لا يمكنك مراسلة هذا المستخدم حاليًا')),
+          Padding(padding: EdgeInsets.all(14), child: Text(tr(context).chat.cantReply)),
       ]),
     );
   }
