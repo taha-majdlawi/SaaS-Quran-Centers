@@ -1,23 +1,9 @@
-export const TYPE_LABELS: Record<string, string> = {
-  new_memorization: 'حفظ جديد',
-  recent_review: 'مراجعة قريبة',
-  distant_review: 'مراجعة بعيدة',
-};
+import { ar } from '@/lib/i18n/dictionaries/ar';
 
-export const ATT_LABELS: Record<string, string> = {
-  present: 'حاضر',
-  late: 'متأخر',
-  absent: 'غائب',
-  excused: 'مستأذن',
-};
-
-export const CERT_KIND_LABELS: Record<string, string> = {
-  serd: 'السرد القرآني',
-  memorization: 'إتمام حفظ',
-  excellence: 'تفوّق',
-  attendance: 'انتظام',
-  custom: 'مخصّصة',
-};
+// Arabic names (the staff pages); translated screens use t.labels.* instead.
+export const TYPE_LABELS: Record<string, string> = ar.labels.recitationType;
+export const ATT_LABELS: Record<string, string> = ar.labels.attendance;
+export const CERT_KIND_LABELS: Record<string, string> = ar.labels.certKind;
 
 export interface CenterReport {
   from: string;
@@ -99,7 +85,8 @@ export interface CertificateFull {
   center: { name: string; slug: string; logo_url: string | null; primary_color: string };
 }
 
-export const fmtDay = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString('ar') : '—');
+/** `lang` is t.labels.dateLocale on translated screens. */
+export const fmtDay = (iso: string | null | undefined, lang = 'ar') => (iso ? new Date(iso).toLocaleDateString(lang) : '—');
 
 /** yyyy-mm-dd of the 1st of this month, and of today (the default report window). */
 export function defaultRange(): { from: string; to: string } {

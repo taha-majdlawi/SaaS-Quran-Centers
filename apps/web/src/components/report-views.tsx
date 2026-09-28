@@ -1,22 +1,25 @@
-import { SURAH_NAMES } from '@/lib/quran/data';
+import { surahLabel } from '@/lib/quran/data';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 import { PrintButton } from '@/components/print-button';
 import { ATT_LABELS, TYPE_LABELS, fmtDay, pct, type CenterReport, type StudentReport } from '@/lib/reports/format';
 
 const field = 'rounded border px-3 py-2 text-sm';
 
-export function RangeForm({ from, to, extra }: { from: string; to: string; extra?: React.ReactNode }) {
+export async function RangeForm({ from, to, extra }: { from: string; to: string; extra?: React.ReactNode }) {
+  const { t } = await getI18n();
   return (
     <form className="mb-6 flex flex-wrap items-end gap-3 print:hidden">
       {extra}
       <label className="text-sm text-gray-700">
-        من
+        {t.report.from}
         <input type="date" name="from" defaultValue={from} className={`mt-1 block ${field}`} />
       </label>
       <label className="text-sm text-gray-700">
-        إلى
+        {t.report.to}
         <input type="date" name="to" defaultValue={to} className={`mt-1 block ${field}`} />
       </label>
-      <button className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">عرض</button>
+      <button className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">{t.report.show}</button>
     </form>
   );
 }
@@ -30,7 +33,7 @@ function Kpi({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-const th = 'px-3 py-2 text-right font-semibold';
+const th = 'px-3 py-2 text-start font-semibold';
 const td = 'px-3 py-2';
 
 export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHref: string }) {
@@ -183,14 +186,18 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
   );
 }
 
-const ayahRange = (row: StudentReport['recitations']['rows'][number]) => {
+const ayahRange = (row: StudentReport['recitations']['rows'][number], locale: string) => {
   if (row.surah_from == null) return '—';
-  const a = SURAH_NAMES[row.surah_from - 1];
+  const a = surahLabel(row.surah_from, locale);
   if (row.surah_to == null || row.surah_to === row.surah_from) return `${a} (${row.ayah_from}–${row.ayah_to})`;
-  return `${a} ${row.ayah_from} ← ${SURAH_NAMES[row.surah_to - 1]} ${row.ayah_to}`;
+  return `${a} ${row.ayah_from} ${locale === 'ar' ? '←' : '→'} ${surahLabel(row.surah_to, locale)} ${row.ayah_to}`;
 };
 
-export function StudentReportView({ r, certificatesBase }: { r: StudentReport; certificatesBase: string }) {
+export async function StudentReportView({ r, certificatesBase }: { r: StudentReport; certificatesBase: string }) {
+  const { t, locale } = await getI18n();
+  const L = t.report;
+  const lang = t.labels.dateLocale;
+  const sep = t.labels.listSep;
   const s = r.student;
   return (
     <div>
@@ -200,42 +207,44 @@ export function StudentReportView({ r, certificatesBase }: { r: StudentReport; c
           <p className="text-sm text-gray-500">
             {s.code}
             {s.circle && <> · {s.circle}</>}
-            {s.teacher && <> · المعلم: {s.teacher}</>}
+            {s.teacher && <> · {fmt(L.teacher, { name: s.teacher })}</>}
           </p>
           <p className="text-xs text-gray-400">
-            الفترة: {fmtDay(r.from)} – {fmtDay(r.to)}
+            {fmt(L.period, { from: fmtDay(r.from, lang), to: fmtDay(r.to, lang) })}
           </p>
         </div>
-        <PrintButton />
+        <PrintButton label={L.print} />
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Kpi label="تسميعات الفترة" value={r.recitations.count} />
-        <Kpi label="نقاط الفترة" value={r.recitations.points} />
-        <Kpi label="الحضور" value={pct(r.attendance.rate)} />
-        <Kpi label="مجموع النقاط" value={s.total_points} />
+        <Kpi label={L.periodRecitations} value={r.recitations.count} />
+        <Kpi label={L.periodPoints} value={r.recitations.points} />
+        <Kpi label={L.attendance} value={pct(r.attendance.rate)} />
+        <Kpi label={L.totalPoints} value={s.total_points} />
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2">
         <section className="rounded-lg border bg-white p-4 text-sm">
-          <h3 className="mb-2 font-semibold">الحضور</h3>
+          <h3 className="mb-2 font-semibold">{L.attendance}</h3>
           <ul className="flex flex-col gap-1">
             {(['present', 'late', 'absent', 'excused'] as const).map((k) => (
               <li key={k} className="flex justify-between">
-                <span>{ATT_LABELS[k]}</span>
+                <span>{t.labels.attendance[k]}</span>
                 <b>{r.attendance[k]}</b>
               </li>
             ))}
           </ul>
         </section>
         <section className="rounded-lg border bg-white p-4 text-sm">
-          <h3 className="mb-2 font-semibold">التقدّم</h3>
-          <p>الأجزاء المحفوظة: <b>{s.parts_count ?? 0}</b></p>
-          {s.saved_parts && s.saved_parts.length > 0 && <p className="text-xs text-gray-500">({[...s.saved_parts].sort((a, b) => a - b).join('، ')})</p>}
+          <h3 className="mb-2 font-semibold">{L.progress}</h3>
+          <p>
+            {L.savedParts} <b>{s.parts_count ?? 0}</b>
+          </p>
+          {s.saved_parts && s.saved_parts.length > 0 && <p className="text-xs text-gray-500">({[...s.saved_parts].sort((a, b) => a - b).join(sep)})</p>}
           <ul className="mt-2 flex flex-col gap-1">
             {r.recitations.by_type.map((x) => (
               <li key={x.type} className="flex justify-between">
-                <span>{TYPE_LABELS[x.type] ?? x.type}</span>
+                <span>{t.labels.recitationType[x.type] ?? x.type}</span>
                 <b>{x.count}</b>
               </li>
             ))}
@@ -245,15 +254,15 @@ export function StudentReportView({ r, certificatesBase }: { r: StudentReport; c
 
       {r.serd.length > 0 && (
         <section className="mb-6 rounded-lg border bg-white p-4 text-sm">
-          <h3 className="mb-2 font-semibold">السرد القرآني</h3>
+          <h3 className="mb-2 font-semibold">{L.serd}</h3>
           <ul className="flex flex-col gap-1">
             {r.serd.map((q, i) => (
               <li key={i} className="flex justify-between">
                 <span>
-                  {fmtDay(q.date)} · جزء {q.juz.join('، ')}
+                  {fmtDay(q.date, lang)} · {fmt(t.labels.juz, { n: q.juz.join(sep) })}
                 </span>
                 <span>
-                  {q.score != null ? `${q.score}%` : '—'} · {q.status === 'approved' ? 'معتمد' : q.status === 'rejected' ? 'مرفوض' : 'بانتظار الاعتماد'}
+                  {q.score != null ? `${q.score}%` : '—'} · {t.labels.serdStatus[q.status === 'approved' || q.status === 'rejected' ? q.status : 'submitted']}
                 </span>
               </li>
             ))}
@@ -265,16 +274,16 @@ export function StudentReportView({ r, certificatesBase }: { r: StudentReport; c
         <section className="mb-6 rounded-lg border bg-white p-4 text-sm">
           {r.badges.length > 0 && (
             <p className="mb-2">
-              <b>الشارات: </b>
-              {r.badges.map((b) => b.name).join('، ')}
+              <b>{L.badges}</b>
+              {r.badges.map((b) => b.name).join(sep)}
             </p>
           )}
           {r.certificates.length > 0 && (
             <p>
-              <b>الشهادات: </b>
+              <b>{L.certificates}</b>
               {r.certificates.map((c, i) => (
                 <span key={c.id}>
-                  {i > 0 && '، '}
+                  {i > 0 && sep}
                   <a href={`${certificatesBase}/${c.id}` as never} className="text-brand hover:underline">
                     {c.title}
                   </a>
@@ -286,23 +295,23 @@ export function StudentReportView({ r, certificatesBase }: { r: StudentReport; c
       )}
 
       <section className="overflow-x-auto rounded-lg border bg-white">
-        <h3 className="border-b px-4 py-2 text-sm font-semibold">سجل التسميع</h3>
+        <h3 className="border-b px-4 py-2 text-sm font-semibold">{L.log}</h3>
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className={th}>التاريخ</th>
-              <th className={th}>النوع</th>
-              <th className={th}>المقطع</th>
-              <th className={th}>التقدير</th>
-              <th className={th}>النقاط</th>
+              <th className={th}>{L.colDate}</th>
+              <th className={th}>{L.colType}</th>
+              <th className={th}>{L.colPassage}</th>
+              <th className={th}>{L.colGrade}</th>
+              <th className={th}>{L.colPoints}</th>
             </tr>
           </thead>
           <tbody>
             {r.recitations.rows.map((x, i) => (
               <tr key={i} className="border-t">
-                <td className={td}>{fmtDay(x.at)}</td>
-                <td className={td}>{TYPE_LABELS[x.type] ?? x.type}</td>
-                <td className={td}>{ayahRange(x)}</td>
+                <td className={td}>{fmtDay(x.at, lang)}</td>
+                <td className={td}>{t.labels.recitationType[x.type] ?? x.type}</td>
+                <td className={td}>{ayahRange(x, locale)}</td>
                 <td className={td}>{x.grade ?? '—'}</td>
                 <td className={td}>{x.points}</td>
               </tr>
@@ -310,7 +319,7 @@ export function StudentReportView({ r, certificatesBase }: { r: StudentReport; c
             {!r.recitations.rows.length && (
               <tr>
                 <td colSpan={5} className={`${td} text-center text-gray-400`}>
-                  لا تسميعات في هذه الفترة
+                  {L.none}
                 </td>
               </tr>
             )}

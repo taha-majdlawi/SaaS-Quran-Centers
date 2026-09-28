@@ -2,6 +2,8 @@
 // mobile portal also does locally (apps/mobile/lib/features/my_portal/) -
 // kept in step with home_extras.dart / record_extras.dart on purpose.
 import inspirations from './daily_inspirations.json';
+import { fmt } from '@/lib/i18n/config';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 export interface PortalRecitation {
   id: string;
@@ -45,6 +47,27 @@ export interface Dashboard {
 }
 
 /** student_record_detail (0056) */
+/** The strings the (client) recitation list needs - built on the server from the dictionary. */
+export interface RecitationLabels {
+  locale: string;
+  lang: string;
+  types: Record<string, string>;
+  search: string;
+  all: string;
+  noResults: string;
+  session: string;
+}
+
+export const recitationLabels = (t: Dictionary): RecitationLabels => ({
+  locale: t.labels.dateLocale === 'ar' ? 'ar' : 'en',
+  lang: t.labels.dateLocale,
+  types: t.labels.recitationType,
+  search: t.record.search,
+  all: t.record.all,
+  noResults: t.record.noResults,
+  session: t.record.session,
+});
+
 export interface RecordDetail {
   monthly_points: number;
   points_breakdown: { grade: string; count: number; points_each: number; total: number }[];
@@ -52,7 +75,6 @@ export interface RecordDetail {
   attendance: { date: string; status: string }[];
 }
 
-export const ATTENDANCE_LABELS: Record<string, string> = { present: 'حاضر', absent: 'غائب', late: 'متأخر', excused: 'مُعذَر' };
 export const ATTENDANCE_STYLES: Record<string, string> = {
   present: 'bg-green-50 text-green-700',
   absent: 'bg-red-50 text-red-700',
@@ -60,7 +82,8 @@ export const ATTENDANCE_STYLES: Record<string, string> = {
   excused: 'bg-slate-100 text-slate-600',
 };
 
-export const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('ar') : '—');
+/** `lang` is t.labels.dateLocale. */
+export const fmtDate = (iso: string | null, lang = 'ar') => (iso ? new Date(iso).toLocaleDateString(lang) : '—');
 
 // ---- goals (computeGoals in home_extras.dart: eqraa's hardcoded milestones)
 
@@ -74,16 +97,21 @@ export interface StudentGoal {
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
-export function computeGoals(totalParts: number, totalPoints: number): StudentGoal[] {
+/** `t` is the portal section of the dictionary. */
+export function computeGoals(
+  totalParts: number,
+  totalPoints: number,
+  t: Pick<Dictionary['portal'], 'goalQuran' | 'goalPoints' | 'unitJuz' | 'unitPoints'>,
+): StudentGoal[] {
   const goals: StudentGoal[] = [];
   if (totalParts < 30) {
-    goals.push({ label: 'لإكمال حفظ القرآن الكريم', remaining: 30 - totalParts, unit: 'جزء', progress: clamp01(totalParts / 30), icon: '📖' });
+    goals.push({ label: t.goalQuran, remaining: 30 - totalParts, unit: t.unitJuz, progress: clamp01(totalParts / 30), icon: '📖' });
   }
   const nextHundred = (Math.floor(totalPoints / 100) + 1) * 100;
   goals.push({
-    label: `للوصول إلى ${nextHundred} نقطة`,
+    label: fmt(t.goalPoints, { n: nextHundred }),
     remaining: nextHundred - totalPoints,
-    unit: 'نقطة',
+    unit: t.unitPoints,
     progress: clamp01((totalPoints % 100) / 100),
     icon: '⭐',
   });

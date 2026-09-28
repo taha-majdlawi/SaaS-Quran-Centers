@@ -2,6 +2,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { RangeForm, StudentReportView } from '@/components/report-views';
 import { defaultRange, type StudentReport } from '@/lib/reports/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function MyReportPage({
   params,
@@ -14,6 +15,7 @@ export default async function MyReportPage({
   const { student, from, to } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
+  const { t: tr } = await getI18n();
 
   // RLS shows a student only their own row and a guardian only their children
   const { data: students } = await supabase
@@ -35,16 +37,16 @@ export default async function MyReportPage({
   return (
     <div className="mx-auto max-w-3xl p-6">
       <a href="/my" className="text-sm text-brand hover:underline print:hidden">
-        ← الرئيسية
+        {tr.portal.backHome}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">التقرير</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{tr.report.title}</h1>
       <RangeForm
         from={f}
         to={t}
         extra={
           list.length > 1 ? (
             <label className="text-sm text-gray-700">
-              الطالب
+              {tr.report.student}
               <select name="student" defaultValue={chosen} className="mt-1 block rounded border px-3 py-2 text-sm">
                 {list.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -57,7 +59,7 @@ export default async function MyReportPage({
         }
       />
       {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error.message}</p>}
-      {r ? <StudentReportView r={r} certificatesBase="/my/certificates" /> : !error && <p className="text-gray-500">لا يوجد طالب مرتبط بحسابك.</p>}
+      {r ? <StudentReportView r={r} certificatesBase="/my/certificates" /> : !error && <p className="text-gray-500">{tr.portal.noStudent}</p>}
     </div>
   );
 }

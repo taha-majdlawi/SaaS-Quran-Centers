@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { ChatConversation, type ChatMsg } from '@/components/chat-conversation';
 import { muteChat } from '@/lib/comms/actions';
+import { getI18n } from '@/lib/i18n/server';
+import { ar } from '@/lib/i18n/dictionaries/ar';
 
-export const ROLE_LABELS: Record<string, string> = { admin: 'مدير', teacher: 'معلم', student: 'طالب', guardian: 'ولي أمر' };
+export const ROLE_LABELS: Record<string, string> = ar.shell.roles;
 
 interface ThreadRow {
   thread_id: string;
@@ -25,8 +27,8 @@ interface Contact {
   detail: string | null;
 }
 
-const time = (iso: string) =>
-  new Date(iso).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
+const time = (iso: string, lang: string) =>
+  new Date(iso).toLocaleString(lang, { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
 
 /** Conversations + who I may start a new one with. `base` is '/chat' or '/my/chat'. */
 export async function ChatListView({ orgId, base }: { orgId: string; base: string }) {
@@ -38,44 +40,47 @@ export async function ChatListView({ orgId, base }: { orgId: string; base: strin
   const list = (threads ?? []) as ThreadRow[];
   const people = (contacts ?? []) as Contact[];
   const withThread = new Set(list.map((t) => t.other_id));
+  const { t: dict } = await getI18n();
+  const C = dict.chat;
+  const roles = dict.shell.roles;
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-4 text-2xl font-bold">المحادثات</h1>
+      <h1 className="mb-4 text-2xl font-bold">{C.title}</h1>
       <div className="mb-8 flex flex-col gap-2">
         {list.map((t) => (
           <a key={t.thread_id} href={`${base}/${t.other_id}` as never} className="flex items-center justify-between gap-3 rounded-lg border bg-white p-3 hover:bg-gray-50">
             <div className="min-w-0">
               <p className="font-semibold">
-                {t.other_name} <span className="text-xs font-normal text-gray-500">{ROLE_LABELS[t.other_role]}</span>
-                {t.muted && <span className="mr-1 text-xs text-gray-400">🔕</span>}
+                {t.other_name} <span className="text-xs font-normal text-gray-500">{roles[t.other_role]}</span>
+                {t.muted && <span className="ms-1 text-xs text-gray-400">🔕</span>}
               </p>
               <p className={`truncate text-sm ${t.last_deleted ? 'italic text-gray-400' : 'text-gray-500'}`}>
-                {t.last_deleted ? '🚫 حُذفت رسالة' : `${t.last_mine ? 'أنت: ' : ''}${t.last_body ?? ''}`}
+                {t.last_deleted ? C.deletedLast : `${t.last_mine ? C.you : ''}${t.last_body ?? ''}`}
               </p>
             </div>
-            <div className="shrink-0 text-left text-xs text-gray-400">
-              {t.last_message_at && time(t.last_message_at)}
-              {t.unread > 0 && <span className="mr-2 rounded-full bg-brand px-2 py-0.5 text-white">{t.unread}</span>}
+            <div className="shrink-0 text-end text-xs text-gray-400">
+              {t.last_message_at && time(t.last_message_at, dict.labels.dateLocale)}
+              {t.unread > 0 && <span className="ms-2 rounded-full bg-brand px-2 py-0.5 text-white">{t.unread}</span>}
             </div>
           </a>
         ))}
-        {!list.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد محادثات بعد</p>}
+        {!list.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{C.none}</p>}
       </div>
 
-      <h2 className="mb-2 font-semibold">محادثة جديدة</h2>
+      <h2 className="mb-2 font-semibold">{C.newChat}</h2>
       <div className="flex flex-col gap-1">
         {people
           .filter((c) => !withThread.has(c.user_id))
           .map((c) => (
             <a key={c.user_id} href={`${base}/${c.user_id}` as never} className="flex items-center justify-between rounded border bg-white px-3 py-2 text-sm hover:bg-gray-50">
               <span>
-                {c.name} <span className="text-xs text-gray-500">{ROLE_LABELS[c.role]}</span>
+                {c.name} <span className="text-xs text-gray-500">{roles[c.role]}</span>
               </span>
               {c.detail && <span className="text-xs text-gray-400">{c.detail}</span>}
             </a>
           ))}
-        {!people.length && <p className="text-sm text-gray-400">لا يوجد من يمكنك مراسلته حاليًا</p>}
+        {!people.length && <p className="text-sm text-gray-400">{C.noContacts}</p>}
       </div>
     </div>
   );
@@ -97,6 +102,7 @@ export async function ChatThreadView({ orgId, otherId, base }: { orgId: string; 
   const contact = ((contacts ?? []) as Contact[]).find((c) => c.user_id === otherId);
   const name = thread?.other_name ?? contact?.name ?? '—';
   const canReply = thread ? thread.can_reply : !!contact;
+  const { t: dict } = await getI18n();
 
   let messages: ChatMsg[] = [];
   if (threadId) {
@@ -118,19 +124,19 @@ export async function ChatThreadView({ orgId, otherId, base }: { orgId: string; 
     <div className="max-w-2xl">
       <div className="mb-3 flex items-center justify-between">
         <a href={base as never} className="text-sm text-brand hover:underline">
-          ← المحادثات
+          {dict.chat.back}
         </a>
         {threadId && (
           <form action={muteChat}>
             <input type="hidden" name="threadId" value={threadId as string} />
             <input type="hidden" name="muted" value={thread?.muted ? '0' : '1'} />
             <input type="hidden" name="back" value={`${base}/${otherId}`} />
-            <button className="text-xs text-gray-500 hover:underline">{thread?.muted ? '🔔 تفعيل التنبيهات' : '🔕 كتم'}</button>
+            <button className="text-xs text-gray-500 hover:underline">{thread?.muted ? dict.chat.unmute : dict.chat.mute}</button>
           </form>
         )}
       </div>
       <h1 className="mb-3 text-xl font-bold">
-        {name} {thread && <span className="text-sm font-normal text-gray-500">{ROLE_LABELS[thread.other_role]}</span>}
+        {name} {thread && <span className="text-sm font-normal text-gray-500">{dict.shell.roles[thread.other_role]}</span>}
       </h1>
 
       <ChatConversation
@@ -140,6 +146,7 @@ export async function ChatThreadView({ orgId, otherId, base }: { orgId: string; 
         initialThreadId={(threadId as string | null) ?? null}
         initialMessages={messages}
         canReply={canReply}
+        labels={{ ...dict.chat.ui, lang: dict.labels.dateLocale }}
       />
     </div>
   );

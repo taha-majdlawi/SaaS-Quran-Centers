@@ -1,3 +1,5 @@
+import { ar } from '@/lib/i18n/dictionaries/ar';
+
 // Shared bits for the calendar pages. Everything decided by the server (who
 // sees an entry, seats, whether registration is open, consent) comes from the
 // calendar_* RPCs; this file only names and lays things out.
@@ -93,19 +95,9 @@ export interface CalDetails extends CalEntry {
   images: CalImage[];
 }
 
-export const AUDIENCE_LABELS: Record<string, string> = {
-  all: 'الجميع',
-  teachers: 'المعلمون',
-  students: 'الطلاب',
-  guardians: 'أولياء الأمور',
-};
+export const AUDIENCE_LABELS: Record<string, string> = ar.labels.audience;
 
-export const CONSENT_LABELS: Record<string, string> = {
-  not_required: '—',
-  pending: 'بانتظار الموافقة',
-  approved: 'موافق',
-  declined: 'رفض',
-};
+export const CONSENT_LABELS: Record<string, string> = ar.labels.consent;
 
 export const CONSENT_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700',
@@ -120,18 +112,13 @@ export const SOURCE_LABELS: Record<string, string> = {
   admin: 'سجّله المشرف',
 };
 
-export const STATE_LABELS: Record<string, string> = {
-  none: 'بلا تسجيل',
-  ended: 'انتهت',
-  closed: 'التسجيل مغلق',
-  full: 'اكتملت المقاعد',
-  open: 'التسجيل مفتوح',
-};
+export const STATE_LABELS: Record<string, string> = ar.labels.registration;
 
-export const fmtDay = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('ar', { day: 'numeric', month: 'long', year: 'numeric' });
+/** `lang` is t.labels.dateLocale on translated screens. */
+export const fmtDay = (iso: string, lang = 'ar') => new Date(`${iso}T00:00:00`).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' });
 
-export function fmtRange(e: { start_date: string; end_date: string }) {
-  return e.start_date === e.end_date ? fmtDay(e.start_date) : `${fmtDay(e.start_date)} — ${fmtDay(e.end_date)}`;
+export function fmtRange(e: { start_date: string; end_date: string }, lang = 'ar') {
+  return e.start_date === e.end_date ? fmtDay(e.start_date, lang) : `${fmtDay(e.start_date, lang)} — ${fmtDay(e.end_date, lang)}`;
 }
 
 export const fmtTime = (t: string | null) => (t ? t.slice(0, 5) : '');
@@ -150,4 +137,4 @@ export function monthBounds(ym?: string) {
   return { from: iso(first), to: iso(last), year: y, month: m - 1, prev: shift(-1), next: shift(1), iso };
 }
 
-export const MONTH_NAMES = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+export const MONTH_NAMES = ar.labels.months;

@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ChatImagePicker } from '@/components/chat-image-picker';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
+
+/** The composer's strings plus the date locale (t.chat.ui + t.labels.dateLocale). */
+export type ChatLabels = Dictionary['chat']['ui'] & { lang: string };
 
 export interface ChatMsg {
   id: string;
@@ -17,8 +21,8 @@ export interface ChatMsg {
   url?: string | null;
 }
 
-const time = (iso: string) =>
-  new Date(iso).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
+const time = (iso: string, lang: string) =>
+  new Date(iso).toLocaleString(lang, { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
 
 const IMAGE_TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 
@@ -36,6 +40,7 @@ export function ChatConversation({
   initialThreadId,
   initialMessages,
   canReply,
+  labels: L,
 }: {
   orgId: string;
   otherId: string;
@@ -43,6 +48,7 @@ export function ChatConversation({
   initialThreadId: string | null;
   initialMessages: ChatMsg[];
   canReply: boolean;
+  labels: ChatLabels;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [messages, setMessages] = useState<ChatMsg[]>(initialMessages);
@@ -146,11 +152,11 @@ export function ChatConversation({
       let imagePath: string | null = null;
       if (hasFile) {
         const ext = IMAGE_TYPES[file.type];
-        if (!ext) throw new Error('الصور المسموحة: JPG أو PNG أو WebP');
-        if (file.size > 5 * 1024 * 1024) throw new Error('حجم الصورة الأقصى 5 ميغابايت');
+        if (!ext) throw new Error(L.imageTypes);
+        if (file.size > 5 * 1024 * 1024) throw new Error(L.imageSize);
         imagePath = `${orgId}/${userId}/${crypto.randomUUID()}.${ext}`;
         const { error: upError } = await supabase.storage.from('chat-images').upload(imagePath, file, { contentType: file.type });
-        if (upError) throw new Error('تعذّر رفع الصورة');
+        if (upError) throw new Error(L.uploadFailed);
       }
       const { data, error: rpcError } = await supabase.rpc('send_chat_message', {
         p_org: orgId,
@@ -174,7 +180,7 @@ export function ChatConversation({
         await merge((fresh ?? []) as ChatMsg[]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'تعذّر الإرسال');
+      setError(err instanceof Error ? err.message : L.sendFailed);
     } finally {
       setSending(false);
     }
@@ -193,7 +199,7 @@ export function ChatConversation({
   };
 
   const deleteMessage = async (id: string) => {
-    if (!confirm('تُحذف عندك وعند الطرف الآخر ولا يمكن التراجع. حذف الرسالة؟')) return;
+    if (!confirm(L.deleteConfirm)) return;
     const { data, error: rpcError } = await supabase.rpc('delete_chat_message', { p_message: id });
     if (rpcError) {
       setError(rpcError.message);
@@ -221,29 +227,29 @@ export function ChatConversation({
                   <textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={2} className="rounded border px-2 py-1 text-gray-900" />
                   <div className="flex gap-2">
                     <button type="button" onClick={() => saveEdit(m.id)} className="rounded bg-white px-2 py-1 text-xs font-semibold text-brand">
-                      حفظ
+                      {L.save}
                     </button>
                     <button type="button" onClick={() => setEditing(null)} className="rounded px-2 py-1 text-xs underline">
-                      إلغاء
+                      {L.cancel}
                     </button>
                   </div>
                 </div>
               ) : m.deleted_at ? (
-                <p className={`flex items-center gap-1 text-sm italic ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>🚫 حُذفت هذه الرسالة</p>
+                <p className={`flex items-center gap-1 text-sm italic ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>{L.deleted}</p>
               ) : (
                 <>
                   {m.image_path && m.url && (
                     <a href={m.url} target="_blank" rel="noreferrer">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={m.url} alt="صورة" className="mb-1 max-h-64 rounded" onLoad={() => stick.current && endRef.current?.scrollIntoView({ block: 'end' })} />
+                      <img src={m.url} alt={L.image} className="mb-1 max-h-64 rounded" onLoad={() => stick.current && endRef.current?.scrollIntoView({ block: 'end' })} />
                     </a>
                   )}
                   {m.body && <p className="whitespace-pre-wrap">{m.body}</p>}
                 </>
               )}
               <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>
-                {time(m.created_at)}
-                {!m.deleted_at && m.edited_at && ' · عُدّلت'}
+                {time(m.created_at, L.lang)}
+                {!m.deleted_at && m.edited_at && L.edited}
                 {!m.deleted_at && m.mine && m.read_at && ' · ✓✓'}
                 {!m.deleted_at && m.mine && m.body && editing !== m.id && Date.now() - new Date(m.created_at).getTime() < 30 * 60 * 1000 && (
                   <button
@@ -252,21 +258,21 @@ export function ChatConversation({
                       setEditing(m.id);
                       setEditText(m.body);
                     }}
-                    className="mr-2 underline"
+                    className="ms-2 underline"
                   >
-                    تعديل
+                    {L.edit}
                   </button>
                 )}
                 {!m.deleted_at && m.mine && editing !== m.id && (
-                  <button type="button" onClick={() => deleteMessage(m.id)} className="mr-2 underline">
-                    حذف
+                  <button type="button" onClick={() => deleteMessage(m.id)} className="ms-2 underline">
+                    {L.delete}
                   </button>
                 )}
               </p>
             </div>
           </div>
         ))}
-        {!messages.length && <p className="m-auto text-sm text-gray-400">ابدأ المحادثة</p>}
+        {!messages.length && <p className="m-auto text-sm text-gray-400">{L.start}</p>}
         <div ref={endRef} />
       </div>
 
@@ -288,16 +294,16 @@ export function ChatConversation({
             }}
             rows={2}
             maxLength={2000}
-            placeholder="اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)"
+            placeholder={L.placeholder}
             className="min-w-48 flex-1 rounded border px-3 py-2 text-sm"
           />
-          <ChatImagePicker key={pickerKey} />
+          <ChatImagePicker key={pickerKey} labels={L} />
           <button type="submit" disabled={sending} className="rounded bg-brand px-5 py-2 text-sm font-semibold text-white disabled:opacity-50">
-            {sending ? '...' : 'إرسال'}
+            {sending ? '...' : L.send}
           </button>
         </form>
       ) : (
-        <p className="rounded bg-gray-100 px-3 py-2 text-center text-sm text-gray-500">لا يمكنك مراسلة هذا المستخدم حاليًا</p>
+        <p className="rounded bg-gray-100 px-3 py-2 text-center text-sm text-gray-500">{L.cantReply}</p>
       )}
     </>
   );

@@ -7,7 +7,10 @@ import { PrayerTimesCard } from '@/components/portal/prayer-times-card';
 import { RecitationItem } from '@/components/portal/recitations-search-list';
 import { fmtDay, type CalRange } from '@/lib/calendar/format';
 import type { BadgeProgress } from '@/lib/engagement/format';
-import { addDays, computeGoals, dailyInspiration, fmtDate, localDate, type Dashboard } from '@/lib/portal/format';
+import { addDays, computeGoals, dailyInspiration, fmtDate, localDate, recitationLabels, type Dashboard } from '@/lib/portal/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 interface StudentRow {
   id: string;
@@ -35,6 +38,8 @@ export default async function MyPortalPage({
   const org = await getOrgContext(slug);
   const supabase = await createClient();
   const on = (m: string) => !org.disabledModules.includes(m);
+  const { t } = await getI18n();
+  const p = t.portal;
 
   const [{ data: students }, { data: orgRow }] = await Promise.all([
     supabase.from('students_profile').select('id, student_code, full_name').eq('organization_id', org.id).order('full_name'),
@@ -45,8 +50,8 @@ export default async function MyPortalPage({
   if (!rows.length) {
     return (
       <div className="mx-auto max-w-lg py-16 text-center text-gray-500">
-        <p>لا يوجد ملف طالب مرتبط بحسابك حاليًا في {org.name}.</p>
-        <p className="mt-2 text-sm">تواصل مع إدارة المركز إذا كنت تتوقع رؤية بيانات هنا.</p>
+        <p>{fmt(p.noProfile, { org: org.name })}</p>
+        <p className="mt-2 text-sm">{p.noProfileHint}</p>
       </div>
     );
   }
@@ -73,54 +78,54 @@ export default async function MyPortalPage({
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">
-          {org.myRole === 'guardian' ? 'أبناؤك في' : 'ملفك في'} {org.name}
+          {fmt(org.myRole === 'guardian' ? p.titleGuardian : p.titleStudent, { org: org.name })}
         </h1>
         <div className="flex flex-wrap gap-2">
           <a href={`/my/record?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
-            سجلّي
+            {p.nav.record}
           </a>
           <a href="/my/quran" className="rounded border px-4 py-2 text-sm text-brand">
-            المصحف
+            {p.nav.quran}
           </a>
           {on('announcements') && (
             <a href="/my/announcements" className="rounded border px-4 py-2 text-sm text-brand">
-              الإعلانات
+              {p.nav.announcements}
             </a>
           )}
           {on('chat') && (
             <a href="/my/chat" className="rounded border px-4 py-2 text-sm text-brand">
-              المحادثات
+              {p.nav.chat}
             </a>
           )}
           <a href="/my/notifications" className="rounded border px-4 py-2 text-sm text-brand">
-            الإشعارات
+            {p.nav.notifications}
           </a>
           {on('badges') && (
             <a href="/my/badges" className="rounded border px-4 py-2 text-sm text-brand">
-              الشارات
+              {p.nav.badges}
             </a>
           )}
           {on('market') && (
             <a href="/my/market" className="rounded border px-4 py-2 text-sm text-brand">
-              السوق
+              {p.nav.market}
             </a>
           )}
           <a href="/my/privacy" className="rounded border px-4 py-2 text-sm text-gray-500">
-            حسابي وبياناتي
+            {p.nav.privacy}
           </a>
           {on('reports') && (
             <a href="/my/report" className="rounded border px-4 py-2 text-sm text-brand">
-              التقرير
+              {p.nav.report}
             </a>
           )}
           {on('certificates') && (
             <a href="/my/certificates" className="rounded border px-4 py-2 text-sm text-brand">
-              الشهادات
+              {p.nav.certificates}
             </a>
           )}
           {on('calendar') && (
             <a href="/my/calendar" className="rounded border px-4 py-2 text-sm text-brand">
-              التقويم والفعاليات
+              {p.nav.calendar}
             </a>
           )}
         </div>
@@ -141,7 +146,7 @@ export default async function MyPortalPage({
       )}
 
       {!d || !d.linked ? (
-        <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-500">تعذّر إيجاد ملف الطالب</p>
+        <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-500">{p.studentMissing}</p>
       ) : (
         <StudentHome
           d={d}
@@ -152,6 +157,7 @@ export default async function MyPortalPage({
           prayerSettings={prayerSettings}
           inspiration={inspiration}
           recordHref={`/my/record?s=${current.id}`}
+          t={t}
         />
       )}
     </div>
@@ -167,6 +173,7 @@ function StudentHome({
   prayerSettings,
   inspiration,
   recordHref,
+  t,
 }: {
   d: Dashboard;
   serd: SerdSummary | null;
@@ -176,24 +183,26 @@ function StudentHome({
   prayerSettings: Record<string, string>;
   inspiration: ReturnType<typeof dailyInspiration>;
   recordHref: string;
+  t: Dictionary;
 }) {
+  const p = t.portal;
+  const lang = t.labels.dateLocale;
   const { student, circle, stats, recent } = d;
   const change = stats.recitations_this_week - stats.recitations_last_week;
-  const weekText =
-    change > 0 ? `أفضل من الأسبوع الماضي (+${change})` : change < 0 ? `أقل من الأسبوع الماضي (${change})` : 'ثابت مقارنة بالأسبوع الماضي';
+  const weekText = change > 0 ? fmt(p.weekBetter, { n: change }) : change < 0 ? fmt(p.weekWorse, { n: change }) : p.weekSame;
   const trend = change > 0 ? { icon: '↗', cls: 'text-green-600' } : change < 0 ? { icon: '↘', cls: 'text-red-600' } : { icon: '→', cls: 'text-gray-400' };
-  const goals = computeGoals(student.total_parts_count, student.total_points);
+  const goals = computeGoals(student.total_parts_count, student.total_points, p);
 
   return (
     <>
       <div className="flex items-center justify-between gap-4 rounded-lg bg-brand p-5 text-white">
         <div>
-          <h2 className="text-lg font-bold">مرحبًا، {student.full_name.split(' ')[0]}</h2>
+          <h2 className="text-lg font-bold">{fmt(p.hello, { name: student.full_name.split(' ')[0] })}</h2>
           <p className="text-sm opacity-85">
-            {circle ? `${circle.name}${circle.teacher ? ` · الشيخ ${circle.teacher}` : ''}` : 'لم يُسند إلى حلقة بعد'}
+            {circle ? `${circle.name}${circle.teacher ? ` · ${fmt(p.sheikh, { name: circle.teacher })}` : ''}` : p.noCircle}
           </p>
           <p className="mt-1 text-sm">
-            <b className="text-xl">{student.total_points}</b> <span className="opacity-85">نقطة</span>
+            <b className="text-xl">{student.total_points}</b> <span className="opacity-85">{p.points}</span>
           </p>
           <p className="text-xs opacity-70" dir="ltr">
             {student.student_code}
@@ -207,7 +216,7 @@ function StudentHome({
 
       {announcements.length > 0 && (
         <a href="/my/announcements" className="block rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm hover:bg-amber-100">
-          <p className="font-bold">📢 إعلانات</p>
+          <p className="font-bold">{p.announcements}</p>
           {announcements.map((a) => (
             <p key={a.id} className="mt-2 truncate font-semibold">
               {a.title}
@@ -217,11 +226,9 @@ function StudentHome({
       )}
 
       <section className="rounded-lg border bg-white p-4 text-sm">
-        <h3 className="mb-2 font-semibold text-gray-600">تقدّم الحفظ</h3>
-        <p className="font-semibold">
-          {student.total_parts_count} من 30 جزءًا · {student.total_progress}%
-        </p>
-        {student.next_plan && <p className="mt-3 rounded bg-amber-50 p-3">خطتك القادمة: {student.next_plan}</p>}
+        <h3 className="mb-2 font-semibold text-gray-600">{p.progressTitle}</h3>
+        <p className="font-semibold">{fmt(p.progress, { parts: student.total_parts_count, pct: student.total_progress })}</p>
+        {student.next_plan && <p className="mt-3 rounded bg-amber-50 p-3">{fmt(p.nextPlan, { plan: student.next_plan })}</p>}
       </section>
 
       <section className="flex flex-col gap-4 rounded-lg border bg-white p-4 text-sm">
@@ -232,7 +239,7 @@ function StudentHome({
                 {g.icon} {g.label}
               </span>
               <span className="text-xs text-gray-500">
-                باقي {g.remaining} {g.unit}
+                {fmt(p.remaining, { n: g.remaining, unit: g.unit })}
               </span>
             </div>
             <div className="h-2 overflow-hidden rounded bg-gray-100">
@@ -244,56 +251,55 @@ function StudentHome({
 
       {upcoming.length > 0 && (
         <a href="/my/calendar" className="block rounded-lg border bg-white p-4 text-sm hover:bg-gray-50">
-          <p className="font-bold">📅 قريبًا</p>
+          <p className="font-bold">{p.upcoming}</p>
           {upcoming.map((e) => (
             <p key={e.id} className="mt-2 flex items-center gap-2">
               <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: e.type_color }} />
               <span className="flex-1 truncate">{e.title}</span>
-              <span className="text-xs text-gray-500">{fmtDay(e.start_date)}</span>
+              <span className="text-xs text-gray-500">{fmtDay(e.start_date, lang)}</span>
             </p>
           ))}
         </a>
       )}
 
       {inspiration && (
-        <div className="rounded-lg border bg-gray-50 p-4 text-center">
+        // an ayah / hadith: Arabic, right to left, in every language
+        <div dir="rtl" lang="ar" className="rounded-lg border bg-gray-50 p-4 text-center">
           <p className="font-bold leading-loose">{inspiration.text}</p>
           <p className="mt-1 text-xs text-gray-500">{inspiration.source}</p>
         </div>
       )}
 
-      <PrayerTimesCard settings={prayerSettings} />
+      <PrayerTimesCard settings={prayerSettings} names={p.prayers} />
 
       <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <Stat label="آيات هذا الأسبوع" value={String(stats.ayahs_this_week)} />
-        <Stat label="الحضور الأسبوعي" value={stats.weekly_attendance_rate == null ? '—' : `${stats.weekly_attendance_rate}%`} />
-        <Stat label="إجمالي التسميعات" value={String(stats.total_recitations)} />
-        <Stat label="آخر تسميع" value={fmtDate(stats.last_recitation_at)} />
+        <Stat label={p.statAyahs} value={String(stats.ayahs_this_week)} />
+        <Stat label={p.statAttendance} value={stats.weekly_attendance_rate == null ? '—' : `${stats.weekly_attendance_rate}%`} />
+        <Stat label={p.statTotal} value={String(stats.total_recitations)} />
+        <Stat label={p.statLast} value={fmtDate(stats.last_recitation_at, lang)} />
       </div>
 
       <section className="rounded-lg border bg-white p-4 text-sm">
-        <h3 className="mb-2 font-semibold text-gray-600">أسبوعك</h3>
+        <h3 className="mb-2 font-semibold text-gray-600">{p.weekTitle}</h3>
         <p className="font-bold">
           <span className={`${trend.cls} me-1`} aria-hidden>
             {trend.icon}
           </span>
-          {stats.recitations_this_week} تسميعات هذا الأسبوع
+          {fmt(p.weekCount, { n: stats.recitations_this_week })}
         </p>
         <p className="text-gray-500">{weekText}</p>
         <hr className="my-3" />
-        <p>
-          🔥 سلسلتك الحالية: {stats.current_streak} يوم · أطول سلسلة: {stats.longest_streak}
-        </p>
+        <p>{fmt(p.streak, { n: stats.current_streak, best: stats.longest_streak })}</p>
         {stats.current_streak > 0 && stats.current_streak === stats.longest_streak && (
-          <p className="mt-3 rounded bg-orange-50 p-2 text-center font-bold">🎉 رقمك الشخصي الجديد في السلسلة!</p>
+          <p className="mt-3 rounded bg-orange-50 p-2 text-center font-bold">{p.streakRecord}</p>
         )}
       </section>
 
       {earned.length > 0 && (
         <a href="/my/badges" className="block rounded-lg border bg-white p-4 text-sm hover:bg-gray-50">
           <p className="flex justify-between font-bold">
-            <span>شاراتك</span>
-            <span className="font-normal text-gray-500">{earned.length} ‹</span>
+            <span>{p.yourBadges}</span>
+            <span className="font-normal text-gray-500">{earned.length}</span>
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {earned.slice(0, 8).map((b) => (
@@ -310,25 +316,25 @@ function StudentHome({
       )}
 
       <div>
-        <h3 className="mb-2 text-sm font-semibold text-gray-600">السرد القرآني</h3>
+        <h3 className="mb-2 text-sm font-semibold text-gray-600">{p.serd}</h3>
         <SerdSummaryCard summary={serd} />
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-600">آخر التسميعات</h3>
+          <h3 className="text-sm font-semibold text-gray-600">{p.recent}</h3>
           <a href={recordHref as never} className="text-sm text-brand hover:underline">
-            سجلّي الكامل ←
+            {p.fullRecord}
           </a>
         </div>
         {recent.length ? (
           <ul className="flex flex-col gap-2 text-sm">
             {recent.slice(0, 5).map((r) => (
-              <RecitationItem key={r.id} r={r} />
+              <RecitationItem key={r.id} r={r} labels={recitationLabels(t)} />
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-400">لا يوجد تسميعات بعد</p>
+          <p className="text-sm text-gray-400">{p.noRecitations}</p>
         )}
       </div>
     </>

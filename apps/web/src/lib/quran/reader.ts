@@ -4,29 +4,30 @@
 //             (tanzil.net, used unmodified with attribution);
 //   * audio - everyayah.com, one MP3 per ayah.
 
-export const QURAN_CREDIT = 'نص المصحف: مشروع تنزيل (tanzil.net) · التلاوات: everyayah.com';
 
 export interface Reciter {
   id: string; // folder on the audio host = the id stored in center settings
   name: string;
+  /** Shown outside Arabic. */
+  nameLatin: string;
 }
 
 export const RECITERS: Reciter[] = [
-  { id: 'Alafasy_128kbps', name: 'مشاري العفاسي' },
-  { id: 'Abdul_Basit_Murattal_192kbps', name: 'عبد الباسط عبد الصمد (مرتل)' },
-  { id: 'Abdul_Basit_Mujawwad_128kbps', name: 'عبد الباسط عبد الصمد (مجوّد)' },
-  { id: 'Husary_128kbps', name: 'محمود خليل الحصري' },
-  { id: 'Minshawy_Murattal_128kbps', name: 'محمد صديق المنشاوي (مرتل)' },
-  { id: 'Abdurrahmaan_As-Sudais_192kbps', name: 'عبد الرحمن السديس' },
-  { id: 'Saood_ash-Shuraym_128kbps', name: 'سعود الشريم' },
-  { id: 'MaherAlMuaiqly128kbps', name: 'ماهر المعيقلي' },
-  { id: 'Hudhaify_128kbps', name: 'علي الحذيفي' },
-  { id: 'Ghamadi_40kbps', name: 'سعد الغامدي' },
-  { id: 'Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net', name: 'أحمد العجمي' },
-  { id: 'Muhammad_Ayyoub_128kbps', name: 'محمد أيوب' },
-  { id: 'Abu_Bakr_Ash-Shaatree_128kbps', name: 'أبو بكر الشاطري' },
-  { id: 'Nasser_Alqatami_128kbps', name: 'ناصر القطامي' },
-  { id: 'Yasser_Ad-Dussary_128kbps', name: 'ياسر الدوسري' },
+  { id: 'Alafasy_128kbps', name: 'مشاري العفاسي', nameLatin: 'Mishary Alafasy' },
+  { id: 'Abdul_Basit_Murattal_192kbps', name: 'عبد الباسط عبد الصمد (مرتل)', nameLatin: 'Abdul Basit Abdul Samad (murattal)' },
+  { id: 'Abdul_Basit_Mujawwad_128kbps', name: 'عبد الباسط عبد الصمد (مجوّد)', nameLatin: 'Abdul Basit Abdul Samad (mujawwad)' },
+  { id: 'Husary_128kbps', name: 'محمود خليل الحصري', nameLatin: 'Mahmoud Khalil Al-Husary' },
+  { id: 'Minshawy_Murattal_128kbps', name: 'محمد صديق المنشاوي (مرتل)', nameLatin: 'Muhammad Siddiq Al-Minshawi (murattal)' },
+  { id: 'Abdurrahmaan_As-Sudais_192kbps', name: 'عبد الرحمن السديس', nameLatin: 'Abdurrahman As-Sudais' },
+  { id: 'Saood_ash-Shuraym_128kbps', name: 'سعود الشريم', nameLatin: 'Saud Ash-Shuraym' },
+  { id: 'MaherAlMuaiqly128kbps', name: 'ماهر المعيقلي', nameLatin: 'Maher Al-Muaiqly' },
+  { id: 'Hudhaify_128kbps', name: 'علي الحذيفي', nameLatin: 'Ali Al-Hudhaifi' },
+  { id: 'Ghamadi_40kbps', name: 'سعد الغامدي', nameLatin: 'Saad Al-Ghamdi' },
+  { id: 'Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net', name: 'أحمد العجمي', nameLatin: 'Ahmed Al-Ajmi' },
+  { id: 'Muhammad_Ayyoub_128kbps', name: 'محمد أيوب', nameLatin: 'Muhammad Ayyub' },
+  { id: 'Abu_Bakr_Ash-Shaatree_128kbps', name: 'أبو بكر الشاطري', nameLatin: 'Abu Bakr Ash-Shatri' },
+  { id: 'Nasser_Alqatami_128kbps', name: 'ناصر القطامي', nameLatin: 'Nasser Al-Qatami' },
+  { id: 'Yasser_Ad-Dussary_128kbps', name: 'ياسر الدوسري', nameLatin: 'Yasser Ad-Dosari' },
 ];
 
 /** The reciters a center offers (its `quran_reciters` setting, empty = all), default first. */

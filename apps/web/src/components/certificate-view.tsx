@@ -3,6 +3,7 @@ import { OrgLogo } from '@/components/org-logo';
 import { QuranFont } from '@/components/quran-font';
 import { PrintButton } from '@/components/print-button';
 import { fmtDay, type CertificateFull } from '@/lib/reports/format';
+import { getI18n } from '@/lib/i18n/server';
 
 /**
  * The certificate as printed: landscape A4, the center's colour and logo,
@@ -12,18 +13,22 @@ import { fmtDay, type CertificateFull } from '@/lib/reports/format';
 export async function CertificateView({ cert, back }: { cert: CertificateFull; back: string }) {
   const host = (await headers()).get('host') ?? '';
   const color = cert.center.primary_color || '#1E7A54';
+  const { t } = await getI18n();
 
   return (
     <QuranFont>
       <style>{`@media print { @page { size: A4 landscape; margin: 0 } body { background: #fff } }`}</style>
       <div className="mb-4 flex items-center justify-between print:hidden">
         <a href={back as never} className="text-sm text-brand hover:underline">
-          ← رجوع
+          {t.certificates.back}
         </a>
-        <PrintButton />
+        <PrintButton label={t.report.print} />
       </div>
 
+      {/* the certificate reads as it was issued: Arabic, right to left */}
       <div
+        dir="rtl"
+        lang="ar"
         className="relative mx-auto flex aspect-[297/210] w-full max-w-4xl flex-col items-center justify-between bg-white p-10 text-center shadow print:max-w-none print:shadow-none"
         style={{ border: `10px double ${color}` }}
       >

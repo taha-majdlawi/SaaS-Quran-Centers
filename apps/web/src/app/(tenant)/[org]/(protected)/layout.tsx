@@ -5,13 +5,8 @@ import { OrgLogo } from '@/components/org-logo';
 import { signOut } from '@/lib/auth/actions';
 import { createClient } from '@/lib/supabase/server';
 import { billingBanner, usageBanner, type BillingState, type Usage } from '@/lib/billing/format';
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'مدير',
-  teacher: 'معلم',
-  guardian: 'ولي أمر',
-  student: 'طالب',
-};
+import { getI18n, isTranslatedScreen } from '@/lib/i18n/server';
+import { LanguageSwitcher } from '@/lib/i18n/client';
 
 // Shell shared by the full staff dashboard (see (staff)/layout.tsx, which
 // adds the sidebar and blocks student/guardian from these routes) and the
@@ -39,7 +34,14 @@ export default async function TenantProtectedLayout({
   const viewer = acc?.is_read_only === true && acc.reason !== 'billing';
   // Subscription state (0066/0067): locked for everyone; expiring / grace / capacity for staff.
   const isStaff = org.myRole === 'admin' || org.myRole === 'teacher';
-  const billing = billingBanner(acc?.billing, isStaff);
+  const { t } = await getI18n();
+  const translated = await isTranslatedScreen();
+  let billing = billingBanner(acc?.billing, isStaff);
+  // the portal only ever sees the lock itself - say it in the viewer's language
+  if (billing && !isStaff) {
+    const st = acc?.billing?.state;
+    billing = { ...billing, text: st === 'suspended' || st === 'cancelled' ? t.shell.suspended : t.shell.locked };
+  }
   const capacity = isStaff ? usageBanner(acc?.usage) : null;
   const { data: noticeData } = await supabase.rpc('active_platform_notices');
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
@@ -57,7 +59,7 @@ export default async function TenantProtectedLayout({
       <div className="flex-1">
         {org.isPlatformOwner && (
           <div className="bg-purple-700 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">
-            وضع مالك المنصة — أنت تتصفح هذا المركز كمشرف وليس كعضو فيه
+            {t.shell.platformOwner}
           </div>
         )}
         {notices.map((n) => (
@@ -95,7 +97,7 @@ export default async function TenantProtectedLayout({
         )}
         {viewer && (
           <div className="bg-amber-500 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">
-            هذا حساب عرض — البيانات للاطّلاع فقط
+            {t.shell.viewer}
           </div>
         )}
         <header className="flex items-center justify-between border-b bg-white px-6 py-4 print:hidden">
@@ -104,10 +106,11 @@ export default async function TenantProtectedLayout({
             {org.name}
           </span>
           <div className="flex items-center gap-4 text-sm text-gray-500">
-            <span>{ROLE_LABELS[org.myRole] ?? org.myRole}</span>
+            {translated && <LanguageSwitcher />}
+            <span>{t.shell.roles[org.myRole] ?? org.myRole}</span>
             <form action={signOut}>
-              <SubmitButton className="hover:text-red-600" pendingText="جاري الخروج...">
-                تسجيل خروج
+              <SubmitButton className="hover:text-red-600" pendingText={t.shell.signingOut}>
+                {t.shell.signOut}
               </SubmitButton>
             </form>
           </div>

@@ -31,7 +31,7 @@ interface Entry {
  * so "today" and the highlighted next prayer follow the viewer's own clock,
  * like the phone does.
  */
-function computeToday(settings: Record<string, string>): { entries: Entry[]; next: number } | null {
+function computeToday(settings: Record<string, string>, names: string[]): { entries: Entry[]; next: number } | null {
   try {
     const lat = parseFloat(settings.prayer_lat ?? '');
     const lng = parseFloat(settings.prayer_lng ?? '');
@@ -40,11 +40,11 @@ function computeToday(settings: Record<string, string>): { entries: Entry[]; nex
     params.madhab = settings.prayer_madhab === 'hanafi' ? Madhab.Hanafi : Madhab.Shafi;
     const pt = new PrayerTimes(new Coordinates(lat, lng), new Date(), params);
     const entries: Entry[] = [
-      { label: 'الفجر', time: pt.fajr },
-      { label: 'الظهر', time: pt.dhuhr },
-      { label: 'العصر', time: pt.asr },
-      { label: 'المغرب', time: pt.maghrib },
-      { label: 'العشاء', time: pt.isha },
+      { label: names[0], time: pt.fajr },
+      { label: names[1], time: pt.dhuhr },
+      { label: names[2], time: pt.asr },
+      { label: names[3], time: pt.maghrib },
+      { label: names[4], time: pt.isha },
     ];
     const now = Date.now();
     const next = entries.findIndex((e) => e.time.getTime() > now);
@@ -56,9 +56,10 @@ function computeToday(settings: Record<string, string>): { entries: Entry[]; nex
 
 const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
-export function PrayerTimesCard({ settings }: { settings: Record<string, string> }) {
+/** `names`: Fajr..Isha in the viewer's language (t.portal.prayers). */
+export function PrayerTimesCard({ settings, names }: { settings: Record<string, string>; names: string[] }) {
   const [today, setToday] = useState<ReturnType<typeof computeToday>>(null);
-  useEffect(() => setToday(computeToday(settings)), [settings]);
+  useEffect(() => setToday(computeToday(settings, names)), [settings, names]);
   if (!today) return null;
   return (
     <div className="grid grid-cols-5 gap-1 rounded-lg border bg-white p-2 text-center">

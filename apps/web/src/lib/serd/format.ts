@@ -1,3 +1,6 @@
+import { ar } from '@/lib/i18n/dictionaries/ar';
+import { fmt } from '@/lib/i18n/config';
+
 // Shared bits for the serd (سرد) pages. Everything the server decides (score,
 // points, what is permitted) is computed in SQL; this file only names things.
 
@@ -11,12 +14,7 @@ export const JUZ_NAMES = [
 export const DEN_NAMES: Record<number, string> = { 1: 'الجزء كاملاً', 2: 'النصف', 4: 'الربع', 8: 'الثُمن' };
 const ORDINALS = ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن'];
 
-export const STATUS_LABELS: Record<string, string> = {
-  scheduled: 'مجدول',
-  submitted: 'بانتظار الاعتماد',
-  approved: 'معتمد',
-  rejected: 'مرفوض',
-};
+export const STATUS_LABELS: Record<string, string> = ar.labels.serdStatus;
 
 export const STATUS_STYLES: Record<string, string> = {
   scheduled: 'bg-blue-50 text-blue-700',
@@ -72,13 +70,21 @@ export interface SerdRow {
   errors: { name: string; count: number; deducted: number }[];
 }
 
-export function partLabel(p: SerdPart): string {
-  const base = `جزء ${p.juz}${p.juz_name ? ` — ${p.juz_name}` : ''}`;
-  const label = portionLabel(p.den, p.index);
+type Labels = typeof ar.labels;
+
+/** 'جزء 3 — تلك الرسل (النصف الأول)'. `labels` is t.labels on translated screens (no juz names outside Arabic). */
+export function partLabel(p: SerdPart, labels: Labels = ar.labels): string {
+  const arabic = labels === ar.labels;
+  const base = `${fmt(labels.juz, { n: p.juz })}${arabic && p.juz_name ? ` — ${p.juz_name}` : ''}`;
+  const label = arabic
+    ? portionLabel(p.den, p.index)
+    : p.den <= 1
+      ? ''
+      : fmt(labels.portion, { den: labels.portionDen[p.den] ?? '', ord: labels.portionOrd[p.index - 1] ?? '' });
   return label ? `${base} (${label})` : base;
 }
 
-export const partsLabel = (parts: SerdPart[]) => parts.map(partLabel).join('، ');
+export const partsLabel = (parts: SerdPart[], labels: Labels = ar.labels) => parts.map((p) => partLabel(p, labels)).join(labels.listSep);
 
 /** '3.5' - how much Quran an amount of eighths comes to. */
 export function juzEquivalent(eighths: number): string {
@@ -98,4 +104,4 @@ export function readParts(formData: FormData): { juz: number; den: number; index
     .filter((p) => p.juz > 0);
 }
 
-export const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('ar') : '—');
+export const fmtDate = (iso: string | null, lang = 'ar') => (iso ? new Date(iso).toLocaleDateString(lang) : '—');

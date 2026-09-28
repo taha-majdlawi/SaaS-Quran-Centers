@@ -1,12 +1,21 @@
-import { AUDIENCE_LABELS, STATE_LABELS, fmtRange, fmtTime, type CalEntry, type CalImage } from '@/lib/calendar/format';
+import { fmtRange, fmtTime, type CalEntry, type CalImage } from '@/lib/calendar/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 /** The read-only facts about one calendar entry (shared by staff and portal). */
-export function CalendarEntryInfo({ entry }: { entry: CalEntry & { images?: CalImage[] } }) {
+export async function CalendarEntryInfo({ entry }: { entry: CalEntry & { images?: CalImage[] } }) {
+  const { t } = await getI18n();
+  const C = t.calendar;
   const rows: [string, string | null][] = [
-    ['التاريخ', `${fmtRange(entry)}${entry.starts_at ? ` · ${fmtTime(entry.starts_at)}` : ''}`],
-    ['المكان', entry.location],
-    ['الجمهور', [AUDIENCE_LABELS[entry.audience], entry.circle_name && `حلقة ${entry.circle_name}`, entry.stage_name && `مرحلة ${entry.stage_name}`].filter(Boolean).join(' · ')],
-    ['الدوام', entry.is_working_day ? 'يوم دوام' : 'ليس يوم دوام (لا يُحتسب في نسبة الحضور)'],
+    [C.date, `${fmtRange(entry, t.labels.dateLocale)}${entry.starts_at ? ` · ${fmtTime(entry.starts_at)}` : ''}`],
+    [C.place, entry.location],
+    [
+      C.audience,
+      [t.labels.audience[entry.audience], entry.circle_name && fmt(C.circle, { name: entry.circle_name }), entry.stage_name && fmt(C.stage, { name: entry.stage_name })]
+        .filter(Boolean)
+        .join(' · '),
+    ],
+    [C.work, entry.is_working_day ? C.workDay : C.offDay],
   ];
   return (
     <div className="rounded-lg border bg-white p-5">
@@ -43,14 +52,11 @@ export function CalendarEntryInfo({ entry }: { entry: CalEntry & { images?: CalI
       </dl>
       {entry.supports_registration && (
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded bg-gray-50 px-3 py-2 text-sm">
-          <span className="font-semibold">{STATE_LABELS[entry.registration_state]}</span>
-          <span>
-            المسجّلون: {entry.taken}
-            {entry.capacity ? ` / ${entry.capacity}` : ''}
-          </span>
-          {entry.waiting > 0 && <span>قائمة الانتظار: {entry.waiting}</span>}
-          {entry.registration_deadline && <span>آخر موعد: {entry.registration_deadline}</span>}
-          {entry.requires_guardian_consent && <span className="text-amber-700">تحتاج موافقة ولي الأمر</span>}
+          <span className="font-semibold">{t.labels.registration[entry.registration_state]}</span>
+          <span>{fmt(C.taken, { n: `${entry.taken}${entry.capacity ? ` / ${entry.capacity}` : ''}` })}</span>
+          {entry.waiting > 0 && <span>{fmt(C.waitlist, { n: entry.waiting })}</span>}
+          {entry.registration_deadline && <span>{fmt(C.deadline, { date: entry.registration_deadline })}</span>}
+          {entry.requires_guardian_consent && <span className="text-amber-700">{C.needsConsent}</span>}
         </div>
       )}
     </div>

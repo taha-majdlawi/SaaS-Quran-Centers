@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { markAllRead, setPref } from '@/lib/comms/actions';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Item {
   id: string;
@@ -79,17 +81,19 @@ export async function NotificationsView({ orgId, portal, embedded = false }: { o
   const items = (data ?? []) as Item[];
   const prefs = (prefsData ?? { types: [] }) as { types: PrefType[]; quiet_from?: string; quiet_to?: string };
   const unread = items.filter((i) => !i.read).length;
+  const { t } = await getI18n();
+  const N = t.notifications;
 
   return (
     <div className="max-w-2xl">
       <div className="mb-4 flex items-center justify-between">
-        {embedded ? <span /> : <h1 className="text-2xl font-bold">الإشعارات</h1>}
+        {embedded ? <span /> : <h1 className="text-2xl font-bold">{N.title}</h1>}
         {unread > 0 && (
           <form action={markAllRead}>
             <input type="hidden" name="orgId" value={orgId} />
             <input type="hidden" name="back" value={back} />
             <SubmitButton className="rounded border px-3 py-1.5 text-sm text-brand" pendingText="...">
-              تعليم الكل كمقروء ({unread})
+              {fmt(N.markAll, { n: unread })}
             </SubmitButton>
           </form>
         )}
@@ -102,7 +106,7 @@ export async function NotificationsView({ orgId, portal, embedded = false }: { o
             <div className={`rounded-lg border p-3 text-sm ${n.read ? 'bg-white' : 'border-brand/40 bg-brand/5'}`}>
               <div className="flex items-center justify-between gap-2">
                 <b>{n.title}</b>
-                <span className="text-xs text-gray-400">{new Date(n.created_at).toLocaleString('ar', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="text-xs text-gray-400">{new Date(n.created_at).toLocaleString(t.labels.dateLocale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               {n.body && <p className="mt-1 text-gray-600">{n.body}</p>}
             </div>
@@ -115,22 +119,22 @@ export async function NotificationsView({ orgId, portal, embedded = false }: { o
             <div key={n.id}>{inner}</div>
           );
         })}
-        {!items.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد إشعارات</p>}
+        {!items.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{N.none}</p>}
       </div>
 
-      <h2 className="mb-1 font-semibold">ما أريد أن يصلني</h2>
+      <h2 className="mb-1 font-semibold">{N.prefs}</h2>
       {prefs.quiet_from && prefs.quiet_to && (
-        <p className="mb-2 text-xs text-gray-500">لا تصل إشعارات الهاتف بين {prefs.quiet_from} و{prefs.quiet_to} — تُؤجَّل إلى الصباح.</p>
+        <p className="mb-2 text-xs text-gray-500">{fmt(N.quiet, { from: prefs.quiet_from, to: prefs.quiet_to })}</p>
       )}
       <div className="flex flex-col gap-1 rounded-lg border bg-white p-3 text-sm">
-        {prefs.types.map((t) => (
-          <form key={t.event_key} action={setPref} className="flex items-center justify-between py-1">
+        {prefs.types.map((pt) => (
+          <form key={pt.event_key} action={setPref} className="flex items-center justify-between py-1">
             <input type="hidden" name="orgId" value={orgId} />
-            <input type="hidden" name="event" value={t.event_key} />
-            <input type="hidden" name="enabled" value={t.enabled ? '0' : '1'} />
+            <input type="hidden" name="event" value={pt.event_key} />
+            <input type="hidden" name="enabled" value={pt.enabled ? '0' : '1'} />
             <input type="hidden" name="back" value={back} />
-            <span>{t.name}</span>
-            <button className={`rounded-full px-3 py-1 text-xs ${t.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{t.enabled ? 'مفعّل' : 'متوقف'}</button>
+            <span>{pt.name}</span>
+            <button className={`rounded-full px-3 py-1 text-xs ${pt.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{pt.enabled ? N.on : N.off}</button>
           </form>
         ))}
       </div>

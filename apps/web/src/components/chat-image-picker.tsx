@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import type { ChatLabels } from '@/components/chat-conversation';
 
 const MAX = 5 * 1024 * 1024;
 
@@ -9,7 +10,7 @@ const MAX = 5 * 1024 * 1024;
  * (with a remove button) BEFORE sending, so it is clear the message carries one.
  * The <input name="image"> lives inside the form, so the server action gets the file.
  */
-export function ChatImagePicker() {
+export function ChatImagePicker({ labels: L }: { labels: Pick<ChatLabels, 'imageSize' | 'attach' | 'remove'> }) {
   const input = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -32,7 +33,7 @@ export function ChatImagePicker() {
       return;
     }
     if (file.size > MAX) {
-      setError('حجم الصورة الأقصى 5 ميغابايت');
+      setError(L.imageSize);
       clear();
       return;
     }
@@ -42,7 +43,7 @@ export function ChatImagePicker() {
 
   return (
     <>
-      <label className="cursor-pointer rounded border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" title="إرفاق صورة">
+      <label className="cursor-pointer rounded border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50" title={L.attach}>
         📷
         <input ref={input} type="file" name="image" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onChange} />
       </label>
@@ -54,7 +55,7 @@ export function ChatImagePicker() {
               <img src={preview} alt="" className="h-16 w-16 rounded object-cover" />
               <span className="flex-1 truncate text-gray-600">{name}</span>
               <button type="button" onClick={clear} className="rounded border px-2 py-1 text-red-600 hover:bg-red-50">
-                إزالة
+                {L.remove}
               </button>
             </>
           )}

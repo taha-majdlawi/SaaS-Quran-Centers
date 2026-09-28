@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ayahAudioUrl, arabicNumber, type QuranAyah, type Reciter } from '@/lib/quran/reader';
 import { savePosition, toggleBookmark } from '@/lib/quran/actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 /**
  * The reading view of one surah: tap an ayah to play from it, bookmark it, or
@@ -17,6 +18,7 @@ export function QuranReader({
   reciters,
   bookmarked: initialBookmarks,
   startAyah,
+  labels: L,
 }: {
   orgId: string;
   surah: number;
@@ -24,6 +26,8 @@ export function QuranReader({
   reciters: Reciter[];
   bookmarked: number[];
   startAyah?: number;
+  /** t.quran.ui */
+  labels: Dictionary['quran']['ui'];
 }) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const [reciterId, setReciterId] = useState(reciters[0]?.id ?? '');
@@ -72,7 +76,7 @@ export function QuranReader({
     last.current = n;
     setCurrent(n);
     el.src = ayahAudioUrl(reciterId, surah, n);
-    el.play().then(() => setPlaying(true)).catch(() => setError('تعذّر تشغيل التلاوة'));
+    el.play().then(() => setPlaying(true)).catch(() => setError(L.playFailed));
     document.getElementById(`ayah-${n}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -122,12 +126,12 @@ export function QuranReader({
 
       <div className="sticky top-0 z-10 mb-4 flex flex-wrap items-center gap-3 rounded-lg border bg-white p-3 text-sm shadow-sm">
         <button onClick={toggle} className="rounded bg-brand px-4 py-1.5 font-semibold text-white">
-          {playing ? '⏸ إيقاف' : '▶ تشغيل'}
+          {playing ? L.pause : L.play}
         </button>
-        <button onClick={() => current && current > 1 && play(current - 1)} className="rounded border px-2 py-1" aria-label="السابقة">
+        <button onClick={() => current && current > 1 && play(current - 1)} className="rounded border px-2 py-1" aria-label={L.prevAyah}>
           ⏮
         </button>
-        <button onClick={() => (current ?? 0) < ayahs.length && play((current ?? 0) + 1)} className="rounded border px-2 py-1" aria-label="التالية">
+        <button onClick={() => (current ?? 0) < ayahs.length && play((current ?? 0) + 1)} className="rounded border px-2 py-1" aria-label={L.nextAyah}>
           ⏭
         </button>
         <select
@@ -147,7 +151,7 @@ export function QuranReader({
           ))}
         </select>
         <label className="flex items-center gap-1">
-          تكرار
+          {L.repeat}
           <select value={repeat} onChange={(e) => setRepeat(Number(e.target.value))} className="rounded border px-1 py-1">
             {[1, 2, 3, 5, 10].map((n) => (
               <option key={n} value={n}>
@@ -156,7 +160,7 @@ export function QuranReader({
             ))}
           </select>
         </label>
-        <span className="mr-auto flex items-center gap-1">
+        <span className="ms-auto flex items-center gap-1">
           {(['−', '+'] as const).map((sign) => (
             <button
               key={sign}
@@ -169,7 +173,7 @@ export function QuranReader({
                 } catch {}
               }}
             >
-              {sign === '+' ? 'أ+' : 'أ−'}
+              {sign === '+' ? L.bigger : L.smaller}
             </button>
           ))}
         </span>
@@ -197,10 +201,10 @@ export function QuranReader({
             {menu === a.number && (
               <span className="mx-1 inline-flex gap-1 align-middle font-sans text-xs" onClick={(e) => e.stopPropagation()}>
                 <button className="rounded border bg-white px-2 py-0.5" onClick={() => { setMenu(null); play(a.number); }}>
-                  ▶ من هنا
+                  {L.fromHere}
                 </button>
                 <button className="rounded border bg-white px-2 py-0.5" onClick={() => { setMenu(null); void mark(a.number); }}>
-                  {marks.has(a.number) ? 'إزالة العلامة' : '🔖 علامة'}
+                  {marks.has(a.number) ? L.unmark : L.mark}
                 </button>
                 <button
                   className="rounded border bg-white px-2 py-0.5"
@@ -209,7 +213,7 @@ export function QuranReader({
                     void navigator.clipboard?.writeText(`${a.text} ﴿${arabicNumber(a.number)}﴾`);
                   }}
                 >
-                  نسخ
+                  {L.copy}
                 </button>
               </span>
             )}

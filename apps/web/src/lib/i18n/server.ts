@@ -23,6 +23,11 @@ export const getLocale = cache(async (): Promise<Locale> => {
   return DEFAULT_LOCALE;
 });
 
+/** Is this screen translated (so a language picker belongs on it)? */
+export async function isTranslatedScreen(): Promise<boolean> {
+  return (await headers()).get(I18N_READY_HEADER) === '1';
+}
+
 /** Locale, direction and the dictionary for server components and server actions. */
 export async function getI18n(): Promise<{ locale: Locale; dir: 'rtl' | 'ltr'; t: Dictionary }> {
   const locale = await getLocale();

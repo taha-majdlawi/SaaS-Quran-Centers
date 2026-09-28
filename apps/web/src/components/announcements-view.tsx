@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { AUDIENCE_LABELS } from '@/lib/calendar/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export interface AnnouncementRow {
   id: string;
@@ -20,19 +20,21 @@ export async function AnnouncementsList({ orgId, manage, ok }: { orgId: string; 
   const supabase = await createClient();
   const { data } = await supabase.rpc('list_announcements', { p_org: orgId });
   const rows = (data ?? []) as AnnouncementRow[];
+  const { t } = await getI18n();
+  const A = t.announcements;
 
   return (
     <div className="max-w-2xl">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">الإعلانات</h1>
+        <h1 className="text-2xl font-bold">{A.title}</h1>
         {manage && (
           <a href="/announcements/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-            + إعلان جديد
+            {A.new}
           </a>
         )}
       </div>
-      {ok === 'saved' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحفظ ✓</p>}
-      {ok === 'deleted' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحذف</p>}
+      {ok === 'saved' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{A.saved}</p>}
+      {ok === 'deleted' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{A.deleted}</p>}
       <div className="flex flex-col gap-3">
         {rows.map((a) => (
           <article key={a.id} className="rounded-lg border bg-white p-4 text-sm">
@@ -42,14 +44,14 @@ export async function AnnouncementsList({ orgId, manage, ok }: { orgId: string; 
                 {a.title}
               </h2>
               <span className="flex items-center gap-2 text-xs text-gray-500">
-                {a.draft && <span className="rounded bg-amber-50 px-2 py-0.5 text-amber-700">مسودة</span>}
+                {a.draft && <span className="rounded bg-amber-50 px-2 py-0.5 text-amber-700">{A.draft}</span>}
                 {manage && (
                   <span className="rounded bg-gray-100 px-2 py-0.5">
-                    {AUDIENCE_LABELS[a.audience]}
+                    {t.labels.audience[a.audience]}
                     {a.circle_name && ` · ${a.circle_name}`}
                   </span>
                 )}
-                {a.published_at && new Date(a.published_at).toLocaleDateString('ar')}
+                {a.published_at && new Date(a.published_at).toLocaleDateString(t.labels.dateLocale)}
               </span>
             </div>
             <p className="mt-2 whitespace-pre-line text-gray-700">{a.body}</p>
@@ -57,13 +59,13 @@ export async function AnnouncementsList({ orgId, manage, ok }: { orgId: string; 
               <span>{a.author}</span>
               {manage && a.can_edit && (
                 <a href={`/announcements/${a.id}` as never} className="text-brand hover:underline">
-                  تعديل
+                  {A.edit}
                 </a>
               )}
             </p>
           </article>
         ))}
-        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد إعلانات</p>}
+        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{A.none}</p>}
       </div>
     </div>
   );

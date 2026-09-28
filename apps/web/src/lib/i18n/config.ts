@@ -32,8 +32,18 @@ export const I18N_READY_HEADER = 'x-bustan-i18n';
 /** Request header carrying an explicit ?lang= choice for this very request. */
 export const LANG_OVERRIDE_HEADER = 'x-bustan-lang';
 
-/** Tenant-subdomain paths translated so far (phase 1: the public + sign-in screens). */
-const TENANT_READY = [/^\/$/, /^\/login$/, /^\/join$/, /^\/forgot-password$/, /^\/reset-password$/, /^\/privacy$/, /^\/support$/, /^\/delete-account$/];
+/** Tenant-subdomain paths translated so far: phase 1 the public + sign-in screens, phase 2 the student / guardian portal. */
+const TENANT_READY = [
+  /^\/$/,
+  /^\/login$/,
+  /^\/join$/,
+  /^\/forgot-password$/,
+  /^\/reset-password$/,
+  /^\/privacy$/,
+  /^\/support$/,
+  /^\/delete-account$/,
+  /^\/my(\/.*)?$/,
+];
 
 /** scope: how middleware.ts routed the request ('platform' is Arabic-only by design). */
 export function isI18nReady(scope: 'marketing' | 'tenant' | 'platform', pathname: string): boolean {

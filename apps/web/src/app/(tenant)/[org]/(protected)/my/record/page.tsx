@@ -2,14 +2,12 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
 import { RecitationsSearchList } from '@/components/portal/recitations-search-list';
-import { ATTENDANCE_LABELS, ATTENDANCE_STYLES, fmtDate, localDate, type RecordDetail } from '@/lib/portal/format';
+import { ATTENDANCE_STYLES, fmtDate, localDate, recitationLabels, type RecordDetail } from '@/lib/portal/format';
+import { getI18n } from '@/lib/i18n/server';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
-const TABS = [
-  ['recitations', 'التسميع'],
-  ['attendance', 'الحضور'],
-  ['serd', 'السرد'],
-] as const;
-type Tab = (typeof TABS)[number][0];
+const TABS = ['recitations', 'attendance', 'serd'] as const;
+type Tab = (typeof TABS)[number];
 
 // سجلّي: تسميع / حضور / سرد, one segment at a time - the mobile _RecordTab
 // (my_portal_screen.dart). Recitations + attendance come from
@@ -25,7 +23,8 @@ export default async function MyRecordPage({
   const { s, tab: tabParam } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
-  const tab: Tab = TABS.some(([k]) => k === tabParam) ? (tabParam as Tab) : 'recitations';
+  const tab: Tab = TABS.some((k) => k === tabParam) ? (tabParam as Tab) : 'recitations';
+  const { t } = await getI18n();
 
   // RLS shows a student only their own row and a guardian only their children
   const [{ data: students }, { data: orgRow }] = await Promise.all([
@@ -50,12 +49,12 @@ export default async function MyRecordPage({
   return (
     <div className="mx-auto max-w-3xl p-6">
       <a href="/my" className="text-sm text-brand hover:underline">
-        ← ملفي
+        {t.portal.backToProfile}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">سجلّي</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{t.record.title}</h1>
 
       {!current ? (
-        <p className="text-gray-500">لا يوجد طالب مرتبط بحسابك.</p>
+        <p className="text-gray-500">{t.portal.noStudent}</p>
       ) : (
         <>
           {list.length > 1 && (
@@ -73,22 +72,22 @@ export default async function MyRecordPage({
           )}
 
           <nav className="mb-4 grid grid-cols-3 overflow-hidden rounded-lg border bg-white text-center text-sm">
-            {TABS.map(([key, label]) => (
+            {TABS.map((key) => (
               <a
                 key={key}
                 href={href(key) as never}
                 aria-current={tab === key ? 'page' : undefined}
                 className={`py-2 font-semibold ${tab === key ? 'bg-brand text-white' : 'text-gray-600 hover:bg-gray-50'}`}
               >
-                {label}
+                {t.record.tabs[key]}
               </a>
             ))}
           </nav>
 
           {detail.error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{detail.error.message}</p>}
 
-          {tab === 'recitations' && rd && <RecitationsTab rd={rd} tz={tz} gradeLabels={gradeLabels} />}
-          {tab === 'attendance' && rd && <AttendanceTab rows={rd.attendance} />}
+          {tab === 'recitations' && rd && <RecitationsTab rd={rd} tz={tz} gradeLabels={gradeLabels} t={t} />}
+          {tab === 'attendance' && rd && <AttendanceTab rows={rd.attendance} t={t} />}
           {tab === 'serd' && <SerdSummaryCard summary={serd.data as SerdSummary | null} />}
         </>
       )}
@@ -96,7 +95,7 @@ export default async function MyRecordPage({
   );
 }
 
-function RecitationsTab({ rd, tz, gradeLabels }: { rd: RecordDetail; tz: string; gradeLabels: Map<string, string> }) {
+function RecitationsTab({ rd, tz, gradeLabels, t }: { rd: RecordDetail; tz: string; gradeLabels: Map<string, string>; t: Dictionary }) {
   const month = localDate(tz).slice(0, 7);
   const inMonth = (iso: string) => localDate(tz, new Date(iso)).slice(0, 7) === month;
   const monthly = rd.recitations.filter((r) => inMonth(r.created_at));
@@ -108,13 +107,13 @@ function RecitationsTab({ rd, tz, gradeLabels }: { rd: RecordDetail; tz: string;
   return (
     <div className="flex flex-col gap-4">
       <section className="rounded-lg border bg-white p-4 text-sm">
-        <h2 className="mb-3 font-bold">هذا الشهر</h2>
+        <h2 className="mb-3 font-bold">{t.record.thisMonth}</h2>
         <div className="grid grid-cols-4 gap-2 text-center">
           {[
-            ['تسميعات', monthly.length],
-            ['آيات', ayahs],
-            ['حضور', rate == null ? '—' : `${rate}%`],
-            ['نقاط', rd.monthly_points],
+            [t.record.recitations, monthly.length],
+            [t.record.ayahs, ayahs],
+            [t.record.attendance, rate == null ? '—' : `${rate}%`],
+            [t.record.points, rd.monthly_points],
           ].map(([label, value]) => (
             <div key={String(label)}>
               <p className="text-lg font-bold">{value}</p>
@@ -126,7 +125,7 @@ function RecitationsTab({ rd, tz, gradeLabels }: { rd: RecordDetail; tz: string;
 
       {rd.points_breakdown.length > 0 && (
         <section className="rounded-lg border bg-white p-4 text-sm">
-          <h2 className="mb-3 font-bold">تفصيل النقاط</h2>
+          <h2 className="mb-3 font-bold">{t.record.breakdown}</h2>
           <ul className="flex flex-col gap-1.5">
             {rd.points_breakdown.map((r) => (
               <li key={`${r.grade}-${r.points_each}`} className="flex justify-between">
@@ -141,23 +140,23 @@ function RecitationsTab({ rd, tz, gradeLabels }: { rd: RecordDetail; tz: string;
       )}
 
       {rd.recitations.length ? (
-        <RecitationsSearchList recitations={rd.recitations} />
+        <RecitationsSearchList recitations={rd.recitations} labels={recitationLabels(t)} />
       ) : (
-        <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا يوجد تسميعات بعد</p>
+        <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{t.portal.noRecitations}</p>
       )}
     </div>
   );
 }
 
-function AttendanceTab({ rows }: { rows: RecordDetail['attendance'] }) {
-  if (!rows.length) return <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا يوجد سجل حضور بعد</p>;
+function AttendanceTab({ rows, t }: { rows: RecordDetail['attendance']; t: Dictionary }) {
+  if (!rows.length) return <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{t.record.noAttendance}</p>;
   return (
     <ul className="flex flex-col gap-2 text-sm">
       {rows.map((a) => (
         <li key={a.date} className="flex items-center justify-between rounded-lg border bg-white px-4 py-2.5">
-          <span>{fmtDate(`${a.date}T00:00:00`)}</span>
+          <span>{fmtDate(`${a.date}T00:00:00`, t.labels.dateLocale)}</span>
           <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${ATTENDANCE_STYLES[a.status] ?? 'bg-gray-100 text-gray-600'}`}>
-            {ATTENDANCE_LABELS[a.status] ?? a.status}
+            {t.labels.attendance[a.status] ?? a.status}
           </span>
         </li>
       ))}

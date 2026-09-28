@@ -1,6 +1,8 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
-import { CHALLENGE_STATUS, METRIC_LABELS, fmtDate, ruleText, type BadgeProgress } from '@/lib/engagement/format';
+import { fmtDate, ruleText, type BadgeProgress } from '@/lib/engagement/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Leaderboard {
   enabled: boolean;
@@ -34,6 +36,9 @@ export default async function MyBadgesPage({
   const { s } = await searchParams;
   const org = await getOrgContext(slug);
   const supabase = await createClient();
+  const { t } = await getI18n();
+  const B = t.badges;
+  const lang = t.labels.dateLocale;
 
   const { data: students } = await supabase.from('students_profile').select('id, full_name').eq('organization_id', org.id).order('full_name');
   const list = (students ?? []) as { id: string; full_name: string }[];
@@ -56,9 +61,9 @@ export default async function MyBadgesPage({
   return (
     <div className="mx-auto max-w-3xl p-6">
       <a href="/my" className="text-sm text-brand hover:underline">
-        ← ملفي
+        {t.portal.backToProfile}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">الشارات والمنافسة</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{B.title}</h1>
       {list.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-2 text-sm">
           {list.map((x) => (
@@ -69,7 +74,7 @@ export default async function MyBadgesPage({
         </div>
       )}
 
-      <h2 className="mb-2 font-semibold">شاراتي</h2>
+      <h2 className="mb-2 font-semibold">{B.mine}</h2>
       <div className="mb-8 grid gap-3 sm:grid-cols-2">
         {badges.map((b) => {
           const pct = b.goal > 0 ? Math.min(100, Math.round((b.progress / b.goal) * 100)) : 0;
@@ -81,16 +86,16 @@ export default async function MyBadgesPage({
                 </span>
                 <div>
                   <b>{b.name}</b>
-                  <p className="text-xs text-gray-500">{b.description ?? ruleText(b, labels)}</p>
+                  <p className="text-xs text-gray-500">{b.description ?? ruleText(b, labels, t.labels.rule)}</p>
                 </div>
               </div>
               {b.earned ? (
                 <p className="mt-2 text-xs text-green-700">
-                  ✓ مكتسبة {fmtDate(b.awarded_at)}
-                  {b.expires_at && ` · تنتهي ${fmtDate(b.expires_at)}`}
+                  {fmt(B.earned, { date: fmtDate(b.awarded_at, lang) })}
+                  {b.expires_at && fmt(B.expires, { date: fmtDate(b.expires_at, lang) })}
                 </p>
               ) : b.rule_type === 'manual' ? (
-                <p className="mt-2 text-xs text-gray-500">يمنحها المشرف</p>
+                <p className="mt-2 text-xs text-gray-500">{B.manual}</p>
               ) : (
                 <div className="mt-2">
                   <div className="h-2 overflow-hidden rounded bg-gray-100">
@@ -104,19 +109,19 @@ export default async function MyBadgesPage({
             </div>
           );
         })}
-        {!badges.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا توجد شارات في مركزك بعد</p>}
+        {!badges.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{B.none}</p>}
       </div>
 
       {lb?.enabled && lb.rows.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-2 font-semibold">لوحة الشرف — {lb.circle_name}</h2>
+          <h2 className="mb-2 font-semibold">{fmt(B.board, { circle: lb.circle_name ?? '' })}</h2>
           <ol className="overflow-hidden rounded-lg border bg-white text-sm">
             {lb.rows.map((r) => (
               <li key={r.rank + r.name} className={`flex items-center justify-between border-b px-4 py-2 last:border-0 ${r.is_me ? 'bg-green-50 font-semibold' : ''}`}>
                 <span>
                   {r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : `${r.rank}.`} {r.name}
                 </span>
-                <span className="text-brand">{r.points} نقطة</span>
+                <span className="text-brand">{fmt(B.points, { n: r.points })}</span>
               </li>
             ))}
           </ol>
@@ -125,9 +130,9 @@ export default async function MyBadgesPage({
 
       {running && board && (
         <section>
-          <h2 className="mb-1 font-semibold">منافسة الحلقات: {running.title}</h2>
+          <h2 className="mb-1 font-semibold">{fmt(B.challenge, { title: running.title })}</h2>
           <p className="mb-2 text-xs text-gray-500">
-            {METRIC_LABELS[running.metric]} · {fmtDate(running.starts_on)} — {fmtDate(running.ends_on)} · {CHALLENGE_STATUS[running.status]}
+            {t.labels.metric[running.metric]} · {fmtDate(running.starts_on, lang)} — {fmtDate(running.ends_on, lang)} · {t.labels.challengeStatus[running.status]}
           </p>
           <ol className="overflow-hidden rounded-lg border bg-white text-sm">
             {board.rows.map((r) => (

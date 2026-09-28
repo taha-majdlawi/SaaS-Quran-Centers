@@ -3,17 +3,12 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { CalendarEntryInfo } from '@/components/calendar-entry-info';
-import { CONSENT_LABELS, CONSENT_STYLES, type CalDetails } from '@/lib/calendar/format';
+import { CONSENT_STYLES, type CalDetails } from '@/lib/calendar/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 import { familyJoinWaitlist, familyLeaveWaitlist, familyRegister, familyUnregister } from '../actions';
 
 const ROOT = process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com';
-
-const OK_TEXT: Record<string, string> = {
-  registered: 'تم التسجيل ✓',
-  removed: 'أُلغي التسجيل',
-  waiting: 'أُضيف إلى قائمة الانتظار ✓',
-  left: 'خرج من قائمة الانتظار',
-};
 
 export default async function MyCalendarEntryPage({
   params,
@@ -27,6 +22,8 @@ export default async function MyCalendarEntryPage({
   const org = await getOrgContext(slug);
   const supabase = await createClient();
   const back = `/my/calendar/${id}`;
+  const { t } = await getI18n();
+  const C = t.calendar;
 
   const { data } = await supabase.rpc('calendar_entry_details', { p_org: org.id, p_entry: id });
   if (!data) notFound();
@@ -45,10 +42,10 @@ export default async function MyCalendarEntryPage({
   return (
     <div className="mx-auto max-w-3xl p-6">
       <a href="/my/calendar" className="text-sm text-brand hover:underline">
-        ← التقويم
+        {C.back}
       </a>
       <div className="mt-2 flex flex-col gap-4">
-        {ok && OK_TEXT[ok] && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{OK_TEXT[ok]}</p>}
+        {ok && C.ok[ok] && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{C.ok[ok]}</p>}
         {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         <CalendarEntryInfo entry={entry} />
 
@@ -59,21 +56,21 @@ export default async function MyCalendarEntryPage({
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <b>{m.student_name}</b>
                   {m.registration_id ? (
-                    <span className="rounded bg-green-50 px-2 py-0.5 text-xs text-green-700">مسجّل ✓</span>
+                    <span className="rounded bg-green-50 px-2 py-0.5 text-xs text-green-700">{C.registered}</span>
                   ) : m.waiting ? (
-                    <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">في قائمة الانتظار</span>
+                    <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{C.onWaitlist}</span>
                   ) : null}
                 </div>
 
                 {m.registration_id && entry.requires_guardian_consent && (
                   <div className="mt-2 text-xs">
                     <span className={`rounded px-2 py-0.5 ${CONSENT_STYLES[m.consent_status ?? ''] ?? ''}`}>
-                      موافقة ولي الأمر: {CONSENT_LABELS[m.consent_status ?? 'not_required']}
+                      {fmt(C.consent, { status: t.labels.consent[m.consent_status ?? 'not_required'] })}
                     </span>
                     {m.consent_status === 'pending' && (
                       <p className="mt-2 text-gray-600">
-                        أرسل هذا الرابط لولي الأمر ليوافق:
-                        <code className="mr-1 select-all rounded bg-gray-100 px-2 py-1" dir="ltr">
+                        {C.consentLink}
+                        <code className="ms-1 select-all rounded bg-gray-100 px-2 py-1" dir="ltr">
                           https://{ROOT}/consent/{m.consent_token}
                         </code>
                       </p>
@@ -82,7 +79,7 @@ export default async function MyCalendarEntryPage({
                 )}
                 {m.result_rank && (
                   <p className="mt-2 text-xs">
-                    النتيجة: الترتيب {m.result_rank}
+                    {fmt(C.result, { rank: m.result_rank })}
                     {m.result_note && ` — ${m.result_note}`}
                   </p>
                 )}
@@ -94,31 +91,31 @@ export default async function MyCalendarEntryPage({
                         <input type="hidden" name="registrationId" value={m.registration_id} />
                         <input type="hidden" name="back" value={back} />
                         <SubmitButton className="rounded border border-red-200 px-3 py-1.5 text-red-600" pendingText="...">
-                          إلغاء التسجيل
+                          {C.unregister}
                         </SubmitButton>
                       </form>
                     ) : (
-                      <span className="text-xs text-gray-500">سجّله المعلم أو المشرف — للإلغاء تواصل معه</span>
+                      <span className="text-xs text-gray-500">{C.staffRegistered}</span>
                     )
                   ) : state === 'open' ? (
                     <form action={familyRegister}>
                       {hidden(m.student_id)}
                       <SubmitButton className="rounded bg-brand px-3 py-1.5 font-semibold text-white" pendingText="...">
-                        تسجيل
+                        {C.register}
                       </SubmitButton>
                     </form>
                   ) : state === 'full' && !m.waiting ? (
                     <form action={familyJoinWaitlist}>
                       {hidden(m.student_id)}
                       <SubmitButton className="rounded border px-3 py-1.5 text-brand" pendingText="...">
-                        انضم لقائمة الانتظار
+                        {C.joinWaitlist}
                       </SubmitButton>
                     </form>
                   ) : m.waiting ? (
                     <form action={familyLeaveWaitlist}>
                       {hidden(m.student_id)}
                       <SubmitButton className="rounded border px-3 py-1.5" pendingText="...">
-                        اخرج من قائمة الانتظار
+                        {C.leaveWaitlist}
                       </SubmitButton>
                     </form>
                   ) : null}

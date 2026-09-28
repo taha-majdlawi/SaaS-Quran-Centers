@@ -1,11 +1,13 @@
-import { monthBounds, MONTH_NAMES, type CalRange } from '@/lib/calendar/format';
+import { monthBounds, type CalRange } from '@/lib/calendar/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 /**
  * A month grid (Sunday first, like the center's week pattern). Shaded days are
  * non-working (weekly pattern or a dated holiday/closure); a dot marks a serd
  * day; each cell lists up to two entries in their type colour.
  */
-export function CalendarMonth({
+export async function CalendarMonth({
   ym,
   range,
   base,
@@ -18,6 +20,8 @@ export function CalendarMonth({
   entryHref: (id: string) => string;
 }) {
   const b = monthBounds(ym);
+  const { t, locale } = await getI18n();
+  const C = t.calendar;
   const first = new Date(b.year, b.month, 1);
   const daysInMonth = new Date(b.year, b.month + 1, 0).getDate();
   const lead = first.getDay(); // 0 = Sunday
@@ -34,21 +38,22 @@ export function CalendarMonth({
     <div>
       <div className="mb-3 flex items-center justify-between">
         <a href={`${base}?month=${b.prev}` as never} className="rounded border px-3 py-1 text-sm">
-          ‹ السابق
+          {C.prev}
         </a>
         <h2 className="text-lg font-bold">
-          {MONTH_NAMES[b.month]} {b.year}
+          {t.labels.months[b.month]} {b.year}
         </h2>
         <a href={`${base}?month=${b.next}` as never} className="rounded border px-3 py-1 text-sm">
-          التالي ›
+          {C.next}
         </a>
       </div>
 
       <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border bg-gray-200 text-xs">
         {Array.from({ length: 7 }, (_, dow) => (
           <div key={dow} className="bg-gray-50 px-1 py-2 text-center font-semibold">
-            {weekday.get(dow)?.label ?? dow}
-            {weekday.get(dow)?.is_serd_day && <span className="mr-1 text-purple-600">●</span>}
+            {/* the center's own day names in Arabic; fixed ones otherwise */}
+            {locale === 'ar' ? (weekday.get(dow)?.label ?? dow) : t.labels.weekdays[dow]}
+            {weekday.get(dow)?.is_serd_day && <span className="ms-1 text-purple-600">●</span>}
           </div>
         ))}
         {cells.map((d, i) => {
@@ -62,7 +67,7 @@ export function CalendarMonth({
             <div key={i} className={`min-h-20 p-1 ${closed ? 'bg-gray-100' : 'bg-white'} ${iso === today ? 'ring-2 ring-inset ring-brand' : ''}`}>
               <div className="mb-1 flex items-center justify-between">
                 <span className={`font-semibold ${closed ? 'text-gray-400' : ''}`}>{d}</span>
-                {weekday.get(dow)?.is_serd_day && !closed && <span className="text-[10px] text-purple-600">سرد</span>}
+                {weekday.get(dow)?.is_serd_day && !closed && <span className="text-[10px] text-purple-600">{C.serd}</span>}
               </div>
               <div className="flex flex-col gap-0.5">
                 {entries.slice(0, 2).map((e) => (
@@ -77,15 +82,13 @@ export function CalendarMonth({
                   </a>
                 ))}
                 {entries.length > 2 && <span className="text-[10px] text-gray-500">+{entries.length - 2}</span>}
-                {serd.length > 0 && <span className="text-[10px] text-purple-700">سرد ×{serd.length}</span>}
+                {serd.length > 0 && <span className="text-[10px] text-purple-700">{fmt(C.serdCount, { n: serd.length })}</span>}
               </div>
             </div>
           );
         })}
       </div>
-      <p className="mt-2 text-xs text-gray-500">
-        أيام الدوام في هذا الشهر: <b>{range.working_days}</b> من {range.total_days} · الأيام الرمادية غير دوام · ● أيام السرد
-      </p>
+      <p className="mt-2 text-xs text-gray-500">{fmt(C.legend, { working: range.working_days, total: range.total_days })}</p>
     </div>
   );
 }
