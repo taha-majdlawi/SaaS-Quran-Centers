@@ -274,6 +274,7 @@ export const en: Dictionary = {
     audience: { all: 'Everyone', teachers: 'Teachers', students: 'Students', guardians: 'Guardians' },
     consent: { not_required: '—', pending: 'Awaiting consent', approved: 'Agreed', declined: 'Declined' },
     registration: { none: 'No registration', ended: 'Ended', closed: 'Registration closed', full: 'All places taken', open: 'Registration open' },
+    source: { self: 'Registered themselves', guardian: 'Registered by the guardian', teacher: 'Registered by the teacher', admin: 'Registered by the admin' },
     months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     rule: {
@@ -290,6 +291,7 @@ export const en: Dictionary = {
     portion: '{ord} {den}',
     portionDen: { 2: 'half', 4: 'quarter', 8: 'eighth' },
     portionOrd: ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'],
+    portionWhole: 'Whole',
   },
 
   portal: {

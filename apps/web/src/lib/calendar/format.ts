@@ -105,12 +105,7 @@ export const CONSENT_STYLES: Record<string, string> = {
   declined: 'bg-red-50 text-red-700',
 };
 
-export const SOURCE_LABELS: Record<string, string> = {
-  self: 'سجّل بنفسه',
-  guardian: 'سجّله ولي الأمر',
-  teacher: 'سجّله المعلم',
-  admin: 'سجّله المشرف',
-};
+export const SOURCE_LABELS: Record<string, string> = ar.labels.source;
 
 export const STATE_LABELS: Record<string, string> = ar.labels.registration;
 

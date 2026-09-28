@@ -1,6 +1,8 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
-import { surahName } from '@/lib/quran/data';
+import { surahLabel } from '@/lib/quran/data';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Due {
   student_id: string;
@@ -17,13 +19,15 @@ interface Due {
 export default async function ReviewsPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
+  const { t: T, locale } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const { data } = await supabase.rpc('due_reviews', { p_org: org.id, p_circle: null });
   const rows = (data ?? []) as Due[];
 
   const byCircle = new Map<string, Map<string, Due[]>>();
   for (const r of rows) {
-    const c = r.circle_name ?? 'بدون حلقة';
+    const c = r.circle_name ?? S.reviews.noCircle;
     if (!byCircle.has(c)) byCircle.set(c, new Map());
     const m = byCircle.get(c)!;
     m.set(r.student_id, [...(m.get(r.student_id) ?? []), r]);
@@ -31,11 +35,11 @@ export default async function ReviewsPage({ params }: { params: Promise<{ org: s
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-1 text-2xl font-bold">المراجعة المقترحة اليوم</h1>
+      <h1 className="mb-1 text-2xl font-bold">{S.reviews.title}</h1>
       <p className="mb-5 text-sm text-gray-500">
-        جدول مراجعة بالتكرار المتباعد: كل سورة تُقترح للمراجعة بعد فاصل يكبر مع التقدير الجيد ويعود ليوم واحد مع الضعيف. يُحدَّث تلقائيًا مع كل تسميع.
+        {S.reviews.intro}
       </p>
-      {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا مراجعات مستحقة اليوم ✓</p>}
+      {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{S.reviews.none}</p>}
       <div className="flex flex-col gap-4">
         {[...byCircle.entries()].map(([circle, students]) => (
           <section key={circle} className="rounded-lg border bg-white p-4">
@@ -49,8 +53,8 @@ export default async function ReviewsPage({ params }: { params: Promise<{ org: s
                   <span className="flex flex-wrap gap-1.5">
                     {list.map((r) => (
                       <span key={r.surah} className={`rounded-full px-2 py-0.5 text-xs ${r.days_overdue > 3 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
-                        {surahName(r.surah)}
-                        {r.days_overdue > 0 ? ` · متأخرة ${r.days_overdue}` : ''}
+                        {surahLabel(r.surah, locale)}
+                        {r.days_overdue > 0 ? fmt(S.reviews.overdue, { n: r.days_overdue }) : ''}
                       </span>
                     ))}
                   </span>

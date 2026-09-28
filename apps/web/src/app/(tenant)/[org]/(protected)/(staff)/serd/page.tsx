@@ -5,14 +5,10 @@ import { SubmitButton } from '@/components/submit-button';
 import { STATUS_LABELS, STATUS_STYLES, fmtDate, juzEquivalent, partsLabel, type SerdRow } from '@/lib/serd/format';
 import { deleteSerd, reviewSerd } from './actions';
 import { issueSerdCertificate } from '@/lib/certs/actions';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
-const FILTERS: [string, string][] = [
-  ['', 'الكل'],
-  ['submitted', 'بانتظار الاعتماد'],
-  ['scheduled', 'مجدول'],
-  ['approved', 'معتمد'],
-  ['rejected', 'مرفوض'],
-];
+const FILTERS = ['', 'submitted', 'scheduled', 'approved', 'rejected'];
 
 function Notice({ text, tone }: { text: string; tone: 'ok' | 'error' }) {
   return (
@@ -22,7 +18,10 @@ function Notice({ text, tone }: { text: string; tone: 'ok' | 'error' }) {
   );
 }
 
-function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boolean; students: { id: string; full_name: string }[]; orgId: string }) {
+async function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boolean; students: { id: string; full_name: string }[]; orgId: string }) {
+  const { t: T } = await getI18n();
+  const S = T.staff;
+  const lang = T.labels.dateLocale;
   return (
     <div className="rounded-lg border bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -30,30 +29,30 @@ function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boo
           <span className="font-semibold">{row.student_name}</span>
           {row.student_code && <span className="text-xs text-gray-500"> · {row.student_code}</span>}
           {!row.student_id && row.status !== 'scheduled' && (
-            <span className="mr-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">غير مرتبط بطالب</span>
+            <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{S.serd.unlinked}</span>
           )}
         </div>
-        <span className={`rounded px-2 py-0.5 text-xs ${STATUS_STYLES[row.status] ?? ''}`}>{STATUS_LABELS[row.status] ?? row.status}</span>
+        <span className={`rounded px-2 py-0.5 text-xs ${STATUS_STYLES[row.status] ?? ''}`}>{T.labels.serdStatus[row.status] ?? row.status}</span>
       </div>
 
       <p className="mt-1 text-gray-700">
-        {partsLabel(row.parts)} <span className="text-xs text-gray-500">({juzEquivalent(row.total_eighths)} جزء)</span>
+        {partsLabel(row.parts, T.labels)} <span className="text-xs text-gray-500">{fmt(S.serd.juzN, { n: juzEquivalent(row.total_eighths) })}</span>
       </p>
       <p className="mt-1 text-xs text-gray-500">
-        {fmtDate(row.session_date)}
-        {row.examiner_name && <> · المستمع: {row.examiner_name}</>}
-        {row.circle_teacher_name && <> · معلم الحلقة: {row.circle_teacher_name}</>}
-        {row.status === 'scheduled' && <> · {row.assigned_teacher_name ? `مسند إلى ${row.assigned_teacher_name}` : 'مفتوح لأي معلم'}</>}
+        {fmtDate(row.session_date, lang)}
+        {row.examiner_name && fmt(S.serd.examiner, { name: row.examiner_name })}
+        {row.circle_teacher_name && fmt(S.serd.circleTeacher, { name: row.circle_teacher_name })}
+        {row.status === 'scheduled' && <> · {row.assigned_teacher_name ? fmt(S.serd.assignedTo, { name: row.assigned_teacher_name }) : S.serd.openToAny}</>}
       </p>
 
       {row.score_percent != null && (
         <p className="mt-1">
-          الدرجة: <b>{row.score_percent}%</b>
+          {S.serd.score} <b>{row.score_percent}%</b>
           {row.status === 'approved' && (
             <>
               {' '}
-              · {row.score_percent >= (row.pass_percent_applied ?? 0) ? 'نجح' : 'يعيد'} (حد النجاح {row.pass_percent_applied}%) ·{' '}
-              <span className="text-brand">+{row.points_awarded} نقطة</span>
+              · {row.score_percent >= (row.pass_percent_applied ?? 0) ? S.serd.passed : S.serd.retake} {fmt(S.serd.passMark, { n: row.pass_percent_applied ?? 0 })} ·{' '}
+              <span className="text-brand">{fmt(S.serd.plusPoints, { n: row.points_awarded })}</span>
             </>
           )}
         </p>
@@ -62,15 +61,15 @@ function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boo
         <p className="mt-1 text-xs text-gray-500">{row.errors.map((e) => `${e.name}: ${e.count} (−${e.deducted}%)`).join(' · ')}</p>
       )}
       {row.notes && <p className="mt-1 text-xs text-gray-600">{row.notes}</p>}
-      {row.reject_reason && <p className="mt-1 text-xs text-red-600">سبب الرفض: {row.reject_reason}</p>}
+      {row.reject_reason && <p className="mt-1 text-xs text-red-600">{fmt(S.serd.rejectReasonIs, { reason: row.reject_reason })}</p>}
 
       {isAdmin && row.status === 'approved' && row.student_id && row.score_percent != null && row.score_percent >= (row.pass_percent_applied ?? 0) && (
         <form action={issueSerdCertificate} className="mt-3 border-t pt-3">
           <input type="hidden" name="orgId" value={orgId} />
           <input type="hidden" name="sessionId" value={row.id} />
           <input type="hidden" name="back" value="/serd" />
-          <SubmitButton className="rounded border border-brand px-3 py-1.5 text-xs text-brand hover:bg-gray-50" pendingText="جاري الإصدار...">
-            إصدار شهادة
+          <SubmitButton className="rounded border border-brand px-3 py-1.5 text-xs text-brand hover:bg-gray-50" pendingText={S.serd.issuing}>
+            {S.serd.issueCert}
           </SubmitButton>
         </form>
       )}
@@ -85,7 +84,7 @@ function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boo
                 {!row.student_id && (
                   <select name="studentId" required defaultValue="" className="rounded border px-2 py-1.5 text-sm">
                     <option value="" disabled>
-                      اربط بطالب
+                      {S.serd.linkStudent}
                     </option>
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -95,15 +94,15 @@ function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boo
                   </select>
                 )}
                 <SubmitButton className="rounded bg-brand px-3 py-1.5 text-sm font-semibold text-white" pendingText="...">
-                  اعتماد
+                  {S.serd.approve}
                 </SubmitButton>
               </form>
               <form action={reviewSerd} className="flex items-end gap-2">
                 <input type="hidden" name="id" value={row.id} />
                 <input type="hidden" name="decision" value="reject" />
-                <input name="reason" placeholder="سبب الرفض" className="rounded border px-2 py-1.5 text-sm" />
+                <input name="reason" placeholder={S.serd.rejectReason} className="rounded border px-2 py-1.5 text-sm" />
                 <SubmitButton className="rounded border border-red-200 px-3 py-1.5 text-sm text-red-600" pendingText="...">
-                  رفض
+                  {S.serd.reject}
                 </SubmitButton>
               </form>
             </>
@@ -113,18 +112,18 @@ function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boo
               <input type="hidden" name="id" value={row.id} />
               <input type="hidden" name="decision" value="approve" />
               <SubmitButton className="rounded border px-3 py-1.5 text-sm text-brand" pendingText="...">
-                إعادة اعتماد
+                {S.serd.reapprove}
               </SubmitButton>
             </form>
           )}
-          <form action={deleteSerd} className="mr-auto">
+          <form action={deleteSerd} className="ms-auto">
             <input type="hidden" name="id" value={row.id} />
             <ConfirmSubmitButton
-              confirmMessage="سيُحذف هذا السرد وتُخصم نقاطه إن كان معتمدًا. متأكد؟"
+              confirmMessage={S.serd.deleteConfirm}
               pendingText="..."
               className="rounded border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
             >
-              حذف
+              {S.common.delete}
             </ConfirmSubmitButton>
           </form>
         </div>
@@ -143,6 +142,8 @@ export default async function SerdPage({
   const { org: slug } = await params;
   const sp = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
   const page = Math.max(1, Number(sp.page ?? 1));
@@ -185,21 +186,21 @@ export default async function SerdPage({
   return (
     <div className="max-w-4xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">السرد القرآني</h1>
+        <h1 className="text-2xl font-bold">{S.serd.title}</h1>
         <div className="flex gap-2 text-sm">
           <a href="/serd/new" className="rounded bg-brand px-4 py-2 font-semibold text-white">
-            رصد سرد
+            {S.serd.record}
           </a>
           {isAdmin && (
             <>
               <a href="/serd/schedule" className="rounded border px-4 py-2 text-brand">
-                جدولة
+                {S.serd.schedule}
               </a>
               <a href="/serd/report" className="rounded border px-4 py-2 text-brand">
-                التقرير
+                {S.serd.report}
               </a>
               <a href="/serd/settings" className="rounded border px-4 py-2 text-brand">
-                الإعدادات
+                {S.serd.settings}
               </a>
             </>
           )}
@@ -207,21 +208,21 @@ export default async function SerdPage({
       </div>
 
       {sp.error && <Notice tone="error" text={sp.error} />}
-      {sp.saved !== undefined && <Notice tone="ok" text={`تم إرسال السرد للاعتماد${sp.saved ? ` — الدرجة ${sp.saved}%` : ''}`} />}
-      {sp.scheduled && <Notice tone="ok" text="تمت جدولة السرد" />}
-      {sp.reviewed && <Notice tone="ok" text={sp.reviewed === 'approve' ? 'تم الاعتماد' : 'تم الرفض'} />}
-      {sp.deleted && <Notice tone="ok" text="تم الحذف" />}
-      {sp.ok === 'certificate' && <Notice tone="ok" text="صدرت الشهادة — تجدها في صفحة الشهادات" />}
+      {sp.saved !== undefined && <Notice tone="ok" text={`${S.serd.sent}${sp.saved ? fmt(S.serd.sentScore, { n: sp.saved }) : ''}`} />}
+      {sp.scheduled && <Notice tone="ok" text={S.serd.scheduledOk} />}
+      {sp.reviewed && <Notice tone="ok" text={sp.reviewed === 'approve' ? S.serd.approved : S.serd.rejected} />}
+      {sp.deleted && <Notice tone="ok" text={S.serd.deleted} />}
+      {sp.ok === 'certificate' && <Notice tone="ok" text={S.serd.certIssued} />}
 
       {isAdmin && (
         <div className="mb-4 flex flex-wrap gap-2 text-sm">
-          {FILTERS.map(([value, label]) => (
+          {FILTERS.map((value) => (
             <a
               key={value}
               href={link(value) as never}
               className={`rounded-full border px-3 py-1 ${(sp.status ?? '') === value ? 'bg-brand text-white' : 'bg-white'}`}
             >
-              {label}
+              {value ? T.labels.serdStatus[value] : S.serd.all}
             </a>
           ))}
         </div>
@@ -229,20 +230,20 @@ export default async function SerdPage({
 
       {!isAdmin && scheduled.length > 0 && (
         <section className="mb-6">
-          <h2 className="mb-2 font-semibold">سرد مطلوب ({scheduled.length})</h2>
+          <h2 className="mb-2 font-semibold">{fmt(S.serd.required, { n: scheduled.length })}</h2>
           <div className="flex flex-col gap-2">
             {scheduled.map((s) => (
               <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-4 text-sm">
                 <div>
                   <p className="font-semibold">{s.student_name}</p>
-                  <p className="text-gray-600">{partsLabel(s.parts)}</p>
+                  <p className="text-gray-600">{partsLabel(s.parts, T.labels)}</p>
                   <p className="text-xs text-gray-500">
-                    {fmtDate(s.session_date)} · {s.assigned_to_me ? 'مخصّص لك' : 'عام — أي معلم يستطيع رصده'}
-                    {s.overdue && <span className="text-red-600"> · متأخر</span>}
+                    {fmtDate(s.session_date, T.labels.dateLocale)} · {s.assigned_to_me ? S.serd.forYou : S.serd.anyTeacher}
+                    {s.overdue && <span className="text-red-600">{S.serd.overdue}</span>}
                   </p>
                 </div>
                 <a href={`/serd/new?session=${s.id}` as never} className="rounded bg-brand px-3 py-1.5 font-semibold text-white">
-                  رصد
+                  {S.serd.recordShort}
                 </a>
               </div>
             ))}
@@ -250,19 +251,19 @@ export default async function SerdPage({
         </section>
       )}
 
-      {!isAdmin && <h2 className="mb-2 font-semibold">سردي</h2>}
+      {!isAdmin && <h2 className="mb-2 font-semibold">{S.serd.mine}</h2>}
       <div className="flex flex-col gap-3">
         {rows.map((r) => (
           <RowCard key={r.id} row={r} isAdmin={isAdmin} students={students} orgId={org.id} />
         ))}
-        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا يوجد سرد بعد</p>}
+        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{S.serd.none}</p>}
       </div>
 
       {isAdmin && pages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-3 text-sm">
           {page > 1 && (
             <a href={link(sp.status ?? '', page - 1) as never} className="rounded border px-3 py-1">
-              السابق
+              {S.serd.prev}
             </a>
           )}
           <span>
@@ -270,7 +271,7 @@ export default async function SerdPage({
           </span>
           {page < pages && (
             <a href={link(sp.status ?? '', page + 1) as never} className="rounded border px-3 py-1">
-              التالي
+              {S.serd.next}
             </a>
           )}
         </div>

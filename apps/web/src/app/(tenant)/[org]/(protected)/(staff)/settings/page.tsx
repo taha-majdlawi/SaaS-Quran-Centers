@@ -4,6 +4,7 @@ import { SubmitButton } from '@/components/submit-button';
 import { LogoField } from '@/components/logo-field';
 import { RECITERS } from '@/lib/quran/reader';
 import { updateOrgSettings, saveWeekdays, saveCenterSettings } from './actions';
+import { getI18n } from '@/lib/i18n/server';
 
 const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
@@ -42,6 +43,8 @@ export default async function SettingsPage({
   const { org: slug } = await params;
   const { error, saved } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const isAdmin = org.myRole === 'admin';
   const supabase = await createClient();
 
@@ -70,7 +73,7 @@ export default async function SettingsPage({
               اسم المركز
               <input name="name" required defaultValue={org.name} className={input} />
             </label>
-            <LogoField orgId={org.id} initialUrl={org.logoUrl} name={org.name} />
+            <LogoField orgId={org.id} initialUrl={org.logoUrl} name={org.name} labels={S.image} />
             <label className={label}>
               اللون الأساسي
               <input type="color" name="primaryColor" defaultValue={org.primaryColor} className="mt-1 h-10 w-full rounded border" />

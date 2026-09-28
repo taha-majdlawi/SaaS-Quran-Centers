@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
+import { fmt } from '@/lib/i18n/config';
 
 const TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const MAX_SIDE = 512;
@@ -26,7 +28,7 @@ async function shrink(file: File): Promise<{ blob: Blob; type: string; ext: stri
  * center's own folder of the public `org-logos` bucket) OR paste a link. Both fill
  * the `logoUrl` field of the settings form; press "save" to apply it everywhere.
  */
-export function LogoField({ orgId, initialUrl, name }: { orgId: string; initialUrl: string | null; name: string }) {
+export function LogoField({ orgId, initialUrl, name, labels: L }: { orgId: string; initialUrl: string | null; name: string; labels: Dictionary['staff']['image'] }) {
   const [url, setUrl] = useState(initialUrl ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -38,21 +40,21 @@ export function LogoField({ orgId, initialUrl, name }: { orgId: string; initialU
     if (!file) return;
     setError('');
     if (!TYPES[file.type]) {
-      setError('الصور المسموحة: JPG أو PNG أو WebP');
+      setError(L.types);
       return;
     }
     setBusy(true);
     try {
       const { blob, type, ext } = await shrink(file);
-      if (blob.size > 1024 * 1024) throw new Error('الصورة كبيرة (الحد 1 ميغابايت)');
+      if (blob.size > 1024 * 1024) throw new Error(fmt(L.tooBig, { n: 1 }));
       const supabase = createClient();
       const path = `${orgId}/${crypto.randomUUID()}.${ext}`;
       const { error: upError } = await supabase.storage.from('org-logos').upload(path, blob, { contentType: type });
-      if (upError) throw new Error(upError.message.includes('row-level security') ? 'رفع الشعار للمدير فقط' : 'تعذّر رفع الشعار');
+      if (upError) throw new Error(upError.message.includes('row-level security') ? L.logoAdminOnly : L.logoFailed);
       setUrl(supabase.storage.from('org-logos').getPublicUrl(path).data.publicUrl);
       setUploaded(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'تعذّر رفع الشعار');
+      setError(err instanceof Error ? err.message : L.logoFailed);
     } finally {
       setBusy(false);
     }
@@ -60,7 +62,7 @@ export function LogoField({ orgId, initialUrl, name }: { orgId: string; initialU
 
   return (
     <div className="text-sm font-medium text-gray-700">
-      شعار المركز
+      {L.logo}
       <div className="mt-1 flex items-start gap-3">
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -71,7 +73,7 @@ export function LogoField({ orgId, initialUrl, name }: { orgId: string; initialU
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <label className="cursor-pointer rounded border px-3 py-1.5 text-xs font-semibold text-brand hover:bg-gray-50">
-              {busy ? 'جاري الرفع...' : 'رفع شعار من الجهاز'}
+              {busy ? L.uploading : L.uploadLogo}
               <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFile} disabled={busy} />
             </label>
             {url && (
@@ -83,7 +85,7 @@ export function LogoField({ orgId, initialUrl, name }: { orgId: string; initialU
                 }}
                 className="rounded border px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
               >
-                إزالة الشعار
+                {L.removeLogo}
               </button>
             )}
           </div>
@@ -96,10 +98,10 @@ export function LogoField({ orgId, initialUrl, name }: { orgId: string; initialU
               setUrl(e.target.value);
               setUploaded(false);
             }}
-            placeholder="أو الصق رابط الشعار https://..."
+            placeholder={L.pasteLogo}
             className="w-full rounded border px-3 py-2 text-sm font-normal"
           />
-          {uploaded && <p className="text-xs text-green-700">تم الرفع — اضغط «حفظ الإعدادات» لتطبيقه في كل مكان.</p>}
+          {uploaded && <p className="text-xs text-green-700">{L.logoUploaded}</p>}
           {error && <p className="text-xs text-red-600">{error}</p>}
         </div>
       </div>

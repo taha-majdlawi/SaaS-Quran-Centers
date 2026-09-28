@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { CalImage } from '@/lib/calendar/format';
 import { addEntryImage, deleteEntryImage, reorderEntryImages } from '@/app/(tenant)/[org]/(protected)/(staff)/calendar/actions';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
+import { fmt } from '@/lib/i18n/config';
 
 const TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const MAX_SIDE = 1600;
@@ -34,11 +36,13 @@ export function CalendarImagesField({
   entryId,
   images,
   back,
+  labels: L,
 }: {
   orgId: string;
   entryId: string;
   images: CalImage[];
   back: string;
+  labels: Dictionary['staff']['image'];
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -49,17 +53,17 @@ export function CalendarImagesField({
     if (!file) return;
     setError('');
     if (!TYPES[file.type]) {
-      setError('الصور المسموحة: JPG أو PNG أو WebP');
+      setError(L.types);
       return;
     }
     setBusy(true);
     try {
       const { blob, type, ext } = await shrink(file);
-      if (blob.size > 3 * 1024 * 1024) throw new Error('الصورة كبيرة (الحد 3 ميغابايت)');
+      if (blob.size > 3 * 1024 * 1024) throw new Error(fmt(L.tooBig, { n: 3 }));
       const supabase = createClient();
       const path = `${orgId}/${crypto.randomUUID()}.${ext}`;
       const { error: upError } = await supabase.storage.from('event-images').upload(path, blob, { contentType: type });
-      if (upError) throw new Error(upError.message.includes('row-level security') ? 'لا تملك صلاحية رفع الصور' : 'تعذّر رفع الصورة');
+      if (upError) throw new Error(upError.message.includes('row-level security') ? L.noPermission : L.uploadFailed);
       const url = supabase.storage.from('event-images').getPublicUrl(path).data.publicUrl;
 
       const fd = new FormData();
@@ -70,7 +74,7 @@ export function CalendarImagesField({
       await addEntryImage(fd);
     } catch (err) {
       setBusy(false);
-      setError(err instanceof Error ? err.message : 'تعذّر رفع الصورة');
+      setError(err instanceof Error ? err.message : L.uploadFailed);
     }
   };
 
@@ -97,7 +101,7 @@ export function CalendarImagesField({
 
   return (
     <div className="text-sm font-medium text-gray-700">
-      صور الفعالية (اختياري)
+      {L.eventImages}
       {images.length > 0 && (
         <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {images.map((img, i) => (
@@ -107,14 +111,14 @@ export function CalendarImagesField({
               <div className="flex items-center justify-between gap-1 bg-white/90 px-1.5 py-1 text-xs">
                 <div className="flex gap-1">
                   <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="disabled:opacity-30">
-                    ▶
+                    {L.earlier}
                   </button>
                   <button type="button" onClick={() => move(i, 1)} disabled={i === images.length - 1} className="disabled:opacity-30">
-                    ◀
+                    {L.later}
                   </button>
                 </div>
                 <button type="button" onClick={() => remove(img.id)} className="font-semibold text-red-600">
-                  حذف
+                  {L.delete}
                 </button>
               </div>
             </div>
@@ -122,7 +126,7 @@ export function CalendarImagesField({
         </div>
       )}
       <label className="mt-2 inline-block cursor-pointer rounded border px-3 py-1.5 text-xs font-semibold text-brand hover:bg-gray-50">
-        {busy ? 'جاري الرفع...' : 'إضافة صورة'}
+        {busy ? L.uploading : L.addImage}
         <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFile} disabled={busy} />
       </label>
       {error && <p className="mt-1 text-xs font-normal text-red-600">{error}</p>}

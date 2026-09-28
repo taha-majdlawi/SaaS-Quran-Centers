@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { staffStrings } from '@/lib/i18n/server';
 
 const KEY_PATTERN = /^[a-z0-9_]{1,40}$/;
 
@@ -42,7 +43,7 @@ export async function saveGrades(formData: FormData) {
   if (newKey || newLabel) {
     if (!KEY_PATTERN.test(newKey) || !newLabel) {
       redirect(
-        `/points?error=${encodeURIComponent('المفتاح حروف إنجليزية صغيرة/أرقام/_ فقط، والاسم مطلوب')}` as never,
+        `/points?error=${encodeURIComponent((await staffStrings()).points.badKey)}` as never,
       );
     }
     rows.push({

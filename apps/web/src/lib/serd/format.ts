@@ -27,12 +27,18 @@ export function portionLabel(den: number, index: number): string {
   return den <= 1 ? '' : `${DEN_NAMES[den] ?? ''} ${ORDINALS[index - 1] ?? ''}`.trim();
 }
 
+/** 'النصف الأول' / '1st half' - `labels` is t.labels on translated screens. */
+export function portionText(den: number, index: number, labels: typeof ar.labels = ar.labels): string {
+  if (labels === ar.labels) return portionLabel(den, index);
+  return den <= 1 ? '' : fmt(labels.portion, { den: labels.portionDen[den] ?? '', ord: labels.portionOrd[index - 1] ?? '' });
+}
+
 /** Every amount a picker may offer given the permitted denominators (whole is always there). */
-export function portionOptions(dens: number[]): { value: string; label: string }[] {
-  const out = [{ value: '1:1', label: 'كامل' }];
+export function portionOptions(dens: number[], labels: typeof ar.labels = ar.labels): { value: string; label: string }[] {
+  const out = [{ value: '1:1', label: labels.portionWhole }];
   for (const d of [2, 4, 8]) {
     if (!dens.includes(d)) continue;
-    for (let i = 1; i <= d; i++) out.push({ value: `${d}:${i}`, label: portionLabel(d, i) });
+    for (let i = 1; i <= d; i++) out.push({ value: `${d}:${i}`, label: portionText(d, i, labels) });
   }
   return out;
 }
@@ -76,11 +82,7 @@ type Labels = typeof ar.labels;
 export function partLabel(p: SerdPart, labels: Labels = ar.labels): string {
   const arabic = labels === ar.labels;
   const base = `${fmt(labels.juz, { n: p.juz })}${arabic && p.juz_name ? ` — ${p.juz_name}` : ''}`;
-  const label = arabic
-    ? portionLabel(p.den, p.index)
-    : p.den <= 1
-      ? ''
-      : fmt(labels.portion, { den: labels.portionDen[p.den] ?? '', ord: labels.portionOrd[p.index - 1] ?? '' });
+  const label = portionText(p.den, p.index, labels);
   return label ? `${base} (${label})` : base;
 }
 

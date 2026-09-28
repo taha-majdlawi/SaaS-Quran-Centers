@@ -1,6 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
-import { ATT_LABELS, TYPE_LABELS, defaultRange, type CenterReport } from '@/lib/reports/format';
+import { defaultRange, type CenterReport } from '@/lib/reports/format';
+import { getI18n } from '@/lib/i18n/server';
 
 // A cell that starts with = + - @ would be run as a formula by Excel; quote it.
 const cell = (v: unknown) => {
@@ -13,7 +14,9 @@ const line = (...cols: unknown[]) => cols.map(cell).join(',');
 export async function GET(req: Request, { params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
-  if (!org.myPermissions.includes('reports')) return new Response('غير مصرّح', { status: 403 });
+  const { t: T } = await getI18n();
+  const R = T.staff.centerReport;
+  if (!org.myPermissions.includes('reports')) return new Response(T.staff.common.forbidden, { status: 403 });
 
   const url = new URL(req.url);
   const range = defaultRange();
@@ -22,43 +25,43 @@ export async function GET(req: Request, { params }: { params: Promise<{ org: str
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('center_report', { p_org: org.id, p_from: from, p_to: to });
-  if (error || !data) return new Response(error?.message ?? 'تعذّر إنشاء التقرير', { status: 400 });
+  if (error || !data) return new Response(error?.message ?? R.failed, { status: 400 });
   const r = data as CenterReport;
 
   const rows: string[] = [
-    line('تقرير المركز', org.name),
-    line('من', r.from, 'إلى', r.to),
+    line(R.title, org.name),
+    line(R.from, r.from, R.to, r.to),
     '',
-    line('الملخص'),
-    line('الطلاب النشطون', r.totals.students_active),
-    line('طلاب جدد', r.totals.new_students),
-    line('التسميعات', r.totals.recitations),
-    line('طلاب سمّعوا', r.totals.reciting_students),
-    line('النقاط', r.totals.points),
-    line('نسبة الحضور %', r.totals.attendance_rate),
-    line('سرد معتمد', r.totals.serd_approved),
-    line('متوسط السرد %', r.totals.serd_average),
-    line('شهادات صدرت', r.totals.certificates),
+    line(R.summary),
+    line(R.activeStudents, r.totals.students_active),
+    line(R.newStudents, r.totals.new_students),
+    line(R.recitations, r.totals.recitations),
+    line(R.recitingStudents, r.totals.reciting_students),
+    line(R.points, r.totals.points),
+    line(R.attendanceRatePct, r.totals.attendance_rate),
+    line(R.serdApproved, r.totals.serd_approved),
+    line(R.serdAveragePct, r.totals.serd_average),
+    line(R.certsIssued, r.totals.certificates),
     '',
-    line('أنواع التسميع'),
-    ...r.by_type.map((x) => line(TYPE_LABELS[x.type] ?? x.type, x.count)),
+    line(R.types),
+    ...r.by_type.map((x) => line(T.labels.recitationType[x.type] ?? x.type, x.count)),
     '',
-    line('الحضور'),
-    line(ATT_LABELS.present, r.totals.attendance_present),
-    line(ATT_LABELS.late, r.totals.attendance_late),
-    line(ATT_LABELS.absent, r.totals.attendance_absent),
-    line(ATT_LABELS.excused, r.totals.attendance_excused),
+    line(R.attendance),
+    line(T.labels.attendance.present, r.totals.attendance_present),
+    line(T.labels.attendance.late, r.totals.attendance_late),
+    line(T.labels.attendance.absent, r.totals.attendance_absent),
+    line(T.labels.attendance.excused, r.totals.attendance_excused),
     '',
-    line('الحلقات'),
-    line('الحلقة', 'المعلم', 'الطلاب', 'التسميعات', 'النقاط', 'الحضور %'),
+    line(R.circles),
+    line(R.colCircle, R.colTeacher, R.colStudents, R.recitations, R.points, R.colAttendancePct),
     ...r.circles.map((c) => line(c.name, c.teacher, c.students, c.recitations, c.points, c.attendance_rate)),
     '',
-    line('المعلمون'),
-    line('المعلم', 'التسميعات', 'النقاط'),
+    line(R.teachers),
+    line(R.colTeacher, R.recitations, R.points),
     ...r.teachers.map((t) => line(t.name, t.recitations, t.points)),
     '',
-    line('الأعلى نقاطًا'),
-    line('الطالب', 'الرقم', 'الحلقة', 'النقاط', 'التسميعات'),
+    line(R.top),
+    line(R.colStudent, R.colCode, R.colCircle, R.points, R.recitations),
     ...r.top_students.map((s) => line(s.name, s.code, s.circle, s.points, s.recitations)),
   ];
 

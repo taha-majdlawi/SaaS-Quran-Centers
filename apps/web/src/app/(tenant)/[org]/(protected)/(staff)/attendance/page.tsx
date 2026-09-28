@@ -2,13 +2,9 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { saveAttendance } from './actions';
+import { getI18n } from '@/lib/i18n/server';
 
-const STATUS_OPTIONS = [
-  { value: 'present', label: 'حاضر' },
-  { value: 'absent', label: 'غائب' },
-  { value: 'excused', label: 'مستأذن' },
-  { value: 'late', label: 'متأخر' },
-];
+const STATUS_OPTIONS = ['present', 'absent', 'excused', 'late'];
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -25,6 +21,8 @@ export default async function AttendancePage({
   const { circleId, date, saved, error } = await searchParams;
   const sessionDate = date || today();
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const { data: circles } = await supabase
@@ -60,14 +58,14 @@ export default async function AttendancePage({
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">الحضور</h1>
+      <h1 className="mb-6 text-2xl font-bold">{S.attendance.title}</h1>
 
       <form method="get" className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4 text-sm">
         <label>
-          الحلقة
+          {S.attendance.circle}
           <select name="circleId" defaultValue={circleId ?? ''} className="mt-1 block rounded border px-3 py-2">
             <option value="" disabled>
-              اختر الحلقة
+              {S.attendance.pickCircle}
             </option>
             {(circles ?? []).map((c) => (
               <option key={c.id} value={c.id}>
@@ -77,16 +75,16 @@ export default async function AttendancePage({
           </select>
         </label>
         <label>
-          التاريخ
+          {S.attendance.date}
           <input type="date" name="date" defaultValue={sessionDate} className="mt-1 block rounded border px-3 py-2" />
         </label>
         <button type="submit" className="rounded bg-brand px-4 py-2 font-semibold text-white">
-          عرض
+          {S.attendance.show}
         </button>
       </form>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ الحضور بنجاح</p>}
+      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{S.attendance.saved}</p>}
 
       {circleId && (
         <form action={saveAttendance} className="rounded-lg border bg-white">
@@ -100,11 +98,11 @@ export default async function AttendancePage({
           </div>
 
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-right">
+            <thead className="bg-gray-50 text-start">
               <tr>
-                <th className="px-4 py-2">الرقم</th>
-                <th className="px-4 py-2">الاسم</th>
-                <th className="px-4 py-2">الحالة</th>
+                <th className="px-4 py-2">{S.attendance.colCode}</th>
+                <th className="px-4 py-2">{S.attendance.colName}</th>
+                <th className="px-4 py-2">{S.attendance.colStatus}</th>
               </tr>
             </thead>
             <tbody>
@@ -115,14 +113,14 @@ export default async function AttendancePage({
                   <td className="px-4 py-2">
                     <div className="flex gap-4">
                       {STATUS_OPTIONS.map((opt) => (
-                        <label key={opt.value} className="flex items-center gap-1">
+                        <label key={opt} className="flex items-center gap-1">
                           <input
                             type="radio"
                             name={`status_${s.id}`}
-                            value={opt.value}
-                            defaultChecked={(existingByStudent.get(s.id) ?? 'present') === opt.value}
+                            value={opt}
+                            defaultChecked={(existingByStudent.get(s.id) ?? 'present') === opt}
                           />
-                          {opt.label}
+                          {S.attendance.status[opt]}
                         </label>
                       ))}
                     </div>
@@ -132,7 +130,7 @@ export default async function AttendancePage({
               {!students.length && (
                 <tr>
                   <td colSpan={3} className="px-4 py-6 text-center text-gray-400">
-                    لا يوجد طلاب بهذي الحلقة
+                    {S.attendance.noStudents}
                   </td>
                 </tr>
               )}
@@ -143,9 +141,9 @@ export default async function AttendancePage({
             <div className="p-4">
               <SubmitButton
                 className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                pendingText="جاري الحفظ..."
+                pendingText={S.common.saving}
               >
-                حفظ الحضور
+                {S.attendance.save}
               </SubmitButton>
             </div>
           )}

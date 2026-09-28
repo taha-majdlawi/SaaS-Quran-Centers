@@ -277,6 +277,7 @@ export const ar = {
     audience: { all: 'الجميع', teachers: 'المعلمون', students: 'الطلاب', guardians: 'أولياء الأمور' } as Record<string, string>,
     consent: { not_required: '—', pending: 'بانتظار الموافقة', approved: 'موافق', declined: 'رفض' } as Record<string, string>,
     registration: { none: 'بلا تسجيل', ended: 'انتهت', closed: 'التسجيل مغلق', full: 'اكتملت المقاعد', open: 'التسجيل مفتوح' } as Record<string, string>,
+    source: { self: 'سجّل بنفسه', guardian: 'سجّله ولي الأمر', teacher: 'سجّله المعلم', admin: 'سجّله المشرف' } as Record<string, string>,
     months: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
     /** Sunday first. */
     weekdays: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
@@ -295,6 +296,7 @@ export const ar = {
     portion: '{den} {ord}',
     portionDen: { 2: 'النصف', 4: 'الربع', 8: 'الثُمن' } as Record<number, string>,
     portionOrd: ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس', 'السادس', 'السابع', 'الثامن'],
+    portionWhole: 'كامل',
   },
 
   portal: {

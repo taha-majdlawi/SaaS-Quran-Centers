@@ -1,6 +1,8 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { JUZ_NAMES } from '@/lib/serd/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Report {
   from: string;
@@ -29,6 +31,8 @@ export default async function SerdReportPage({
   const { org: slug } = await params;
   const { from, to } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T, locale } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc('admin_serd_report', {
@@ -40,33 +44,33 @@ export default async function SerdReportPage({
 
   const kpis = r
     ? [
-        ['إجمالي الجلسات', r.total],
-        ['معتمد', r.approved],
-        ['بانتظار', r.pending],
-        ['مرفوض', r.rejected],
-        ['متوسط الدرجة', r.average_score == null ? '—' : `${r.average_score}%`],
-        ['طلاب معتمدون', r.students],
-        ['نقاط ممنوحة', r.points],
+        [S.serd.kpis[0], r.total],
+        [S.serd.kpis[1], r.approved],
+        [S.serd.kpis[2], r.pending],
+        [S.serd.kpis[3], r.rejected],
+        [S.serd.kpis[4], r.average_score == null ? '—' : `${r.average_score}%`],
+        [S.serd.kpis[5], r.students],
+        [S.serd.kpis[6], r.points],
       ]
     : [];
 
   return (
     <div className="max-w-4xl">
       <a href="/serd" className="text-sm text-brand hover:underline">
-        ← السرد
+        {S.serd.back}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">تقرير السرد</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{S.serd.reportTitle}</h1>
 
       <form className="mb-6 flex flex-wrap items-end gap-3">
         <label className="text-sm text-gray-700">
-          من
+          {T.report.from}
           <input type="date" name="from" defaultValue={from ?? r?.from} className={`mt-1 block ${field}`} />
         </label>
         <label className="text-sm text-gray-700">
-          إلى
+          {T.report.to}
           <input type="date" name="to" defaultValue={to ?? r?.to} className={`mt-1 block ${field}`} />
         </label>
-        <button className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">عرض</button>
+        <button className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">{T.report.show}</button>
       </form>
 
       {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error.message}</p>}
@@ -84,13 +88,13 @@ export default async function SerdReportPage({
 
           <div className="grid gap-4 sm:grid-cols-3">
             <section className="rounded-lg border bg-white p-4">
-              <h2 className="mb-2 text-sm font-semibold">الأجزاء المعتمدة</h2>
+              <h2 className="mb-2 text-sm font-semibold">{S.serd.juzApproved}</h2>
               {r.by_juz.length ? (
                 <ul className="flex flex-col gap-1 text-sm">
                   {r.by_juz.map((j) => (
                     <li key={j.juz} className="flex justify-between">
                       <span>
-                        جزء {j.juz} — {JUZ_NAMES[j.juz - 1]}
+                        {fmt(T.labels.juz, { n: j.juz })}{locale === 'ar' ? ` — ${JUZ_NAMES[j.juz - 1]}` : ''}
                       </span>
                       <b>{j.count}</b>
                     </li>
@@ -101,7 +105,7 @@ export default async function SerdReportPage({
               )}
             </section>
             <section className="rounded-lg border bg-white p-4">
-              <h2 className="mb-2 text-sm font-semibold">أكثر الأخطاء (معتمد)</h2>
+              <h2 className="mb-2 text-sm font-semibold">{S.serd.topErrors}</h2>
               {r.by_error_type.length ? (
                 <ul className="flex flex-col gap-1 text-sm">
                   {r.by_error_type.map((e) => (
@@ -116,7 +120,7 @@ export default async function SerdReportPage({
               )}
             </section>
             <section className="rounded-lg border bg-white p-4">
-              <h2 className="mb-2 text-sm font-semibold">المستمعون</h2>
+              <h2 className="mb-2 text-sm font-semibold">{S.serd.examiners}</h2>
               {r.by_examiner.length ? (
                 <ul className="flex flex-col gap-1 text-sm">
                   {r.by_examiner.map((e) => (

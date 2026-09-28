@@ -1,13 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
 
-const ACTION_LABELS: Record<string, string> = { delete: 'حذف', update: 'تعديل', create: 'إضافة' };
-const TABLE_LABELS: Record<string, string> = {
-  students_profile: 'طالب',
-  circles: 'حلقة',
-  stages: 'مرحلة',
-  serd_sessions: 'جلسة سرد',
-};
 
 interface AuditRow {
   id: string;
@@ -29,6 +23,8 @@ interface MemberRow {
 export default async function AuditPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ data: entries }, { data: members }] = await Promise.all([
@@ -47,31 +43,31 @@ export default async function AuditPage({ params }: { params: Promise<{ org: str
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold">سجل العمليات</h1>
-      <p className="mb-6 text-sm text-gray-500">آخر 100 عملية حذف/تعديل حساسة بالمركز.</p>
+      <h1 className="mb-1 text-2xl font-bold">{S.audit.title}</h1>
+      <p className="mb-6 text-sm text-gray-500">{S.audit.intro}</p>
 
       <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
-        <thead className="bg-gray-50 text-right">
+        <thead className="bg-gray-50 text-start">
           <tr>
-            <th className="px-4 py-2">التاريخ</th>
-            <th className="px-4 py-2">من قام بالعملية</th>
-            <th className="px-4 py-2">العملية</th>
-            <th className="px-4 py-2">على</th>
+            <th className="px-4 py-2">{S.audit.colDate}</th>
+            <th className="px-4 py-2">{S.audit.colWho}</th>
+            <th className="px-4 py-2">{S.audit.colAction}</th>
+            <th className="px-4 py-2">{S.audit.colOn}</th>
           </tr>
         </thead>
         <tbody>
           {((entries ?? []) as AuditRow[]).map((e) => (
             <tr key={e.id} className="border-t">
-              <td className="px-4 py-2">{new Date(e.created_at).toLocaleString('ar')}</td>
+              <td className="px-4 py-2">{new Date(e.created_at).toLocaleString(T.labels.dateLocale)}</td>
               <td className="px-4 py-2">{nameByUserId.get(e.actor_id) ?? '—'}</td>
-              <td className="px-4 py-2">{ACTION_LABELS[e.action] ?? e.action}</td>
-              <td className="px-4 py-2">{TABLE_LABELS[e.entity_table] ?? e.entity_table}</td>
+              <td className="px-4 py-2">{S.audit.actions[e.action] ?? e.action}</td>
+              <td className="px-4 py-2">{S.audit.tables[e.entity_table] ?? e.entity_table}</td>
             </tr>
           ))}
           {!entries?.length && (
             <tr>
               <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
-                لا يوجد عمليات مسجّلة بعد
+                {S.audit.none}
               </td>
             </tr>
           )}

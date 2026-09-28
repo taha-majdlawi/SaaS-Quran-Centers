@@ -4,6 +4,8 @@ import { SubmitButton } from '@/components/submit-button';
 import { SerdPartsFields } from '@/components/serd-parts-fields';
 import { partsLabel, type SerdRow } from '@/lib/serd/format';
 import { submitSerd } from '../actions';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
 
@@ -24,6 +26,8 @@ export default async function NewSerdPage({
   const { org: slug } = await params;
   const { error, session } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ data: setupData }, { data: students }, { data: scheduled }] = await Promise.all([
@@ -44,12 +48,12 @@ export default async function NewSerdPage({
   return (
     <div className="max-w-2xl">
       <a href="/serd" className="text-sm text-brand hover:underline">
-        ← السرد
+        {S.serd.back}
       </a>
-      <h1 className="mb-1 mt-2 text-2xl font-bold">{task ? 'رصد سرد مجدول' : 'رصد سرد جديد'}</h1>
+      <h1 className="mb-1 mt-2 text-2xl font-bold">{task ? S.serd.recordScheduled : S.serd.recordNew}</h1>
       {task && (
         <p className="mb-4 text-sm text-gray-600">
-          {task.student_name} — {partsLabel(task.parts)}
+          {task.student_name} — {partsLabel(task.parts, T.labels)}
         </p>
       )}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
@@ -63,9 +67,9 @@ export default async function NewSerdPage({
         ) : (
           <>
             <label className="text-sm font-medium text-gray-700">
-              الطالب
+              {S.serd.student}
               <select name="studentId" defaultValue="" className={field}>
-                <option value="">— طالب من خارج القائمة (اكتب اسمه) —</option>
+                <option value="">{S.serd.outsider}</option>
                 {(students ?? []).map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.full_name} ({s.student_code})
@@ -74,24 +78,24 @@ export default async function NewSerdPage({
               </select>
             </label>
             <label className="text-sm font-medium text-gray-700">
-              اسم الطالب الكامل (إن لم تختره من القائمة)
+              {S.serd.outsiderName}
               <input name="studentName" className={field} />
             </label>
           </>
         )}
 
         <label className="text-sm font-medium text-gray-700">
-          تاريخ السرد
+          {S.serd.date}
           <input type="date" name="date" defaultValue={today} max={today} className={field} />
         </label>
 
         <div>
-          <p className="mb-1 text-sm font-medium text-gray-700">الأجزاء المسرودة</p>
+          <p className="mb-1 text-sm font-medium text-gray-700">{S.serd.parts}</p>
           <SerdPartsFields denominators={dens} initial={task?.parts} />
         </div>
 
         <fieldset>
-          <legend className="mb-1 text-sm font-medium text-gray-700">عدد الأخطاء</legend>
+          <legend className="mb-1 text-sm font-medium text-gray-700">{S.serd.errors}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {(setup?.error_types ?? [])
               .filter((t) => t.is_active)
@@ -100,7 +104,7 @@ export default async function NewSerdPage({
                   <span>
                     {t.name}
                     <span className="block text-xs text-gray-500">
-                      كل {t.errors_per_unit} = {t.percent_per_unit}%
+                      {fmt(S.serd.perUnit, { n: t.errors_per_unit, p: t.percent_per_unit })}
                     </span>
                   </span>
                   <input
@@ -114,20 +118,20 @@ export default async function NewSerdPage({
               ))}
           </div>
           <p className="mt-2 text-xs text-gray-500">
-            الدرجة = 100 − الخصم. حد النجاح في مركزك {setup?.pass_percent ?? 80}%.
+            {fmt(S.serd.scoreHint, { n: setup?.pass_percent ?? 80 })}
           </p>
         </fieldset>
 
         <label className="text-sm font-medium text-gray-700">
-          ملاحظات (اختياري)
+          {S.serd.notesOptional}
           <textarea name="notes" rows={2} defaultValue={task?.notes ?? ''} className={field} />
         </label>
 
         <SubmitButton
           className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الإرسال..."
+          pendingText={S.serd.sending}
         >
-          إرسال للاعتماد
+          {S.serd.submit}
         </SubmitButton>
       </form>
     </div>

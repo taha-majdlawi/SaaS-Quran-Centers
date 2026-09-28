@@ -11,4 +11,7 @@ SPEC = {'common': ('Words shared by the dashboards.', (
   ('invalid', 'قيمة غير صالحة', 'Invalid value'),
   ('adding', 'جاري الإضافة...', 'Adding...'),
   ('creating', 'جاري الإنشاء...', 'Creating...'),
+  ('save', 'حفظ', 'Save'),
+  ('loadFailed', 'تعذّر التحميل', 'Could not load'),
+  ('cancel', 'إلغاء', 'Cancel'),
 ))}

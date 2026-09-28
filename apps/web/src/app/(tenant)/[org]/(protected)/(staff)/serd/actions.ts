@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { readParts } from '@/lib/serd/format';
+import { staffStrings } from '@/lib/i18n/server';
 
 const fail = (path: string, message: string): never =>
   redirect(`${path}${path.includes('?') ? '&' : '?'}error=${encodeURIComponent(message)}` as never);
@@ -23,7 +24,7 @@ export async function submitSerd(formData: FormData) {
   const sessionId = ((formData.get('sessionId') as string) ?? '') || null;
   const back = sessionId ? `/serd/new?session=${sessionId}` : '/serd/new';
   const parts = readParts(formData);
-  if (!parts.length) fail(back, 'اختر جزءًا واحدًا على الأقل');
+  if (!parts.length) fail(back, (await staffStrings()).serd.needPart);
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('teacher_submit_serd', {
@@ -46,7 +47,7 @@ export async function submitSerd(formData: FormData) {
 export async function scheduleSerd(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const parts = readParts(formData);
-  if (!parts.length) fail('/serd/schedule', 'اختر جزءًا واحدًا على الأقل');
+  if (!parts.length) fail('/serd/schedule', (await staffStrings()).serd.needPart);
 
   const supabase = await createClient();
   const { error } = await supabase.rpc('admin_schedule_serd', {

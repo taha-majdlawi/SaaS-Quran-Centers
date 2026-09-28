@@ -3,6 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { CalendarEntryForm } from '@/components/calendar-entry-form';
 import type { CalType } from '@/lib/calendar/format';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function NewCalendarEntryPage({
   params,
@@ -14,6 +15,8 @@ export default async function NewCalendarEntryPage({
   const { org: slug } = await params;
   const { error, date } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   if (org.myRole !== 'admin') redirect('/calendar' as never);
   const supabase = await createClient();
 
@@ -26,9 +29,9 @@ export default async function NewCalendarEntryPage({
   return (
     <div>
       <a href="/calendar" className="text-sm text-brand hover:underline">
-        ← التقويم
+        {S.cal.back}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">إضافة إلى التقويم</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{S.cal.newTitle}</h1>
       <CalendarEntryForm
         orgId={org.id}
         types={(types ?? []) as CalType[]}

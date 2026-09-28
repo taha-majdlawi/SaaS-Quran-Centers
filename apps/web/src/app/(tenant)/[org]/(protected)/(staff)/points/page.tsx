@@ -2,6 +2,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { saveGrades } from './actions';
+import { getI18n } from '@/lib/i18n/server';
 
 interface Grade {
   key: string;
@@ -24,6 +25,8 @@ export default async function PointsPage({
   const { org: slug } = await params;
   const { error, saved } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
 
@@ -36,22 +39,21 @@ export default async function PointsPage({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-1 text-2xl font-bold">تقديرات التسميع والنقاط</h1>
+      <h1 className="mb-1 text-2xl font-bold">{S.points.title}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        أسماء التقديرات وعدد النقاط لكل تقدير. تُحفظ النقاط على كل تسميع لحظة تسجيله، فتغييرها هنا يسري على التسميعات
-        القادمة فقط ولا يعدّل القديمة.
+        {S.points.intro}
       </p>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ التقديرات</p>}
+      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{S.points.saved}</p>}
 
       <form action={saveGrades} className="rounded-lg border bg-white p-6">
         <input type="hidden" name="orgId" value={org.id} />
         <fieldset disabled={!isAdmin} className="flex flex-col gap-3">
           <div className="grid grid-cols-[1fr_6rem_5rem] gap-3 text-xs font-semibold text-gray-500">
-            <span>اسم التقدير</span>
-            <span>النقاط</span>
-            <span>مفعّل</span>
+            <span>{S.points.colName}</span>
+            <span>{S.points.colPoints}</span>
+            <span>{S.points.colActive}</span>
           </div>
 
           {grades.map((g) => (
@@ -71,30 +73,30 @@ export default async function PointsPage({
           ))}
 
           <hr className="my-2" />
-          <p className="text-sm font-semibold text-gray-700">إضافة تقدير جديد</p>
+          <p className="text-sm font-semibold text-gray-700">{S.points.addTitle}</p>
           <div className="grid grid-cols-[1fr_1fr_6rem] gap-3">
             <input
               name="newKey"
-              placeholder="المفتاح (مثل: outstanding)"
+              placeholder={S.points.keyPh}
               dir="ltr"
               className="rounded border px-3 py-2 text-sm"
             />
-            <input name="newLabel" placeholder="الاسم (مثل: متميز)" className="rounded border px-3 py-2 text-sm" />
-            <input type="number" name="newPoints" min={0} placeholder="نقاط" className="rounded border px-3 py-2 text-sm" />
+            <input name="newLabel" placeholder={S.points.labelPh} className="rounded border px-3 py-2 text-sm" />
+            <input type="number" name="newPoints" min={0} placeholder={S.points.pointsPh} className="rounded border px-3 py-2 text-sm" />
           </div>
 
           {isAdmin && (
             <SubmitButton
               className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              pendingText="جاري الحفظ..."
+              pendingText={S.common.saving}
             >
-              حفظ التقديرات
+              {S.points.save}
             </SubmitButton>
           )}
         </fieldset>
       </form>
 
-      {!isAdmin && <p className="mt-3 text-xs text-gray-400">بس المدير يقدر يعدّل التقديرات والنقاط.</p>}
+      {!isAdmin && <p className="mt-3 text-xs text-gray-400">{S.points.adminOnly}</p>}
     </div>
   );
 }

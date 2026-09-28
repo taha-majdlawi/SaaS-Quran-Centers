@@ -2,7 +2,7 @@ import { surahLabel } from '@/lib/quran/data';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 import { PrintButton } from '@/components/print-button';
-import { ATT_LABELS, TYPE_LABELS, fmtDay, pct, type CenterReport, type StudentReport } from '@/lib/reports/format';
+import { fmtDay, pct, type CenterReport, type StudentReport } from '@/lib/reports/format';
 
 const field = 'rounded border px-3 py-2 text-sm';
 
@@ -36,40 +36,43 @@ function Kpi({ label, value }: { label: string; value: React.ReactNode }) {
 const th = 'px-3 py-2 text-start font-semibold';
 const td = 'px-3 py-2';
 
-export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHref: string }) {
+export async function CenterReportView({ r, exportHref }: { r: CenterReport; exportHref: string }) {
+  const { t: T } = await getI18n();
+  const R = T.staff.centerReport;
+  const lang = T.labels.dateLocale;
   const t = r.totals;
   const max = Math.max(1, ...r.daily.map((d) => d.recitations));
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3 print:hidden">
         <a href={exportHref as never} className="rounded border px-4 py-2 text-sm hover:bg-gray-50">
-          تصدير CSV
+          {R.exportCsv}
         </a>
-        <PrintButton />
+        <PrintButton label={T.report.print} />
       </div>
       <p className="mb-4 text-sm text-gray-500">
-        الفترة: {fmtDay(r.from)} – {fmtDay(r.to)}
+        {fmt(R.period, { from: fmtDay(r.from, lang), to: fmtDay(r.to, lang) })}
       </p>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Kpi label="الطلاب النشطون" value={t.students_active} />
-        <Kpi label="طلاب جدد" value={t.new_students} />
-        <Kpi label="التسميعات" value={t.recitations} />
-        <Kpi label="طلاب سمّعوا" value={t.reciting_students} />
-        <Kpi label="النقاط الممنوحة" value={t.points} />
-        <Kpi label="نسبة الحضور" value={pct(t.attendance_rate)} />
-        <Kpi label="سرد معتمد" value={`${t.serd_approved}${t.serd_average != null ? ` · ${t.serd_average}%` : ''}`} />
-        <Kpi label="شهادات صدرت" value={t.certificates} />
+        <Kpi label={R.activeStudents} value={t.students_active} />
+        <Kpi label={R.newStudents} value={t.new_students} />
+        <Kpi label={R.recitations} value={t.recitations} />
+        <Kpi label={R.recitingStudents} value={t.reciting_students} />
+        <Kpi label={R.points} value={t.points} />
+        <Kpi label={R.attendanceRate} value={pct(t.attendance_rate)} />
+        <Kpi label={R.serdApproved} value={`${t.serd_approved}${t.serd_average != null ? ` · ${t.serd_average}%` : ''}`} />
+        <Kpi label={R.certsIssued} value={t.certificates} />
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2">
         <section className="rounded-lg border bg-white p-4">
-          <h2 className="mb-2 text-sm font-semibold">أنواع التسميع</h2>
+          <h2 className="mb-2 text-sm font-semibold">{R.types}</h2>
           {r.by_type.length ? (
             <ul className="flex flex-col gap-1 text-sm">
               {r.by_type.map((x) => (
                 <li key={x.type} className="flex justify-between">
-                  <span>{TYPE_LABELS[x.type] ?? x.type}</span>
+                  <span>{T.labels.recitationType[x.type] ?? x.type}</span>
                   <b>{x.count}</b>
                 </li>
               ))}
@@ -79,7 +82,7 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
           )}
         </section>
         <section className="rounded-lg border bg-white p-4">
-          <h2 className="mb-2 text-sm font-semibold">الحضور</h2>
+          <h2 className="mb-2 text-sm font-semibold">{R.attendance}</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {[
               ['present', t.attendance_present],
@@ -88,7 +91,7 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
               ['excused', t.attendance_excused],
             ].map(([k, n]) => (
               <li key={k} className="flex justify-between">
-                <span>{ATT_LABELS[k as string]}</span>
+                <span>{T.labels.attendance[k as string]}</span>
                 <b>{n}</b>
               </li>
             ))}
@@ -98,10 +101,10 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
 
       {r.daily.length > 0 && (
         <section className="mb-6 rounded-lg border bg-white p-4">
-          <h2 className="mb-3 text-sm font-semibold">التسميع يوميًا</h2>
+          <h2 className="mb-3 text-sm font-semibold">{R.daily}</h2>
           <div className="flex h-24 items-end gap-1">
             {r.daily.map((d) => (
-              <div key={d.date} className="flex flex-1 flex-col items-center justify-end" title={`${fmtDay(d.date)}: ${d.recitations}`}>
+              <div key={d.date} className="flex flex-1 flex-col items-center justify-end" title={`${fmtDay(d.date, lang)}: ${d.recitations}`}>
                 <div className="w-full min-w-1 rounded-t bg-brand" style={{ height: `${(d.recitations / max) * 100}%` }} />
               </div>
             ))}
@@ -110,16 +113,16 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
       )}
 
       <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
-        <h2 className="border-b px-4 py-2 text-sm font-semibold">الحلقات</h2>
+        <h2 className="border-b px-4 py-2 text-sm font-semibold">{R.circles}</h2>
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className={th}>الحلقة</th>
-              <th className={th}>المعلم</th>
-              <th className={th}>الطلاب</th>
-              <th className={th}>التسميعات</th>
-              <th className={th}>النقاط</th>
-              <th className={th}>الحضور</th>
+              <th className={th}>{R.colCircle}</th>
+              <th className={th}>{R.colTeacher}</th>
+              <th className={th}>{R.colStudents}</th>
+              <th className={th}>{R.recitations}</th>
+              <th className={th}>{R.points}</th>
+              <th className={th}>{R.attendance}</th>
             </tr>
           </thead>
           <tbody>
@@ -139,14 +142,14 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
 
       <div className="grid gap-4 sm:grid-cols-2">
         <section className="overflow-x-auto rounded-lg border bg-white">
-          <h2 className="border-b px-4 py-2 text-sm font-semibold">المعلمون (تسميعات مسجّلة)</h2>
+          <h2 className="border-b px-4 py-2 text-sm font-semibold">{R.teachersLogged}</h2>
           <table className="w-full text-sm">
             <tbody>
               {r.teachers.map((x, i) => (
                 <tr key={x.id ?? i} className="border-t first:border-0">
                   <td className={td}>{x.name ?? '—'}</td>
                   <td className={td}>{x.recitations}</td>
-                  <td className={td}>{x.points} نقطة</td>
+                  <td className={td}>{fmt(R.pointsN, { n: x.points })}</td>
                 </tr>
               ))}
               {!r.teachers.length && (
@@ -158,7 +161,7 @@ export function CenterReportView({ r, exportHref }: { r: CenterReport; exportHre
           </table>
         </section>
         <section className="overflow-x-auto rounded-lg border bg-white">
-          <h2 className="border-b px-4 py-2 text-sm font-semibold">الأعلى نقاطًا</h2>
+          <h2 className="border-b px-4 py-2 text-sm font-semibold">{R.top}</h2>
           <table className="w-full text-sm">
             <tbody>
               {r.top_students.map((s, i) => (
