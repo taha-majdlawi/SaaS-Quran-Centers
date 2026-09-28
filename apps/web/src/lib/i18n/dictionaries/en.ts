@@ -1,4 +1,5 @@
 import type { Dictionary } from './ar';
+import { staffEn } from './staff';
 
 // English. Terms of art keep one fixed rendering everywhere (see docs/I18N.md
 // glossary): حلقة = circle, تسميع = recitation, سرد = serd (full review),
@@ -575,6 +576,9 @@ export const en: Dictionary = {
     partial: 'Partial:',
     partialItem: 'Juz {juz} — {e}/8',
   },
+
+  /** The admin / teacher dashboards (generated: tool/i18n). */
+  staff: staffEn,
 
   notFound: {
     title: 'This page does not exist',

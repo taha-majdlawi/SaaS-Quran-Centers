@@ -1,23 +1,24 @@
 import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { StudentsImportForm } from '@/components/students-import-form';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function ImportStudentsPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   if (!org.myPermissions.includes('students')) notFound();
   return (
     <div className="max-w-2xl">
       <a href="/students" className="text-sm text-brand hover:underline">
-        ← الطلاب
+        {S.studentsImport.back}
       </a>
-      <h1 className="mb-2 mt-2 text-2xl font-bold">استيراد طلاب من ملف</h1>
+      <h1 className="mb-2 mt-2 text-2xl font-bold">{S.studentsImport.title}</h1>
       <p className="mb-4 text-sm text-gray-600">
-        السطر الأول عناوين الأعمدة: <b dir="ltr">name</b> (الاسم — مطلوب)، <b dir="ltr">circle</b> (اسم الحلقة كما هو — مطلوب)، ثم اختياريًا{' '}
-        <b dir="ltr">code, birth_date, phone, whatsapp, address</b>. العناوين بالعربية مقبولة أيضًا (الاسم، الحلقة، الرقم، تاريخ الميلاد، الهاتف، واتساب، العنوان). إن تُرك رقم الطالب يُولَّد تلقائيًا. الحد 500 طالب في المرة.
-        يُنشأ سجل الطالب فقط؛ حساب الدخول يُنشأ لاحقًا من صفحة الطالب.
+        {S.studentsImport.intro}
       </p>
-      <StudentsImportForm orgId={org.id} />
+      <StudentsImportForm orgId={org.id} labels={S.studentsImport} />
     </div>
   );
 }

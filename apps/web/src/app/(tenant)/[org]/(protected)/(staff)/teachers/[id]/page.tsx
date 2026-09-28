@@ -5,18 +5,10 @@ import { SubmitButton } from '@/components/submit-button';
 import { MODULE_DEFS } from '@/lib/permissions/modules';
 import { updateTeacherAccount } from '../actions';
 import { setTeacherAttendance } from '@/lib/insights/actions';
+import { getI18n } from '@/lib/i18n/server';
 
-const ROLE_OPTIONS = [
-  { value: 'teacher', label: 'معلم' },
-  { value: 'admin', label: 'مدير' },
-  { value: 'guardian', label: 'ولي أمر' },
-  { value: 'student', label: 'طالب' },
-];
-
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'نشط' },
-  { value: 'suspended', label: 'موقوف' },
-];
+const ROLE_OPTIONS = ['teacher', 'admin', 'guardian', 'student'];
+const STATUS_OPTIONS = ['active', 'suspended'];
 
 interface MemberRow {
   id: string;
@@ -41,6 +33,8 @@ export default async function EditTeacherPage({
   const { org: slug, id } = await params;
   const { error, ok } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
 
   if (org.myRole !== 'admin') redirect('/teachers' as never);
 
@@ -58,11 +52,11 @@ export default async function EditTeacherPage({
   ]);
   const att = (attData ?? []) as { id: string; circle_name: string; status: string; date: string; checked_in_at: string | null; note: string | null; set_by_admin: boolean }[];
   const teacherCircles = (circleRows ?? []) as { id: string; name: string }[];
-  const STATUS: Record<string, string> = { present: 'حاضر', absent: 'غائب', excused: 'بعذر', late: 'متأخر' };
+  const STATUS: Record<string, string> = S.teachers.attStatus;
 
   return (
     <div className="max-w-md">
-      <h1 className="mb-6 text-2xl font-bold">تعديل بيانات المعلم</h1>
+      <h1 className="mb-6 text-2xl font-bold">{S.teachers.editTitle}</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
@@ -73,7 +67,7 @@ export default async function EditTeacherPage({
         <input type="hidden" name="orgId" value={org.id} />
 
         <label className="text-sm font-medium text-gray-700">
-          الاسم الكامل
+          {S.teachers.fullName}
           <input
             name="fullName"
             required
@@ -83,7 +77,7 @@ export default async function EditTeacherPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          البريد الإلكتروني
+          {S.teachers.colEmail}
           <input
             type="email"
             name="email"
@@ -95,7 +89,7 @@ export default async function EditTeacherPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          كلمة سر جديدة (اتركها فاضية إذا ما بدك تغيّرها)
+          {S.teachers.newPassword}
           <input
             name="password"
             minLength={8}
@@ -106,22 +100,22 @@ export default async function EditTeacherPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          الدور
+          {S.teachers.role}
           <select name="role" defaultValue={member.role} className="mt-1 w-full rounded border px-3 py-2 text-sm">
             {ROLE_OPTIONS.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
+              <option key={r} value={r}>
+                {T.shell.roles[r]}
               </option>
             ))}
           </select>
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          الحالة
+          {S.teachers.status}
           <select name="status" defaultValue={member.status} className="mt-1 w-full rounded border px-3 py-2 text-sm">
             {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
+              <option key={s} value={s}>
+                {S.teachers.memberStatus[s]}
               </option>
             ))}
           </select>
@@ -129,11 +123,10 @@ export default async function EditTeacherPage({
 
         <fieldset className="rounded border p-3">
           <legend className="px-1 text-sm font-medium text-gray-700">
-            الوحدات التي يمكنه الوصول لها من لوحة التحكم
+            {S.teachers.modulesTitle}
           </legend>
           <p className="mb-2 text-xs text-gray-400">
-            هذا يتحكم بما يظهر له في القائمة الجانبية وما يمكنه فعلاً قراءته أو تعديله - إن غيّرت دوره
-            إلى مدير فلن يكون لهذا أي أثر لأن المدير يرى كل شيء دائمًا.
+            {S.teachers.modulesHint}
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {MODULE_DEFS.map((m) => (
@@ -143,7 +136,7 @@ export default async function EditTeacherPage({
                   name={`perm_${m.key}`}
                   defaultChecked={(member.permissions ?? []).includes(m.key)}
                 />
-                {m.label}
+                {S.teachers.modules[m.key] ?? m.label}
               </label>
             ))}
           </div>
@@ -151,14 +144,14 @@ export default async function EditTeacherPage({
 
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الحفظ..."
+          pendingText={S.common.saving}
         >
-          حفظ التعديلات
+          {S.teachers.saveChanges}
         </SubmitButton>
       </form>
       <section className="mt-8 rounded-lg border bg-white p-6">
-        <h2 className="mb-1 font-semibold">حضور المعلم (آخر 30 يومًا)</h2>
-        <p className="mb-3 text-xs text-gray-500">يسجّل المعلم حضوره بنفسه من التطبيق أو لوحة التحكم، ولك تصحيحه هنا.</p>
+        <h2 className="mb-1 font-semibold">{S.teachers.attTitle}</h2>
+        <p className="mb-3 text-xs text-gray-500">{S.teachers.attHint}</p>
         {teacherCircles.length > 0 && (
           <form action={setTeacherAttendance} className="mb-4 grid grid-cols-2 gap-2 text-sm">
             <input type="hidden" name="orgId" value={org.id} />
@@ -175,23 +168,23 @@ export default async function EditTeacherPage({
                 <option key={k} value={k}>{v}</option>
               ))}
             </select>
-            <input name="note" placeholder="ملاحظة (اختياري)" className="rounded border px-2 py-1.5" />
-            <SubmitButton className="col-span-2 rounded bg-brand px-4 py-1.5 text-white" pendingText="...">حفظ الحضور</SubmitButton>
+            <input name="note" placeholder={S.teachers.notePh} className="rounded border px-2 py-1.5" />
+            <SubmitButton className="col-span-2 rounded bg-brand px-4 py-1.5 text-white" pendingText="...">{S.teachers.saveAtt}</SubmitButton>
           </form>
         )}
         <ul className="divide-y text-sm">
           {att.map((a) => (
             <li key={a.id} className="flex justify-between py-1.5">
-              <span>{new Date(a.date).toLocaleDateString('ar')} · {a.circle_name}</span>
+              <span>{new Date(a.date).toLocaleDateString(T.labels.dateLocale)} · {a.circle_name}</span>
               <span className="text-xs text-gray-500">
                 {STATUS[a.status] ?? a.status}
-                {a.checked_in_at ? ` · ${new Date(a.checked_in_at).toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' })}` : ''}
-                {a.set_by_admin ? ' · عدّله المشرف' : ''}
+                {a.checked_in_at ? ` · ${new Date(a.checked_in_at).toLocaleTimeString(T.labels.dateLocale, { hour: '2-digit', minute: '2-digit' })}` : ''}
+                {a.set_by_admin ? S.teachers.byAdmin : ''}
                 {a.note ? ` · ${a.note}` : ''}
               </span>
             </li>
           ))}
-          {!att.length && <li className="py-2 text-gray-400">لا سجلات</li>}
+          {!att.length && <li className="py-2 text-gray-400">{S.teachers.noRecords}</li>}
         </ul>
       </section>
     </div>

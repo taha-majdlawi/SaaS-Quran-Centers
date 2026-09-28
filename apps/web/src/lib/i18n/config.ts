@@ -31,6 +31,8 @@ export function fmt(template: string, vars: Record<string, string | number> = {}
 export const I18N_READY_HEADER = 'x-bustan-i18n';
 /** Request header carrying an explicit ?lang= choice for this very request. */
 export const LANG_OVERRIDE_HEADER = 'x-bustan-lang';
+/** Request header with the center's slug on a tenant request (its default language is the fallback). */
+export const ORG_SLUG_HEADER = 'x-bustan-org';
 
 /** Tenant-subdomain paths translated so far: phase 1 the public + sign-in screens, phase 2 the student / guardian portal. */
 const TENANT_READY = [

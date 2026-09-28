@@ -6,6 +6,7 @@ import { deleteErrorMessage } from '@/lib/db-errors';
 import { logAudit } from '@/lib/audit/log';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AccountError, provisionStudent } from '@/lib/accounts/provision';
+import { staffStrings } from '@/lib/i18n/server';
 
 function readStudentFields(formData: FormData) {
   return {
@@ -27,7 +28,7 @@ export async function createStudent(formData: FormData) {
   };
 
   if (!fields.circle_id) {
-    redirect(`/students/new?error=${encodeURIComponent('يجب اختيار حلقة للطالب')}` as never);
+    redirect(`/students/new?error=${encodeURIComponent((await staffStrings()).students.needCircle)}` as never);
   }
 
   const supabase = await createClient();
@@ -62,7 +63,7 @@ export async function createStudent(formData: FormData) {
   const { error } = await supabase.from('students_profile').insert({ organization_id: orgId, ...fields, ...contact });
 
   if (error) {
-    const message = error.code === '23505' ? 'رقم الطالب مستخدم من قبل بهذا المركز' : error.message;
+    const message = error.code === '23505' ? (await staffStrings()).students.codeTaken : error.message;
     redirect(`/students/new?error=${encodeURIComponent(message)}` as never);
   }
 
@@ -75,7 +76,7 @@ export async function updateStudent(formData: FormData) {
   const fields = readStudentFields(formData);
 
   if (!fields.circle_id) {
-    redirect(`/students/${id}?error=${encodeURIComponent('يجب اختيار حلقة للطالب')}` as never);
+    redirect(`/students/${id}?error=${encodeURIComponent((await staffStrings()).students.needCircle)}` as never);
   }
 
   // Contact fields are only touched when the form actually carries them.
@@ -91,7 +92,7 @@ export async function updateStudent(formData: FormData) {
     .eq('id', id);
 
   if (error) {
-    const message = error.code === '23505' ? 'رقم الطالب مستخدم من قبل بهذا المركز' : error.message;
+    const message = error.code === '23505' ? (await staffStrings()).students.codeTaken : error.message;
     redirect(`/students/${id}?error=${encodeURIComponent(message)}` as never);
   }
 

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { deleteErrorMessage } from '@/lib/db-errors';
 import { logAudit } from '@/lib/audit/log';
+import { staffStrings } from '@/lib/i18n/server';
 
 function readStageFields(formData: FormData) {
   const sortOrder = formData.get('sortOrder') as string;
@@ -22,7 +23,7 @@ export async function createStage(formData: FormData) {
   const { error } = await supabase.from('stages').insert({ organization_id: orgId, ...fields });
 
   if (error) {
-    const message = error.code === '23505' ? 'الاسم أو الكود مستخدم من قبل بهذا المركز' : error.message;
+    const message = error.code === '23505' ? (await staffStrings()).stages.taken : error.message;
     redirect(`/stages/new?error=${encodeURIComponent(message)}` as never);
   }
 
@@ -37,7 +38,7 @@ export async function updateStage(formData: FormData) {
   const { error } = await supabase.from('stages').update(fields).eq('id', id);
 
   if (error) {
-    const message = error.code === '23505' ? 'الاسم أو الكود مستخدم من قبل بهذا المركز' : error.message;
+    const message = error.code === '23505' ? (await staffStrings()).stages.taken : error.message;
     redirect(`/stages/${id}?error=${encodeURIComponent(message)}` as never);
   }
 

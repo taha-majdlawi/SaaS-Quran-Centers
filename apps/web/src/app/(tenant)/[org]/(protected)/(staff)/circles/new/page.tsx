@@ -3,6 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { createCircle } from '../actions';
+import { getI18n } from '@/lib/i18n/server';
 
 interface MemberRow {
   user_id: string;
@@ -21,6 +22,8 @@ export default async function NewCirclePage({
   const { org: slug } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   if (org.myRole !== 'admin') redirect('/circles' as never);
   const supabase = await createClient();
 
@@ -33,7 +36,7 @@ export default async function NewCirclePage({
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-6 text-2xl font-bold">إضافة حلقة</h1>
+      <h1 className="mb-6 text-2xl font-bold">{S.circles.addTitle}</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
@@ -41,14 +44,14 @@ export default async function NewCirclePage({
         <input type="hidden" name="orgId" value={org.id} />
 
         <label className="text-sm font-medium text-gray-700">
-          اسم الحلقة
+          {S.circles.name}
           <input name="name" required className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          المرحلة
+          {S.circles.colStage}
           <select name="stageId" className="mt-1 w-full rounded border px-3 py-2 text-sm">
-            <option value="">بدون مرحلة</option>
+            <option value="">{S.circles.noStage}</option>
             {(stages ?? []).map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -58,9 +61,9 @@ export default async function NewCirclePage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          المعلم
+          {S.circles.colTeacher}
           <select name="teacherId" className="mt-1 w-full rounded border px-3 py-2 text-sm">
-            <option value="">بدون معلم</option>
+            <option value="">{S.circles.noTeacher}</option>
             {teachers.map((t) => (
               <option key={t.user_id} value={t.user_id}>
                 {t.full_name ?? t.email}
@@ -69,24 +72,24 @@ export default async function NewCirclePage({
           </select>
           {!teachers.length && (
             <p className="mt-1 text-xs text-gray-400">
-              لا يوجد معلمون بعد -{' '}
+              {S.circles.noTeachersYet}{' '}
               <a href="/members" className="text-brand hover:underline">
-                ادعُ معلمًا من صفحة الأعضاء
+                {S.circles.inviteTeacher}
               </a>
             </p>
           )}
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          السعة (عدد الطلاب)
+          {S.circles.capacity}
           <input type="number" name="capacity" min={1} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
 
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الإضافة..."
+          pendingText={S.common.adding}
         >
-          إضافة الحلقة
+          {S.circles.submit}
         </SubmitButton>
       </form>
     </div>

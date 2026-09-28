@@ -2,13 +2,8 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { createInvitation } from './actions';
+import { getI18n } from '@/lib/i18n/server';
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: 'مدير',
-  teacher: 'معلم',
-  guardian: 'ولي أمر',
-  student: 'طالب',
-};
 
 interface MemberRow {
   id: string;
@@ -39,6 +34,8 @@ export default async function MembersPage({
   const { org: slug } = await params;
   const { createdEmail, createdPassword, error: actionError } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const { data: members, error: membersError } = await supabase.rpc('list_org_members', { org_id: org.id });
@@ -56,12 +53,12 @@ export default async function MembersPage({
     <div className="flex flex-col gap-8">
       {createdEmail && createdPassword && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
-          <p className="mb-2 font-semibold text-green-800">تم إنشاء حساب المعلم بنجاح - أعطه هذي البيانات الآن:</p>
+          <p className="mb-2 font-semibold text-green-800">{S.members.teacherCreated}</p>
           <p dir="ltr" className="font-mono text-green-900">
             {createdEmail} / {createdPassword}
           </p>
           <p className="mt-2 text-xs text-green-700">
-            هذا العرض الوحيد لكلمة السر - انسخها الآن، ما رح تظهر مرة ثانية.
+            {S.members.passwordOnce}
           </p>
         </div>
       )}
@@ -75,20 +72,20 @@ export default async function MembersPage({
           </p>
         )}
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">الأعضاء والأدوار</h1>
+          <h1 className="text-2xl font-bold">{S.members.title}</h1>
           {org.myRole === 'admin' && (
             <a href="/members/new-teacher" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-              + إضافة معلم يدويًا
+              {S.members.addTeacher}
             </a>
           )}
         </div>
         <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
-          <thead className="bg-gray-50 text-right">
+          <thead className="bg-gray-50 text-start">
             <tr>
-              <th className="px-4 py-2">الاسم</th>
-              <th className="px-4 py-2">البريد الإلكتروني</th>
-              <th className="px-4 py-2">الدور</th>
-              <th className="px-4 py-2">الحالة</th>
+              <th className="px-4 py-2">{S.members.colName}</th>
+              <th className="px-4 py-2">{S.members.email}</th>
+              <th className="px-4 py-2">{S.members.role}</th>
+              <th className="px-4 py-2">{S.members.status}</th>
               {isAdmin && <th className="px-4 py-2"></th>}
             </tr>
           </thead>
@@ -97,15 +94,15 @@ export default async function MembersPage({
               <tr key={m.id} className="border-t">
                 <td className="px-4 py-2">
                   {m.full_name ?? '—'}
-                  {viewers.has(m.user_id) && <span className="mr-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">عرض فقط</span>}
+                  {viewers.has(m.user_id) && <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{S.members.viewOnly}</span>}
                 </td>
                 <td className="px-4 py-2">{m.email}</td>
-                <td className="px-4 py-2">{ROLE_LABELS[m.role] ?? m.role}</td>
-                <td className="px-4 py-2">{m.status === 'active' ? 'نشط' : m.status}</td>
+                <td className="px-4 py-2">{T.shell.roles[m.role] ?? m.role}</td>
+                <td className="px-4 py-2">{S.teachers.memberStatus[m.status] ?? m.status}</td>
                 {isAdmin && (
-                  <td className="px-4 py-2 text-left">
+                  <td className="px-4 py-2 text-end">
                     <a href={`/members/${m.id}`} className="text-brand hover:underline">
-                      تعديل
+                      {S.common.edit}
                     </a>
                   </td>
                 )}
@@ -117,11 +114,11 @@ export default async function MembersPage({
 
       {isAdmin && (
         <div>
-          <h2 className="mb-4 text-lg font-bold">دعوة عضو جديد</h2>
+          <h2 className="mb-4 text-lg font-bold">{S.members.inviteTitle}</h2>
           <form action={createInvitation} className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4">
             <input type="hidden" name="orgId" value={org.id} />
             <label className="text-sm">
-              البريد الإلكتروني
+              {S.members.email}
               <input
                 type="email"
                 name="email"
@@ -131,31 +128,32 @@ export default async function MembersPage({
               />
             </label>
             <label className="text-sm">
-              الدور
+              {S.members.role}
               <select name="role" className="mt-1 block rounded border px-3 py-2 text-sm">
-                <option value="teacher">معلم</option>
-                <option value="admin">مدير</option>
-                <option value="guardian">ولي أمر</option>
-                <option value="student">طالب</option>
+                {['teacher', 'admin', 'guardian', 'student'].map((r) => (
+                  <option key={r} value={r}>
+                    {T.shell.roles[r]}
+                  </option>
+                ))}
               </select>
             </label>
             <SubmitButton
               className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              pendingText="جاري الإنشاء..."
+              pendingText={S.common.creating}
             >
-              إنشاء دعوة
+              {S.members.createInvite}
             </SubmitButton>
           </form>
 
           {pendingInvitations.length > 0 && (
             <div className="mt-4">
-              <h3 className="mb-2 text-sm font-semibold text-gray-600">دعوات لسه ما انضمّت</h3>
+              <h3 className="mb-2 text-sm font-semibold text-gray-600">{S.members.pending}</h3>
               <ul className="flex flex-col gap-2">
                 {pendingInvitations.map((inv) => (
                   <li key={inv.id} className="rounded border bg-white p-3 text-sm">
                     <div className="mb-1 flex items-center justify-between">
                       <span>
-                        {inv.email} — {ROLE_LABELS[inv.role] ?? inv.role}
+                        {inv.email} — {T.shell.roles[inv.role] ?? inv.role}
                       </span>
                     </div>
                     <p className="break-all text-xs text-gray-400" dir="ltr">
@@ -165,7 +163,7 @@ export default async function MembersPage({
                 ))}
               </ul>
               <p className="mt-2 text-xs text-gray-400">
-                انسخ الرابط وابعثه للشخص (واتساب/إيميل) - ما في إرسال تلقائي بعد.
+                {S.members.copyHint}
               </p>
             </div>
           )}

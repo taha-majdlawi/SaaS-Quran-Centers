@@ -2,6 +2,8 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { SubmitButton } from '@/components/submit-button';
 import { createTeacherDirectly } from './actions';
 import { PlanCapacityNote } from '@/components/plan-capacity-note';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 function generatePassword() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 10);
@@ -17,12 +19,14 @@ export default async function NewTeacherPage({
   const { org: slug } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-1 text-2xl font-bold">إضافة معلم يدويًا</h1>
+      <h1 className="mb-1 text-2xl font-bold">{S.members.newTeacherTitle}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        ينشئ حساب دخول جاهزًا فورًا - بلّغ المعلم رمز المركز ورقم هويته (أو بريده) وكلمة السر، بدون رابط دعوة.
+        {S.members.newTeacherIntro}
       </p>
 
       <PlanCapacityNote orgId={org.id} kind="teachers" isAdmin={org.myRole === 'admin'} />
@@ -32,25 +36,25 @@ export default async function NewTeacherPage({
         <input type="hidden" name="orgId" value={org.id} />
 
         <label className="text-sm font-medium text-gray-700">
-          اسم المعلم
+          {S.members.teacherName}
           <input name="fullName" required className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          رقم الهوية (أو البريد الإلكتروني)
+          {S.members.identifier}
           <input name="identifier" required dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
           <span className="mt-1 block text-xs text-gray-400">
-            يدخل بهذا الرقم مع رمز المركز ({org.slug}). إن كتبت بريدًا حقيقيًا يدخل به مباشرة.
+            {fmt(S.members.identifierHint, { code: org.slug })}
           </span>
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          رقم الجوال (اختياري)
+          {S.members.phoneOptional}
           <input name="phone" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          كلمة السر (مقترحة، تقدر تغيّرها)
+          {S.members.passwordSuggested}
           <input
             name="password"
             required
@@ -63,9 +67,9 @@ export default async function NewTeacherPage({
 
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الإنشاء..."
+          pendingText={S.common.creating}
         >
-          إنشاء حساب المعلم
+          {S.members.createTeacher}
         </SubmitButton>
       </form>
     </div>

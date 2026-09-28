@@ -1,4 +1,5 @@
 import type { ModuleKey } from '@/lib/permissions/modules';
+import { getI18n } from '@/lib/i18n/server';
 
 // Single source of truth for the tenant admin nav - the legacy admin/ had
 // this list implicitly, duplicated as 20+ separate <nav> blocks copy-pasted
@@ -41,7 +42,7 @@ export const TENANT_MODULES = [
   { slug: 'billing', label: 'الاشتراك والدفع', adminOnly: true },
 ] as const;
 
-export function TenantSidebar({
+export async function TenantSidebar({
   activeSlug,
   role,
   permissions,
@@ -50,6 +51,7 @@ export function TenantSidebar({
   role: 'admin' | 'teacher' | 'guardian' | 'student' | null;
   permissions: ModuleKey[];
 }) {
+  const S = (await getI18n()).t.staff;
   const visible = TENANT_MODULES.filter((m) => {
     if (role === 'admin') return true;
     if ('adminOnly' in m && m.adminOnly) return false;
@@ -58,7 +60,7 @@ export function TenantSidebar({
   });
 
   return (
-    <aside className="w-64 shrink-0 border-l bg-white p-4 print:hidden">
+    <aside className="w-64 shrink-0 border-e bg-white p-4 print:hidden">
       <nav className="flex flex-col gap-1 text-sm">
         {visible.map((m) => (
           <a
@@ -71,7 +73,7 @@ export function TenantSidebar({
               activeSlug === m.slug ? 'bg-brand/10 font-semibold text-brand' : 'text-gray-700'
             }`}
           >
-            {m.label}
+            {S.nav.items[m.slug] ?? m.label}
           </a>
         ))}
       </nav>

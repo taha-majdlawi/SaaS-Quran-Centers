@@ -1,7 +1,8 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
-const STATUS_LABELS: Record<string, string> = { active: 'نشطة', archived: 'مؤرشفة' };
 
 interface MemberRow {
   user_id: string;
@@ -15,6 +16,8 @@ interface MemberRow {
 export default async function CirclesPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ data: circles }, { data: members }] = await Promise.all([
@@ -40,22 +43,22 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">الحلقات</h1>
+        <h1 className="text-2xl font-bold">{S.circles.title}</h1>
         {isAdmin && (
           <a href="/circles/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-            + إضافة حلقة
+            {S.circles.add}
           </a>
         )}
       </div>
-      {!isAdmin && <p className="mb-4 text-sm text-gray-500">حلقاتك أنت فقط (يديرها المشرف).</p>}
+      {!isAdmin && <p className="mb-4 text-sm text-gray-500">{S.circles.yoursOnly}</p>}
       <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
-        <thead className="bg-gray-50 text-right">
+        <thead className="bg-gray-50 text-start">
           <tr>
-            <th className="px-4 py-2">الاسم</th>
-            <th className="px-4 py-2">المرحلة</th>
-            <th className="px-4 py-2">المعلم</th>
-            <th className="px-4 py-2">السعة</th>
-            <th className="px-4 py-2">الحالة</th>
+            <th className="px-4 py-2">{S.circles.colName}</th>
+            <th className="px-4 py-2">{S.circles.colStage}</th>
+            <th className="px-4 py-2">{S.circles.colTeacher}</th>
+            <th className="px-4 py-2">{S.circles.colCapacity}</th>
+            <th className="px-4 py-2">{S.circles.colStatus}</th>
             <th className="px-4 py-2"></th>
           </tr>
         </thead>
@@ -66,15 +69,15 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
               <td className="px-4 py-2">{(c.stages as unknown as { name: string } | null)?.name ?? '—'}</td>
               <td className="px-4 py-2">{c.teacher_id ? teacherNameByUserId.get(c.teacher_id) ?? '—' : '—'}
                 {(assistantsByCircle.get(c.id) ?? []).length > 0 && (
-                  <span className="mt-0.5 block text-xs text-gray-500">مساعد: {(assistantsByCircle.get(c.id) ?? []).join('، ')}</span>
+                  <span className="mt-0.5 block text-xs text-gray-500">{fmt(S.circles.assistant, { names: (assistantsByCircle.get(c.id) ?? []).join(T.labels.listSep) })}</span>
                 )}
               </td>
               <td className="px-4 py-2">{c.capacity ?? '—'}</td>
-              <td className="px-4 py-2">{STATUS_LABELS[c.status] ?? c.status}</td>
-              <td className="px-4 py-2 text-left">
+              <td className="px-4 py-2">{S.circles.status[c.status] ?? c.status}</td>
+              <td className="px-4 py-2 text-end">
                 {isAdmin && (
                   <a href={`/circles/${c.id}`} className="text-brand hover:underline">
-                    تعديل
+                    {S.common.edit}
                   </a>
                 )}
               </td>
@@ -83,7 +86,7 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
           {!circles?.length && (
             <tr>
               <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
-                لا يوجد حلقات بعد
+                {S.circles.none}
               </td>
             </tr>
           )}

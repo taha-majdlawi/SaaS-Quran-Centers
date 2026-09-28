@@ -2,13 +2,8 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { deleteStudent } from './actions';
-
-const STATUS_LABELS: Record<string, string> = {
-  active: 'نشط',
-  paused: 'متوقف',
-  graduated: 'تخرّج',
-  withdrawn: 'منسحب',
-};
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 // Replaces wep-eqraa-center/admin/students - list + real add/edit/delete
 // (see actions.ts, new/page.tsx, [id]/page.tsx).
@@ -22,6 +17,8 @@ export default async function StudentsPage({
   const { org: slug } = await params;
   const { createdId, createdPassword } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const { data: students } = await supabase
@@ -34,38 +31,38 @@ export default async function StudentsPage({
     <div>
       {createdId && createdPassword && (
         <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
-          <p className="mb-2 font-semibold text-green-800">تم إنشاء حساب الطالب - أعطه بيانات الدخول الآن:</p>
+          <p className="mb-2 font-semibold text-green-800">{S.students.created}</p>
           <p dir="ltr" className="font-mono text-green-900">
             {org.slug} / {createdId} / {createdPassword}
           </p>
           <p className="mt-2 text-xs text-green-700">
-            رمز المركز، ثم رقم الطالب، ثم كلمة السر. هذا العرض الوحيد لكلمة السر - انسخها الآن.
+            {S.students.createdHint}
           </p>
         </div>
       )}
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">الطلاب</h1>
+        <h1 className="text-2xl font-bold">{S.students.title}</h1>
       {org.myPermissions.includes('students') && (
         <div className="mb-4 flex gap-2 text-sm">
           <a href="/students/import" className="rounded border px-3 py-1.5 text-brand hover:bg-gray-50">
-            استيراد من CSV
+            {S.students.import}
           </a>
           <a href="/students/export" className="rounded border px-3 py-1.5 text-brand hover:bg-gray-50">
-            تصدير CSV
+            {S.students.export}
           </a>
         </div>
       )}
         <a href="/students/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-          + إضافة طالب
+          {S.students.add}
         </a>
       </div>
       <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
         <thead className="bg-gray-50 text-right">
           <tr>
-            <th className="px-4 py-2">الرقم</th>
-            <th className="px-4 py-2">الاسم</th>
-            <th className="px-4 py-2">الحلقة</th>
-            <th className="px-4 py-2">الحالة</th>
+            <th className="px-4 py-2">{S.students.colCode}</th>
+            <th className="px-4 py-2">{S.students.colName}</th>
+            <th className="px-4 py-2">{S.students.colCircle}</th>
+            <th className="px-4 py-2">{S.students.colStatus}</th>
             <th className="px-4 py-2"></th>
           </tr>
         </thead>
@@ -75,23 +72,23 @@ export default async function StudentsPage({
               <td className="px-4 py-2">{s.student_code}</td>
               <td className="px-4 py-2">{s.full_name}</td>
               <td className="px-4 py-2">{(s.circles as unknown as { name: string } | null)?.name ?? '—'}</td>
-              <td className="px-4 py-2">{STATUS_LABELS[s.status] ?? s.status}</td>
-              <td className="px-4 py-2 text-left">
+              <td className="px-4 py-2">{S.students.status[s.status] ?? s.status}</td>
+              <td className="px-4 py-2 text-end">
                 <div className="flex items-center justify-end gap-3">
                   <a href={`/students/${s.id}/recitations`} className="text-brand hover:underline">
-                    تسميع
+                    {S.students.recite}
                   </a>
                   <a href={`/students/${s.id}`} className="text-brand hover:underline">
-                    تعديل
+                    {S.common.edit}
                   </a>
                   <form action={deleteStudent}>
                     <input type="hidden" name="id" value={s.id} />
                     <ConfirmSubmitButton
-                      confirmMessage={`متأكد إنك بدك تحذف "${s.full_name}"؟ رح يتحذف ملفه بالكامل (حضور، تسميع، نقاط...) ولا يمكن التراجع.`}
-                      pendingText="جاري الحذف..."
+                      confirmMessage={fmt(S.students.deleteConfirm, { name: s.full_name })}
+                      pendingText={S.common.deleting}
                       className="text-red-600 hover:underline"
                     >
-                      حذف
+                      {S.common.delete}
                     </ConfirmSubmitButton>
                   </form>
                 </div>
@@ -101,7 +98,7 @@ export default async function StudentsPage({
           {!students?.length && (
             <tr>
               <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
-                لا يوجد طلاب بعد
+                {S.students.none}
               </td>
             </tr>
           )}

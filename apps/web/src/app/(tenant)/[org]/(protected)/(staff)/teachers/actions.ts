@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logAudit } from '@/lib/audit/log';
 import { ALL_MODULE_KEYS } from '@/lib/permissions/modules';
+import { staffStrings } from '@/lib/i18n/server';
 
 /**
  * Full account edit (name, email, password, role, status) - not just the
@@ -37,7 +38,7 @@ export async function updateTeacherAccount(formData: FormData) {
     .maybeSingle();
 
   if (callerMembership?.role !== 'admin') {
-    redirect(`/teachers/${memberId}?error=${encodeURIComponent('غير مصرح لك بهذا الإجراء')}` as never);
+    redirect(`/teachers/${memberId}?error=${encodeURIComponent((await staffStrings()).common.notAllowed)}` as never);
   }
 
   const admin = createAdminClient();
@@ -52,10 +53,10 @@ export async function updateTeacherAccount(formData: FormData) {
     .eq('organization_id', orgId)
     .maybeSingle();
   if (!target || target.user_id !== userId) {
-    redirect(`/teachers?error=${encodeURIComponent('العضو غير موجود في هذا المركز')}` as never);
+    redirect(`/teachers?error=${encodeURIComponent((await staffStrings()).common.noMember)}` as never);
   }
   if (!['admin', 'teacher', 'student', 'guardian'].includes(role) || !['active', 'suspended'].includes(status)) {
-    redirect(`/teachers/${memberId}?error=${encodeURIComponent('قيمة غير صالحة')}` as never);
+    redirect(`/teachers/${memberId}?error=${encodeURIComponent((await staffStrings()).common.invalid)}` as never);
   }
 
   const authUpdate: { email?: string; password?: string } = {};

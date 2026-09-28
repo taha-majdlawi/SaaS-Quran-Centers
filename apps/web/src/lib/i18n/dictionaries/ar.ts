@@ -2,6 +2,8 @@
 // other language must provide exactly these keys (the build fails otherwise).
 // Placeholders like {name} are filled with fmt() from ../config.
 
+import { staffAr } from './staff';
+
 export const ar = {
   meta: {
     title: 'بستان القرآن',
@@ -581,6 +583,9 @@ export const ar = {
     partial: 'جزئي:',
     partialItem: 'جزء {juz} — {e}/8',
   },
+
+  /** The admin / teacher dashboards (generated: tool/i18n). */
+  staff: staffAr,
 
   notFound: {
     title: 'هذه الصفحة غير موجودة',

@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { parseCsv } from '@/lib/csv';
+import { staffStrings } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 export interface ImportState {
   created: number;
@@ -21,19 +23,20 @@ const MAX_ROWS = 500;
 
 export async function importStudents(_prev: ImportState | null, formData: FormData): Promise<ImportState> {
   const orgId = (formData.get('orgId') as string) ?? '';
+  const I = (await staffStrings()).studentsImport;
   const file = formData.get('file');
   const pasted = ((formData.get('csv') as string) ?? '').trim();
   const text = file instanceof File && file.size > 0 ? await file.text() : pasted;
-  if (!text) return { created: 0, errors: ['ألصق الجدول أو اختر ملف CSV'] };
+  if (!text) return { created: 0, errors: [I.eEmpty] };
 
   const rows = parseCsv(text);
-  if (rows.length < 2) return { created: 0, errors: ['الملف يحتاج سطر عناوين وسطرًا واحدًا على الأقل'] };
-  if (rows.length - 1 > MAX_ROWS) return { created: 0, errors: [`الحد الأقصى ${MAX_ROWS} طالب في المرة الواحدة`] };
+  if (rows.length < 2) return { created: 0, errors: [I.eShort] };
+  if (rows.length - 1 > MAX_ROWS) return { created: 0, errors: [fmt(I.eMax, { n: MAX_ROWS })] };
 
   const header = rows[0].map((h) => h.trim().toLowerCase());
   const col = (key: string) => header.findIndex((h) => ALIASES[key].includes(h));
   const idx = Object.fromEntries(Object.keys(ALIASES).map((k) => [k, col(k)]));
-  if (idx.name < 0) return { created: 0, errors: ['لا يوجد عمود «الاسم» (name) في السطر الأول'] };
+  if (idx.name < 0) return { created: 0, errors: [I.eNoName] };
 
   const supabase = await createClient();
   const { data: circles } = await supabase.from('circles').select('id, name, stage_id').eq('organization_id', orgId);
@@ -47,30 +50,30 @@ export async function importStudents(_prev: ImportState | null, formData: FormDa
     const line = i + 1;
     const name = get('name');
     if (!name) {
-      errors.push(`سطر ${line}: الاسم فارغ`);
+      errors.push(fmt(I.eBlank, { line }));
       continue;
     }
     const circle = get('circle') ? byName.get(get('circle').toLowerCase()) : undefined;
     if (get('circle') && !circle) {
-      errors.push(`سطر ${line} (${name}): الحلقة «${get('circle')}» غير موجودة`);
+      errors.push(fmt(I.eCircle, { line, name, circle: get('circle') }));
       continue;
     }
     if (!circle) {
-      errors.push(`سطر ${line} (${name}): الحلقة مطلوبة`);
+      errors.push(fmt(I.eNeedCircle, { line, name }));
       continue;
     }
     let code = get('code');
     if (!code) {
       const { data: next, error: codeError } = await supabase.rpc('next_student_code', { org_id: orgId, target_stage_id: circle.stage_id });
       if (codeError || !next) {
-        errors.push(`سطر ${line} (${name}): تعذّر توليد رقم الطالب`);
+        errors.push(fmt(I.eCode, { line, name }));
         continue;
       }
       code = next as string;
     }
     const birth = get('birth');
     if (birth && !/^\d{4}-\d{2}-\d{2}$/.test(birth)) {
-      errors.push(`سطر ${line} (${name}): تاريخ الميلاد يجب أن يكون yyyy-mm-dd`);
+      errors.push(fmt(I.eBirth, { line, name }));
       continue;
     }
     const { error } = await supabase.from('students_profile').insert({
@@ -84,7 +87,7 @@ export async function importStudents(_prev: ImportState | null, formData: FormDa
       address: get('address') || null,
     });
     if (error) {
-      errors.push(`سطر ${line} (${name}): ${error.code === '23505' ? 'رقم الطالب مستخدم من قبل' : error.message}`);
+      errors.push(fmt(I.eRow, { line, name, error: error.code === '23505' ? I.eTaken : error.message }));
       // a plan limit / permission problem will repeat for every row: stop early
       if (/الحد الأقصى|حساب عرض|row-level/.test(error.message)) break;
       continue;

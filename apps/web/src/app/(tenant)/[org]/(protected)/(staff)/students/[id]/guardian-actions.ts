@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AccountError, linkGuardian, provisionGuardian } from '@/lib/accounts/provision';
+import { staffStrings } from '@/lib/i18n/server';
 
 async function callerId() {
   const supabase = await createClient();
@@ -32,7 +33,7 @@ export async function createGuardianForStudent(formData: FormData) {
       phone: (formData.get('phone') as string)?.trim(),
     });
   } catch (e) {
-    const message = e instanceof AccountError ? e.message : 'تعذّر إنشاء الحساب';
+    const message = e instanceof AccountError ? e.message : (await staffStrings()).students.createFailed;
     redirect(`${back}?error=${encodeURIComponent(message)}` as never);
   }
   redirect(
@@ -50,7 +51,7 @@ export async function setStudentGuardian(formData: FormData) {
   try {
     await linkGuardian(createAdminClient(), await callerId(), { orgId, studentId, guardianMemberId });
   } catch (e) {
-    const message = e instanceof AccountError ? e.message : 'تعذّر تحديث الربط';
+    const message = e instanceof AccountError ? e.message : (await staffStrings()).students.linkFailed;
     redirect(`${back}?error=${encodeURIComponent(message)}` as never);
   }
   redirect(`${back}?guardianLinked=1` as never);

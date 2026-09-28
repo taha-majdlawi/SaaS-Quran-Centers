@@ -1,11 +1,12 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { csvCell } from '@/lib/csv';
+import { staffStrings } from '@/lib/i18n/server';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
-  if (!org.myPermissions.includes('students')) return new Response('غير مصرّح', { status: 403 });
+  if (!org.myPermissions.includes('students')) return new Response((await staffStrings()).common.forbidden, { status: 403 });
 
   const supabase = await createClient();
   const { data, error } = await supabase

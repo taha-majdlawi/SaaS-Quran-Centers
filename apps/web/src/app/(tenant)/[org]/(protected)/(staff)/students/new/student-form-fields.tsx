@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 interface Stage {
   id: string;
@@ -24,11 +25,15 @@ export function StudentFormFields({
   stages,
   circles,
   suggestedCodes,
+  labels,
 }: {
   stages: Stage[];
   circles: Circle[];
   suggestedCodes: Record<string, string>;
+  /** t.staff.studentForm */
+  labels: Dictionary['staff']['studentForm'];
 }) {
+  const L = { studentForm: labels };
   const [stageId, setStageId] = useState('');
   const [circleId, setCircleId] = useState('');
   const [code, setCode] = useState('');
@@ -38,7 +43,7 @@ export function StudentFormFields({
   return (
     <>
       <label className="text-sm font-medium text-gray-700">
-        المرحلة
+        {L.studentForm.stage}
         <select
           required
           value={stageId}
@@ -51,7 +56,7 @@ export function StudentFormFields({
           className="mt-1 w-full rounded border px-3 py-2 text-sm"
         >
           <option value="" disabled>
-            اختر المرحلة
+            {L.studentForm.pickStage}
           </option>
           {stages.map((s) => (
             <option key={s.id} value={s.id}>
@@ -61,16 +66,16 @@ export function StudentFormFields({
         </select>
         {!stages.length && (
           <p className="mt-1 text-xs text-gray-400">
-            لا يوجد مراحل بعد -{' '}
+            {L.studentForm.noStages}{' '}
             <a href="/stages/new" className="text-brand hover:underline">
-              أضف مرحلة أولًا
+              {L.studentForm.addStage}
             </a>
           </p>
         )}
       </label>
 
       <label className="text-sm font-medium text-gray-700">
-        الحلقة
+        {L.studentForm.circle}
         <select
           name="circleId"
           required
@@ -80,7 +85,7 @@ export function StudentFormFields({
           className="mt-1 w-full rounded border px-3 py-2 text-sm disabled:bg-gray-50"
         >
           <option value="" disabled>
-            {stageId ? 'اختر الحلقة' : 'اختر المرحلة أولًا'}
+            {stageId ? L.studentForm.pickCircle : L.studentForm.stageFirst}
           </option>
           {filteredCircles.map((c) => (
             <option key={c.id} value={c.id}>
@@ -90,22 +95,22 @@ export function StudentFormFields({
         </select>
         {stageId && !filteredCircles.length && (
           <p className="mt-1 text-xs text-gray-400">
-            لا يوجد حلقات بهذي المرحلة بعد -{' '}
+            {L.studentForm.noCircles}{' '}
             <a href="/circles/new" className="text-brand hover:underline">
-              أضف حلقة
+              {L.studentForm.addCircle}
             </a>
           </p>
         )}
       </label>
 
       <label className="text-sm font-medium text-gray-700">
-        رقم الطالب (مقترح تلقائيًا، يمكن تعديله)
+        {L.studentForm.code}
         <input
           name="studentCode"
           required
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="اختر المرحلة أولًا"
+          placeholder={L.studentForm.stageFirst}
           className="mt-1 w-full rounded border px-3 py-2 text-sm"
         />
       </label>

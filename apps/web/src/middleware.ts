@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { authCookieDomain } from './lib/supabase/cookie-options';
-import { I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE, isI18nReady, isLocale } from './lib/i18n/config';
+import { I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE, ORG_SLUG_HEADER, isI18nReady, isLocale } from './lib/i18n/config';
 
 const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase();
 
@@ -68,18 +68,21 @@ export async function middleware(req: NextRequest) {
   const forcedLang = isLocale(langParam) ? langParam : null;
   // What the page learns about its request: its real host (see FORWARDED_HOST_HEADER),
   // which part of the product it is, and whether it may render in the viewer's language.
-  const requestHeaders = (scopeName: 'marketing' | 'tenant' | 'platform') => {
+  const requestHeaders = (scopeName: 'marketing' | 'tenant' | 'platform', orgSlug?: string) => {
     const headers = new Headers(req.headers);
     headers.set(FORWARDED_HOST_HEADER, hostname);
     headers.set('x-bustan-scope', scopeName);
+    // the center's slug, so a page can fall back to the center's default language
+    headers.delete(ORG_SLUG_HEADER);
+    if (orgSlug) headers.set(ORG_SLUG_HEADER, orgSlug);
     headers.delete(I18N_READY_HEADER);
     headers.delete(LANG_OVERRIDE_HEADER);
     if (isI18nReady(scopeName, req.nextUrl.pathname)) headers.set(I18N_READY_HEADER, '1');
     if (forcedLang) headers.set(LANG_OVERRIDE_HEADER, forcedLang);
     return headers;
   };
-  const rewriteTo = (target: URL, scopeName: 'tenant' | 'platform') =>
-    NextResponse.rewrite(target, { request: { headers: requestHeaders(scopeName) } });
+  const rewriteTo = (target: URL, scopeName: 'tenant' | 'platform', orgSlug?: string) =>
+    NextResponse.rewrite(target, { request: { headers: requestHeaders(scopeName, orgSlug) } });
 
   const isRootDomain =
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
@@ -103,7 +106,7 @@ export async function middleware(req: NextRequest) {
     } else {
       scope = 'tenant';
       url.pathname = `/${subdomain}${req.nextUrl.pathname}`;
-      response = rewriteTo(url, 'tenant');
+      response = rewriteTo(url, 'tenant', subdomain);
     }
   }
 

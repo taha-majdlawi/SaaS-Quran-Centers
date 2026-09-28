@@ -6,13 +6,10 @@ import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { updateStudent, deleteStudent } from '../actions';
 import { addStudentNote } from '@/lib/insights/actions';
 import { createGuardianForStudent, setStudentGuardian } from './guardian-actions';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'نشط' },
-  { value: 'paused', label: 'متوقف' },
-  { value: 'graduated', label: 'تخرّج' },
-  { value: 'withdrawn', label: 'منسحب' },
-];
+const STATUS_OPTIONS = ['active', 'paused', 'graduated', 'withdrawn'];
 
 export default async function EditStudentPage({
   params,
@@ -30,6 +27,8 @@ export default async function EditStudentPage({
   const { org: slug, id } = await params;
   const { error, guardianCreated, guardianPassword, guardianLinked, ok } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const isAdmin = org.myRole === 'admin';
@@ -55,9 +54,9 @@ export default async function EditStudentPage({
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-2 text-2xl font-bold">تعديل بيانات طالب</h1>
+      <h1 className="mb-2 text-2xl font-bold">{S.students.editTitle}</h1>
       <a href={`/students/${student.id}/report` as never} className="mb-6 inline-block text-sm text-brand hover:underline">
-        تقرير الطالب (طباعة)
+        {S.students.reportLink}
       </a>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
@@ -67,7 +66,7 @@ export default async function EditStudentPage({
         <input type="hidden" name="id" value={student.id} />
 
         <label className="text-sm font-medium text-gray-700">
-          الاسم الكامل
+          {S.students.fullName}
           <input
             name="fullName"
             required
@@ -77,7 +76,7 @@ export default async function EditStudentPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          رقم الطالب
+          {S.students.studentCode}
           <input
             name="studentCode"
             required
@@ -87,7 +86,7 @@ export default async function EditStudentPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          تاريخ الميلاد
+          {S.students.birthDate}
           <input
             type="date"
             name="birthDate"
@@ -97,20 +96,20 @@ export default async function EditStudentPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          الجوال
+          {S.students.mobile}
           <input name="phone" defaultValue={student.phone ?? ''} dir="ltr" className={field} />
         </label>
         <label className="text-sm font-medium text-gray-700">
-          واتساب
+          {S.students.whatsappShort}
           <input name="whatsapp" defaultValue={student.whatsapp ?? ''} dir="ltr" className={field} />
         </label>
         <label className="text-sm font-medium text-gray-700">
-          العنوان
+          {S.students.address}
           <input name="address" defaultValue={student.address ?? ''} className={field} />
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          الحلقة
+          {S.students.colCircle}
           <select
             name="circleId"
             required
@@ -118,7 +117,7 @@ export default async function EditStudentPage({
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
           >
             <option value="" disabled>
-              اختر الحلقة
+              {S.students.pickCircle}
             </option>
             {(circles ?? []).map((c) => (
               <option key={c.id} value={c.id}>
@@ -129,15 +128,15 @@ export default async function EditStudentPage({
         </label>
 
         <label className="text-sm font-medium text-gray-700">
-          الحالة
+          {S.students.colStatus}
           <select
             name="status"
             defaultValue={student.status}
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
           >
             {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
+              <option key={s} value={s}>
+                {S.students.status[s]}
               </option>
             ))}
           </select>
@@ -145,37 +144,37 @@ export default async function EditStudentPage({
 
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الحفظ..."
+          pendingText={S.common.saving}
         >
-          حفظ التعديلات
+          {S.students.saveChanges}
         </SubmitButton>
       </form>
 
       {isAdmin && (
         <section className="mt-6 rounded-lg border bg-white p-6">
-          <h2 className="mb-1 font-semibold">ولي الأمر</h2>
+          <h2 className="mb-1 font-semibold">{S.students.guardian}</h2>
           <p className="mb-3 text-sm text-gray-500">
             {currentGuardian
-              ? `المرتبط حاليًا: ${currentGuardian.full_name ?? currentGuardian.email ?? '—'}`
-              : 'لا يوجد ولي أمر مرتبط بهذا الطالب.'}
+              ? fmt(S.students.guardianNow, { name: currentGuardian.full_name ?? currentGuardian.email ?? '—' })
+              : S.students.noGuardian}
           </p>
 
           {guardianCreated && (
             <p className="mb-3 rounded bg-green-50 px-3 py-2 text-sm text-green-700">
-              تم إنشاء حساب ولي الأمر — رمز المركز: {slug} · الدخول: {guardianCreated} · كلمة السر: {guardianPassword}
+              {fmt(S.students.guardianCreated, { code: slug, login: guardianCreated, password: guardianPassword ?? '' })}
               <br />
-              <span className="text-xs">هذا العرض الوحيد لكلمة السر، سلّمها الآن.</span>
+              <span className="text-xs">{S.students.passwordOnce}</span>
             </p>
           )}
-          {guardianLinked && <p className="mb-3 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم تحديث الربط ✓</p>}
+          {guardianLinked && <p className="mb-3 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{S.students.linkUpdated}</p>}
 
           <form action={setStudentGuardian} className="mb-4 flex items-end gap-2">
             <input type="hidden" name="orgId" value={org.id} />
             <input type="hidden" name="studentId" value={student.id} />
             <label className="flex-1 text-sm font-medium text-gray-700">
-              ربط بولي أمر موجود
+              {S.students.linkExisting}
               <select name="guardianMemberId" defaultValue={student.guardian_member_id ?? ''} className={field}>
-                <option value="">— بدون —</option>
+                <option value="">{S.students.none2}</option>
                 {guardians.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.full_name ?? g.email}
@@ -184,7 +183,7 @@ export default async function EditStudentPage({
               </select>
             </label>
             <SubmitButton className="rounded border px-4 py-2 text-sm font-semibold text-brand" pendingText="...">
-              حفظ الربط
+              {S.students.saveLink}
             </SubmitButton>
           </form>
 
@@ -192,16 +191,16 @@ export default async function EditStudentPage({
             <form action={createGuardianForStudent} className="flex flex-col gap-2 border-t pt-4">
               <input type="hidden" name="orgId" value={org.id} />
               <input type="hidden" name="studentId" value={student.id} />
-              <p className="text-sm font-medium text-gray-700">أو أنشئ حساب ولي أمر جديد</p>
-              <input name="fullName" required placeholder="اسم ولي الأمر" className={field} />
-              <input name="identifier" required placeholder="رقم الدخول أو البريد" dir="ltr" className={field} />
-              <input name="phone" placeholder="الجوال (اختياري)" dir="ltr" className={field} />
-              <input name="password" required minLength={8} placeholder="كلمة السر" className={field} />
+              <p className="text-sm font-medium text-gray-700">{S.students.createGuardian}</p>
+              <input name="fullName" required placeholder={S.students.guardianName} className={field} />
+              <input name="identifier" required placeholder={S.students.loginOrEmail} dir="ltr" className={field} />
+              <input name="phone" placeholder={S.students.mobileOptional} dir="ltr" className={field} />
+              <input name="password" required minLength={8} placeholder={S.students.passwordPh} className={field} />
               <SubmitButton
                 className="self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white"
-                pendingText="جاري الإنشاء..."
+                pendingText={S.students.creating}
               >
-                إنشاء حساب ولي الأمر
+                {S.students.createGuardianBtn}
               </SubmitButton>
             </form>
           )}
@@ -211,27 +210,27 @@ export default async function EditStudentPage({
       <form action={deleteStudent} className="mt-3">
         <input type="hidden" name="id" value={student.id} />
         <ConfirmSubmitButton
-          confirmMessage={`متأكد إنك بدك تحذف "${student.full_name}"؟ رح يتحذف ملفه بالكامل (حضور، تسميع، نقاط...) ولا يمكن التراجع.`}
-          pendingText="جاري الحذف..."
+          confirmMessage={fmt(S.students.deleteConfirm, { name: student.full_name })}
+          pendingText={S.common.deleting}
           className="rounded border border-red-200 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
         >
-          حذف الطالب
+          {S.students.deleteStudent}
         </ConfirmSubmitButton>
       </form>
       <section className="mt-8 rounded-lg border bg-white p-6">
-        <h2 className="mb-1 font-semibold">ملاحظات المعلم</h2>
-        <p className="mb-3 text-xs text-gray-500">سجل يُضاف إليه ولا يُعدَّل، لا يراه الطالب. الملاحظة «ظاهرة لولي الأمر» يراها وليّه فقط.</p>
+        <h2 className="mb-1 font-semibold">{S.students.notes}</h2>
+        <p className="mb-3 text-xs text-gray-500">{S.students.notesHint}</p>
         <form action={addStudentNote} className="mb-4 flex flex-col gap-2">
           <input type="hidden" name="orgId" value={org.id} />
           <input type="hidden" name="studentId" value={student.id} />
           <input type="hidden" name="back" value={`/students/${student.id}`} />
-          <textarea name="body" required maxLength={1000} rows={2} placeholder="مثال: يستعجل في أواخر الآيات، يحتاج حلقة أبطأ" className="w-full rounded border px-3 py-2 text-sm" />
+          <textarea name="body" required maxLength={1000} rows={2} placeholder={S.students.notePh} className="w-full rounded border px-3 py-2 text-sm" />
           <div className="flex items-center gap-3">
             <select name="visibility" className="rounded border px-2 py-1.5 text-sm">
-              <option value="staff_only">للإدارة والمعلمين فقط</option>
-              <option value="guardian_visible">ظاهرة لولي الأمر</option>
+              <option value="staff_only">{S.students.staffOnly}</option>
+              <option value="guardian_visible">{S.students.guardianVisible}</option>
             </select>
-            <SubmitButton className="rounded bg-brand px-4 py-1.5 text-sm text-white" pendingText="...">إضافة</SubmitButton>
+            <SubmitButton className="rounded bg-brand px-4 py-1.5 text-sm text-white" pendingText="...">{S.common.add}</SubmitButton>
           </div>
         </form>
         <ul className="flex flex-col gap-2 text-sm">
@@ -239,12 +238,12 @@ export default async function EditStudentPage({
             <li key={n.id} className="rounded bg-gray-50 p-3">
               <p>{n.body}</p>
               <p className="mt-1 text-xs text-gray-400">
-                {n.author ?? '—'} · {new Date(n.created_at).toLocaleDateString('ar')}
-                {n.visibility === 'guardian_visible' ? ' · ظاهرة لولي الأمر' : ''}
+                {n.author ?? '—'} · {new Date(n.created_at).toLocaleDateString(T.labels.dateLocale)}
+                {n.visibility === 'guardian_visible' ? ` · ${S.students.guardianVisible}` : ''}
               </p>
             </li>
           ))}
-          {!notes.length && <li className="text-gray-400">لا ملاحظات بعد</li>}
+          {!notes.length && <li className="text-gray-400">{S.students.noNotes}</li>}
         </ul>
       </section>
     </div>

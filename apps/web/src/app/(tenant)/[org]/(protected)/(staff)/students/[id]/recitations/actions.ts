@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { staffStrings } from '@/lib/i18n/server';
 
 /**
  * Logs one or more surahs for a student in a single session. Points are never
@@ -25,8 +26,8 @@ export async function logRecitation(formData: FormData) {
     .map((s, i) => ({ surah: Number(s), from: Number(froms[i]), to: Number(tos[i]) }))
     .filter((p) => p.surah > 0);
 
-  if (!parts.length) redirect(`${back}?error=${encodeURIComponent('اختر السورة')}` as never);
-  if (!grade) redirect(`${back}?error=${encodeURIComponent('اختر تقييم التلاوة')}` as never);
+  if (!parts.length) redirect(`${back}?error=${encodeURIComponent((await staffStrings()).recitations.needSurah)}` as never);
+  if (!grade) redirect(`${back}?error=${encodeURIComponent((await staffStrings()).recitations.needGrade)}` as never);
 
   const supabase = await createClient();
   const group = parts.length > 1 ? crypto.randomUUID() : null;

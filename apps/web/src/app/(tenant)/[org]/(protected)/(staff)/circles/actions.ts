@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { deleteErrorMessage } from '@/lib/db-errors';
 import { logAudit } from '@/lib/audit/log';
+import { staffStrings } from '@/lib/i18n/server';
 
 function readCircleFields(formData: FormData) {
   const capacity = formData.get('capacity') as string;
@@ -82,5 +83,5 @@ export async function setCircleAssistants(formData: FormData) {
     p_users: formData.getAll('assistant').map(String),
   });
   if (error) redirect(`/circles/${id}?error=${encodeURIComponent(error.message)}` as never);
-  redirect(`/circles/${id}?ok=${encodeURIComponent('حُفظ المعلمون المساعدون')}` as never);
+  redirect(`/circles/${id}?ok=${encodeURIComponent((await staffStrings()).circles.assistantsSaved)}` as never);
 }

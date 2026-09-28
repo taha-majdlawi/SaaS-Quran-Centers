@@ -2,14 +2,11 @@ import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
-import { SURAH_NAMES } from '@/lib/quran/data';
+import { SURAH_NAMES, surahLabel } from '@/lib/quran/data';
 import { updateRecitation } from '../actions';
+import { getI18n } from '@/lib/i18n/server';
 
-const TYPES: [string, string][] = [
-  ['new_memorization', 'حفظ جديد'],
-  ['recent_review', 'مراجعة قريبة'],
-  ['distant_review', 'مراجعة بعيدة'],
-];
+const TYPES = ['new_memorization', 'recent_review', 'distant_review'];
 
 const input = 'mt-1 w-full rounded border px-3 py-2 text-sm';
 
@@ -23,6 +20,8 @@ export default async function EditRecitationPage({
   const { org: slug, id, rid } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T, locale } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ data: entry }, { data: grades }] = await Promise.all([
@@ -44,46 +43,46 @@ export default async function EditRecitationPage({
   return (
     <div className="max-w-xl">
       <a href={`/students/${id}/recitations`} className="text-sm text-brand hover:underline">
-        ← رجوع
+        {S.recitations.back}
       </a>
-      <h1 className="mb-6 mt-2 text-2xl font-bold">تعديل التسميع</h1>
+      <h1 className="mb-6 mt-2 text-2xl font-bold">{S.recitations.editTitle}</h1>
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <form action={updateRecitation} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="id" value={entry.id} />
         <input type="hidden" name="studentId" value={id} />
         <label className="text-sm font-medium text-gray-700">
-          نوع الإنجاز
+          {S.recitations.type}
           <select name="type" defaultValue={entry.achievement_type} className={input}>
-            {TYPES.map(([v, t]) => (
+            {TYPES.map((v) => (
               <option key={v} value={v}>
-                {t}
+                {T.labels.recitationType[v]}
               </option>
             ))}
           </select>
         </label>
         <div className="grid grid-cols-[1fr_5rem_5rem] items-end gap-3">
           <label className="text-sm font-medium text-gray-700">
-            السورة
+            {S.recitations.surah}
             <select name="surah" defaultValue={entry.surah_from} className={input}>
               {SURAH_NAMES.map((n, i) => (
                 <option key={i + 1} value={i + 1}>
-                  {i + 1}. {n}
+                  {i + 1}. {surahLabel(i + 1, locale) || n}
                 </option>
               ))}
             </select>
           </label>
           <label className="text-sm font-medium text-gray-700">
-            من آية
+            {S.recitations.fromAyah}
             <input type="number" name="ayahFrom" min={1} defaultValue={entry.ayah_from} className={input} />
           </label>
           <label className="text-sm font-medium text-gray-700">
-            إلى آية
+            {S.recitations.toAyah}
             <input type="number" name="ayahTo" min={1} defaultValue={entry.ayah_to} className={input} />
           </label>
         </div>
         <fieldset className="text-sm font-medium text-gray-700">
-          <legend className="mb-1">تقييم التلاوة</legend>
+          <legend className="mb-1">{S.recitations.grade}</legend>
           <div className="flex flex-wrap gap-3">
             {(grades ?? []).map((g) => (
               <label key={g.key} className="flex items-center gap-1 rounded border px-3 py-2">
@@ -94,14 +93,14 @@ export default async function EditRecitationPage({
           </div>
         </fieldset>
         <label className="text-sm font-medium text-gray-700">
-          ملاحظات الشيخ
+          {S.recitations.notes}
           <textarea name="notes" rows={2} defaultValue={entry.notes ?? ''} className={input} />
         </label>
         <SubmitButton
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          pendingText="جاري الحفظ..."
+          pendingText={S.common.saving}
         >
-          حفظ التعديل
+          {S.recitations.saveEdit}
         </SubmitButton>
       </form>
     </div>

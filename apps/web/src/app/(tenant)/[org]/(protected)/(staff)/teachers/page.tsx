@@ -1,5 +1,6 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
 
 interface MemberRow {
   id: string;
@@ -22,6 +23,8 @@ interface CircleRow {
 export default async function TeachersPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ data: members, error: membersError }, { data: circles }] = await Promise.all([
@@ -48,17 +51,17 @@ export default async function TeachersPage({ params }: { params: Promise<{ org: 
         </p>
       )}
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">المعلمون</h1>
+        <h1 className="text-2xl font-bold">{S.teachers.title}</h1>
         <a href="/members" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-          + دعوة معلم
+          {S.teachers.invite}
         </a>
       </div>
       <table className="w-full overflow-hidden rounded-lg border bg-white text-sm">
-        <thead className="bg-gray-50 text-right">
+        <thead className="bg-gray-50 text-start">
           <tr>
-            <th className="px-4 py-2">الاسم</th>
-            <th className="px-4 py-2">البريد الإلكتروني</th>
-            <th className="px-4 py-2">الحلقات</th>
+            <th className="px-4 py-2">{S.teachers.colName}</th>
+            <th className="px-4 py-2">{S.teachers.colEmail}</th>
+            <th className="px-4 py-2">{S.teachers.colCircles}</th>
             {isAdmin && <th className="px-4 py-2"></th>}
           </tr>
         </thead>
@@ -67,11 +70,11 @@ export default async function TeachersPage({ params }: { params: Promise<{ org: 
             <tr key={t.id} className="border-t">
               <td className="px-4 py-2">{t.full_name ?? '—'}</td>
               <td className="px-4 py-2">{t.email}</td>
-              <td className="px-4 py-2">{(circleNamesByTeacher.get(t.user_id) ?? []).join('، ') || '—'}</td>
+              <td className="px-4 py-2">{(circleNamesByTeacher.get(t.user_id) ?? []).join(T.labels.listSep) || '—'}</td>
               {isAdmin && (
-                <td className="px-4 py-2 text-left">
+                <td className="px-4 py-2 text-end">
                   <a href={`/teachers/${t.id}`} className="text-brand hover:underline">
-                    تعديل
+                    {S.common.edit}
                   </a>
                 </td>
               )}
@@ -80,7 +83,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ org: 
           {!teachers.length && (
             <tr>
               <td colSpan={isAdmin ? 4 : 3} className="px-4 py-6 text-center text-gray-400">
-                لا يوجد معلمون بعد - ادعُ معلمًا من صفحة الأعضاء
+                {S.teachers.none}
               </td>
             </tr>
           )}

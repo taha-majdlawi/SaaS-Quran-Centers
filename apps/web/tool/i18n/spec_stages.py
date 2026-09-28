@@ -1,0 +1,20 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'stages': ('Stages.', (
+  ('none', 'لا يوجد مراحل بعد', 'No stages yet'),
+  ('add', '+ إضافة مرحلة', '+ Add stage'),
+  ('title', 'المراحل', 'Stages'),
+  ('colOrder', 'الترتيب', 'Order'),
+  ('colName', 'الاسم', 'Name'),
+  ('colCode', 'الكود', 'Code'),
+  ('deleteConfirm', 'متأكد إنك بدك تحذف مرحلة "{name}"؟ لا يمكن التراجع.', 'Delete the stage "{name}"? This can’t be undone.'),
+  ('code', 'كود المرحلة (يستخدم برقم الطالب المقترح)', 'Stage code (used in the suggested student number)'),
+  ('order', 'ترتيب المرحلة', 'Stage order'),
+  ('saveChanges', 'حفظ التعديلات', 'Save changes'),
+  ('editTitle', 'تعديل مرحلة', 'Edit stage'),
+  ('name', 'اسم المرحلة', 'Stage name'),
+  ('delete', 'حذف المرحلة', 'Delete stage'),
+  ('namePh', 'تمهيدي', 'Preparatory'),
+  ('submit', 'إضافة المرحلة', 'Add the stage'),
+  ('addTitle', 'إضافة مرحلة', 'Add a stage'),
+  ('taken', 'الاسم أو الكود مستخدم من قبل بهذا المركز', 'This name or code is already used at this center'),
+))}

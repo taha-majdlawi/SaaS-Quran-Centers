@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AccountError, provisionTeacher } from '@/lib/accounts/provision';
+import { staffStrings } from '@/lib/i18n/server';
 
 /**
  * Creates a ready-to-use login for a teacher directly - no invite link.
@@ -27,7 +28,7 @@ export async function createTeacherDirectly(formData: FormData) {
   try {
     await provisionTeacher(createAdminClient(), user.id, { orgId, fullName, identifier, password, phone });
   } catch (e) {
-    const message = e instanceof AccountError ? e.message : 'تعذّر إنشاء الحساب';
+    const message = e instanceof AccountError ? e.message : (await staffStrings()).students.createFailed;
     redirect(`/members/new-teacher?error=${encodeURIComponent(message)}` as never);
   }
 

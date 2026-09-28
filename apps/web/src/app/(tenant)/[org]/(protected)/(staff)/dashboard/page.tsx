@@ -3,13 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { fmtDay, pct } from '@/lib/reports/format';
 import { teacherCheckIn } from '@/lib/insights/actions';
 import { SubmitButton } from '@/components/submit-button';
-
-const RISK_TAGS: Record<string, string> = {
-  never: 'لم يسمّع إطلاقًا',
-  regressed: 'توقّف بعد انتظام',
-  slowing: 'تباطأ',
-  attendance_gap: 'يحضر ولا يسمّع',
-};
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Risk { id: string; name: string; circle: string | null; last_at: string | null; idle_days: number; tag: string }
 interface Perf { teacher_id: string; name: string | null; circles: number; students: number; recitations: number; reciting_students: number; check_ins: number }
@@ -31,6 +26,8 @@ export default async function DashboardPage({ params, searchParams }: { params: 
   const { org: slug } = await params;
   const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ count: studentCount }, { count: teacherCount }, { count: circleCount }] = await Promise.all([
@@ -59,10 +56,10 @@ export default async function DashboardPage({ params, searchParams }: { params: 
   const pendingReviews = (pendingData ?? { gatherings: 0, external: 0 }) as { gatherings: number; external: number };
   const waiting = att
     ? [
-        { label: 'سرد بانتظار الاعتماد', value: att.serd_submitted, href: '/serd?status=submitted' },
-        { label: 'طلبات سوق بانتظار القرار', value: att.market_pending, href: '/market' },
-        { label: 'مجالس بانتظار ربط الأسماء', value: pendingReviews.gatherings, href: '/gatherings' },
-        { label: 'تسميع خارجي بانتظار الربط', value: pendingReviews.external, href: '/external-recitations' },
+        { label: S.dash.serdWaiting, value: att.serd_submitted, href: '/serd?status=submitted' },
+        { label: S.dash.marketWaiting, value: att.market_pending, href: '/market' },
+        { label: S.dash.gatheringsWaiting, value: pendingReviews.gatherings, href: '/gatherings' },
+        { label: S.dash.externalWaiting, value: pendingReviews.external, href: '/external-recitations' },
       ].filter((w) => w.value > 0)
     : [];
 
@@ -80,19 +77,19 @@ export default async function DashboardPage({ params, searchParams }: { params: 
   const maxTrend = Math.max(1, ...trend.map((t) => t.recitations));
 
   const stats = [
-    { label: 'الطلاب', value: studentCount ?? 0 },
-    { label: 'المعلمون', value: teacherCount ?? 0 },
-    { label: 'الحلقات', value: circleCount ?? 0 },
+    { label: S.dash.students, value: studentCount ?? 0 },
+    { label: S.dash.teachers, value: teacherCount ?? 0 },
+    { label: S.dash.circles, value: circleCount ?? 0 },
   ];
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">لوحة التحكم</h1>
+      <h1 className="mb-6 text-2xl font-bold">{S.dash.title}</h1>
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       <form action={'/search' as never} className="mb-6 flex max-w-xl gap-2">
-        <input name="q" placeholder="بحث شامل: طالب، معلم، حلقة، رقم الطالب" className="flex-1 rounded border bg-white px-3 py-2 text-sm" />
-        <button className="rounded bg-brand px-4 py-2 text-sm text-white">بحث</button>
+        <input name="q" placeholder={S.dash.searchPlaceholder} className="flex-1 rounded border bg-white px-3 py-2 text-sm" />
+        <button className="rounded bg-brand px-4 py-2 text-sm text-white">{S.dash.search}</button>
       </form>
       <div className="grid grid-cols-3 gap-4">
         {stats.map((s) => (
@@ -106,7 +103,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
       {att && (
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <section className="rounded-lg border bg-white p-4">
-            <h2 className="mb-3 font-semibold">يحتاج انتباهك</h2>
+            <h2 className="mb-3 font-semibold">{S.dash.attention}</h2>
             {waiting.length ? (
               <ul className="flex flex-col gap-2 text-sm">
                 {waiting.map((w) => (
@@ -119,10 +116,10 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">لا شيء ينتظر قرارك ✓</p>
+              <p className="text-sm text-gray-500">{S.dash.nothingWaiting}</p>
             )}
             <h3 className="mb-2 mt-5 text-sm font-semibold">
-              لم يسمّعوا منذ أسبوعين {att.inactive_total > 0 && <span className="text-gray-400">({att.inactive_total})</span>}
+              {S.dash.inactive} {att.inactive_total > 0 && <span className="text-gray-400">({att.inactive_total})</span>}
             </h3>
             {att.inactive_students.length ? (
               <ul className="flex flex-col gap-1 text-sm">
@@ -132,37 +129,37 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                       {s.name}
                     </a>
                     <span className="text-xs text-gray-400">
-                      {s.circle ?? '—'} · {s.last_at ? fmtDay(s.last_at) : 'لم يسمّع بعد'}
+                      {s.circle ?? '—'} · {s.last_at ? fmtDay(s.last_at, T.labels.dateLocale) : S.dash.notYet}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">الجميع نشط ✓</p>
+              <p className="text-sm text-gray-500">{S.dash.allActive}</p>
             )}
           </section>
 
           <section className="rounded-lg border bg-white p-4">
-            <h2 className="mb-3 font-semibold">هذا الأسبوع</h2>
+            <h2 className="mb-3 font-semibold">{S.dash.thisWeek}</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-gray-500">التسميعات</p>
+                <p className="text-gray-500">{S.dash.recitations}</p>
                 <p className="text-xl font-bold text-brand">{att.week.recitations}</p>
               </div>
               <div>
-                <p className="text-gray-500">طلاب سمّعوا</p>
+                <p className="text-gray-500">{S.dash.recitingStudents}</p>
                 <p className="text-xl font-bold text-brand">{att.week.reciting_students}</p>
               </div>
               <div>
-                <p className="text-gray-500">النقاط</p>
+                <p className="text-gray-500">{S.dash.points}</p>
                 <p className="text-xl font-bold text-brand">{att.week.points}</p>
               </div>
               <div>
-                <p className="text-gray-500">الحضور</p>
+                <p className="text-gray-500">{S.dash.attendance}</p>
                 <p className="text-xl font-bold text-brand">{pct(att.week.attendance_rate)}</p>
               </div>
             </div>
-            <h3 className="mb-2 mt-5 text-sm font-semibold">فعاليات قادمة (7 أيام)</h3>
+            <h3 className="mb-2 mt-5 text-sm font-semibold">{S.dash.upcoming}</h3>
             {att.upcoming.length ? (
               <ul className="flex flex-col gap-1 text-sm">
                 {att.upcoming.map((e) => (
@@ -171,14 +168,14 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                       {e.title}
                     </a>
                     <span className="text-xs text-gray-500">
-                      {fmtDay(e.start_date)} · مسجّل {e.registered}
+                      {fmtDay(e.start_date, T.labels.dateLocale)} · {fmt(S.dash.registered, { n: e.registered })}
                       {e.capacity ? `/${e.capacity}` : ''}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">لا فعاليات قريبة</p>
+              <p className="text-sm text-gray-500">{S.dash.noUpcoming}</p>
             )}
           </section>
         </div>
@@ -187,43 +184,43 @@ export default async function DashboardPage({ params, searchParams }: { params: 
       {isAdmin && (
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <section className="rounded-lg border bg-white p-4">
-            <h2 className="mb-3 font-semibold">خطر التسرّب</h2>
+            <h2 className="mb-3 font-semibold">{S.dash.risk}</h2>
             {risk.length ? (
               <ul className="flex flex-col gap-1.5 text-sm">
                 {risk.map((r) => (
                   <li key={r.id} className="flex items-center justify-between gap-2">
                     <a href={`/students/${r.id}/report` as never} className="text-brand hover:underline">{r.name}</a>
                     <span className="text-xs text-gray-500">
-                      <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">{RISK_TAGS[r.tag] ?? r.tag}</span>
-                      {r.circle} · {r.idle_days} يوم دوام
+                      <span className="me-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">{S.dash.riskTags[r.tag] ?? r.tag}</span>
+                      {r.circle} · {fmt(S.dash.idleDays, { n: r.idle_days })}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">لا طالب معرَّض للتسرّب ✓</p>
+              <p className="text-sm text-gray-500">{S.dash.noRisk}</p>
             )}
           </section>
           <section className="rounded-lg border bg-white p-4">
-            <h2 className="mb-3 font-semibold">التسميع آخر 14 يومًا</h2>
+            <h2 className="mb-3 font-semibold">{S.dash.trend}</h2>
             <div className="flex h-28 items-end gap-1">
               {trend.map((t) => (
-                <div key={t.date} className="group relative flex-1" title={`${fmtDay(t.date)}: ${t.recitations} تسميع · حضور ${t.attendance}`}>
+                <div key={t.date} className="group relative flex-1" title={fmt(S.dash.trendTip, { date: fmtDay(t.date, T.labels.dateLocale), n: t.recitations, a: t.attendance })}>
                   <div className="w-full rounded-t bg-brand/70" style={{ height: `${Math.max(3, (t.recitations / maxTrend) * 100)}%` }} />
                 </div>
               ))}
             </div>
             <div className="mt-1 flex justify-between text-[11px] text-gray-400">
-              <span>{trend[0] ? fmtDay(trend[0].date) : ''}</span>
-              <span>{trend.length ? fmtDay(trend[trend.length - 1].date) : ''}</span>
+              <span>{trend[0] ? fmtDay(trend[0].date, T.labels.dateLocale) : ''}</span>
+              <span>{trend.length ? fmtDay(trend[trend.length - 1].date, T.labels.dateLocale) : ''}</span>
             </div>
           </section>
           <section className="rounded-lg border bg-white p-4 lg:col-span-2">
-            <h2 className="mb-3 font-semibold">أداء المعلمين (7 أيام)</h2>
+            <h2 className="mb-3 font-semibold">{S.dash.perf}</h2>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="text-right text-xs text-gray-500">
-                  <tr><th className="p-1">المعلم</th><th className="p-1">حلقات</th><th className="p-1">طلاب</th><th className="p-1">تسميعات</th><th className="p-1">طلاب سمّعوا</th><th className="p-1">حضور المعلم</th></tr>
+                <thead className="text-start text-xs text-gray-500">
+                  <tr>{S.dash.perfCols.map((h) => <th key={h} className="p-1 text-start">{h}</th>)}</tr>
                 </thead>
                 <tbody className="divide-y">
                   {perf.map((p) => (
@@ -232,7 +229,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                       <td className="p-1 font-semibold text-brand">{p.recitations}</td><td className="p-1">{p.reciting_students}</td><td className="p-1">{p.check_ins}</td>
                     </tr>
                   ))}
-                  {!perf.length && <tr><td colSpan={6} className="p-4 text-center text-gray-400">لا معلمون بعد</td></tr>}
+                  {!perf.length && <tr><td colSpan={6} className="p-4 text-center text-gray-400">{S.dash.noTeachers}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -242,27 +239,27 @@ export default async function DashboardPage({ params, searchParams }: { params: 
 
       {today && today.circles.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-3 font-semibold">حلقاتك اليوم</h2>
+          <h2 className="mb-3 font-semibold">{S.dash.today}</h2>
           {!today.is_working_day && (
-            <p className="mb-3 rounded bg-amber-50 px-3 py-2 text-sm text-amber-800">اليوم ليس من أيام الدوام في مركزك</p>
+            <p className="mb-3 rounded bg-amber-50 px-3 py-2 text-sm text-amber-800">{S.dash.dayOff}</p>
           )}
           <div className="grid gap-3 sm:grid-cols-2">
             {today.circles.map((c) => (
               <div key={c.id} className="rounded-lg border bg-white p-4">
                 <p className="font-semibold">{c.name}</p>
                 <p className="mt-1 text-sm text-gray-600">
-                  {c.students} طالب · سمّع {c.recited} · حاضر {c.present}
-                  {c.absent > 0 && ` · غائب ${c.absent}`}
+                  {fmt(S.dash.circleToday, { students: c.students, recited: c.recited, present: c.present })}
+                  {c.absent > 0 && fmt(S.dash.absentN, { n: c.absent })}
                 </p>
                 {org.myRole === 'teacher' && (
                   checkedIn.has(c.id) ? (
-                    <p className="mt-2 text-xs text-green-700">✓ سُجّل حضورك اليوم</p>
+                    <p className="mt-2 text-xs text-green-700">{S.dash.checkedIn}</p>
                   ) : (
                     <form action={teacherCheckIn} className="mt-2">
                       <input type="hidden" name="orgId" value={org.id} />
                       <input type="hidden" name="circleId" value={c.id} />
                       <input type="hidden" name="back" value="/dashboard" />
-                      <SubmitButton className="rounded border px-3 py-1 text-xs text-brand hover:bg-gray-50" pendingText="...">سجّل حضوري</SubmitButton>
+                      <SubmitButton className="rounded border px-3 py-1 text-xs text-brand hover:bg-gray-50" pendingText="...">{S.dash.checkIn}</SubmitButton>
                     </form>
                   )
                 )}

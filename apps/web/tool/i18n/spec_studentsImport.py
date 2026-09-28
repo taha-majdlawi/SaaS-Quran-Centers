@@ -1,0 +1,22 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'studentsImport': ('Importing students from CSV.', (
+  ('intro', 'السطر الأول عناوين الأعمدة: name (الاسم — مطلوب)، circle (اسم الحلقة كما هو — مطلوب)، ثم اختياريًا code, birth_date, phone, whatsapp, address. العناوين بالعربية مقبولة أيضًا (الاسم، الحلقة، الرقم، تاريخ الميلاد، الهاتف، واتساب، العنوان). إن تُرك رقم الطالب يُولَّد تلقائيًا. الحد 500 طالب في المرة. يُنشأ سجل الطالب فقط؛ حساب الدخول يُنشأ لاحقًا من صفحة الطالب.', 'The first line holds the column titles: name (required), circle (the circle’s exact name — required), then optionally code, birth_date, phone, whatsapp, address. Arabic titles are accepted too. A missing student number is generated. Up to 500 students at a time. Only the student record is created; the sign-in account is created later from the student’s page.'),
+  ('title', 'استيراد طلاب من ملف', 'Import students from a file'),
+  ('back', '← الطلاب', '← Students'),
+  ('importing', 'جاري الاستيراد...', 'Importing...'),
+  ('added', 'أُضيف {n} طالب', '{n} students added'),
+  ('paste', 'أو ألصق الجدول هنا', 'Or paste the table here'),
+  ('file', 'ملف CSV', 'CSV file'),
+  ('submit', 'استيراد', 'Import'),
+  ('eEmpty', 'ألصق الجدول أو اختر ملف CSV', 'Paste the table or choose a CSV file'),
+  ('eShort', 'الملف يحتاج سطر عناوين وسطرًا واحدًا على الأقل', 'The file needs a title line and at least one row'),
+  ('eMax', 'الحد الأقصى {n} طالب في المرة الواحدة', 'At most {n} students at a time'),
+  ('eNoName', 'لا يوجد عمود «الاسم» (name) في السطر الأول', 'There is no “name” column in the first line'),
+  ('eBlank', 'سطر {line}: الاسم فارغ', 'Line {line}: the name is empty'),
+  ('eCircle', 'سطر {line} ({name}): الحلقة «{circle}» غير موجودة', 'Line {line} ({name}): there is no circle “{circle}”'),
+  ('eNeedCircle', 'سطر {line} ({name}): الحلقة مطلوبة', 'Line {line} ({name}): the circle is required'),
+  ('eCode', 'سطر {line} ({name}): تعذّر توليد رقم الطالب', 'Line {line} ({name}): could not generate a student number'),
+  ('eBirth', 'سطر {line} ({name}): تاريخ الميلاد يجب أن يكون yyyy-mm-dd', 'Line {line} ({name}): the date of birth must be yyyy-mm-dd'),
+  ('eRow', 'سطر {line} ({name}): {error}', 'Line {line} ({name}): {error}'),
+  ('eTaken', 'رقم الطالب مستخدم من قبل', 'This student number is already used'),
+))}
