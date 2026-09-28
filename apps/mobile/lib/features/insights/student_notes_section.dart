@@ -5,6 +5,7 @@ import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import 'insights_repository.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart' show kQueuedMessage;
 
 /// Append-only notes on a student, for the supervisor and the student's teacher (never shown to the student).
 class StudentNotesSection extends StatefulWidget {
@@ -47,8 +48,11 @@ class _StudentNotesSectionState extends State<StudentNotesSection> {
     );
     if (ok != true || body.text.trim().isEmpty) return;
     try {
-      await _repository.addNote(widget.orgId, widget.studentId, body.text.trim(), guardianVisible: guardianVisible);
-      if (mounted) setState(() => _future = _repository.notes(widget.orgId, widget.studentId));
+      final queued = await _repository.addNote(widget.orgId, widget.studentId, body.text.trim(), guardianVisible: guardianVisible);
+      if (mounted) {
+        if (queued) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(kQueuedMessage)));
+        setState(() => _future = _repository.notes(widget.orgId, widget.studentId));
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).ins.noteFailed)));
     }

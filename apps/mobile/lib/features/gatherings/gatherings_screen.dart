@@ -9,6 +9,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'gatherings_repository.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart' show kQueuedMessage;
 
 /// Shared activities: upload the attendees' names, the admin links each name to a student.
 class GatheringsScreen extends StatefulWidget {
@@ -85,7 +86,7 @@ class _GatheringsScreenState extends State<GatheringsScreen> {
       final n = await _repository.submitGathering(_orgId!,
           title: title.text.trim(), typeId: typeId, date: date, location: location.text.trim().isEmpty ? null : location.text.trim(), notes: notes.text.trim().isEmpty ? null : notes.text.trim(), names: list);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(fmt(tr(context).gather.uploadedN, {'n': n}))));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(n == null ? kQueuedMessage : fmt(tr(context).gather.uploadedN, {'n': n}))));
         _reload();
       }
     } on PostgrestException catch (e) {

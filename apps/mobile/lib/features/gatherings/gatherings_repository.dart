@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/offline/sync_service.dart';
+import '../../core/i18n/i18n.dart';
 
 List<Map<String, dynamic>> _list(dynamic v) => [for (final e in (v as List? ?? const [])) Map<String, dynamic>.from(e as Map)];
 
@@ -23,18 +25,25 @@ class GatheringsRepository {
   Future<List<Map<String, dynamic>>> activityTypes(String orgId) async =>
       _list((await SyncService.instance.raw('gath.activityTypes:$orgId', () => _client.from('activity_types').select('id, name').eq('organization_id', orgId).order('name'))) as List<dynamic>);
 
-  Future<int> submitGathering(String orgId,
+  /// The number of names received, or null when it was kept on the phone (no connection).
+  Future<int?> submitGathering(String orgId,
       {required String title, String? typeId, required DateTime date, String? location, String? notes, required List<String> names}) async {
-    final r = await _client.rpc('submit_gathering', params: {
-      'p_org': orgId,
-      'p_title': title,
-      'p_type': typeId,
-      'p_date': date.toIso8601String().substring(0, 10),
-      'p_location': location,
-      'p_notes': notes,
-      'p_names': names,
-    }) as Map;
-    return (r['names_count'] as num).toInt();
+    final outcome = await SyncService.instance.submit(
+      'gathering',
+      {
+        'p_org': orgId,
+        'p_title': title,
+        'p_type': typeId,
+        'p_date': date.toIso8601String().substring(0, 10),
+        'p_location': location,
+        'p_notes': notes,
+        'p_names': names,
+        'p_client_ref': const Uuid().v4(), // a replay never adds it twice (0070)
+      },
+      label: fmt(currentStrings.ui.outboxGathering, {'title': title}),
+    );
+    if (outcome.queued) return null;
+    return ((outcome.data as Map)['names_count'] as num).toInt();
   }
 
   Future<void> deleteGathering(String id) => _client.rpc('delete_gathering', params: {'p_id': id});
@@ -51,9 +60,10 @@ class GatheringsRepository {
       admin ? 'admin_list_external_recitations' : 'my_external_recitations',
       params: admin ? {'p_org': orgId, 'p_status': null} : {'p_org': orgId}))));
 
-  Future<void> submitExternal(String orgId,
-      {required String name, required String type, required int surah, required int from, required int to, required String grade, String? notes, required String clientRef}) =>
-      _client.rpc('submit_external_recitation', params: {
+  /// Returns true when it was kept on the phone (no connection).
+  Future<bool> submitExternal(String orgId,
+      {required String name, required String type, required int surah, required int from, required int to, required String grade, String? notes, required String clientRef}) async =>
+      (await SyncService.instance.submit('external_recitation', {
         'p_org': orgId,
         'p_name': name,
         'p_type': type,
@@ -62,9 +72,11 @@ class GatheringsRepository {
         'p_to': to,
         'p_grade': grade,
         'p_notes': notes,
-        'p_recorded_at': null,
+        // the time is fixed now, so a replay keeps the real hour it was heard
+        'p_recorded_at': DateTime.now().toUtc().toIso8601String(),
         'p_client_ref': clientRef,
-      });
+      }, label: fmt(currentStrings.ui.outboxExternal, {'name': name})))
+          .queued;
 
   Future<void> deleteExternal(String id) => _client.rpc('delete_external_recitation', params: {'p_id': id});
   Future<int> matchExternal(String id, String studentId) async =>

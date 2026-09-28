@@ -5,7 +5,10 @@ import '../../core/i18n/i18n.dart';
 
 import '../widgets/app_drawer.dart';
 import '../widgets/ui.dart';
+import '../supabase/supabase_client.dart';
+import '../tenant/tenant_controller.dart';
 import 'outbox.dart';
+import 'prefetch.dart';
 import 'sync_service.dart';
 
 String _time(DateTime t) {
@@ -66,6 +69,8 @@ class SyncScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
+          const _OfflineDataCard(),
+          const SizedBox(height: 8),
           if (items.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 32),
@@ -73,6 +78,54 @@ class SyncScreen extends StatelessWidget {
             ),
           for (final item in items) _ItemTile(item: item, sync: sync),
         ],
+      ),
+    );
+  }
+}
+
+/// What is kept on this phone for working without a connection, and a button to refresh it.
+class _OfflineDataCard extends StatelessWidget {
+  const _OfflineDataCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.watch<OfflinePrefetch>();
+    final sync = context.watch<SyncService>();
+    final t = tr(context).sync;
+    final active = context.read<TenantController>().active;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.offline_pin_rounded, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 8),
+              Expanded(child: Text(t.offlineTitle, style: const TextStyle(fontWeight: FontWeight.w700))),
+            ]),
+            const SizedBox(height: 6),
+            Text(t.offlineHint, style: TextStyle(color: Colors.grey.shade700, fontSize: 12.5)),
+            const SizedBox(height: 8),
+            if (p.running) ...[
+              LinearProgressIndicator(value: p.total == 0 ? null : p.progress),
+              const SizedBox(height: 4),
+              Text(fmt(t.offlineProgress, {'done': p.done, 'total': p.total}), style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            ] else
+              Text(
+                p.lastRun == null ? t.offlineNever : fmt(t.offlineLast, {'time': _time(p.lastRun!)}),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: p.running || !sync.online || active == null
+                  ? null
+                  : () => p.run(AppSupabase.client, active, force: true),
+              icon: const Icon(Icons.download_for_offline_rounded),
+              label: Text(sync.online ? t.offlineNow : t.offlineNeedsNet),
+            ),
+          ],
+        ),
       ),
     );
   }

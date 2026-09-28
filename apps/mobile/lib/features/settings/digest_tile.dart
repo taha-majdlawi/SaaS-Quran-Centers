@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart';
 
 List<String> get _days => currentStrings.labels.weekdays;
 
@@ -16,7 +17,7 @@ class DigestTile extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     Map<String, dynamic> s;
     try {
-      s = await AppSupabase.client.rpc('get_digest_settings', params: {'p_org': orgId}) as Map<String, dynamic>;
+      s = await SyncService.instance.raw('digest:$orgId', () => AppSupabase.client.rpc('get_digest_settings', params: {'p_org': orgId})) as Map<String, dynamic>;
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(currentStrings.set.loadOne)));
       return;

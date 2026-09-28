@@ -1261,7 +1261,7 @@ class SStu {
 
 /// Offline uploads.
 class SSync {
-  const SSync({required this.title, required this.allUp, required this.lastSync, required this.cached, required this.uploadNow, required this.nothing, required this.rejected, required this.discardTitle, required this.discardBody, required this.retry, required this.stripFailed, required this.counts, required this.nothingHint, required this.queued, required this.stripWaiting, required this.stripOffline});
+  const SSync({required this.title, required this.allUp, required this.lastSync, required this.cached, required this.uploadNow, required this.nothing, required this.rejected, required this.discardTitle, required this.discardBody, required this.retry, required this.stripFailed, required this.counts, required this.nothingHint, required this.queued, required this.stripWaiting, required this.stripOffline, required this.offlineTitle, required this.offlineHint, required this.offlineProgress, required this.offlineNever, required this.offlineLast, required this.offlineNow, required this.offlineNeedsNet});
   final String title;
   final String allUp;
   final String lastSync;
@@ -1278,6 +1278,13 @@ class SSync {
   final String queued;
   final String stripWaiting;
   final String stripOffline;
+  final String offlineTitle;
+  final String offlineHint;
+  final String offlineProgress;
+  final String offlineNever;
+  final String offlineLast;
+  final String offlineNow;
+  final String offlineNeedsNet;
 }
 
 /// The teacher home, circle roster and lesson widgets.
@@ -1321,7 +1328,7 @@ class STeach {
 
 /// Shared widgets and service messages.
 class SUi {
-  const SUi({required this.credsText, required this.credsOnce, required this.copied, required this.copy, required this.done, required this.skeletonTitle, required this.skeletonSub, required this.add, required this.search, required this.noMatch, required this.channelName, required this.channelDesc, required this.sessionEnded, required this.requestFailed, required this.savedOffline});
+  const SUi({required this.credsText, required this.credsOnce, required this.copied, required this.copy, required this.done, required this.skeletonTitle, required this.skeletonSub, required this.add, required this.search, required this.noMatch, required this.channelName, required this.channelDesc, required this.sessionEnded, required this.requestFailed, required this.savedOffline, required this.outboxCheckIn, required this.outboxNote, required this.outboxGathering, required this.outboxExternal, required this.outboxEditRecitation, required this.outboxDeleteRecitation, required this.outboxPlan, required this.waitingUpload});
   final String credsText;
   final String credsOnce;
   final String copied;
@@ -1337,6 +1344,14 @@ class SUi {
   final String sessionEnded;
   final String requestFailed;
   final String savedOffline;
+  final String outboxCheckIn;
+  final String outboxNote;
+  final String outboxGathering;
+  final String outboxExternal;
+  final String outboxEditRecitation;
+  final String outboxDeleteRecitation;
+  final String outboxPlan;
+  final String waitingUpload;
 }
 
 class S {
@@ -2564,6 +2579,13 @@ class S {
       queued: 'سُجّل {time} · محاولات: {n}',
       stripWaiting: 'بانتظار الرفع: {n} — يُرفع تلقائيًا عند عودة الاتصال',
       stripOffline: 'لا يوجد اتصال — تُعرض بيانات محفوظة',
+      offlineTitle: 'العمل دون اتصال',
+      offlineHint: 'يُنزَّل على هذا الجهاز كل ما تحتاجه: حلقاتك وطلابك وسجلاتهم والسرد والتقويم والرسائل، فيعمل التطبيق دون إنترنت، وما تسجّله يُرفع تلقائيًا عند عودة الاتصال.',
+      offlineProgress: 'جاري التنزيل… {done} من {total}',
+      offlineNever: 'لم تُنزَّل البيانات على هذا الجهاز بعد',
+      offlineLast: 'آخر تنزيل: {time}',
+      offlineNow: 'تنزيل البيانات الآن',
+      offlineNeedsNet: 'يحتاج اتصالًا بالإنترنت',
     ),
     teach: STeach(
       greeting: '{v}، {v2}',
@@ -2617,6 +2639,14 @@ class S {
       sessionEnded: 'انتهت الجلسة، سجّل الدخول من جديد',
       requestFailed: 'تعذّر تنفيذ الطلب',
       savedOffline: 'حُفظ على جهازك وسيُرفع تلقائيًا عند عودة الاتصال',
+      outboxCheckIn: 'تسجيل حضوري في الحلقة',
+      outboxNote: 'ملاحظة على طالب',
+      outboxGathering: 'نشاط: {title}',
+      outboxExternal: 'تسميع خارجي: {name}',
+      outboxEditRecitation: 'تعديل تسميع',
+      outboxDeleteRecitation: 'حذف تسميع',
+      outboxPlan: 'الخطة القادمة لطالب',
+      waitingUpload: 'بانتظار الرفع',
     ),
   );
 
@@ -3806,6 +3836,13 @@ class S {
       queued: 'Recorded {time} · attempts: {n}',
       stripWaiting: 'Waiting to upload: {n} — goes up automatically when back online',
       stripOffline: 'No connection — showing saved data',
+      offlineTitle: 'Working offline',
+      offlineHint: 'Everything you need is kept on this phone — your circles, students and their records, serd, the calendar and messages — so the app works without internet, and what you record uploads by itself when you’re back online.',
+      offlineProgress: 'Downloading… {done} of {total}',
+      offlineNever: 'Nothing downloaded to this phone yet',
+      offlineLast: 'Last downloaded: {time}',
+      offlineNow: 'Download now',
+      offlineNeedsNet: 'Needs an internet connection',
     ),
     teach: STeach(
       greeting: '{v}, {v2}',
@@ -3859,6 +3896,14 @@ class S {
       sessionEnded: 'Your session ended; sign in again',
       requestFailed: 'The request didn’t go through',
       savedOffline: 'Saved on your device; it uploads automatically when you’re back online',
+      outboxCheckIn: 'My check-in at the circle',
+      outboxNote: 'A note on a student',
+      outboxGathering: 'Activity: {title}',
+      outboxExternal: 'External recitation: {name}',
+      outboxEditRecitation: 'Recitation edit',
+      outboxDeleteRecitation: 'Recitation delete',
+      outboxPlan: 'A student\'s next plan',
+      waitingUpload: 'Waiting to upload',
     ),
   );
 

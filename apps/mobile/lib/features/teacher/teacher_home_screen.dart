@@ -43,7 +43,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final id = context.read<AuthController>().currentUser?.id;
     if (id == null) return;
     try {
-      final row = await AppSupabase.client.from('profiles').select('full_name').eq('id', id).maybeSingle();
+      final row = await SyncService.instance.raw('my-name', () => AppSupabase.client.from('profiles').select('full_name').eq('id', id).maybeSingle());
       final name = (row?['full_name'] as String?)?.trim() ?? '';
       if (mounted && name.isNotEmpty) setState(() => _teacherName = name);
     } catch (_) {}
@@ -188,10 +188,10 @@ class _CircleCardState extends State<_CircleCard> {
 
   Future<void> _checkIn() async {
     try {
-      await _insights.checkIn(_orgId, widget.circle.id);
+      final queued = await _insights.checkIn(_orgId, widget.circle.id);
       if (mounted) {
         setState(() => _checkedIn = true);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).teach.checkedIn)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(queued ? kQueuedMessage : tr(context).teach.checkedIn)));
       }
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).teach.checkInFailed)));

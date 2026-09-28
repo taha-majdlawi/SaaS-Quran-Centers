@@ -63,9 +63,13 @@ class RecitationEntry {
     required this.points,
     required this.createdAt,
     this.notes,
+    this.pending = false,
   });
 
   final String id;
+
+  /// Recorded or changed on this phone and not uploaded yet.
+  final bool pending;
   final String type;
   final int surah;
   final int ayahFrom;
@@ -280,43 +284,86 @@ class RecitationRepository {
         .eq('student_id', studentId)
         .order('created_at', ascending: false)
         .limit(limit))) as List<dynamic>;
-    return (rows)
-        .map((r) => RecitationEntry(
-              id: r['id'] as String,
-              type: r['achievement_type'] as String,
-              surah: r['surah_from'] as int,
-              ayahFrom: r['ayah_from'] as int,
-              ayahTo: r['ayah_to'] as int,
-              grade: r['grade'] as String?,
-              points: (r['points_awarded'] as num?)?.toInt() ?? 0,
-              createdAt: r['created_at'] as String,
-              notes: r['notes'] as String?,
-            ))
-        .toList();
+    final sync = SyncService.instance;
+    final deleted = {for (final i in sync.pendingOf('recitation_delete')) i.payload['p_id'] as String};
+    final edits = {for (final i in sync.pendingOf('recitation_update')) i.payload['p_id'] as String: i.payload};
+    return [
+      // recorded on this phone and still waiting to upload - shown first, as the newest
+      for (final i in sync.pendingOf('log_recitation').reversed)
+        if (i.payload['p_student_id'] == studentId)
+          RecitationEntry(
+            id: 'local-${i.id}',
+            type: i.payload['p_type'] as String,
+            surah: i.payload['p_surah'] as int,
+            ayahFrom: i.payload['p_ayah_from'] as int,
+            ayahTo: i.payload['p_ayah_to'] as int,
+            grade: i.payload['p_grade'] as String?,
+            points: 0,
+            createdAt: (i.payload['p_recorded_at'] as String?) ?? i.createdAt.toUtc().toIso8601String(),
+            notes: i.payload['p_notes'] as String?,
+            pending: true,
+          ),
+      for (final r in rows)
+        if (!deleted.contains(r['id']))
+          RecitationEntry(
+            id: r['id'] as String,
+            type: (edits[r['id']]?['p_type'] ?? r['achievement_type']) as String,
+            surah: (edits[r['id']]?['p_surah'] ?? r['surah_from']) as int,
+            ayahFrom: (edits[r['id']]?['p_ayah_from'] ?? r['ayah_from']) as int,
+            ayahTo: (edits[r['id']]?['p_ayah_to'] ?? r['ayah_to']) as int,
+            grade: (edits[r['id']]?['p_grade'] ?? r['grade']) as String?,
+            points: (r['points_awarded'] as num?)?.toInt() ?? 0,
+            createdAt: r['created_at'] as String,
+            notes: (edits.containsKey(r['id']) ? edits[r['id']]!['p_notes'] : r['notes']) as String?,
+            pending: edits.containsKey(r['id']),
+          ),
+    ];
   }
 
-  Future<void> updateRecitation({
+  /// Returns true when the change was kept on the phone (no connection).
+  Future<bool> updateRecitation({
     required String id,
     required String type,
     required SurahPart part,
     required String grade,
     String? notes,
-  }) {
-    return _client.rpc('update_recitation', params: {
-      'p_id': id,
-      'p_type': type,
-      'p_surah': part.surah,
-      'p_ayah_from': part.ayahFrom,
-      'p_ayah_to': part.ayahTo,
-      'p_grade': grade,
-      'p_notes': notes,
-    });
+  }) async {
+    final outcome = await SyncService.instance.submit(
+      'recitation_update',
+      {
+        'p_id': id,
+        'p_type': type,
+        'p_surah': part.surah,
+        'p_ayah_from': part.ayahFrom,
+        'p_ayah_to': part.ayahTo,
+        'p_grade': grade,
+        'p_notes': notes,
+      },
+      label: currentStrings.ui.outboxEditRecitation,
+      orderKey: 'rec:$id',
+    );
+    return outcome.queued;
   }
 
-  Future<void> deleteRecitation(String id) => _client.rpc('delete_recitation', params: {'p_id': id});
+  /// Returns true when the delete was kept on the phone (no connection).
+  Future<bool> deleteRecitation(String id) async =>
+      (await SyncService.instance.submit('recitation_delete', {'p_id': id}, label: currentStrings.ui.outboxDeleteRecitation, orderKey: 'rec:$id')).queued;
 
-  Future<void> setStudentPlan({required String orgId, required String studentId, required String? plan}) {
-    return _client.rpc('set_student_plan', params: {'p_org': orgId, 'p_student': studentId, 'p_next_plan': plan});
+  /// Returns true when it was kept on the phone (no connection).
+  Future<bool> setStudentPlan({required String orgId, required String studentId, required String? plan}) async {
+    final outcome = await SyncService.instance.submit(
+      'student_plan',
+      {'p_org': orgId, 'p_student': studentId, 'p_next_plan': plan},
+      label: currentStrings.ui.outboxPlan,
+      orderKey: 'plan:$studentId',
+    );
+    return outcome.queued;
+  }
+
+  /// The plan still waiting on the phone for [studentId] (null when none is waiting).
+  static ({String? plan})? pendingPlan(String studentId) {
+    final waiting = SyncService.instance.pendingOf('student_plan').where((i) => i.payload['p_student'] == studentId);
+    return waiting.isEmpty ? null : (plan: waiting.last.payload['p_next_plan'] as String?);
   }
 
   Future<TeacherToday> fetchTeacherToday(String orgId) async {

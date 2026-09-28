@@ -12,6 +12,7 @@ import '../recitation/recitation_repository.dart';
 import 'gatherings_repository.dart';
 import 'student_picker.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart' show kQueuedMessage;
 
 Map<String, String> get _types => currentStrings.labels.recitationType;
 
@@ -108,7 +109,7 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
     );
     if (ok != true) return;
     await _guard(() async {
-      await _repository.submitExternal(_orgId!,
+      final queued = await _repository.submitExternal(_orgId!,
           name: name.text.trim(),
           type: type,
           surah: surah,
@@ -117,7 +118,7 @@ class _ExternalRecitationsScreenState extends State<ExternalRecitationsScreen> {
           grade: grade,
           notes: notes.text.trim().isEmpty ? null : notes.text.trim(),
           clientRef: const Uuid().v4());
-      return currentStrings.gather.extUploaded;
+      return queued ? kQueuedMessage : currentStrings.gather.extUploaded;
     });
   }
 

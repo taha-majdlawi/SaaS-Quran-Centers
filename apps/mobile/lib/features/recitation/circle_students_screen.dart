@@ -10,6 +10,7 @@ import '../teacher/circle_roster.dart';
 import '../teacher/teacher_widgets.dart';
 import 'recitation_repository.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart';
 
 class _CircleData {
   const _CircleData({required this.name, required this.students, required this.grades});
@@ -43,7 +44,7 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
   Future<_CircleData> _load() async {
     final orgId = context.read<TenantController>().active!.organization.id;
     final results = await Future.wait<dynamic>([
-      AppSupabase.client.from('circles').select('name').eq('id', widget.circleId).single(),
+      SyncService.instance.raw('circle-name:${widget.circleId}', () => AppSupabase.client.from('circles').select('name').eq('id', widget.circleId).single()),
       _repository.fetchCircleStudents(widget.circleId),
       _repository.fetchGrades(orgId),
     ]);

@@ -16,4 +16,11 @@ SPEC = {'sync': ('Offline uploads.', (
   ('queued', 'سُجّل {time} · محاولات: {n}', 'Recorded {time} · attempts: {n}'),
   ('stripWaiting', 'بانتظار الرفع: {n} — يُرفع تلقائيًا عند عودة الاتصال', 'Waiting to upload: {n} — goes up automatically when back online'),
   ('stripOffline', 'لا يوجد اتصال — تُعرض بيانات محفوظة', 'No connection — showing saved data'),
+  ('offlineTitle', 'العمل دون اتصال', 'Working offline'),
+  ('offlineHint', 'يُنزَّل على هذا الجهاز كل ما تحتاجه: حلقاتك وطلابك وسجلاتهم والسرد والتقويم والرسائل، فيعمل التطبيق دون إنترنت، وما تسجّله يُرفع تلقائيًا عند عودة الاتصال.', 'Everything you need is kept on this phone — your circles, students and their records, serd, the calendar and messages — so the app works without internet, and what you record uploads by itself when you’re back online.'),
+  ('offlineProgress', 'جاري التنزيل… {done} من {total}', 'Downloading… {done} of {total}'),
+  ('offlineNever', 'لم تُنزَّل البيانات على هذا الجهاز بعد', 'Nothing downloaded to this phone yet'),
+  ('offlineLast', 'آخر تنزيل: {time}', 'Last downloaded: {time}'),
+  ('offlineNow', 'تنزيل البيانات الآن', 'Download now'),
+  ('offlineNeedsNet', 'يحتاج اتصالًا بالإنترنت', 'Needs an internet connection'),
 ))}

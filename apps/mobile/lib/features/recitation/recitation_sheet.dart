@@ -157,14 +157,14 @@ class _RecitationSheetState extends State<_RecitationSheet> {
     if (editing != null) {
       try {
         final p = _parts.first;
-        await _repository.updateRecitation(
+        final queued = await _repository.updateRecitation(
           id: editing.id,
           type: _type,
           part: SurahPart(surah: p.surah!, ayahFrom: int.parse(p.from.text.trim()), ayahTo: int.parse(p.to.text.trim())),
           grade: _grade!,
           notes: _notes.text,
         );
-        if (mounted) Navigator.pop(context, 0);
+        if (mounted) Navigator.pop(context, queued ? kQueuedPoints : 0);
       } on PostgrestException catch (e) {
         setState(() => _error = e.message);
       } on StateError catch (e) {

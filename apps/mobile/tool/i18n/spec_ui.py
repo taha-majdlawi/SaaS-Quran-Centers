@@ -15,4 +15,12 @@ SPEC = {'ui': ('Shared widgets and service messages.', (
   ('sessionEnded', 'انتهت الجلسة، سجّل الدخول من جديد', 'Your session ended; sign in again'),
   ('requestFailed', 'تعذّر تنفيذ الطلب', 'The request didn’t go through'),
   ('savedOffline', 'حُفظ على جهازك وسيُرفع تلقائيًا عند عودة الاتصال', 'Saved on your device; it uploads automatically when you’re back online'),
+  ('outboxCheckIn', 'تسجيل حضوري في الحلقة', 'My check-in at the circle'),
+  ('outboxNote', 'ملاحظة على طالب', 'A note on a student'),
+  ('outboxGathering', 'نشاط: {title}', 'Activity: {title}'),
+  ('outboxExternal', 'تسميع خارجي: {name}', 'External recitation: {name}'),
+  ('outboxEditRecitation', 'تعديل تسميع', 'Recitation edit'),
+  ('outboxDeleteRecitation', 'حذف تسميع', 'Recitation delete'),
+  ('outboxPlan', 'الخطة القادمة لطالب', "A student's next plan"),
+  ('waitingUpload', 'بانتظار الرفع', 'Waiting to upload'),
 ))}

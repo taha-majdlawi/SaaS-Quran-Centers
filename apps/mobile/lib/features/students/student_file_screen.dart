@@ -75,13 +75,15 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
       _portal.fetchDashboard(orgId, widget.studentId),
       _recitations.fetchStudentRecitations(widget.studentId),
       _recitations.fetchGrades(orgId),
-      AppSupabase.client.from('students_profile').select('guardian_member_id').eq('id', widget.studentId).maybeSingle(),
+      SyncService.instance.raw('student-guardian:${widget.studentId}', () => AppSupabase.client.from('students_profile').select('guardian_member_id').eq('id', widget.studentId).maybeSingle()),
       isAdmin ? MembersRepository(AppSupabase.client).fetchMembers(orgId) : Future.value(<MemberRow>[]),
       // The serd module may be off for this teacher; the file must still open.
       SerdRepository(AppSupabase.client).studentSummary(orgId, widget.studentId).then<SerdSummary?>((v) => v).catchError((_) => null),
     ]);
     final dashboard = results[0] as PortalDashboard?;
     if (dashboard == null) throw StateError('student not found');
+    final waitingPlan = RecitationRepository.pendingPlan(widget.studentId);
+    if (waitingPlan != null) dashboard.nextPlan = waitingPlan.plan;
     return _FileData(
       dashboard: dashboard,
       entries: results[1] as List<RecitationEntry>,
@@ -137,9 +139,9 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     );
     if (confirmed != true) return;
     try {
-      await _recitations.deleteRecitation(entry.id);
+      final queued = await _recitations.deleteRecitation(entry.id);
       if (mounted) {
-        _toast(tr(context).stu.deleted);
+        _toast(queued ? kQueuedMessage : tr(context).stu.deleted);
         _reload();
       }
     } on PostgrestException catch (e) {
@@ -171,9 +173,9 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
     controller.dispose();
     if (saved == null) return;
     try {
-      await _recitations.setStudentPlan(orgId: _orgId, studentId: widget.studentId, plan: saved);
+      final queued = await _recitations.setStudentPlan(orgId: _orgId, studentId: widget.studentId, plan: saved);
       if (mounted) {
-        _toast(tr(context).stu.planSaved);
+        _toast(queued ? kQueuedMessage : tr(context).stu.planSaved);
         _reload();
       }
     } on PostgrestException catch (e) {
@@ -527,8 +529,19 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
                   ),
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     Text(gradeLabel[e.grade] ?? e.grade ?? '', style: TextStyle(color: TeacherStyle.gradeColor(data.grades, e.grade), fontWeight: FontWeight.bold, fontSize: 12)),
-                    Text('+${e.points}', style: const TextStyle(color: TeacherStyle.success, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    if (e.pending)
+                      Row(mainAxisSize: MainAxisSize.min, children: [
+                        const Icon(Icons.cloud_upload_outlined, size: 13, color: TeacherStyle.warning),
+                        const SizedBox(width: 3),
+                        Text(tr(context).ui.waitingUpload, style: const TextStyle(color: TeacherStyle.warning, fontSize: 10.5, fontWeight: FontWeight.w700)),
+                      ])
+                    else
+                      Text('+${e.points}', style: const TextStyle(color: TeacherStyle.success, fontSize: 11.5, fontWeight: FontWeight.w700)),
                   ]),
+                  // recorded on this phone: it can be changed once it has uploaded
+                  if (e.id.startsWith('local-'))
+                    const SizedBox(width: 12)
+                  else
                   PopupMenuButton<String>(
                     onSelected: (v) => v == 'edit' ? _edit(data, e) : _delete(e),
                     itemBuilder: (context) => [PopupMenuItem(value: 'edit', child: Text(tr(context).common.edit)), PopupMenuItem(value: 'delete', child: Text(tr(context).common.delete))],

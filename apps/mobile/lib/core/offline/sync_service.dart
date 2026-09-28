@@ -276,6 +276,10 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
 
   // ---- what is waiting, for screens that show live state ------------------------
 
+  /// This account's queued (not yet uploaded) writes of [kind], oldest first, so
+  /// screens can already show them.
+  List<OutboxItem> pendingOf(String kind) => mine.where((i) => i.kind == kind && i.status == 'pending').toList();
+
   /// Recitations of [studentId] that are queued for today (so the circle list
   /// can already show them as done).
   int pendingRecitationsToday(String studentId) {

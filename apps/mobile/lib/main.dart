@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +9,7 @@ import 'core/push/push_service.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/i18n/i18n.dart';
 import 'core/offline/offline_setup.dart';
+import 'core/offline/prefetch.dart';
 import 'core/offline/sync_service.dart';
 import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
@@ -99,6 +102,7 @@ class BustanAlQuranApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: sync),
         ChangeNotifierProvider.value(value: AccessController.instance),
         ChangeNotifierProvider.value(value: LocaleController.instance),
+        ChangeNotifierProvider.value(value: OfflinePrefetch.instance),
         ChangeNotifierProvider(create: (_) => AuthController(AppSupabase.client)),
         ChangeNotifierProvider(create: (_) => TenantController(TenantRepository(AppSupabase.client))),
       ],
@@ -152,6 +156,14 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AccessController.instance.bind(AppSupabase.client, accessOrg);
       if (accessOrg != null) PushService.instance.register(AppSupabase.client, accessOrg);
+      // keep what this person needs on the phone, so the app works without a connection
+      OfflinePrefetch.instance.autoRun(AppSupabase.client, () => context.read<AuthController>().isAuthenticated ? context.read<TenantController>().active : null);
+      final active = tenant.active;
+      if (accessOrg != null && active != null) {
+        unawaited(OfflinePrefetch.instance.run(AppSupabase.client, active));
+      } else {
+        unawaited(OfflinePrefetch.instance.bind(null, null));
+      }
       LocaleController.instance.bindCenter(accessOrg, (orgId) async {
         final row = await AppSupabase.client
             .from('organization_settings')

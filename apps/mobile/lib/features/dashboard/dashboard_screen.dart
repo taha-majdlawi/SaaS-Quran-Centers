@@ -14,6 +14,7 @@ import '../teacher/teacher_home_screen.dart';
 import 'admin_insights_section.dart';
 import 'attention_section.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/offline/sync_service.dart';
 
 Map<OrgRole, String> get _roleGreeting => {
       OrgRole.admin: currentStrings.dash.centerAdmin,
@@ -56,16 +57,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<_DashboardStats> _loadStats(String orgId) async {
     final client = AppSupabase.client;
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    Future<int> count(String key, Future<dynamic> Function() fetch) =>
+        SyncService.instance.cached<int>('dash-count:$key:$orgId', fetch, (j) => (j as num).toInt());
     final results = await Future.wait([
-      client.from('students_profile').count().eq('organization_id', orgId),
-      client.from('organization_members').count().eq('organization_id', orgId).eq('role', 'teacher'),
-      client.from('circles').count().eq('organization_id', orgId),
-      client
-          .from('attendance')
-          .count()
-          .eq('organization_id', orgId)
-          .eq('session_date', today)
-          .eq('status', 'present'),
+      count('students', () => client.from('students_profile').count().eq('organization_id', orgId)),
+      count('teachers', () => client.from('organization_members').count().eq('organization_id', orgId).eq('role', 'teacher')),
+      count('circles', () => client.from('circles').count().eq('organization_id', orgId)),
+      count('present:$today', () => client.from('attendance').count().eq('organization_id', orgId).eq('session_date', today).eq('status', 'present')),
     ]);
     return _DashboardStats(students: results[0], teachers: results[1], circles: results[2], presentToday: results[3]);
   }

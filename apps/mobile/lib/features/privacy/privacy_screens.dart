@@ -8,6 +8,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import '../reports/reports_repository.dart';
+import '../../core/offline/sync_service.dart';
 
 Map<String, String> get _status => currentStrings.labels.deletionStatus;
 Map<String, String> get _roles => currentStrings.labels.roles;
@@ -25,7 +26,7 @@ class _DeletionRequestsScreenState extends State<DeletionRequestsScreen> {
   String? _orgId;
 
   Future<List<Map<String, dynamic>>> _load() async {
-    final rows = await AppSupabase.client.rpc('list_deletion_requests', params: {'p_org': _orgId}) as List;
+    final rows = await SyncService.instance.raw('deletion-requests:$_orgId', () => AppSupabase.client.rpc('list_deletion_requests', params: {'p_org': _orgId})) as List;
     return [for (final r in rows) r as Map<String, dynamic>];
   }
 
@@ -114,7 +115,8 @@ class _MyPrivacyScreenState extends State<MyPrivacyScreen> {
     super.dispose();
   }
 
-  Future<Map<String, dynamic>?> _load() async => await AppSupabase.client.rpc('my_deletion_request', params: {'p_org': _orgId}) as Map<String, dynamic>?;
+  Future<Map<String, dynamic>?> _load() async =>
+      await SyncService.instance.raw('my-deletion:$_orgId', () => AppSupabase.client.rpc('my_deletion_request', params: {'p_org': _orgId})) as Map<String, dynamic>?;
 
   Future<void> _send() async {
     final ok = await showDialog<bool>(

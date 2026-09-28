@@ -94,7 +94,7 @@ class RecordDetail {
 }
 
 class PortalDashboard {
-  const PortalDashboard({
+  PortalDashboard({
     required this.fullName,
     required this.studentCode,
     required this.totalPoints,
@@ -136,7 +136,8 @@ class PortalDashboard {
   final String? circleName;
   final String? teacherName;
   final String? stageName;
-  final String? nextPlan;
+  /// Not final: a plan still waiting on the teacher's phone is shown in its place.
+  String? nextPlan;
   final int totalRecitations;
   final int thisWeek;
   final int lastWeek;
