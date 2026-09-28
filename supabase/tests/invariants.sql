@@ -331,10 +331,10 @@ begin
   end if;
   reset role;
 
-  -- ===== the anonymous door is exactly three functions
+  -- ===== the anonymous door is exactly four functions (public_plans: 0068, the marketing price list)
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
-      and p.proname not in ('get_invitation', 'get_public_site', 'verify_certificate');
+      and p.proname not in ('get_invitation', 'get_public_site', 'verify_certificate', 'public_plans');
   if v_n > 0 then v_fail := v_fail || ('anon can execute ' || v_n || ' extra functions'); end if;
 
   raise exception 'RESULT: %', case when array_length(v_fail, 1) is null then 'OK' else 'FAILED - ' || array_to_string(v_fail, '; ') end;
