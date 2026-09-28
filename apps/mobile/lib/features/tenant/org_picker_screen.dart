@@ -60,7 +60,7 @@ class OrgPickerScreen extends StatelessWidget {
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(_roleLabels[membership.role.name] ?? ''),
                             ),
-                            trailing: const Icon(Icons.chevron_left_rounded),
+                            trailing: Icon(forwardChevron(context)),
                             onTap: () async {
                               await tenant.switchTo(membership);
                               if (context.mounted) context.go('/dashboard');

@@ -226,7 +226,7 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
                     subtitle: Text(policies[st.id] == null
                         ? tr(context).serd.usesGeneral
                         : '${policies[st.id]!.denominators.map(serdDenName).join(tr(context).common.listSep)}${policies[st.id]!.passPercent == null ? '' : fmt(tr(context).serd.passSuffix, {'n': policies[st.id]!.passPercent})}'),
-                    trailing: const Icon(Icons.chevron_left_rounded),
+                    trailing: Icon(forwardChevron(context)),
                     onTap: () => _editStage(st, policies[st.id]),
                   ),
                 ),

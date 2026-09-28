@@ -260,7 +260,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
           children: [
             IconButton(onPressed: _page > 1 ? () { _page--; _reload(); } : null, icon: const Icon(Icons.chevron_right_rounded)),
             Text('$_page / $pages'),
-            IconButton(onPressed: _page < pages ? () { _page++; _reload(); } : null, icon: const Icon(Icons.chevron_left_rounded)),
+            IconButton(onPressed: _page < pages ? () { _page++; _reload(); } : null, icon: Icon(forwardChevron(context))),
           ],
         ),
     ];

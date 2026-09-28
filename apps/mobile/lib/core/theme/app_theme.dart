@@ -14,11 +14,18 @@ Color parseBrandColor(String? hex) {
   return Color(0xFF000000 | value);
 }
 
-/// The soft page + hairline palette every screen shares (also used by the teacher screens).
-const kPageBackground = Color(0xFFF5F8FB);
-const kHairline = Color(0xFFE7EDF3);
-const kInk = Color(0xFF162434);
-const kInkMuted = Color(0xFF64748B);
+/// The garden palette every screen shares: a warm page, white cards with a
+/// soft shadow, deep green-black ink (also used by the teacher screens).
+const kPageBackground = Color(0xFFF6F4EE);
+const kHairline = Color(0xFFE8E4D8);
+const kInk = Color(0xFF17241E);
+const kInkMuted = Color(0xFF6B7470);
+const kGold = Color(0xFFD4A24C);
+const kCardRadius = 20.0;
+const kSoftShadow = [
+  BoxShadow(color: Color(0x0F1B2A22), blurRadius: 18, offset: Offset(0, 6)),
+  BoxShadow(color: Color(0x0A1B2A22), blurRadius: 3, offset: Offset(0, 1)),
+];
 
 /// One Material 3 theme for the whole app, seeded from the active center's
 /// brand color so every center feels like its own app while sharing the same
@@ -49,14 +56,31 @@ ThemeData buildAppTheme(Color seed) {
     ),
     scaffoldBackgroundColor: kPageBackground,
     splashFactory: InkSparkle.splashFactory,
-    appBarTheme: AppBarTheme(
-      backgroundColor: scheme.primary,
-      foregroundColor: scheme.onPrimary,
+    // light bars on the warm page; the colour lives in the home headers
+    appBarTheme: const AppBarTheme(
+      backgroundColor: kPageBackground,
+      foregroundColor: kInk,
       elevation: 0,
-      scrolledUnderElevation: 0,
+      scrolledUnderElevation: 0.5,
+      shadowColor: kHairline,
       centerTitle: true,
-      systemOverlayStyle: SystemUiOverlayStyle.light,
-      titleTextStyle: TextStyle(fontFamily: family, color: scheme.onPrimary, fontSize: 18, fontWeight: FontWeight.w800),
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      titleTextStyle: TextStyle(fontFamily: family, color: kInk, fontSize: 18, fontWeight: FontWeight.w800),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      height: 68,
+      indicatorColor: scheme.primary.withValues(alpha: 0.13),
+      indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      labelTextStyle: WidgetStateProperty.resolveWith((s) => TextStyle(
+            fontFamily: family,
+            fontSize: 12,
+            fontWeight: s.contains(WidgetState.selected) ? FontWeight.w800 : FontWeight.w600,
+            color: s.contains(WidgetState.selected) ? scheme.primary : kInkMuted,
+          )),
+      iconTheme: WidgetStateProperty.resolveWith((s) => IconThemeData(color: s.contains(WidgetState.selected) ? scheme.primary : kInkMuted, size: 24)),
     ),
     cardTheme: CardThemeData(
       elevation: 0,
@@ -64,7 +88,7 @@ ThemeData buildAppTheme(Color seed) {
       surfaceTintColor: Colors.transparent,
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: kHairline)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18), side: const BorderSide(color: kHairline)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -73,7 +97,7 @@ ThemeData buildAppTheme(Color seed) {
       labelStyle: const TextStyle(color: kInkMuted),
       hintStyle: TextStyle(color: Colors.grey.shade500),
       border: border(Colors.grey.shade300),
-      enabledBorder: border(const Color(0xFFD9E2EC)),
+      enabledBorder: border(const Color(0xFFDCD7C9)),
       focusedBorder: border(scheme.primary, 2),
       errorBorder: border(scheme.error),
       focusedErrorBorder: border(scheme.error, 2),
@@ -122,7 +146,7 @@ ThemeData buildAppTheme(Color seed) {
     chipTheme: ChipThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       side: const BorderSide(color: kHairline),
-      backgroundColor: const Color(0xFFEEF3F8),
+      backgroundColor: const Color(0xFFF0EDE3),
       selectedColor: scheme.primary.withValues(alpha: 0.14),
       labelStyle: const TextStyle(fontFamily: family, fontWeight: FontWeight.w600),
     ),
@@ -131,7 +155,7 @@ ThemeData buildAppTheme(Color seed) {
       trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.primary : Colors.grey.shade400),
       trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
     ),
-    progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary, linearTrackColor: const Color(0xFFE3EAF1), circularTrackColor: Colors.transparent),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary, linearTrackColor: const Color(0xFFE9E5D9), circularTrackColor: Colors.transparent),
     dividerTheme: const DividerThemeData(color: kHairline, space: 1),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: Colors.white,

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
+import 'app_theme.dart';
+
 /// The look of the teacher's screens (modelled on the eqraa teacher app): a
 /// cool light-grey page, white rounded cards with a hairline border, a gradient
 /// header, gold accents and clear status colours. The BRAND colour is the
 /// center's own (from its settings), so every center keeps its identity.
 abstract final class TeacherStyle {
   // page + surfaces
-  static const Color scaffold = Color(0xFFF5F8FB);
+  static const Color scaffold = kPageBackground;
   static const Color surface = Colors.white;
-  static const Color surfaceAlt = Color(0xFFF3F7FA);
-  static const Color chip = Color(0xFFEEF3F8);
-  static const Color border = Color(0xFFE7EDF3);
-  static const Color textPrimary = Color(0xFF162434);
-  static const Color textMuted = Color(0xFF64748B);
+  static const Color surfaceAlt = Color(0xFFF8F6F0);
+  static const Color chip = Color(0xFFF0EDE3);
+  static const Color border = kHairline;
+  static const Color textPrimary = kInk;
+  static const Color textMuted = kInkMuted;
 
   // accents + status (semantic, not identity)
   static const Color gold = Color(0xFFC9982F);

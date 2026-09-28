@@ -62,6 +62,8 @@ import '../../features/audit/audit_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/site/site_screen.dart';
 import '../tenant/organization.dart';
+import '../../app_shell.dart';
+import '../../features/more/more_screen.dart';
 
 /// Deliberately flat for this first pass: every signed-in member (whatever
 /// their role) lands in the same /dashboard, /students, ... routes, same as
@@ -126,7 +128,17 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/onboarding', builder: (context, state) => OnboardingScreen(gate: onboarding)),
       GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
-      GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen()),
+      // the staff tabs (bottom bar); every other screen opens on top of them
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AppShell(shell: shell),
+        branches: [
+          StatefulShellBranch(routes: [GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/students', builder: (context, state) => const StudentsListScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/serd', builder: (context, state) => const SerdListScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/chat', builder: (context, state) => const ChatListScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/more', builder: (context, state) => const MoreScreen())]),
+        ],
+      ),
       GoRoute(path: '/my', builder: (context, state) => const MyPortalScreen()),
       GoRoute(path: '/sync', builder: (context, state) => const SyncScreen()),
       GoRoute(path: '/deletion-requests', builder: (context, state) => const DeletionRequestsScreen()),
@@ -157,7 +169,6 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         path: '/circle/:id/lesson',
         builder: (context, state) => LessonModeScreen(circleId: state.pathParameters['id']!),
       ),
-      GoRoute(path: '/students', builder: (context, state) => const StudentsListScreen()),
       GoRoute(path: '/students/new', builder: (context, state) => const StudentFormScreen()),
       GoRoute(
         path: '/students/:id/file',
@@ -174,7 +185,6 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => CircleFormScreen(circleId: state.pathParameters['id']),
       ),
       GoRoute(path: '/attendance', builder: (context, state) => const AttendanceScreen()),
-      GoRoute(path: '/serd', builder: (context, state) => const SerdListScreen()),
       GoRoute(
         path: '/serd/new',
         builder: (context, state) => SerdEntryScreen(sessionId: state.uri.queryParameters['session']),
@@ -234,7 +244,6 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/reviews', builder: (context, state) => const ReviewsScreen()),
       GoRoute(path: '/search', builder: (context, state) => const GlobalSearchScreen()),
       GoRoute(path: '/notifications/prefs', builder: (context, state) => const NotificationPrefsScreen()),
-      GoRoute(path: '/chat', builder: (context, state) => const ChatListScreen()),
       GoRoute(path: '/chat/new', builder: (context, state) => const NewChatScreen()),
       GoRoute(
         path: '/chat/:id',

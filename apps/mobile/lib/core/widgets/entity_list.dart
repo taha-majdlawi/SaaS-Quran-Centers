@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../tenant/tenant_controller.dart';
 import 'app_drawer.dart';
 import 'ui.dart';
+import 'garden.dart';
+import '../theme/app_theme.dart';
 import '../../core/i18n/i18n.dart';
 
 /// What one row of an [EntityListScreen] looks like.
@@ -102,7 +104,13 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: TextField(
                 onChanged: (v) => setState(() => _query = v.trim()),
-                decoration: InputDecoration(hintText: tr(context).ui.search, prefixIcon: Icon(Icons.search_rounded)),
+                decoration: InputDecoration(
+                  hintText: tr(context).ui.search,
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: const BorderSide(color: kHairline)),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
               ),
             ),
           Expanded(
@@ -122,6 +130,10 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
                       if (tiles.isEmpty) {
                         return EmptyState(icon: Icons.search_off_rounded, title: tr(context).ui.noMatch);
                       }
+                      final countLine = Padding(
+                        padding: const EdgeInsets.fromLTRB(4, 0, 4, 2),
+                        child: Text(fmt(tr(context).garden.itemsN, {'n': tiles.length}), style: const TextStyle(color: kInkMuted, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      );
                       return RefreshIndicator(
                         onRefresh: () async {
                           setState(() => _reload(orgId!));
@@ -129,22 +141,27 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
                         },
                         child: ListView.separated(
                           padding: EdgeInsets.fromLTRB(16, 12, 16, widget.addPath == null ? 24 : 96),
-                          itemCount: tiles.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 10),
+                          itemCount: tiles.length + 1,
+                          separatorBuilder: (context, index) => SizedBox(height: index == 0 ? 6 : 10),
                           itemBuilder: (context, index) {
-                            final t = tiles[index];
-                            return Card(
-                              clipBehavior: Clip.antiAlias,
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                leading: t.leading,
-                                title: Text(t.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                                subtitle: t.subtitle == null
-                                    ? null
-                                    : Padding(padding: const EdgeInsets.only(top: 4), child: Text(t.subtitle!)),
-                                trailing: t.trailing ?? (t.path != null ? const Icon(Icons.chevron_left_rounded) : null),
-                                onTap: t.path == null ? null : () => _open(t.path!),
-                              ),
+                            if (index == 0) return countLine;
+                            final t = tiles[index - 1];
+                            return GardenCard(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              onTap: t.path == null ? null : () => _open(t.path!),
+                              child: Row(children: [
+                                if (t.leading != null) ...[t.leading!, const SizedBox(width: 12)],
+                                Expanded(
+                                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    Text(t.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kInk)),
+                                    if (t.subtitle != null) ...[
+                                      const SizedBox(height: 3),
+                                      Text(t.subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: kInkMuted, fontSize: 12.5)),
+                                    ],
+                                  ]),
+                                ),
+                                if (t.trailing != null) t.trailing! else if (t.path != null) Icon(forwardChevron(context), color: Colors.grey.shade400),
+                              ]),
                             );
                           },
                         ),
@@ -168,11 +185,6 @@ class TileIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = color ?? Theme.of(context).colorScheme.primary;
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(color: c.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-      child: Icon(icon, color: c, size: 22),
-    );
+    return IconBubble(icon, color: c, size: 44);
   }
 }

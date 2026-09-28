@@ -12,7 +12,7 @@ SPEC = {'teach': ('The teacher home, circle roster and lesson widgets.', (
   ('stage', 'المرحلة: {stageName}', 'Stage: {stageName}'),
   ('doneOf', 'سمّع {done} من {n}', '{done} of {n} recited'),
   ('checkIn', 'سجّل حضوري اليوم', 'Check me in today'),
-  ('startLesson', 'ابدأ الحصة', 'Start the lesson'),
+  ('startLesson', 'ابدأ الحصة', 'Start lesson'),
   ('savedPoints', 'تم الحفظ ✓  +{points} نقطة', 'Saved ✓  +{points} points'),
   ('attendanceFailed', 'تعذّر حفظ الحضور', 'Couldn’t save attendance'),
   ('noStudents', 'لا يوجد طلاب في هذه الحلقة بعد.\nاطلب من المشرف إضافة الطلاب إليها.', 'No students in this circle yet.\nAsk the supervisor to add them.'),

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/i18n/i18n.dart';
 import '../../core/offline/sync_service.dart';
+import '../../core/widgets/ui.dart' show forwardChevron;
 
 List<String> get _days => currentStrings.labels.weekdays;
 
@@ -72,7 +73,7 @@ class DigestTile extends StatelessWidget {
       leading: const Icon(Icons.mark_email_read_rounded),
       title: Text(tr(context).set.digestTitle),
       subtitle: Text(tr(context).set.digestSub),
-      trailing: const Icon(Icons.chevron_left_rounded),
+      trailing: Icon(forwardChevron(context)),
       onTap: () => _open(context),
     );
   }
@@ -143,7 +144,7 @@ class AttendanceReminderTile extends StatelessWidget {
       leading: const Icon(Icons.alarm_rounded),
       title: Text(tr(context).set.attTitle2),
       subtitle: Text(tr(context).set.attSub),
-      trailing: const Icon(Icons.chevron_left_rounded),
+      trailing: Icon(forwardChevron(context)),
       onTap: () => _open(context),
     );
   }

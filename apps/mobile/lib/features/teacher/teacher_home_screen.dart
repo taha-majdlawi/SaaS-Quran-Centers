@@ -7,18 +7,19 @@ import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
-import '../../core/widgets/app_drawer.dart';
+import '../../core/widgets/garden.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
 import '../insights/insights_repository.dart';
 import '../recitation/recitation_repository.dart';
 import 'circle_roster.dart';
-import 'teacher_widgets.dart';
+import 'teacher_home_widgets.dart';
 import '../../core/i18n/i18n.dart';
 
-/// The teacher's home (modelled on the eqraa teacher dashboard): a gradient
-/// greeting header with quick actions, then one expandable card per circle with
-/// the lesson button and the roster right inside it.
+/// The teacher's home: the garden header with today's numbers, the shortcuts
+/// a teacher needs first, then one card per circle (progress ring, check-in,
+/// start the lesson) with its roster folded underneath. Works from the phone's
+/// copy when there is no connection.
 class TeacherHomeScreen extends StatefulWidget {
   const TeacherHomeScreen({super.key});
 
@@ -74,91 +75,109 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       _orgId = org.id;
       _future = _load();
     }
-    final sync = context.watch<SyncService>();
-    final issues = sync.pendingCount + sync.failedCount;
+    final t = tr(context);
 
     return Scaffold(
-      backgroundColor: TeacherStyle.scaffold,
-      drawer: const AppDrawer(),
       body: RefreshIndicator(
         color: TeacherStyle.brand(context),
         onRefresh: () async {
           _reload();
           await _future;
         },
-        child: CustomScrollView(slivers: [
-          teacherHeader(
-            context,
-            title: _teacherName.isEmpty ? timeGreeting() : fmt(tr(context).teach.greeting, {'v': timeGreeting(), 'v2': _teacherName.split(' ').first}),
-            actions: [
-              if (tenant.hasModule('students')) IconButton(tooltip: tr(context).teach.findStudent, onPressed: () => context.push('/students'), icon: const Icon(Icons.person_search_rounded)),
-              if (tenant.hasModule('attendance')) IconButton(tooltip: tr(context).nav.items['/attendance']!, onPressed: () => context.push('/attendance'), icon: const Icon(Icons.fact_check_rounded)),
-              IconButton(
-                tooltip: tr(context).nav.items['/sync']!,
-                onPressed: () => context.push('/sync'),
-                icon: Badge(
-                  isLabelVisible: issues > 0,
-                  label: Text('$issues'),
-                  backgroundColor: sync.failedCount > 0 ? Colors.red : Colors.orange,
-                  child: Icon(sync.flushing ? Icons.sync_rounded : Icons.cloud_sync_outlined),
-                ),
+        child: FutureBuilder<({List<MyCircle> circles, List<GradeOption> grades, TeacherToday? today})>(
+          future: _future,
+          builder: (context, snap) {
+            final data = snap.data;
+            final today = data?.today;
+            final circlesToday = today?.circles ?? const <TodayCircle>[];
+            int sum(int Function(TodayCircle c) f) => circlesToday.fold(0, (a, c) => a + f(c));
+            return ListView(padding: EdgeInsets.zero, children: [
+              GardenHeader(
+                leading: OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34, onDark: true),
+                greeting: timeGreeting(),
+                title: _teacherName.isEmpty ? org.name : _teacherName,
+                subtitle: longToday(context),
+                actions: [
+                  if (tenant.hasModule('students'))
+                    IconButton(tooltip: t.teach.findStudent, onPressed: () => context.push('/search'), icon: const Icon(Icons.person_search_rounded, color: Colors.white)),
+                ],
+                stats: data == null
+                    ? const []
+                    : [
+                        HeaderStat('${data.circles.length}', t.garden.statCircles, icon: Icons.groups_rounded),
+                        HeaderStat('${today == null ? data.circles.fold<int>(0, (a, c) => a + c.studentCount) : sum((c) => c.students)}', t.garden.statStudents, icon: Icons.people_alt_rounded),
+                        if (today != null) HeaderStat('${sum((c) => c.recited)}', t.garden.statRecited, icon: Icons.menu_book_rounded),
+                        if (today != null) HeaderStat('${sum((c) => c.present)}', t.garden.statPresent, icon: Icons.check_circle_rounded),
+                      ],
               ),
-            ],
-            background: Align(
-              alignment: AlignmentDirectional.bottomEnd,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 20, bottom: 46),
-                child: Opacity(opacity: 0.25, child: OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 72, onDark: true)),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: FutureBuilder<({List<MyCircle> circles, List<GradeOption> grades, TeacherToday? today})>(
-              future: _future,
-              builder: (context, snap) {
-                if (snap.hasError) return Padding(padding: const EdgeInsets.all(24), child: ErrorState(onRetry: _reload));
-                final data = snap.data;
-                if (data == null) return const Padding(padding: EdgeInsets.all(16), child: SkeletonCards(count: 3, height: 96));
-                if (data.circles.isEmpty) {
-                  return Padding(
-                    padding: EdgeInsets.all(24),
-                    child: EmptyState(icon: Icons.groups_outlined, title: tr(context).teach.noCircle, subtitle: tr(context).teach.noCircleHint),
-                  );
-                }
-                final today = data.today;
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  TeacherQuickActions(actions: [
+                    if (tenant.hasModule('attendance'))
+                      (icon: Icons.fact_check_rounded, label: t.nav.items['/attendance']!, color: TeacherStyle.success, onTap: () => context.push('/attendance')),
+                    if (tenant.hasModule('students'))
+                      (icon: Icons.person_search_rounded, label: t.teach.findStudent, color: TeacherStyle.blue, onTap: () => context.push('/search')),
+                    if (tenant.hasModule('serd'))
+                      (icon: Icons.menu_book_rounded, label: t.serd.record, color: TeacherStyle.warning, onTap: () => context.push('/serd/new')),
+                    if (tenant.hasModule('students'))
+                      (icon: Icons.record_voice_over_rounded, label: t.gather.extNew, color: const Color(0xFF8E44AD), onTap: () => context.push('/external-recitations')),
+                  ]),
+                  if (snap.hasError)
+                    Padding(padding: const EdgeInsets.only(top: 24), child: ErrorState(onRetry: _reload))
+                  else if (data == null)
+                    const Padding(padding: EdgeInsets.only(top: 22), child: SkeletonCards(count: 2, height: 150))
+                  else if (data.circles.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: EmptyState(icon: Icons.groups_outlined, title: t.teach.noCircle, subtitle: t.teach.noCircleHint),
+                    )
+                  else ...[
                     if (today != null && !today.isWorkingDay)
                       Container(
-                        margin: const EdgeInsets.only(bottom: 14),
+                        margin: const EdgeInsets.only(top: 18),
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: TeacherStyle.goldLight, borderRadius: BorderRadius.circular(12), border: Border.all(color: TeacherStyle.gold.withValues(alpha: 0.4))),
+                        decoration: BoxDecoration(color: TeacherStyle.goldLight, borderRadius: BorderRadius.circular(14)),
                         child: Row(children: [
-                          Icon(Icons.event_busy_rounded, color: TeacherStyle.gold),
-                          SizedBox(width: 8),
-                          Expanded(child: Text(tr(context).dash.notWorkingDay, style: TextStyle(fontSize: 13))),
+                          const Icon(Icons.event_busy_rounded, color: TeacherStyle.gold),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(t.dash.notWorkingDay, style: const TextStyle(fontSize: 13))),
                         ]),
                       ),
-                    SectionLabel(fmt(tr(context).teach.yourCircles, {'n': data.circles.length})),
-                    for (final c in data.circles)
-                      _CircleCard(key: ValueKey('${c.id}-$_version'), circle: c, grades: data.grades, onChanged: _reload),
-                  ]),
-                );
-              },
-            ),
-          ),
-        ]),
+                    GardenSection(
+                      title: fmt(t.teach.yourCircles, {'n': data.circles.length}),
+                      icon: Icons.groups_rounded,
+                      child: Column(children: [
+                        for (final c in data.circles)
+                          _CircleCard(
+                            key: ValueKey('${c.id}-$_version'),
+                            circle: c,
+                            grades: data.grades,
+                            today: circlesToday.where((x) => x.id == c.id).firstOrNull,
+                            // one circle: its students are open right away
+                            startOpen: data.circles.length == 1,
+                            onChanged: _reload,
+                          ),
+                      ]),
+                    ),
+                  ],
+                ]),
+              ),
+            ]);
+          },
+        ),
       ),
     );
   }
 }
 
 class _CircleCard extends StatefulWidget {
-  const _CircleCard({super.key, required this.circle, required this.grades, required this.onChanged});
+  const _CircleCard({super.key, required this.circle, required this.grades, required this.onChanged, this.today, this.startOpen = false});
 
   final MyCircle circle;
   final List<GradeOption> grades;
+  final TodayCircle? today;
+  final bool startOpen;
   final VoidCallback onChanged;
 
   @override
@@ -170,6 +189,7 @@ class _CircleCardState extends State<_CircleCard> {
   late final Future<List<CircleStudent>> _students = _repository.fetchCircleStudents(widget.circle.id);
   final _insights = InsightsRepository(AppSupabase.client);
   bool? _checkedIn;
+  late bool _open = widget.startOpen;
 
   @override
   void initState() {
@@ -200,106 +220,40 @@ class _CircleCardState extends State<_CircleCard> {
 
   @override
   Widget build(BuildContext context) {
-    final brand = TeacherStyle.brand(context);
     final c = widget.circle;
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 14),
-      color: TeacherStyle.surface,
-      shape: TeacherStyle.cardShape,
-      clipBehavior: Clip.antiAlias,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          initiallyExpanded: true,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          childrenPadding: const EdgeInsets.only(bottom: 8),
-          leading: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: TeacherStyle.tint(brand), borderRadius: BorderRadius.circular(12)),
-            child: Icon(Icons.menu_book_rounded, color: brand),
-          ),
-          title: Row(children: [
-            Expanded(child: Text(c.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-            IconButton(tooltip: tr(context).teach.circleScreen, icon: Icon(Icons.open_in_new_rounded, color: brand, size: 20), onPressed: () async {
-              await context.push('/circle/${c.id}');
-              if (mounted) widget.onChanged();
-            }),
-          ]),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: FutureBuilder<List<CircleStudent>>(
-              future: _students,
-              builder: (context, snap) {
-                final done = snap.data?.where((s) => s.recitedToday > 0).length;
-                return Wrap(spacing: 6, runSpacing: 4, children: [
-                  if (c.assistant)
-                    Chip(
-                      visualDensity: VisualDensity.compact,
-                      backgroundColor: TeacherStyle.tint(TeacherStyle.gold),
-                      side: BorderSide.none,
-                      label: Text(tr(context).teach.assistant, style: TextStyle(color: TeacherStyle.gold, fontSize: 12, fontWeight: FontWeight.w600)),
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  Chip(
-                    visualDensity: VisualDensity.compact,
-                    backgroundColor: TeacherStyle.chip,
-                    side: BorderSide.none,
-                    label: Text(fmt(tr(context).teach.stage, {'stageName': c.stageName ?? tr(context).teach.general}), style: const TextStyle(color: TeacherStyle.textMuted, fontSize: 12)),
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  if (done != null)
-                    Chip(
-                      visualDensity: VisualDensity.compact,
-                      backgroundColor: TeacherStyle.tint(TeacherStyle.success),
-                      side: BorderSide.none,
-                      label: Text(fmt(tr(context).teach.doneOf, {'done': done, 'n': snap.data!.length}), style: const TextStyle(color: TeacherStyle.success, fontSize: 12, fontWeight: FontWeight.w600)),
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                ]);
-              },
-            ),
-          ),
-          children: [
-            FutureBuilder<List<CircleStudent>>(
-              future: _students,
-              builder: (context, snap) {
-                if (snap.hasError) return Padding(padding: const EdgeInsets.all(16), child: ErrorState(onRetry: widget.onChanged));
-                final students = snap.data;
-                if (students == null) return const Padding(padding: EdgeInsets.all(12), child: SkeletonCards(count: 2, height: 96));
-                return Column(children: [
-                  if (_checkedIn == false)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      child: OutlinedButton.icon(
-                        onPressed: _checkIn,
-                        icon: const Icon(Icons.how_to_reg_rounded, size: 18),
-                        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
-                        label: Text(tr(context).teach.checkIn),
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: FilledButton.icon(
-                      onPressed: () async {
-                        await context.push('/circle/${c.id}/lesson');
-                        if (mounted) widget.onChanged();
-                      },
-                      icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
-                      label: Text(tr(context).teach.startLesson),
-                    ),
-                  ),
-                  CircleRoster(circleId: c.id, students: students, grades: widget.grades, onChanged: widget.onChanged),
-                ]);
-              },
-            ),
-          ],
-        ),
-      ),
+    return FutureBuilder<List<CircleStudent>>(
+      future: _students,
+      builder: (context, snap) {
+        final students = snap.data;
+        // the students list already counts what is waiting on the phone; the day summary is the fallback
+        final done = students?.where((s) => s.recitedToday > 0).length ?? widget.today?.recited;
+        final present = students != null ? students.where((s) => s.attendanceToday == 'present' || s.attendanceToday == 'late').length : widget.today?.present;
+        final absent = students != null ? students.where((s) => s.attendanceToday == 'absent').length : widget.today?.absent;
+        return TeacherCircleCard(
+          circle: c,
+          done: done,
+          total: students?.length ?? widget.today?.students,
+          present: present,
+          absent: absent,
+          checkedIn: _checkedIn,
+          onOpen: () async {
+            await context.push('/circle/${c.id}');
+            if (mounted) widget.onChanged();
+          },
+          onStart: () async {
+            await context.push('/circle/${c.id}/lesson');
+            if (mounted) widget.onChanged();
+          },
+          onCheckIn: _checkIn,
+          rosterOpen: _open,
+          onToggleRoster: () => setState(() => _open = !_open),
+          roster: snap.hasError
+              ? Padding(padding: const EdgeInsets.all(16), child: ErrorState(onRetry: widget.onChanged))
+              : students == null
+                  ? const Padding(padding: EdgeInsets.all(12), child: SkeletonCards(count: 2, height: 80))
+                  : CircleRoster(circleId: c.id, students: students, grades: widget.grades, onChanged: widget.onChanged),
+        );
+      },
     );
   }
 }

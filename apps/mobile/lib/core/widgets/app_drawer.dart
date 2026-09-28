@@ -7,10 +7,12 @@ import 'org_avatar.dart';
 import '../auth/auth_controller.dart';
 import '../tenant/organization.dart';
 import '../tenant/tenant_controller.dart';
+import '../../app_shell.dart' show kShellBranches;
 import '../../core/i18n/i18n.dart';
 
-class _NavItem {
-  const _NavItem(this.icon, this.path, {this.module, this.adminOnly = false});
+/// One entry of the staff menu (the drawer and the More hub).
+class NavItem {
+  const NavItem(this.icon, this.path, {this.module, this.adminOnly = false});
 
   final IconData icon;
   final String path;
@@ -18,66 +20,62 @@ class _NavItem {
   final bool adminOnly;
 }
 
-class _NavSection {
-  const _NavSection(this.title, this.items);
+/// A titled group of [NavItem]s; [title] is a key into tr(context).nav.sections.
+class NavSection {
+  const NavSection(this.title, this.items);
 
   /// key into tr(context).nav.sections
   final String? title;
-  final List<_NavItem> items;
+  final List<NavItem> items;
 }
 
 /// Same modules and same visibility rules as apps/web's TenantSidebar:
 /// admins see everything, teachers only the modules they were granted,
 /// admin-only entries stay hidden from everyone else.
-const _sections = [
-  _NavSection(null, [
-    _NavItem(Icons.space_dashboard_rounded, '/dashboard'),
-    _NavItem(Icons.sync_rounded, '/sync'),
+const kNavSections = [
+  NavSection(null, [
+    NavItem(Icons.space_dashboard_rounded, '/dashboard'),
+    NavItem(Icons.sync_rounded, '/sync'),
   ]),
-  _NavSection('teaching', [
-    _NavItem(Icons.people_alt_rounded, '/students', module: 'students'),
-    _NavItem(Icons.groups_rounded, '/circles', adminOnly: true),
-    _NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),
-    _NavItem(Icons.groups_2_rounded, '/gatherings', module: 'attendance'),
-    _NavItem(Icons.record_voice_over_rounded, '/external-recitations', module: 'students'),
-    _NavItem(Icons.replay_circle_filled_rounded, '/reviews'),
-    _NavItem(Icons.search_rounded, '/search'),
-    _NavItem(Icons.auto_stories_rounded, '/quran'),
-    _NavItem(Icons.menu_book_rounded, '/serd', module: 'serd'),
-    _NavItem(Icons.stairs_rounded, '/stages', adminOnly: true),
+  NavSection('teaching', [
+    NavItem(Icons.people_alt_rounded, '/students', module: 'students'),
+    NavItem(Icons.groups_rounded, '/circles', adminOnly: true),
+    NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),
+    NavItem(Icons.groups_2_rounded, '/gatherings', module: 'attendance'),
+    NavItem(Icons.record_voice_over_rounded, '/external-recitations', module: 'students'),
+    NavItem(Icons.replay_circle_filled_rounded, '/reviews'),
+    NavItem(Icons.search_rounded, '/search'),
+    NavItem(Icons.auto_stories_rounded, '/quran'),
+    NavItem(Icons.menu_book_rounded, '/serd', module: 'serd'),
+    NavItem(Icons.stairs_rounded, '/stages', adminOnly: true),
   ]),
-  _NavSection('motivation', [
-    _NavItem(Icons.stars_rounded, '/points', module: 'points'),
-    _NavItem(Icons.emoji_events_rounded, '/badges', module: 'badges'),
-    _NavItem(Icons.storefront_rounded, '/market', module: 'market'),
-    _NavItem(Icons.leaderboard_rounded, '/circle-challenges', module: 'circle-challenges'),
+  NavSection('motivation', [
+    NavItem(Icons.stars_rounded, '/points', module: 'points'),
+    NavItem(Icons.emoji_events_rounded, '/badges', module: 'badges'),
+    NavItem(Icons.storefront_rounded, '/market', module: 'market'),
+    NavItem(Icons.leaderboard_rounded, '/circle-challenges', module: 'circle-challenges'),
   ]),
-  _NavSection('comms', [
-    _NavItem(Icons.event_note_rounded, '/activities', module: 'activities'),
-    _NavItem(Icons.campaign_rounded, '/announcements', module: 'announcements'),
-    _NavItem(Icons.calendar_month_rounded, '/calendar', module: 'calendar'),
-    _NavItem(Icons.chat_bubble_rounded, '/chat', module: 'chat'),
-    _NavItem(Icons.notifications_rounded, '/notifications', module: 'notifications'),
-    _NavItem(Icons.insights_rounded, '/reports', module: 'reports'),
-    _NavItem(Icons.workspace_premium_rounded, '/certificates', module: 'certificates'),
+  NavSection('comms', [
+    NavItem(Icons.event_note_rounded, '/activities', module: 'activities'),
+    NavItem(Icons.campaign_rounded, '/announcements', module: 'announcements'),
+    NavItem(Icons.calendar_month_rounded, '/calendar', module: 'calendar'),
+    NavItem(Icons.chat_bubble_rounded, '/chat', module: 'chat'),
+    NavItem(Icons.notifications_rounded, '/notifications', module: 'notifications'),
+    NavItem(Icons.insights_rounded, '/reports', module: 'reports'),
+    NavItem(Icons.workspace_premium_rounded, '/certificates', module: 'certificates'),
   ]),
-  _NavSection('admin', [
-    _NavItem(Icons.admin_panel_settings_rounded, '/members', adminOnly: true),
-    _NavItem(Icons.privacy_tip_rounded, '/deletion-requests', adminOnly: true),
-    _NavItem(Icons.history_rounded, '/audit', adminOnly: true),
-    _NavItem(Icons.public_rounded, '/site', adminOnly: true),
-    _NavItem(Icons.settings_rounded, '/settings', adminOnly: true),
+  NavSection('admin', [
+    NavItem(Icons.admin_panel_settings_rounded, '/members', adminOnly: true),
+    NavItem(Icons.privacy_tip_rounded, '/deletion-requests', adminOnly: true),
+    NavItem(Icons.history_rounded, '/audit', adminOnly: true),
+    NavItem(Icons.public_rounded, '/site', adminOnly: true),
+    NavItem(Icons.settings_rounded, '/settings', adminOnly: true),
   ]),
 ];
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
-  bool _visible(_NavItem item, TenantController tenant) {
-    if (item.adminOnly) return tenant.active?.role == OrgRole.admin;
-    if (item.module != null) return tenant.hasModule(item.module!);
-    return true;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +130,7 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               children: [
-                for (final section in _sections)
+                for (final section in kNavSections)
                   ..._buildSection(context, section, tenant, currentPath, scheme),
               ],
             ),
@@ -171,33 +169,16 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Future<void> _pickLanguage(BuildContext context) async {
-    final locale = context.read<LocaleController>();
-    final lang = await showDialog<String>(
-      context: context,
-      builder: (c) => SimpleDialog(
-        title: Text(tr(c).common.language),
-        children: [
-          for (final l in kLocales)
-            ListTile(
-              title: Text(kLocaleNames[l]!),
-              trailing: l == locale.effective ? Icon(Icons.check_rounded, color: Theme.of(c).colorScheme.primary) : null,
-              onTap: () => Navigator.pop(c, l),
-            ),
-        ],
-      ),
-    );
-    if (lang != null) await locale.choose(lang);
-  }
+  Future<void> _pickLanguage(BuildContext context) => pickLanguage(context);
 
   List<Widget> _buildSection(
     BuildContext context,
-    _NavSection section,
+    NavSection section,
     TenantController tenant,
     String currentPath,
     ColorScheme scheme,
   ) {
-    final items = section.items.where((i) => _visible(i, tenant)).toList();
+    final items = section.items.where((i) => navItemVisible(i, tenant)).toList();
     if (items.isEmpty) return const [];
 
     return [
@@ -219,12 +200,12 @@ class AppDrawer extends StatelessWidget {
             title: Text(tr(context).nav.items[item.path] ?? item.path, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
-              // the dashboard is the root; everything else opens ON TOP of it (so there is a back
+              // the tabs are roots; everything else opens ON TOP of them (so there is a back
               // button), and moving between drawer screens replaces the current one instead of
               // piling them up
-              if (item.path == '/dashboard') {
-                context.go('/dashboard');
-              } else if (currentPath == '/dashboard') {
+              if (kShellBranches.contains(item.path)) {
+                context.go(item.path); // a tab of the bottom bar
+              } else if (kShellBranches.contains(currentPath)) {
                 context.push(item.path);
               } else {
                 context.pushReplacement(item.path);
@@ -236,6 +217,32 @@ class AppDrawer extends StatelessWidget {
   }
 }
 
+/// Whether the signed-in member may open [item] (same rules as the web sidebar).
+bool navItemVisible(NavItem item, TenantController tenant) {
+  if (item.adminOnly) return tenant.active?.role == OrgRole.admin;
+  if (item.module != null) return tenant.hasModule(item.module!);
+  return true;
+}
+
+/// The language picker (drawer, More hub).
+Future<void> pickLanguage(BuildContext context) async {
+  final locale = context.read<LocaleController>();
+  final lang = await showDialog<String>(
+    context: context,
+    builder: (c) => SimpleDialog(
+      title: Text(tr(c).common.language),
+      children: [
+        for (final l in kLocales)
+          ListTile(
+            title: Text(kLocaleNames[l]!),
+            trailing: l == locale.effective ? Icon(Icons.check_rounded, color: Theme.of(c).colorScheme.primary) : null,
+            onTap: () => Navigator.pop(c, l),
+          ),
+      ],
+    ),
+  );
+  if (lang != null) await locale.choose(lang);
+}
 
 /// The leading button of an app bar whose screen has the drawer: a BACK arrow when the
 /// screen was opened on top of another (the normal case from the drawer), the menu button

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -50,6 +51,10 @@ Future<void> main() async {
 
   // The app language the person chose on this device (else the center's default).
   await LocaleController.instance.load();
+  // day and month names for the dates on the home headers (ar / en)
+  try {
+    await initializeDateFormatting();
+  } catch (_) {}
 
   runApp(BustanAlQuranApp(sync: sync, onboarding: onboarding));
 }

@@ -10,6 +10,7 @@ import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/org_avatar.dart';
+import '../../core/widgets/garden.dart';
 import '../../core/widgets/ui.dart';
 import '../engagement/engagement_repository.dart';
 import '../recitation/recitation_repository.dart' show kAchievementTypes;
@@ -63,6 +64,39 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
     }
   }
 
+  void _pickKid(String orgId, String id) => setState(() {
+        _studentId = id;
+        _dashboard = _repository.fetchDashboard(orgId, id);
+      });
+
+  /// A guardian's children as chips; [onDark] for the coloured home header.
+  Widget _kidChips(String orgId, {bool onDark = false}) {
+    return SizedBox(
+      height: 38,
+      child: ListView(scrollDirection: Axis.horizontal, children: [
+        for (final s in _students)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: onDark
+                ? Material(
+                    color: s.id == _studentId ? Colors.white : Colors.white.withValues(alpha: 0.16),
+                    shape: const StadiumBorder(),
+                    child: InkWell(
+                      customBorder: const StadiumBorder(),
+                      onTap: () => _pickKid(orgId, s.id),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Text(s.fullName,
+                            style: TextStyle(color: s.id == _studentId ? Theme.of(context).colorScheme.primary : Colors.white, fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                  )
+                : ChoiceChip(label: Text(s.fullName), selected: s.id == _studentId, onSelected: (_) => _pickKid(orgId, s.id)),
+          ),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tenant = context.watch<TenantController>();
@@ -75,7 +109,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
     final p = t.portal;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: _tab == 0 ? null : AppBar(
         title: Row(children: [
           if (org != null) OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34),
           const SizedBox(width: 10),
@@ -110,28 +144,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                     )
                   : Column(
                       children: [
-                        if (_students.length > 1)
-                          SizedBox(
-                            height: 56,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              children: [
-                                for (final s in _students)
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.only(end: 8),
-                                    child: ChoiceChip(
-                                      label: Text(s.fullName),
-                                      selected: s.id == _studentId,
-                                      onSelected: (_) => setState(() {
-                                        _studentId = s.id;
-                                        _dashboard = _repository.fetchDashboard(org!.id, s.id);
-                                      }),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
+                        if (_students.length > 1 && _tab != 0) Padding(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), child: _kidChips(org!.id)),
                         Expanded(
                           child: AsyncBody<PortalDashboard?>(
                             future: _dashboard!,
@@ -143,7 +156,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                               return RefreshIndicator(
                                 onRefresh: () async => _reload(),
                                 child: switch (_tab) {
-                                  0 => _HomeTab(data: data),
+                                  0 => _HomeTab(data: data, kidSwitcher: _students.length > 1 ? _kidChips(org!.id, onDark: true) : null),
                                   1 => _RecordTab(key: ValueKey(_studentId), orgId: org!.id, studentId: _studentId!, serd: data.serd),
                                   _ => _AccountTab(data: data),
                                 },
@@ -158,12 +171,14 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
 }
 
 class _HomeTab extends StatelessWidget {
-  const _HomeTab({required this.data});
+  const _HomeTab({required this.data, this.kidSwitcher});
   final PortalDashboard data;
+
+  /// The children's chips (a guardian with several), shown in the header.
+  final Widget? kidSwitcher;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final t = tr(context);
     final p = t.portal;
     final firstName = data.fullName.split(' ').first;
@@ -174,50 +189,31 @@ class _HomeTab extends StatelessWidget {
             ? fmt(p.weekWorse, {'n': change})
             : p.weekSame;
 
+    final org = context.watch<TenantController>().active?.organization;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: AlignmentDirectional.topStart,
-              end: AlignmentDirectional.bottomEnd,
-              colors: [scheme.primary, Color.lerp(scheme.primary, Colors.black, 0.35)!],
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(fmt(p.hello, {'name': firstName}), style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 6),
-                    Text(
-                      data.circleName == null
-                          ? p.noCircle
-                          : '${data.circleName}${data.teacherName == null ? '' : '  ·  ${fmt(p.sheikh, {'name': data.teacherName})}'}',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                children: [
-                  ProgressRing(progress: (data.totalParts / 30).clamp(0.0, 1.0), centerText: '${data.totalParts}/30', size: 76, strokeWidth: 7),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    const Icon(Icons.local_fire_department_rounded, color: Colors.white, size: 16),
-                    const SizedBox(width: 3),
-                    Text('${data.currentStreak}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  ]),
-                ],
-              ),
-            ],
-          ),
+        GardenHeader(
+          leading: org == null ? null : OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34, onDark: true),
+          actions: [
+            IconButton(tooltip: p.notifications, onPressed: () => context.push('/notifications'), icon: const Icon(Icons.notifications_rounded, color: Colors.white)),
+          ],
+          greeting: timeGreeting(),
+          title: fmt(p.hello, {'name': firstName}),
+          subtitle: data.circleName == null
+              ? p.noCircle
+              : '${data.circleName}${data.teacherName == null ? '' : '  ·  ${fmt(p.sheikh, {'name': data.teacherName})}'}',
+          stats: [
+            HeaderStat('${data.totalParts}/30', t.garden.statJuz, icon: Icons.auto_stories_rounded),
+            HeaderStat('${data.totalPoints}', t.garden.statPoints, icon: Icons.stars_rounded),
+            HeaderStat('${data.currentStreak}', t.garden.statStreak, icon: Icons.local_fire_department_rounded),
+            HeaderStat(data.weeklyAttendance == null ? '—' : '${data.weeklyAttendance}%', t.garden.statAttendance, icon: Icons.how_to_reg_rounded),
+          ],
+          bottom: kidSwitcher,
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         AnnouncementsPreviewCard(announcements: data.announcements),
         SectionTitle(p.progressTitle),
         Card(
@@ -324,100 +320,25 @@ class _HomeTab extends StatelessWidget {
         const SizedBox(height: 12),
         BadgesPreviewRow(badges: data.badges),
         const SizedBox(height: 12),
-        if (!context.watch<TenantController>().isDisabled('calendar'))
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.calendar_month_rounded),
-            title: Text(p.calendar, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(p.calendarSub),
-            trailing: Icon(forwardChevron(context)),
-            onTap: () => context.push('/calendar'),
-          ),
-        ),
-        Row(children: [
-          if (!context.watch<TenantController>().isDisabled('chat'))
-          Expanded(
-            child: Card(
-              child: ListTile(
-                leading: const Icon(Icons.chat_bubble_rounded),
-                title: Text(p.chat, style: const TextStyle(fontWeight: FontWeight.w700)),
-                onTap: () => context.push('/chat'),
-              ),
-            ),
-          ),
-          if (!context.watch<TenantController>().isDisabled('announcements'))
-          Expanded(
-            child: Card(
-              child: ListTile(
-                leading: const Icon(Icons.campaign_rounded),
-                title: Text(p.announcementsLink, style: const TextStyle(fontWeight: FontWeight.w700)),
-                onTap: () => context.push('/announcements'),
-              ),
-            ),
-          ),
-        ]),
-        if (!context.watch<TenantController>().isDisabled('reports'))
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.insights_rounded),
-            title: Text(p.report, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(p.reportSub),
-            onTap: () => context.push('/my/report'),
-          ),
-        ),
-        if (!context.watch<TenantController>().isDisabled('certificates'))
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.workspace_premium_rounded),
-            title: Text(p.certificates, style: const TextStyle(fontWeight: FontWeight.w700)),
-            onTap: () => context.push('/my/certificates'),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.auto_stories_rounded),
-            title: Text(p.quran, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(p.quranSub),
-            onTap: () => context.push('/quran'),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.privacy_tip_rounded),
-            title: Text(p.privacy, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(p.privacySub),
-            onTap: () => context.push('/my/privacy'),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.notifications_rounded),
-            title: Text(p.notifications, style: const TextStyle(fontWeight: FontWeight.w700)),
-            onTap: () => context.push('/notifications'),
-          ),
-        ),
-        Row(children: [
-          if (!context.watch<TenantController>().isDisabled('badges'))
-          Expanded(
-            child: Card(
-              child: ListTile(
-                leading: const Icon(Icons.emoji_events_rounded),
-                title: Text(p.badges, style: const TextStyle(fontWeight: FontWeight.w700)),
-                onTap: () => context.push('/my/badges'),
-              ),
-            ),
-          ),
-          if (!context.watch<TenantController>().isDisabled('market'))
-          Expanded(
-            child: Card(
-              child: ListTile(
-                leading: const Icon(Icons.storefront_rounded),
-                title: Text(p.market, style: const TextStyle(fontWeight: FontWeight.w700)),
-                onTap: () => context.push('/my/market'),
-              ),
-            ),
-          ),
-        ]),
+        Builder(builder: (context) {
+          final tenant = context.watch<TenantController>();
+          bool on(String m) => !tenant.isDisabled(m);
+          return GardenSection(
+            title: t.garden.explore,
+            icon: Icons.explore_rounded,
+            child: GardenGrid(children: [
+              if (on('calendar')) GardenTile(icon: Icons.calendar_month_rounded, label: p.calendar, color: const Color(0xFFC0392B), onTap: () => context.push('/calendar')),
+              if (on('chat')) GardenTile(icon: Icons.chat_bubble_rounded, label: p.chat, color: const Color(0xFF1877C9), onTap: () => context.push('/chat')),
+              if (on('announcements')) GardenTile(icon: Icons.campaign_rounded, label: p.announcementsLink, color: const Color(0xFF6D4AA8), onTap: () => context.push('/announcements')),
+              if (on('reports')) GardenTile(icon: Icons.insights_rounded, label: p.report, color: const Color(0xFF0E7C86), onTap: () => context.push('/my/report')),
+              if (on('certificates')) GardenTile(icon: Icons.workspace_premium_rounded, label: p.certificates, color: const Color(0xFFB26A00), onTap: () => context.push('/my/certificates')),
+              GardenTile(icon: Icons.auto_stories_rounded, label: p.quran, color: const Color(0xFF16835A), onTap: () => context.push('/quran')),
+              if (on('badges')) GardenTile(icon: Icons.emoji_events_rounded, label: p.badges, color: const Color(0xFFD4A24C), onTap: () => context.push('/my/badges')),
+              if (on('market')) GardenTile(icon: Icons.storefront_rounded, label: p.market, color: const Color(0xFF8E44AD), onTap: () => context.push('/my/market')),
+              GardenTile(icon: Icons.privacy_tip_rounded, label: p.privacy, color: const Color(0xFF6B7470), onTap: () => context.push('/my/privacy')),
+            ]),
+          );
+        }),
         SectionTitle(p.serd),
         SerdSummaryCard(summary: data.serd),
         SectionTitle(p.recent),
@@ -425,6 +346,8 @@ class _HomeTab extends StatelessWidget {
           Padding(padding: const EdgeInsets.all(12), child: Text(p.noRecitations))
         else
           for (final r in data.recent.take(5)) RecitationTile(r: r),
+          ]),
+        ),
       ],
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/supabase/supabase_client.dart';
-import '../../core/widgets/ui.dart';
+import '../../core/widgets/garden.dart';
 import '../insights/insights_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -43,40 +43,47 @@ class _AdminInsightsSectionState extends State<AdminInsightsSection> {
         if (d == null) return const SizedBox.shrink();
         final risk = d.$1;
         final perf = d.$2;
+        final t = tr(context);
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SectionTitle(tr(context).dash.dropoutRisk),
-          if (risk.isEmpty)
-            Text(tr(context).dash.noRisk)
-          else
-            for (final r in risk)
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text('${r['name']}'),
-                subtitle: Text('${r['circle'] ?? '—'} · ${fmt(tr(context).dash.idleDays, {'n': r['idle_days']})}'),
-                trailing: Chip(
-                  visualDensity: VisualDensity.compact,
-                  side: BorderSide.none,
-                  backgroundColor: Colors.amber.withValues(alpha: 0.2),
-                  label: Text(_riskTags[r['tag']] ?? '${r['tag']}', style: const TextStyle(fontSize: 11)),
-                ),
-                onTap: () => context.push('/students/${r['id']}/report'),
+          GardenSection(
+            title: t.dash.dropoutRisk,
+            icon: Icons.warning_amber_rounded,
+            child: GardenCard(
+              padding: EdgeInsets.symmetric(vertical: risk.isEmpty ? 16 : 4, horizontal: risk.isEmpty ? 16 : 0),
+              child: risk.isEmpty
+                  ? Text(t.dash.noRisk)
+                  : Column(children: [
+                      for (final r in risk)
+                        ListTile(
+                          dense: true,
+                          title: Text('${r['name']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                          subtitle: Text('${r['circle'] ?? '—'} · ${fmt(t.dash.idleDays, {'n': r['idle_days']})}'),
+                          trailing: GardenChip(_riskTags[r['tag']] ?? '${r['tag']}', color: const Color(0xFFB26A00)),
+                          onTap: () => context.push('/students/${r['id']}/report'),
+                        ),
+                    ]),
+            ),
+          ),
+          if (perf.isNotEmpty)
+            GardenSection(
+              title: t.dash.teacherPerf,
+              icon: Icons.school_rounded,
+              child: GardenCard(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(children: [
+                  for (final p in perf)
+                    ListTile(
+                      dense: true,
+                      title: Text('${p['name'] ?? '—'}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: Text(fmt(t.dash.perfLine, {'circles': p['circles'], 'students': p['students'], 'days': p['check_ins']}), style: TextStyle(color: scheme.outline, fontSize: 12)),
+                      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+                        Text('${p['recitations']}', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: scheme.primary)),
+                        Text(t.dash.recitationsWord, style: TextStyle(fontSize: 10.5, color: scheme.outline)),
+                      ]),
+                    ),
+                ]),
               ),
-          if (perf.isNotEmpty) ...[
-            SectionTitle(tr(context).dash.teacherPerf),
-            for (final p in perf)
-              Card(
-                child: ListTile(
-                  dense: true,
-                  title: Text('${p['name'] ?? '—'}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(fmt(tr(context).dash.perfLine, {'circles': p['circles'], 'students': p['students'], 'days': p['check_ins']}), style: TextStyle(color: scheme.outline, fontSize: 12)),
-                  trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text('${p['recitations']}', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: scheme.primary)),
-                    Text(tr(context).dash.recitationsWord, style: TextStyle(fontSize: 10.5, color: scheme.outline)),
-                  ]),
-                ),
-              ),
-          ],
+            ),
         ]);
       },
     );

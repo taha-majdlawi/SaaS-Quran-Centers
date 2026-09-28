@@ -537,6 +537,40 @@ class SDash {
   final String perfLine;
 }
 
+/// The garden design (headers, hub, navigation).
+class SGarden {
+  const SGarden({required this.online, required this.offline, required this.offlineWaiting, required this.syncing, required this.waitingN, required this.failedN, required this.tabHome, required this.tabStudents, required this.tabSerd, required this.tabChat, required this.tabMore, required this.seeAll, required this.moreTitle, required this.checkedInShort, required this.checkInShort, required this.studentsN, required this.statCircles, required this.statStudents, required this.statRecited, required this.statPresent, required this.quickTitle, required this.account, required this.notificationPrefs, required this.statJuz, required this.statPoints, required this.statStreak, required this.explore, required this.statAttendance, required this.itemsN});
+  final String online;
+  final String offline;
+  final String offlineWaiting;
+  final String syncing;
+  final String waitingN;
+  final String failedN;
+  final String tabHome;
+  final String tabStudents;
+  final String tabSerd;
+  final String tabChat;
+  final String tabMore;
+  final String seeAll;
+  final String moreTitle;
+  final String checkedInShort;
+  final String checkInShort;
+  final String studentsN;
+  final String statCircles;
+  final String statStudents;
+  final String statRecited;
+  final String statPresent;
+  final String quickTitle;
+  final String account;
+  final String notificationPrefs;
+  final String statJuz;
+  final String statPoints;
+  final String statStreak;
+  final String explore;
+  final String statAttendance;
+  final String itemsN;
+}
+
 /// Gatherings and external recitations (staff).
 class SGather {
   const SGather({required this.noCircle, required this.okLinked, required this.skippedSuffix, required this.actionFailed, required this.extNew, required this.studentName, required this.type, required this.surah, required this.fromAyah, required this.toAyah, required this.grade, required this.extUpload, required this.extUploaded, required this.extLinked, required this.rejectTitle, required this.reasonOpt, required this.reject, required this.rejected, required this.extNewShort, required this.noRequests, required this.linked, required this.rejectedChip, required this.pending, required this.linkedTo, required this.reasonV, required this.pickStudent, required this.deletedReq, required this.linkedAttended, required this.addName, required this.name, required this.add, required this.nameAdded, required this.activity, required this.metaLine, required this.namesN, required this.nameDeleted, required this.linkedLine, required this.skipped, required this.skip, required this.nameSkipped, required this.unlink, required this.uploadNew, required this.activityName, required this.activityType, required this.none, required this.placeOpt, required this.attendees, required this.uploadBtn, required this.uploadedN, required this.uploadFailed, required this.upload, required this.empty, required this.countsLine, required this.reviewed, required this.pendingN, required this.waitingAdmin, required this.pickStudentTitle, required this.searchPh});
@@ -1355,7 +1389,7 @@ class SUi {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui});
   /// 'ar' or 'en'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1374,6 +1408,7 @@ class S {
   final SCert cert;
   final SChat chat;
   final SDash dash;
+  final SGarden garden;
   final SGather gather;
   final SIns ins;
   final SMem mem;
@@ -1884,6 +1919,37 @@ class S {
       riskTags: {'never': 'لم يسمّع إطلاقًا', 'regressed': 'توقّف بعد انتظام', 'slowing': 'تباطأ', 'attendance_gap': 'يحضر ولا يسمّع'},
       idleDays: '{n} يوم دوام',
       perfLine: '{circles} حلقات · {students} طالب · حضور {days} يوم',
+    ),
+    garden: SGarden(
+      online: 'متصل',
+      offline: 'دون اتصال',
+      offlineWaiting: 'دون اتصال · {n} بانتظار الرفع',
+      syncing: 'جاري الرفع',
+      waitingN: '{n} بانتظار الرفع',
+      failedN: '{n} لم تُرفع',
+      tabHome: 'الرئيسية',
+      tabStudents: 'الطلاب',
+      tabSerd: 'السرد',
+      tabChat: 'الرسائل',
+      tabMore: 'المزيد',
+      seeAll: 'عرض الكل',
+      moreTitle: 'كل الأقسام',
+      checkedInShort: 'سجّلتَ حضورك',
+      checkInShort: 'سجّل حضوري',
+      studentsN: 'طلاب الحلقة ({n})',
+      statCircles: 'حلقات',
+      statStudents: 'طالبًا',
+      statRecited: 'سمّعوا',
+      statPresent: 'حاضرون',
+      quickTitle: 'اختصارات',
+      account: 'الحساب',
+      notificationPrefs: 'تفضيلات الإشعارات',
+      statJuz: 'جزءًا',
+      statPoints: 'نقطة',
+      statStreak: 'أيام متتالية',
+      explore: 'استكشف',
+      statAttendance: 'الحضور',
+      itemsN: '{n} عنصرًا',
     ),
     gather: SGather(
       noCircle: 'بدون حلقة',
@@ -3142,6 +3208,37 @@ class S {
       idleDays: '{n} working days',
       perfLine: '{circles} circles · {students} students · present {days} days',
     ),
+    garden: SGarden(
+      online: 'Online',
+      offline: 'Offline',
+      offlineWaiting: 'Offline · {n} waiting',
+      syncing: 'Uploading',
+      waitingN: '{n} waiting',
+      failedN: '{n} not uploaded',
+      tabHome: 'Home',
+      tabStudents: 'Students',
+      tabSerd: 'Serd',
+      tabChat: 'Messages',
+      tabMore: 'More',
+      seeAll: 'See all',
+      moreTitle: 'All sections',
+      checkedInShort: 'Checked in',
+      checkInShort: 'Check in',
+      studentsN: 'Students ({n})',
+      statCircles: 'Circles',
+      statStudents: 'Students',
+      statRecited: 'Recited',
+      statPresent: 'Present',
+      quickTitle: 'Shortcuts',
+      account: 'Account',
+      notificationPrefs: 'Notification preferences',
+      statJuz: 'Juz',
+      statPoints: 'Points',
+      statStreak: 'Day streak',
+      explore: 'Explore',
+      statAttendance: 'Attendance',
+      itemsN: '{n} items',
+    ),
     gather: SGather(
       noCircle: 'No circle',
       okLinked: 'Name linked',
@@ -3857,7 +3954,7 @@ class S {
       stage: 'Stage: {stageName}',
       doneOf: '{done} of {n} recited',
       checkIn: 'Check me in today',
-      startLesson: 'Start the lesson',
+      startLesson: 'Start lesson',
       savedPoints: 'Saved ✓  +{points} points',
       attendanceFailed: 'Couldn’t save attendance',
       noStudents: 'No students in this circle yet.\nAsk the supervisor to add them.',
