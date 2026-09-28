@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { saveTemplate, resetTemplate } from '@/lib/notifications/actions';
-import { AUDIENCE_LABELS, ROLE_LABELS, renderTemplate } from '@/lib/notifications/catalog';
+import { renderTemplate } from '@/lib/notifications/catalog';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 export interface TemplateRow {
   event_key: string;
@@ -24,7 +25,8 @@ export interface TemplateRow {
 }
 
 /** One notification type: wording with variables, audience, lead time, on/off, and a live preview. */
-export function TemplateEditor({ orgId, t }: { orgId: string; t: TemplateRow }) {
+export function TemplateEditor({ orgId, t, labels, lang }: { orgId: string; t: TemplateRow; labels: Dictionary['staff']['notif']; lang: string }) {
+  const S = { notif: labels };
   const [title, setTitle] = useState(t.title_template);
   const [body, setBody] = useState(t.body_template);
   const [enabled, setEnabled] = useState(t.is_enabled);
@@ -41,11 +43,11 @@ export function TemplateEditor({ orgId, t }: { orgId: string; t: TemplateRow }) 
       <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 px-4 py-3">
         <span className="flex items-center gap-2">
           <b>{t.name}</b>
-          {t.customized && <span className="rounded bg-brand/10 px-1.5 py-0.5 text-[11px] text-brand">مخصّص</span>}
-          {!enabled && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">متوقف</span>}
+          {t.customized && <span className="rounded bg-brand/10 px-1.5 py-0.5 text-[11px] text-brand">{S.notif.customized}</span>}
+          {!enabled && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">{S.notif.off}</span>}
         </span>
         <span className="text-xs text-gray-400">
-          {t.roles.map((r) => ROLE_LABELS[r] ?? r).join(' · ')} · أُرسل {t.sent_count}
+          {t.roles.map((r) => S.notif.roles[r] ?? r).join(' · ')} · {S.notif.sent} {t.sent_count}
         </span>
       </summary>
 
@@ -54,16 +56,16 @@ export function TemplateEditor({ orgId, t }: { orgId: string; t: TemplateRow }) 
         <input type="hidden" name="event" value={t.event_key} />
 
         <label className="text-sm">
-          <span className="font-medium text-gray-700">العنوان (السطر الذي يظهر على الشاشة المقفلة)</span>
+          <span className="font-medium text-gray-700">{S.notif.titleLock}</span>
           <input name="title" value={title} onChange={(e) => setTitle(e.target.value)} onFocus={() => (last.current = 'title')} maxLength={120} required className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
         <label className="text-sm">
-          <span className="font-medium text-gray-700">النص</span>
+          <span className="font-medium text-gray-700">{S.notif.body}</span>
           <textarea name="body" value={body} onChange={(e) => setBody(e.target.value)} onFocus={() => (last.current = 'body')} maxLength={300} required rows={2} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
         </label>
 
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="text-gray-500">المتغيرات (اضغط للإدراج):</span>
+          <span className="text-gray-500">{S.notif.vars}</span>
           {t.available_vars.map((v) => (
             <button key={v} type="button" onClick={() => insert(v)} className="rounded-full border bg-gray-50 px-2 py-0.5 hover:bg-brand/10">
               {`{${v}}`}
@@ -73,9 +75,9 @@ export function TemplateEditor({ orgId, t }: { orgId: string; t: TemplateRow }) 
 
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="text-sm">
-            <span className="font-medium text-gray-700">الجمهور</span>
+            <span className="font-medium text-gray-700">{S.notif.audienceLabel}</span>
             <select name="audience" defaultValue={t.audience} className="mt-1 w-full rounded border px-2 py-2 text-sm">
-              {Object.entries(AUDIENCE_LABELS).map(([k, v]) => (
+              {Object.entries(S.notif.audience).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
                 </option>
@@ -84,32 +86,32 @@ export function TemplateEditor({ orgId, t }: { orgId: string; t: TemplateRow }) 
           </label>
           {t.has_lead && (
             <label className="text-sm">
-              <span className="font-medium text-gray-700">قبل الموعد بـ (ساعات، 0 = إيقاف)</span>
+              <span className="font-medium text-gray-700">{S.notif.lead}</span>
               <input name="lead" type="number" min={0} max={336} defaultValue={t.lead_hours ?? 24} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
             </label>
           )}
           <label className="flex items-center gap-2 pt-6 text-sm">
             <input type="checkbox" name="enabled" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-            مفعّل
+            {S.notif.enabled}
           </label>
         </div>
 
         <div className="rounded-lg bg-gray-50 p-3 text-sm">
-          <p className="mb-1 text-xs text-gray-400">معاينة على الهاتف (بقيم تجريبية)</p>
+          <p className="mb-1 text-xs text-gray-400">{S.notif.previewSample}</p>
           <p className="font-semibold">{renderTemplate(title) || '—'}</p>
           <p className="text-gray-600">{renderTemplate(body) || '—'}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button className="rounded bg-brand px-4 py-2 text-sm text-white">حفظ</button>
+          <button className="rounded bg-brand px-4 py-2 text-sm text-white">{S.notif.save}</button>
           {t.customized && (
             <button formAction={resetTemplate} formNoValidate className="rounded border px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">
-              استعادة الصياغة الافتراضية
+              {S.notif.reset}
             </button>
           )}
           {t.updated_at && (
             <span className="text-xs text-gray-400">
-              آخر تعديل {new Date(t.updated_at).toLocaleDateString('ar')}
+              {S.notif.lastEdit} {new Date(t.updated_at).toLocaleDateString(lang)}
               {t.updated_by_name ? ` · ${t.updated_by_name}` : ''}
             </span>
           )}

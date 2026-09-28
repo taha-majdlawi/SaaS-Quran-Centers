@@ -77,7 +77,7 @@ export async function middleware(req: NextRequest) {
     if (orgSlug) headers.set(ORG_SLUG_HEADER, orgSlug);
     headers.delete(I18N_READY_HEADER);
     headers.delete(LANG_OVERRIDE_HEADER);
-    if (isI18nReady(scopeName, req.nextUrl.pathname)) headers.set(I18N_READY_HEADER, '1');
+    if (isI18nReady(scopeName)) headers.set(I18N_READY_HEADER, '1');
     if (forcedLang) headers.set(LANG_OVERRIDE_HEADER, forcedLang);
     return headers;
   };

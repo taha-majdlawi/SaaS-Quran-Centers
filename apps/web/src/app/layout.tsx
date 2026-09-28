@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // lang/dir follow the viewer's language on translated screens and stay
-// Arabic/RTL everywhere else (lib/i18n/config.ts isI18nReady).
+// Arabic/RTL on the platform console (lib/i18n/config.ts isI18nReady).
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, dir, t } = await getI18n();
   return (

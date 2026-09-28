@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 import {
   updateGathering,
   addGatheringEntry,
@@ -49,6 +51,8 @@ export default async function GatheringPage({
   const { org: slug, id } = await params;
   const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const { data } = await supabase.rpc('gathering_detail', { p_gathering: id });
@@ -66,13 +70,13 @@ export default async function GatheringPage({
 
   return (
     <div className="max-w-3xl">
-      <a href={'/gatherings' as never} className="text-sm text-brand hover:underline">← المجالس</a>
+      <a href={'/gatherings' as never} className="text-sm text-brand hover:underline">{S.gather.back}</a>
       <h1 className="mb-1 mt-2 text-2xl font-bold">{g.title}</h1>
       <p className="mb-4 text-sm text-gray-500">
-        {new Date(g.session_date).toLocaleDateString('ar')}
+        {new Date(g.session_date).toLocaleDateString(T.labels.dateLocale)}
         {g.activity_type_label ? ` · ${g.activity_type_label}` : ''}
-        {g.location ? ` · ${g.location}` : ''} · رفعه {g.teacher_name ?? '—'} ·{' '}
-        <b className={g.status === 'reviewed' ? 'text-green-700' : 'text-amber-700'}>{g.status === 'reviewed' ? 'تمت المراجعة' : `بانتظار الربط (${pending})`}</b>
+        {g.location ? ` · ${g.location}` : ''} · {S.gather.by} {g.teacher_name ?? '—'} ·{' '}
+        <b className={g.status === 'reviewed' ? 'text-green-700' : 'text-amber-700'}>{g.status === 'reviewed' ? S.gather.reviewed : fmt(S.gather.pendingN, { n: pending })}</b>
       </p>
       {g.notes && <p className="mb-4 rounded bg-gray-50 px-3 py-2 text-sm text-gray-600">{g.notes}</p>}
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
@@ -80,50 +84,50 @@ export default async function GatheringPage({
 
       {g.is_admin && (
         <details className="mb-5 rounded-lg border bg-white">
-          <summary className="cursor-pointer px-4 py-2 text-sm font-semibold">تعديل بيانات النشاط</summary>
+          <summary className="cursor-pointer px-4 py-2 text-sm font-semibold">{S.gather.editDetails}</summary>
           <form action={updateGathering} className="grid gap-3 border-t p-4 sm:grid-cols-2">
             <input type="hidden" name="id" value={g.id} />
             <label className="text-sm font-medium text-gray-700 sm:col-span-2">
-              الاسم
+              {S.gather.nameShort}
               <input name="title" defaultValue={g.title} required className={field} />
             </label>
             <label className="text-sm font-medium text-gray-700">
-              النوع
+              {S.gather.typeShort}
               <select name="type" defaultValue={g.activity_type_id ?? ''} className={field}>
-                <option value="">— بدون —</option>
+                <option value="">{S.gather.none}</option>
                 {((types ?? []) as { id: string; name: string }[]).map((t) => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
             </label>
             <label className="text-sm font-medium text-gray-700">
-              التاريخ
+              {S.gather.date}
               <input type="date" name="date" defaultValue={g.session_date} required className={field} />
             </label>
             <label className="text-sm font-medium text-gray-700">
-              المكان
+              {S.gather.place}
               <input name="location" defaultValue={g.location ?? ''} className={field} />
             </label>
             <label className="text-sm font-medium text-gray-700">
-              ملاحظات
+              {S.gather.notes}
               <input name="notes" defaultValue={g.notes ?? ''} className={field} />
             </label>
-            <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm text-white" pendingText="...">حفظ</SubmitButton>
+            <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm text-white" pendingText="...">{S.common.save}</SubmitButton>
           </form>
         </details>
       )}
 
       <section className="rounded-lg border bg-white p-4">
-        <h2 className="mb-3 font-semibold">الأسماء ({g.entries.length})</h2>
+        <h2 className="mb-3 font-semibold">{fmt(S.gather.namesN, { n: g.entries.length })}</h2>
         <ul className="divide-y text-sm">
           {g.entries.map((e) => (
             <li key={e.id} className="py-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-medium">{e.raw_name}</span>
                 <span className="flex items-center gap-2 text-xs">
-                  {e.status === 'matched' && <span className="rounded bg-green-100 px-2 py-0.5 text-green-700">رُبط: {e.matched_name} {e.matched_code ? `(${e.matched_code})` : ''}{e.matched_circle ? ` · ${e.matched_circle}` : ''}</span>}
-                  {e.status === 'skipped' && <span className="rounded bg-gray-100 px-2 py-0.5 text-gray-600">تُجوهل</span>}
-                  {e.status === 'pending' && <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">بانتظار الربط</span>}
+                  {e.status === 'matched' && <span className="rounded bg-green-100 px-2 py-0.5 text-green-700">{S.gather.linkedTo} {e.matched_name} {e.matched_code ? `(${e.matched_code})` : ''}{e.matched_circle ? ` · ${e.matched_circle}` : ''}</span>}
+                  {e.status === 'skipped' && <span className="rounded bg-gray-100 px-2 py-0.5 text-gray-600">{S.gather.skipped}</span>}
+                  {e.status === 'pending' && <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">{S.gather.pending}</span>}
                 </span>
               </div>
 
@@ -148,17 +152,17 @@ export default async function GatheringPage({
                       <input type="hidden" name="entryId" value={e.id} />
                       <input type="hidden" name="back" value={back} />
                       <select name="studentId" required defaultValue="" className="max-w-[16rem] rounded border px-2 py-1 text-xs">
-                        <option value="" disabled>اختر الطالب…</option>
+                        <option value="" disabled>{S.gather.pickStudent}</option>
                         {((students ?? []) as { id: string; full_name: string; student_code: string }[]).map((s) => (
                           <option key={s.id} value={s.id}>{s.full_name} ({s.student_code})</option>
                         ))}
                       </select>
-                      <SubmitButton className="rounded bg-brand px-3 py-1 text-xs text-white" pendingText="...">ربط</SubmitButton>
+                      <SubmitButton className="rounded bg-brand px-3 py-1 text-xs text-white" pendingText="...">{S.gather.link}</SubmitButton>
                     </form>
                     <form action={skipGatheringEntry}>
                       <input type="hidden" name="entryId" value={e.id} />
                       <input type="hidden" name="back" value={back} />
-                      <button className="rounded border px-3 py-1 text-xs text-gray-600 hover:bg-gray-50">تجاهل</button>
+                      <button className="rounded border px-3 py-1 text-xs text-gray-600 hover:bg-gray-50">{S.gather.skip}</button>
                     </form>
                   </div>
                 </div>
@@ -169,14 +173,14 @@ export default async function GatheringPage({
                   <form action={unmatchGatheringEntry}>
                     <input type="hidden" name="entryId" value={e.id} />
                     <input type="hidden" name="back" value={back} />
-                    <button className="text-xs text-gray-500 hover:underline">إلغاء الربط</button>
+                    <button className="text-xs text-gray-500 hover:underline">{S.gather.unlink}</button>
                   </form>
                 )}
                 {(g.is_admin || e.status === 'pending') && (
                   <form action={deleteGatheringEntry}>
                     <input type="hidden" name="entryId" value={e.id} />
                     <input type="hidden" name="back" value={back} />
-                    <button className="text-xs text-red-500 hover:underline">حذف الاسم</button>
+                    <button className="text-xs text-red-500 hover:underline">{S.gather.deleteName}</button>
                   </form>
                 )}
               </div>
@@ -186,8 +190,8 @@ export default async function GatheringPage({
 
         <form action={addGatheringEntry} className="mt-4 flex gap-2 border-t pt-4">
           <input type="hidden" name="gatheringId" value={g.id} />
-          <input name="name" required maxLength={120} placeholder="إضافة اسم آخر" className="flex-1 rounded border px-3 py-2 text-sm" />
-          <SubmitButton className="rounded border px-4 py-2 text-sm text-brand" pendingText="...">إضافة</SubmitButton>
+          <input name="name" required maxLength={120} placeholder={S.gather.addNamePh} className="flex-1 rounded border px-3 py-2 text-sm" />
+          <SubmitButton className="rounded border px-4 py-2 text-sm text-brand" pendingText="...">{S.common.add}</SubmitButton>
         </form>
       </section>
     </div>

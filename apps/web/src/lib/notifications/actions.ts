@@ -2,6 +2,10 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { staffStrings } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
+
+const N = async () => (await staffStrings()).notif;
 
 const s = (formData: FormData, key: string) => ((formData.get(key) as string) ?? '').trim();
 
@@ -22,14 +26,14 @@ export async function saveTemplate(formData: FormData) {
     p_enabled: formData.get('enabled') === 'on',
   });
   if (error) to('templates', 'error', error.message);
-  to('templates', 'ok', 'حُفظ القالب');
+  to('templates', 'ok', (await N()).okTemplate);
 }
 
 export async function resetTemplate(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc('admin_reset_notification_template', { p_org: s(formData, 'orgId'), p_event: s(formData, 'event') });
   if (error) to('templates', 'error', error.message);
-  to('templates', 'ok', 'أُعيد القالب إلى الصياغة الافتراضية');
+  to('templates', 'ok', (await N()).okReset);
 }
 
 export async function saveNotificationSettings(formData: FormData) {
@@ -44,7 +48,7 @@ export async function saveNotificationSettings(formData: FormData) {
     p_paused: formData.get('is_paused') === 'on',
   });
   if (error) to('settings', 'error', error.message);
-  to('settings', 'ok', 'حُفظت الإعدادات');
+  to('settings', 'ok', (await N()).okSettings);
 }
 
 export async function sendBroadcast(formData: FormData) {
@@ -57,7 +61,7 @@ export async function sendBroadcast(formData: FormData) {
     userIds = data.user ? [data.user.id] : null;
   } else if (audience === '__people__') {
     userIds = formData.getAll('user').map(String);
-    if (!userIds.length) to('send', 'error', 'اختر شخصًا واحدًا على الأقل');
+    if (!userIds.length) to('send', 'error', (await N()).pickOne);
   }
   const { data, error } = await supabase.rpc('admin_send_notification', {
     p_org: s(formData, 'orgId'),
@@ -70,7 +74,7 @@ export async function sendBroadcast(formData: FormData) {
   });
   if (error) to('send', 'error', error.message);
   const r = data as { sent: number; no_device: number };
-  to('send', 'ok', `أُرسل إلى ${r.sent} شخصًا${r.no_device ? ` — منهم ${r.no_device} بلا هاتف مسجّل (يصلهم داخل التطبيق فقط)` : ''}`);
+  to('send', 'ok', fmt((await N()).okSent, { n: r.sent }) + (r.no_device ? fmt((await N()).okNoDevice, { n: r.no_device }) : ''));
 }
 
 export async function sendTestPush(formData: FormData) {
@@ -80,7 +84,7 @@ export async function sendTestPush(formData: FormData) {
     p_user: s(formData, 'userId') || null,
   });
   if (error) to('devices', 'error', error.message);
-  to('devices', 'ok', `أُرسل إشعار تجريبي إلى ${Number(data) || 1} جهاز — راقب الهاتف خلال ثوانٍ`);
+  to('devices', 'ok', fmt((await N()).okTest, { n: Number(data) || 1 }));
 }
 
 export async function saveAttendanceReminderSetting(formData: FormData) {
@@ -95,7 +99,7 @@ export async function saveAttendanceReminderSetting(formData: FormData) {
     { onConflict: 'organization_id,key' },
   );
   if (error) to('settings', 'error', error.message);
-  to('settings', 'ok', 'حُفظ تذكير الحضور');
+  to('settings', 'ok', (await N()).okAttendance);
 }
 
 export async function saveDigestSetting(formData: FormData) {
@@ -107,5 +111,5 @@ export async function saveDigestSetting(formData: FormData) {
     p_hour: Number(formData.get('hour')),
   });
   if (error) to('settings', 'error', error.message);
-  to('settings', 'ok', 'حُفظ الملخص الأسبوعي');
+  to('settings', 'ok', (await N()).okDigest);
 }

@@ -1,6 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { AnnouncementForm } from '@/components/announcement-form';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function NewAnnouncementPage({
   params,
@@ -12,6 +13,8 @@ export default async function NewAnnouncementPage({
   const { org: slug } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
 
@@ -27,9 +30,9 @@ export default async function NewAnnouncementPage({
   return (
     <div>
       <a href="/announcements" className="text-sm text-brand hover:underline">
-        ← الإعلانات
+        {S.annc.back}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">إعلان جديد</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{S.annc.newTitle}</h1>
       <AnnouncementForm orgId={org.id} circles={circles ?? []} isAdmin={isAdmin} error={error} />
     </div>
   );

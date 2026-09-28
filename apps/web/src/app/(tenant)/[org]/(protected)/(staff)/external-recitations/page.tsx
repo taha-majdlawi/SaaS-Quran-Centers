@@ -2,14 +2,14 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { SURAH_NAMES } from '@/lib/quran/data';
+import { SURAH_NAMES, surahLabel } from '@/lib/quran/data';
 import { submitExternalRecitation, deleteExternalRecitation, matchExternalRecitation, rejectExternalRecitation } from '@/lib/gatherings/actions';
+import { getI18n } from '@/lib/i18n/server';
 
-const TYPES: Record<string, string> = { new_memorization: 'حفظ جديد', recent_review: 'مراجعة قريبة', distant_review: 'مراجعة بعيدة' };
-const STATUS: Record<string, { label: string; cls: string }> = {
-  pending: { label: 'بانتظار الربط', cls: 'bg-amber-100 text-amber-800' },
-  matched: { label: 'رُبط', cls: 'bg-green-100 text-green-700' },
-  rejected: { label: 'مرفوض', cls: 'bg-red-100 text-red-700' },
+const STATUS_CLS: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-800',
+  matched: 'bg-green-100 text-green-700',
+  rejected: 'bg-red-100 text-red-700',
 };
 
 interface Req {
@@ -37,6 +37,8 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
   const { org: slug } = await params;
   const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T, locale } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
 
@@ -48,27 +50,28 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
   const rows = (listData ?? []) as Req[];
   const gradeLabel = new Map(((grades ?? []) as { key: string; label: string }[]).map((g) => [g.key, g.label]));
   const clientRef = crypto.randomUUID();
+  const TYPES = T.labels.recitationType;
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-1 text-2xl font-bold">التسميع الخارجي</h1>
+      <h1 className="mb-1 text-2xl font-bold">{S.extRec.heading}</h1>
       <p className="mb-5 text-sm text-gray-500">
-        سمعتَ من طالب ليس في حلقتك؟ سجّله باسمه. لا يُكتب التسميع في سجلّه حتى يربط المشرف الاسم بملف الطالب، وعندها يُحتسب بنفس نقاط المركز وباسمك.
+        {S.extRec.intro}
       </p>
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <details className="mb-6 rounded-lg border bg-white" open={!rows.length}>
-        <summary className="cursor-pointer px-4 py-3 font-semibold">تسجيل تسميع جديد</summary>
+        <summary className="cursor-pointer px-4 py-3 font-semibold">{S.extRec.newTitle}</summary>
         <form action={submitExternalRecitation} className="grid gap-3 border-t p-4 sm:grid-cols-2">
           <input type="hidden" name="orgId" value={org.id} />
           <input type="hidden" name="clientRef" value={clientRef} />
           <label className="text-sm font-medium text-gray-700 sm:col-span-2">
-            اسم الطالب
+            {S.extRec.studentName}
             <input name="name" required maxLength={120} className={field} />
           </label>
           <label className="text-sm font-medium text-gray-700">
-            النوع
+            {S.extRec.type}
             <select name="type" className={field}>
               {Object.entries(TYPES).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
@@ -76,7 +79,7 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
             </select>
           </label>
           <label className="text-sm font-medium text-gray-700">
-            التقدير
+            {S.extRec.grade}
             <select name="grade" className={field}>
               {((grades ?? []) as { key: string; label: string }[]).map((g) => (
                 <option key={g.key} value={g.key}>{g.label}</option>
@@ -84,28 +87,28 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
             </select>
           </label>
           <label className="text-sm font-medium text-gray-700">
-            السورة
+            {S.extRec.surah}
             <select name="surah" className={field}>
-              {SURAH_NAMES.map((n, i) => (
+              {SURAH_NAMES.map((_, i) => surahLabel(i + 1, locale)).map((n, i) => (
                 <option key={n} value={i + 1}>{i + 1}. {n}</option>
               ))}
             </select>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="text-sm font-medium text-gray-700">
-              من آية
+              {S.extRec.fromAyah}
               <input type="number" name="ayahFrom" min={1} defaultValue={1} required className={field} />
             </label>
             <label className="text-sm font-medium text-gray-700">
-              إلى آية
+              {S.extRec.toAyah}
               <input type="number" name="ayahTo" min={1} defaultValue={1} required className={field} />
             </label>
           </div>
           <label className="text-sm font-medium text-gray-700 sm:col-span-2">
-            ملاحظات (اختياري)
+            {S.extRec.notesOpt}
             <input name="notes" className={field} />
           </label>
-          <SubmitButton className="self-start rounded bg-brand px-5 py-2 text-sm text-white sm:col-span-2" pendingText="جاري الرفع...">رفع التسميع</SubmitButton>
+          <SubmitButton className="self-start rounded bg-brand px-5 py-2 text-sm text-white sm:col-span-2" pendingText={S.gather.uploading}>{S.extRec.uploadBtn}</SubmitButton>
         </form>
       </details>
 
@@ -116,18 +119,18 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
               <div>
                 <p className="font-semibold">{r.raw_student_name}</p>
                 <p className="text-xs text-gray-500">
-                  {TYPES[r.type] ?? r.type} · {SURAH_NAMES[r.surah - 1]} ({r.ayah_from}–{r.ayah_to}) · {gradeLabel.get(r.grade) ?? r.grade}
-                  {r.teacher_name ? ` · ${r.teacher_name}` : ''} · {new Date(r.recorded_at).toLocaleDateString('ar')}
+                  {TYPES[r.type] ?? r.type} · {surahLabel(r.surah, locale)} ({r.ayah_from}–{r.ayah_to}) · {gradeLabel.get(r.grade) ?? r.grade}
+                  {r.teacher_name ? ` · ${r.teacher_name}` : ''} · {new Date(r.recorded_at).toLocaleDateString(T.labels.dateLocale)}
                 </p>
                 {r.notes && <p className="mt-1 text-xs text-gray-500">{r.notes}</p>}
               </div>
-              <span className={`rounded px-2 py-0.5 text-xs ${STATUS[r.status]?.cls}`}>
-                {STATUS[r.status]?.label}
+              <span className={`rounded px-2 py-0.5 text-xs ${STATUS_CLS[r.status]}`}>
+                {S.extRec.status[r.status]}
                 {r.status === 'matched' && r.matched_name ? `: ${r.matched_name}` : ''}
                 {r.status === 'matched' && r.points != null ? ` (+${r.points})` : ''}
               </span>
             </div>
-            {r.reject_reason && <p className="mt-1 text-xs text-red-600">السبب: {r.reject_reason}</p>}
+            {r.reject_reason && <p className="mt-1 text-xs text-red-600">{S.extRec.reason} {r.reject_reason}</p>}
 
             {isAdmin && r.status === 'pending' && (
               <div className="mt-3 flex flex-col gap-2 border-t pt-3">
@@ -147,17 +150,17 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
                 <form action={matchExternalRecitation} className="flex flex-wrap items-center gap-2">
                   <input type="hidden" name="id" value={r.id} />
                   <select name="studentId" required defaultValue="" className="max-w-[16rem] rounded border px-2 py-1 text-xs">
-                    <option value="" disabled>اختر الطالب…</option>
+                    <option value="" disabled>{S.gather.pickStudent}</option>
                     {((students ?? []) as { id: string; full_name: string; student_code: string }[]).map((s) => (
                       <option key={s.id} value={s.id}>{s.full_name} ({s.student_code})</option>
                     ))}
                   </select>
-                  <SubmitButton className="rounded bg-brand px-3 py-1 text-xs text-white" pendingText="...">ربط وتسجيل</SubmitButton>
+                  <SubmitButton className="rounded bg-brand px-3 py-1 text-xs text-white" pendingText="...">{S.extRec.linkRecord}</SubmitButton>
                 </form>
                 <form action={rejectExternalRecitation} className="flex items-center gap-2">
                   <input type="hidden" name="id" value={r.id} />
-                  <input name="reason" placeholder="سبب الرفض (اختياري)" className="flex-1 rounded border px-2 py-1 text-xs" />
-                  <button className="rounded border px-3 py-1 text-xs text-red-600 hover:bg-red-50">رفض</button>
+                  <input name="reason" placeholder={S.extRec.reasonPh} className="flex-1 rounded border px-2 py-1 text-xs" />
+                  <button className="rounded border px-3 py-1 text-xs text-red-600 hover:bg-red-50">{S.extRec.reject}</button>
                 </form>
               </div>
             )}
@@ -165,12 +168,12 @@ export default async function ExternalRecitationsPage({ params, searchParams }: 
             {(isAdmin ? r.status !== 'matched' : r.status === 'pending') && (
               <form action={deleteExternalRecitation} className="mt-2">
                 <input type="hidden" name="id" value={r.id} />
-                <ConfirmSubmitButton confirmMessage="حذف هذا الطلب؟" pendingText="..." className="text-xs text-red-500 hover:underline">حذف</ConfirmSubmitButton>
+                <ConfirmSubmitButton confirmMessage={S.extRec.confirmDelete} pendingText="..." className="text-xs text-red-500 hover:underline">{S.common.delete}</ConfirmSubmitButton>
               </form>
             )}
           </div>
         ))}
-        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا طلبات بعد</p>}
+        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{S.extRec.empty}</p>}
       </div>
     </div>
   );

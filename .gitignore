@@ -35,3 +35,6 @@ Thumbs.db
 
 # Firebase client config (per developer machine)
 apps/mobile/android/app/google-services.json
+
+# python caches (i18n generators)
+__pycache__/

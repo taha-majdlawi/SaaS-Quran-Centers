@@ -1,23 +1,4 @@
-/** Shared bits of the notification centre: role names, screens a message can open, sample values for the live preview. */
-
-export const ROLE_LABELS: Record<string, string> = { admin: 'مشرف', teacher: 'معلم', guardian: 'ولي أمر', student: 'طالب' };
-
-export const AUDIENCE_LABELS: Record<string, string> = {
-  source: 'كما هو (الجمهور الافتراضي للحدث)',
-  admins: 'المشرفون فقط',
-  teachers: 'المعلمون فقط',
-  students: 'الطلاب فقط',
-  guardians: 'أولياء الأمور فقط',
-};
-
-/** Screens an immediate message can open when tapped (keys are shared with the mobile app). */
-export const DEEP_LINKS: Record<string, string> = {
-  announcements: 'الإعلانات',
-  calendar: 'التقويم',
-  market: 'السوق',
-  chat: 'المحادثات',
-  badges: 'الشارات',
-};
+/** Shared bits of the notification centre: sample values for the live preview, status colours (the wording is in the staff dictionary). */
 
 export const SAMPLE_VARS: Record<string, string> = {
   اسم_الطالب: 'أحمد محمد',
@@ -46,11 +27,11 @@ export function renderTemplate(template: string, vars: Record<string, string> = 
   return out.replace(/^[\s—·،-]+|[\s—·،-]+$/g, '');
 }
 
-export const PUSH_STATUS: Record<string, { label: string; cls: string }> = {
-  sent: { label: 'وصل', cls: 'bg-green-100 text-green-700' },
-  pending: { label: 'في الطابور', cls: 'bg-blue-100 text-blue-700' },
-  queued: { label: 'بانتظار انتهاء الصمت', cls: 'bg-blue-100 text-blue-700' },
-  failed: { label: 'فشل', cls: 'bg-red-100 text-red-700' },
-  no_device: { label: 'بلا هاتف', cls: 'bg-gray-100 text-gray-600' },
-  skipped: { label: 'لم يُرسل', cls: 'bg-amber-100 text-amber-800' },
+export const PUSH_STYLES: Record<string, string> = {
+  sent: 'bg-green-100 text-green-700',
+  pending: 'bg-blue-100 text-blue-700',
+  queued: 'bg-blue-100 text-blue-700',
+  failed: 'bg-red-100 text-red-700',
+  no_device: 'bg-gray-100 text-gray-600',
+  skipped: 'bg-amber-100 text-amber-800',
 };

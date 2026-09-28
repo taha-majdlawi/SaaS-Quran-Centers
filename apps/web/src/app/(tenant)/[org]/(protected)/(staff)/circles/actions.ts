@@ -58,7 +58,7 @@ export async function deleteCircle(formData: FormData) {
   const { data: circle } = await supabase.from('circles').select('organization_id').eq('id', id).maybeSingle();
 
   const { data: removed, error: delError } = await supabase.from('circles').delete().eq('id', id).select('id');
-  if (delError || !removed?.length) redirect(`/circles/${id}?error=${encodeURIComponent(deleteErrorMessage(delError))}` as never);
+  if (delError || !removed?.length) redirect(`/circles/${id}?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
 
   if (circle && user) {
     await logAudit(supabase, {

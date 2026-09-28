@@ -1,5 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { toLoginEmail } from './login-id';
+import { staffStrings } from '@/lib/i18n/server';
+import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
+
+type AccountStrings = Dictionary['staff']['accounts'];
 
 /** Error whose message is safe (and written) to show the user. */
 export class AccountError extends Error {}
@@ -20,14 +24,14 @@ async function membershipOf(admin: SupabaseClient, userId: string, orgId: string
   return (data as CallerMembership | null) ?? null;
 }
 
-function friendlyAuthError(message: string): string {
-  if (/already|registered|exists/i.test(message)) return 'هذا الرقم أو البريد مستخدم من قبل';
-  if (/password/i.test(message)) return 'كلمة السر غير صالحة (8 خانات على الأقل)';
-  return 'تعذّر إنشاء الحساب';
+function friendlyAuthError(message: string, A: AccountStrings): string {
+  if (/already|registered|exists/i.test(message)) return A.idTaken;
+  if (/password/i.test(message)) return A.passwordInvalid;
+  return A.createFailed;
 }
 
-function requirePassword(password: string | undefined): string {
-  if (!password || password.length < 8) throw new AccountError('كلمة السر يجب ألا تقل عن 8 خانات');
+function requirePassword(password: string | undefined, A: AccountStrings): string {
+  if (!password || password.length < 8) throw new AccountError(A.passwordShort);
   return password;
 }
 
@@ -52,14 +56,15 @@ export interface ProvisionStudentInput {
  * students (organization_settings.flag_teacher_manage_students).
  */
 export async function provisionStudent(admin: SupabaseClient, callerId: string, input: ProvisionStudentInput) {
+  const A = (await staffStrings()).accounts;
   const caller = await membershipOf(admin, callerId, input.orgId);
-  if (!caller) throw new AccountError('غير مصرّح لك بهذا الإجراء');
+  if (!caller) throw new AccountError(A.notAllowed);
 
   const fullName = input.fullName?.trim();
   const studentCode = input.studentCode?.trim();
-  if (!fullName) throw new AccountError('اسم الطالب مطلوب');
-  if (!studentCode) throw new AccountError('رقم الطالب مطلوب');
-  const password = requirePassword(input.password);
+  if (!fullName) throw new AccountError(A.studentNameRequired);
+  if (!studentCode) throw new AccountError(A.studentCodeRequired);
+  const password = requirePassword(input.password, A);
 
   const { data: circle } = await admin
     .from('circles')
@@ -67,7 +72,7 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
     .eq('id', input.circleId)
     .eq('organization_id', input.orgId)
     .maybeSingle();
-  if (!circle) throw new AccountError('يجب اختيار حلقة صحيحة للطالب');
+  if (!circle) throw new AccountError(A.circleRequired);
 
   if (caller.role === 'teacher') {
     const { data: flag } = await admin
@@ -76,18 +81,18 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
       .eq('organization_id', input.orgId)
       .eq('key', 'flag_teacher_manage_students')
       .maybeSingle();
-    if (flag?.value === 'false') throw new AccountError('إضافة الطلاب مغلقة للمعلمين في هذا المركز');
-    if (!(caller.permissions ?? []).includes('students')) throw new AccountError('ليست لديك صلاحية على الطلاب');
+    if (flag?.value === 'false') throw new AccountError(A.teacherAddOff);
+    if (!(caller.permissions ?? []).includes('students')) throw new AccountError(A.noStudentsPermission);
     if (circle.teacher_id !== callerId) {
       const { data: assist } = await admin.from('circle_assistants').select('user_id').eq('circle_id', circle.id).eq('user_id', callerId).maybeSingle();
-      if (!assist) throw new AccountError('يمكنك إضافة الطلاب إلى حلقتك فقط');
+      if (!assist) throw new AccountError(A.ownCircleOnly);
     }
   } else if (caller.role !== 'admin') {
-    throw new AccountError('غير مصرّح لك بهذا الإجراء');
+    throw new AccountError(A.notAllowed);
   }
 
   const { data: org } = await admin.from('organizations').select('slug').eq('id', input.orgId).single();
-  if (!org) throw new AccountError('المركز غير موجود');
+  if (!org) throw new AccountError(A.noCenter);
 
   const email = input.email?.trim() ? input.email.trim().toLowerCase() : toLoginEmail(org.slug, studentCode);
 
@@ -97,7 +102,7 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
     email_confirm: true,
     user_metadata: { full_name: fullName },
   });
-  if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? ''));
+  if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? '', A));
   const userId = created.user.id;
 
   const undo = async () => {
@@ -111,7 +116,7 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
     .single();
   if (memberError || !member) {
     await undo();
-    throw new AccountError('تعذّر ربط الحساب بالمركز');
+    throw new AccountError(A.linkFailed);
   }
 
   const { data: student, error: studentError } = await admin
@@ -131,7 +136,7 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
     .single();
   if (studentError || !student) {
     await undo();
-    throw new AccountError(studentError?.code === '23505' ? 'رقم الطالب مستخدم من قبل بهذا المركز' : 'تعذّر إنشاء ملف الطالب');
+    throw new AccountError(studentError?.code === '23505' ? A.codeTaken : A.studentFailed);
   }
 
   return { studentId: student.id as string, loginEmail: email, loginId: email.includes('.id.bustan') ? studentCode : email };
@@ -147,17 +152,18 @@ export interface ProvisionTeacherInput {
 }
 
 export async function provisionTeacher(admin: SupabaseClient, callerId: string, input: ProvisionTeacherInput) {
+  const A = (await staffStrings()).accounts;
   const caller = await membershipOf(admin, callerId, input.orgId);
-  if (caller?.role !== 'admin') throw new AccountError('غير مصرّح لك بهذا الإجراء');
+  if (caller?.role !== 'admin') throw new AccountError(A.notAllowed);
 
   const fullName = input.fullName?.trim();
   const identifier = input.identifier?.trim();
-  if (!fullName) throw new AccountError('اسم المعلم مطلوب');
-  if (!identifier) throw new AccountError('رقم الهوية أو البريد مطلوب');
-  const password = requirePassword(input.password);
+  if (!fullName) throw new AccountError(A.teacherNameRequired);
+  if (!identifier) throw new AccountError(A.idRequired);
+  const password = requirePassword(input.password, A);
 
   const { data: org } = await admin.from('organizations').select('slug').eq('id', input.orgId).single();
-  if (!org) throw new AccountError('المركز غير موجود');
+  if (!org) throw new AccountError(A.noCenter);
 
   const email = toLoginEmail(org.slug, identifier);
   const { data: created, error: createError } = await admin.auth.admin.createUser({
@@ -166,7 +172,7 @@ export async function provisionTeacher(admin: SupabaseClient, callerId: string, 
     email_confirm: true,
     user_metadata: { full_name: fullName },
   });
-  if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? ''));
+  if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? '', A));
 
   const { error: memberError } = await admin.from('organization_members').insert({
     organization_id: input.orgId,
@@ -177,7 +183,7 @@ export async function provisionTeacher(admin: SupabaseClient, callerId: string, 
   });
   if (memberError) {
     await admin.auth.admin.deleteUser(created.user.id);
-    throw new AccountError('تعذّر ربط الحساب بالمركز');
+    throw new AccountError(A.linkFailed);
   }
 
   if (input.phone?.trim()) {
@@ -201,14 +207,15 @@ export interface ProvisionGuardianInput {
  * children linked to them.
  */
 export async function provisionGuardian(admin: SupabaseClient, callerId: string, input: ProvisionGuardianInput) {
+  const A = (await staffStrings()).accounts;
   const caller = await membershipOf(admin, callerId, input.orgId);
-  if (caller?.role !== 'admin') throw new AccountError('غير مصرّح لك بهذا الإجراء');
+  if (caller?.role !== 'admin') throw new AccountError(A.notAllowed);
 
   const fullName = input.fullName?.trim();
   const identifier = input.identifier?.trim();
-  if (!fullName) throw new AccountError('اسم ولي الأمر مطلوب');
-  if (!identifier) throw new AccountError('رقم الدخول أو البريد مطلوب');
-  const password = requirePassword(input.password);
+  if (!fullName) throw new AccountError(A.guardianNameRequired);
+  if (!identifier) throw new AccountError(A.loginRequired);
+  const password = requirePassword(input.password, A);
 
   const { data: student } = await admin
     .from('students_profile')
@@ -216,11 +223,11 @@ export async function provisionGuardian(admin: SupabaseClient, callerId: string,
     .eq('id', input.studentId)
     .eq('organization_id', input.orgId)
     .maybeSingle();
-  if (!student) throw new AccountError('الطالب غير موجود في هذا المركز');
-  if (student.guardian_member_id) throw new AccountError('هذا الطالب مرتبط بولي أمر بالفعل');
+  if (!student) throw new AccountError(A.noStudent);
+  if (student.guardian_member_id) throw new AccountError(A.hasGuardian);
 
   const { data: org } = await admin.from('organizations').select('slug').eq('id', input.orgId).single();
-  if (!org) throw new AccountError('المركز غير موجود');
+  if (!org) throw new AccountError(A.noCenter);
 
   const email = toLoginEmail(org.slug, identifier);
   const { data: created, error: createError } = await admin.auth.admin.createUser({
@@ -229,7 +236,7 @@ export async function provisionGuardian(admin: SupabaseClient, callerId: string,
     email_confirm: true,
     user_metadata: { full_name: fullName },
   });
-  if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? ''));
+  if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? '', A));
 
   const { data: member, error: memberError } = await admin
     .from('organization_members')
@@ -238,7 +245,7 @@ export async function provisionGuardian(admin: SupabaseClient, callerId: string,
     .single();
   if (memberError || !member) {
     await admin.auth.admin.deleteUser(created.user.id);
-    throw new AccountError('تعذّر ربط الحساب بالمركز');
+    throw new AccountError(A.linkFailed);
   }
 
   const { error: linkError } = await admin
@@ -249,7 +256,7 @@ export async function provisionGuardian(admin: SupabaseClient, callerId: string,
   if (linkError) {
     await admin.from('organization_members').delete().eq('id', member.id);
     await admin.auth.admin.deleteUser(created.user.id);
-    throw new AccountError('تعذّر ربط ولي الأمر بالطالب');
+    throw new AccountError(A.guardianLinkFailed);
   }
 
   if (input.phone?.trim()) {
@@ -264,8 +271,9 @@ export async function linkGuardian(
   callerId: string,
   input: { orgId: string; studentId: string; guardianMemberId: string | null },
 ) {
+  const A = (await staffStrings()).accounts;
   const caller = await membershipOf(admin, callerId, input.orgId);
-  if (caller?.role !== 'admin') throw new AccountError('غير مصرّح لك بهذا الإجراء');
+  if (caller?.role !== 'admin') throw new AccountError(A.notAllowed);
 
   if (input.guardianMemberId) {
     const { data: guardian } = await admin
@@ -275,7 +283,7 @@ export async function linkGuardian(
       .eq('organization_id', input.orgId)
       .eq('role', 'guardian')
       .maybeSingle();
-    if (!guardian) throw new AccountError('ولي الأمر غير موجود في هذا المركز');
+    if (!guardian) throw new AccountError(A.noGuardian);
   }
 
   const { error } = await admin
@@ -283,7 +291,7 @@ export async function linkGuardian(
     .update({ guardian_member_id: input.guardianMemberId })
     .eq('id', input.studentId)
     .eq('organization_id', input.orgId);
-  if (error) throw new AccountError('تعذّر تحديث الربط');
+  if (error) throw new AccountError(A.relinkFailed);
 }
 
 /** Admin resets any member's password (students have no real email to recover with). */
@@ -292,9 +300,10 @@ export async function resetMemberPassword(
   callerId: string,
   input: { orgId: string; memberId: string; password: string },
 ) {
+  const A = (await staffStrings()).accounts;
   const caller = await membershipOf(admin, callerId, input.orgId);
-  if (caller?.role !== 'admin') throw new AccountError('غير مصرّح لك بهذا الإجراء');
-  const password = requirePassword(input.password);
+  if (caller?.role !== 'admin') throw new AccountError(A.notAllowed);
+  const password = requirePassword(input.password, A);
 
   const { data: member } = await admin
     .from('organization_members')
@@ -302,8 +311,8 @@ export async function resetMemberPassword(
     .eq('id', input.memberId)
     .eq('organization_id', input.orgId)
     .maybeSingle();
-  if (!member) throw new AccountError('العضو غير موجود في هذا المركز');
+  if (!member) throw new AccountError(A.noMember);
 
   const { error } = await admin.auth.admin.updateUserById(member.user_id, { password });
-  if (error) throw new AccountError('تعذّر تغيير كلمة السر');
+  if (error) throw new AccountError(A.passwordFailed);
 }

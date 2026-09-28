@@ -1,4 +1,6 @@
 import { ar } from '@/lib/i18n/dictionaries/ar';
+import { staffAr } from '@/lib/i18n/dictionaries/staff';
+import { fmt } from '@/lib/i18n/config';
 
 // Billing phase 1 (manual payments, migration 0066) - shapes + labels shared by
 // the center's /billing page, the tenant banner and the platform console.
@@ -53,29 +55,19 @@ export interface BillingRequest {
   period_end: string | null;
 }
 
-export const METHOD_LABELS: Record<string, string> = {
-  bank_transfer: 'تحويل بنكي',
-  wallet: 'محفظة إلكترونية',
-  cash: 'نقدًا',
-  other: 'أخرى',
-};
-export const PERIOD_LABELS: Record<string, string> = { monthly: 'شهري', yearly: 'سنوي' };
-export const REQUEST_STATUS: Record<string, string> = { pending: 'بانتظار التأكيد', approved: 'مؤكَّد', rejected: 'مرفوض', cancelled: 'ملغى' };
+// Arabic by default (the platform console); the center's pages pass their own strings.
+const B = staffAr.billing;
+export type BillingLabels = typeof B;
+export const METHOD_LABELS = B.method;
+export const PERIOD_LABELS = B.period;
+export const REQUEST_STATUS = B.requestStatus;
 export const REQUEST_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700',
   approved: 'bg-green-50 text-green-700',
   rejected: 'bg-red-50 text-red-700',
   cancelled: 'bg-gray-100 text-gray-500',
 };
-export const STATE_LABELS: Record<string, string> = {
-  trial: 'فترة تجريبية',
-  active: 'مفعّل',
-  grace: 'انتهى — ضمن مهلة السماح',
-  expired: 'منتهي',
-  suspended: 'موقوف',
-  cancelled: 'ملغى',
-  free: 'الخطة المجانية 🌱',
-};
+export const STATE_LABELS = B.state;
 
 /**
  * The garden ladder (0068): plans, cheapest first, are the stages of a growing
@@ -86,58 +78,59 @@ export const GARDEN_STAGES = ar.marketing.stages;
 export const gardenStage = (i: number) => GARDEN_STAGES[Math.max(0, Math.min(i, GARDEN_STAGES.length - 1))];
 
 /** The upgrade call-to-action used wherever a plan limit is reached. */
-export const UPGRADE_CTA = '🌿 اسقِ بستانك — انتقل لخطة أكبر';
+export const UPGRADE_CTA = B.upgrade;
 
 export const money = (cents: number, currency: string) =>
   `${(cents / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })} ${currency}`;
 
-export const fmtDay = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('ar', { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
+export const fmtDay = (iso: string | null, lang = 'ar') => (iso ? new Date(iso).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
 
 /** "5 طلاب" / "طالب واحد" / "طالبان". */
 export function countText(n: number, one: string, two: string, many: string): string {
   return n === 1 ? `${one} واحد` : n === 2 ? two : `${n} ${many}`;
 }
 
+/** A count from a {one, two, many} set of templates ("{n} طلاب" / "1 student"). */
+export function plural(n: number, forms: Record<string, string>): string {
+  return n === 1 ? forms.one : n === 2 ? forms.two : fmt(forms.many, { n });
+}
+
 /** The one-line subscription banner for the tenant shell (staff = admins + teachers), or null. */
-export function billingBanner(b: BillingState | null | undefined, isStaff: boolean): { tone: 'red' | 'amber'; text: string } | null {
+export function billingBanner(
+  b: BillingState | null | undefined,
+  isStaff: boolean,
+  L: BillingLabels = B,
+  lang = 'ar',
+): { tone: 'red' | 'amber'; text: string } | null {
   if (!b || !b.enforced) return null;
   const trial = b.kind === 'trial';
-  const what = trial ? 'الفترة التجريبية' : 'اشتراك المركز';
-  const ended = trial ? 'انتهت' : 'انتهى';
-  const ends = trial ? 'تنتهي' : 'ينتهي';
   if (b.locked) {
-    return {
-      tone: 'red',
-      text:
-        b.state === 'suspended' || b.state === 'cancelled'
-          ? 'المركز موقوف — البيانات للاطّلاع فقط. تواصل مع إدارة المنصة'
-          : `🍂 ${ended} ${what} — البيانات للاطّلاع فقط حتى تسقي بستانك بالتجديد`,
-    };
+    return { tone: 'red', text: b.state === 'suspended' || b.state === 'cancelled' ? L.suspendedBanner : trial ? L.lockedTrial : L.lockedPaid };
   }
   if (!isStaff) return null;
   if (b.state === 'grace') {
-    const next = b.free_plan_available ? 'ينتقل المركز للخطة المجانية (أو للقراءة فقط إن تجاوز حدودها)' : 'يتحول المركز للقراءة فقط';
-    return { tone: 'red', text: `🍂 ${ended} ${what} — بستانك ينتظر السقاية: ${next} في ${fmtDay(b.grace_ends)}` };
+    const next = b.free_plan_available ? L.nextFree : L.nextReadOnly;
+    return { tone: 'red', text: fmt(trial ? L.graceTrial : L.gracePaid, { next, date: fmtDay(b.grace_ends, lang) }) };
   }
   if ((b.state === 'trial' || b.state === 'active') && b.days_left != null && b.days_left <= 7) {
-    return { tone: 'amber', text: `🌿 ${ends} ${what} خلال ${b.days_left} ${b.days_left === 1 ? 'يوم' : 'أيام'} — اسقِ بستانك بالتجديد` };
+    return { tone: 'amber', text: fmt(trial ? L.soonTrial : L.soonPaid, { days: plural(b.days_left, L.days) }) };
   }
   return null;
 }
 
 /** Capacity warning for staff: <= 5 students or <= 1 teacher left on the plan. */
-export function usageBanner(u: Usage | null | undefined): { tone: 'red' | 'amber'; text: string } | null {
+export function usageBanner(u: Usage | null | undefined, L: BillingLabels = B): { tone: 'red' | 'amber'; text: string } | null {
   if (!u) return null;
   const parts: string[] = [];
   let full = false;
   if (u.students_left != null && u.students_left <= 5) {
     full ||= u.students_left === 0;
-    parts.push(u.students_left === 0 ? `🌳 امتلأ بستانك: وصل المركز للحد الأقصى من الطلاب (${u.max_students})` : `تبقى ${countText(u.students_left, 'طالب', 'طالبان', 'طلاب')} يمكن إضافتهم`);
+    parts.push(u.students_left === 0 ? fmt(L.studentsFull, { max: u.max_students ?? 0 }) : fmt(L.leftToAdd, { n: plural(u.students_left, L.students) }));
   }
   if (u.teachers_left != null && u.teachers_left <= 1) {
     full ||= u.teachers_left === 0;
-    parts.push(u.teachers_left === 0 ? `وصل المركز للحد الأقصى من المعلمين (${u.max_teachers})` : 'تبقى إضافة معلم واحد فقط');
+    parts.push(u.teachers_left === 0 ? fmt(L.teachersFull, { max: u.max_teachers ?? 0 }) : L.oneTeacherLeft);
   }
   if (!parts.length) return null;
-  return { tone: full ? 'red' : 'amber', text: `${parts.join(' · ')} ضمن خطة «${u.plan_name ?? ''}»` };
+  return { tone: full ? 'red' : 'amber', text: fmt(L.withinPlan, { parts: parts.join(' · '), plan: u.plan_name ?? '' }) };
 }

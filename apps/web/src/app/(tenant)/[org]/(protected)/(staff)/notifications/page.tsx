@@ -2,6 +2,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { NotificationsView } from '@/components/notifications-view';
 import { TabsNav, TemplatesTab, UpcomingTab, SendTab, LogTab, DevicesTab, SettingsTab } from '@/components/notification-center/tabs';
+import { getI18n } from '@/lib/i18n/server';
 
 interface Search {
   tab?: string;
@@ -18,6 +19,8 @@ export default async function NotificationsPage({ params, searchParams }: { para
   const { org: slug } = await params;
   const q = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
 
   // teachers only have their own inbox; the centre's notification management is the admin's
   if (org.myRole !== 'admin') return <NotificationsView orgId={org.id} portal={false} />;
@@ -34,8 +37,8 @@ export default async function NotificationsPage({ params, searchParams }: { para
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold">الإشعارات</h1>
-      <p className="mb-4 text-sm text-gray-500">ما يصل هواتف وحسابات أعضاء مركزك: نصّه وتوقيته وجمهوره وسجل وصوله.</p>
+      <h1 className="mb-1 text-2xl font-bold">{S.notif.heading}</h1>
+      <p className="mb-4 text-sm text-gray-500">{S.notif.intro}</p>
       <TabsNav active={tab} />
       {q.ok && <p className="mb-4 max-w-3xl rounded bg-green-50 px-3 py-2 text-sm text-green-700">{q.ok}</p>}
       {q.error && <p className="mb-4 max-w-3xl rounded bg-red-50 px-3 py-2 text-sm text-red-600">{q.error}</p>}

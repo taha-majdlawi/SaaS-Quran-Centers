@@ -38,4 +38,7 @@ SPEC = {'dash': ('The dashboard home.', (
   ('checkedIn', '✓ سُجّل حضورك اليوم', '✓ Your attendance is recorded for today'),
   ('checkIn', 'سجّل حضوري', 'Check me in'),
   ('absentN', ' · غائب {n}', ' · {n} absent'),
+  ('okNote', 'أُضيفت الملاحظة', 'Note added'),
+  ('okCheckIn', 'سُجّل حضورك', 'Your attendance is recorded'),
+  ('okTeacherAttendance', 'حُفظ حضور المعلم', 'Teacher attendance saved'),
 ))}

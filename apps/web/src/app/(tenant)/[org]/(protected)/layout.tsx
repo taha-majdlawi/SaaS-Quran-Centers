@@ -36,13 +36,13 @@ export default async function TenantProtectedLayout({
   const isStaff = org.myRole === 'admin' || org.myRole === 'teacher';
   const { t } = await getI18n();
   const translated = await isTranslatedScreen();
-  let billing = billingBanner(acc?.billing, isStaff);
+  let billing = billingBanner(acc?.billing, isStaff, t.staff.billing, t.labels.dateLocale);
   // the portal only ever sees the lock itself - say it in the viewer's language
   if (billing && !isStaff) {
     const st = acc?.billing?.state;
     billing = { ...billing, text: st === 'suspended' || st === 'cancelled' ? t.shell.suspended : t.shell.locked };
   }
-  const capacity = isStaff ? usageBanner(acc?.usage) : null;
+  const capacity = isStaff ? usageBanner(acc?.usage, t.staff.billing) : null;
   const { data: noticeData } = await supabase.rpc('active_platform_notices');
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
@@ -80,7 +80,7 @@ export default async function TenantProtectedLayout({
             {billing.text}
             {org.myRole === 'admin' && (
               <a href="/billing" className="ms-2 underline">
-                الاشتراك والدفع
+                {t.staff.billing.bannerLink}
               </a>
             )}
           </div>
@@ -90,7 +90,7 @@ export default async function TenantProtectedLayout({
             {capacity.text}
             {org.myRole === 'admin' && (
               <a href="/billing" className="ms-2 underline">
-                🌿 اسقِ بستانك — انتقل لخطة أكبر
+                {t.staff.billing.upgrade}
               </a>
             )}
           </div>

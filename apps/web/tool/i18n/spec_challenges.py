@@ -1,0 +1,22 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'challenges': ('Circle challenges.', (
+  ('title', 'العنوان', 'Title'),
+  ('metric', 'المقياس', 'Measure'),
+  ('description', 'الوصف', 'Description'),
+  ('to', 'إلى', 'To'),
+  ('from', 'من', 'From'),
+  ('hint', 'تُرتَّب الحلقات بمتوسط ما حققه الطالب الواحد لا بالمجموع، فلا تخسر حلقة صغيرة لمجرد صغرها.', 'Circles are ranked by the average per student, not the total, so a small circle never loses just for being small.'),
+  ('heading', 'منافسات الحلقات', 'Circle challenges'),
+  ('empty', 'لا توجد منافسات', 'No challenges yet'),
+  ('add', '+ منافسة جديدة', '+ New challenge'),
+  ('deleted', 'تم الحذف', 'Deleted'),
+  ('noRows', 'لا توجد حلقات فيها طلاب بعد', 'No circles with students yet'),
+  ('back', '← المنافسات', '← Challenges'),
+  ('saved', 'تم الحفظ ✓', 'Saved ✓'),
+  ('total', 'المجموع', 'Total'),
+  ('average', 'المتوسط', 'Average'),
+  ('circle', 'الحلقة', 'Circle'),
+  ('students', 'الطلاب', 'Students'),
+  ('confirmDelete', 'حذف المنافسة؟', 'Delete this challenge?'),
+  ('newTitle', 'منافسة جديدة', 'New challenge'),
+))}

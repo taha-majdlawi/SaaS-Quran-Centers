@@ -3,6 +3,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { safeLogoUrl } from '@/lib/tenant/public-site';
+import { staffStrings } from '@/lib/i18n/server';
+import { LOCALES } from '@/lib/i18n/config';
 
 export async function saveAttendanceReminder(formData: FormData) {
   const supabase = await createClient();
@@ -41,7 +43,7 @@ export async function updateOrgSettings(formData: FormData) {
   const timezone = (formData.get('timezone') as string)?.trim();
 
   if (rawLogo && !logoUrl) {
-    redirect(`/settings?error=${encodeURIComponent('رابط الشعار يجب أن يبدأ بـ https')}` as never);
+    redirect(`/settings?error=${encodeURIComponent((await staffStrings()).settings.logoHttps)}` as never);
   }
 
   const supabase = await createClient();
@@ -89,6 +91,7 @@ const TEXT_SETTINGS = [
   'prayer_calc_method',
   'prayer_madhab',
   'quran_default_reciter',
+  'default_language',
 ] as const;
 
 const FLAG_SETTINGS = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students'] as const;
@@ -120,9 +123,13 @@ export async function saveCenterSettings(formData: FormData) {
     })),
   ];
 
+  // only a language the site ships; anything else falls back to Arabic
+  const lang = rows.find((r) => r.key === 'default_language');
+  if (lang && !(LOCALES as readonly string[]).includes(lang.value)) lang.value = 'ar';
+
   const backdate = Number(rows.find((r) => r.key === 'backdate_days')?.value);
   if (!Number.isInteger(backdate) || backdate < 0 || backdate > 365) {
-    redirect(`/settings?error=${encodeURIComponent('مدة الرجوع بتاريخ التسميع بين 0 و365 يومًا')}` as never);
+    redirect(`/settings?error=${encodeURIComponent((await staffStrings()).settings.backdateRange)}` as never);
   }
 
   const { error } = await supabase.from('organization_settings').upsert(rows, { onConflict: 'organization_id,key' });

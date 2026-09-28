@@ -5,6 +5,7 @@ import { AnnouncementForm } from '@/components/announcement-form';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import type { AnnouncementRow } from '@/components/announcements-view';
 import { deleteAnnouncement } from '@/lib/comms/actions';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function EditAnnouncementPage({
   params,
@@ -16,6 +17,8 @@ export default async function EditAnnouncementPage({
   const { org: slug, id } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
 
@@ -34,15 +37,15 @@ export default async function EditAnnouncementPage({
   return (
     <div>
       <a href="/announcements" className="text-sm text-brand hover:underline">
-        ← الإعلانات
+        {S.annc.back}
       </a>
-      <h1 className="mb-4 mt-2 text-2xl font-bold">تعديل إعلان</h1>
+      <h1 className="mb-4 mt-2 text-2xl font-bold">{S.annc.editTitle}</h1>
       <AnnouncementForm orgId={org.id} circles={circles ?? []} isAdmin={isAdmin} item={item} error={error} />
       <form action={deleteAnnouncement} className="mt-4">
         <input type="hidden" name="orgId" value={org.id} />
         <input type="hidden" name="id" value={id} />
-        <ConfirmSubmitButton confirmMessage="حذف الإعلان؟" pendingText="..." className="rounded border border-red-200 px-4 py-2 text-sm text-red-600">
-          حذف
+        <ConfirmSubmitButton confirmMessage={S.annc.confirmDelete} pendingText="..." className="rounded border border-red-200 px-4 py-2 text-sm text-red-600">
+          {S.common.delete}
         </ConfirmSubmitButton>
       </form>
     </div>

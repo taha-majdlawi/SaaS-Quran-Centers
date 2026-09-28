@@ -2,6 +2,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { updateSiteSettings } from './actions';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function SitePage({
   params,
@@ -13,6 +14,8 @@ export default async function SitePage({
   const { org: slug } = await params;
   const { error, saved } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
 
@@ -24,28 +27,28 @@ export default async function SitePage({
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-1 text-2xl font-bold">الموقع العام</h1>
-      <p className="mb-3 text-sm text-gray-500">صفحة تعريفية عامة عن مركزك، تُعرض للزوار غير المسجّلين.</p>
+      <h1 className="mb-1 text-2xl font-bold">{S.site.heading}</h1>
+      <p className="mb-3 text-sm text-gray-500">{S.site.intro}</p>
       <p className="mb-6 text-sm">
         <a href={'/?preview=1' as never} target="_blank" rel="noreferrer" className="text-brand hover:underline">
-          معاينة الصفحة كما يراها زائر ↗
+          {S.site.preview}
         </a>
-        <span className="mr-1 text-xs text-gray-400">(بما إنك مسجّل دخولك، الرابط العادي يأخذك للوحة التحكم مباشرة)</span>
+        <span className="ms-1 text-xs text-gray-400">{S.site.previewHint}</span>
       </p>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم حفظ الإعدادات</p>}
+      {saved && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{S.settings.saved}</p>}
 
       <form action={updateSiteSettings} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
         <input type="hidden" name="orgId" value={org.id} />
         <fieldset disabled={!isAdmin} className="flex flex-col gap-3">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <input type="checkbox" name="publicSiteEnabled" defaultChecked={site?.public_site_enabled ?? false} />
-            فعّل الصفحة العامة
+            {S.site.enable}
           </label>
 
           <label className="text-sm font-medium text-gray-700">
-            عنوان رئيسي
+            {S.site.heroTitle}
             <input
               name="heroTitle"
               defaultValue={site?.hero_title ?? org.name}
@@ -54,7 +57,7 @@ export default async function SitePage({
           </label>
 
           <label className="text-sm font-medium text-gray-700">
-            نص تعريفي
+            {S.site.heroBody}
             <textarea
               name="heroBody"
               rows={4}
@@ -64,7 +67,7 @@ export default async function SitePage({
           </label>
 
           <label className="text-sm font-medium text-gray-700">
-            بريد التواصل
+            {S.site.email}
             <input
               type="email"
               name="contactEmail"
@@ -76,15 +79,15 @@ export default async function SitePage({
           {isAdmin && (
             <SubmitButton
               className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-              pendingText="جاري الحفظ..."
+              pendingText={S.common.saving}
             >
-              حفظ الإعدادات
+              {S.settings.saveSettings}
             </SubmitButton>
           )}
         </fieldset>
       </form>
 
-      {!isAdmin && <p className="mt-3 text-xs text-gray-400">بس المدير يقدر يعدّل إعدادات الموقع العام.</p>}
+      {!isAdmin && <p className="mt-3 text-xs text-gray-400">{S.site.adminOnly}</p>}
     </div>
   );
 }

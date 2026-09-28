@@ -55,7 +55,7 @@ export async function deleteStage(formData: FormData) {
   const { data: stage } = await supabase.from('stages').select('organization_id').eq('id', id).maybeSingle();
 
   const { data: removed, error: delError } = await supabase.from('stages').delete().eq('id', id).select('id');
-  if (delError || !removed?.length) redirect(`/stages/${id}?error=${encodeURIComponent(deleteErrorMessage(delError))}` as never);
+  if (delError || !removed?.length) redirect(`/stages/${id}?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
 
   if (stage && user) {
     await logAudit(supabase, {

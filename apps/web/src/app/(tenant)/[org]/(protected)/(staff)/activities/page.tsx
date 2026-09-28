@@ -1,9 +1,12 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
 
 export default async function ActivitiesPage({ params }: { params: Promise<{ org: string }> }) {
   const { org: slug } = await params;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const { data: activities } = await supabase
@@ -15,9 +18,9 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ org
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">الأنشطة</h1>
+        <h1 className="text-2xl font-bold">{S.activities.heading}</h1>
         <a href="/activities/new" className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">
-          + نشاط جديد
+          {S.activities.add}
         </a>
       </div>
 
@@ -27,17 +30,17 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ org
             <div className="mb-1 flex items-center justify-between">
               <h2 className="font-semibold">{a.title}</h2>
               <a href={`/activities/${a.id}`} className="text-sm text-brand hover:underline">
-                تعديل
+                {S.common.edit}
               </a>
             </div>
             {a.description && <p className="mb-2 whitespace-pre-wrap text-sm text-gray-600">{a.description}</p>}
             <p className="text-xs text-gray-400">
-              {a.scheduled_at ? new Date(a.scheduled_at).toLocaleString('ar') : 'بدون موعد محدد'}
+              {a.scheduled_at ? new Date(a.scheduled_at).toLocaleString(T.labels.dateLocale) : S.activities.noTime}
             </p>
           </div>
         ))}
         {!activities?.length && (
-          <p className="rounded-lg border bg-white p-6 text-center text-gray-400">لا يوجد أنشطة بعد</p>
+          <p className="rounded-lg border bg-white p-6 text-center text-gray-400">{S.activities.empty}</p>
         )}
       </div>
     </div>

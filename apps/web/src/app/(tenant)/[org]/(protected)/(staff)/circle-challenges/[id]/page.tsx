@@ -3,8 +3,9 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { ChallengeForm } from '@/components/challenge-form';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { CHALLENGE_STATUS, METRIC_LABELS, fmtDate } from '@/lib/engagement/format';
+import { fmtDate } from '@/lib/engagement/format';
 import { deleteChallenge } from '../actions';
+import { getI18n } from '@/lib/i18n/server';
 
 interface Board {
   id: string;
@@ -26,6 +27,8 @@ export default async function ChallengePage({
   const { org: slug, id } = await params;
   const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
 
   const [{ data: boardData }, { data: raw }] = await Promise.all([
@@ -38,24 +41,24 @@ export default async function ChallengePage({
   return (
     <div className="max-w-2xl">
       <a href="/circle-challenges" className="text-sm text-brand hover:underline">
-        ← المنافسات
+        {S.challenges.back}
       </a>
       <h1 className="mb-1 mt-2 text-2xl font-bold">{board.title}</h1>
       <p className="mb-4 text-sm text-gray-500">
-        {METRIC_LABELS[board.metric]} · {fmtDate(board.starts_on)} — {fmtDate(board.ends_on)} · {CHALLENGE_STATUS[board.status]}
+        {T.labels.metric[board.metric]} · {fmtDate(board.starts_on, T.labels.dateLocale)} — {fmtDate(board.ends_on, T.labels.dateLocale)} · {T.labels.challengeStatus[board.status]}
       </p>
-      {ok === 'saved' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">تم الحفظ ✓</p>}
+      {ok === 'saved' && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{S.challenges.saved}</p>}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <div className="mb-8 overflow-hidden rounded-lg border bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-right">
+          <thead className="bg-gray-50 text-start">
             <tr>
               <th className="px-4 py-2">#</th>
-              <th className="px-4 py-2">الحلقة</th>
-              <th className="px-4 py-2">الطلاب</th>
-              <th className="px-4 py-2">المجموع</th>
-              <th className="px-4 py-2">المتوسط</th>
+              <th className="px-4 py-2">{S.challenges.circle}</th>
+              <th className="px-4 py-2">{S.challenges.students}</th>
+              <th className="px-4 py-2">{S.challenges.total}</th>
+              <th className="px-4 py-2">{S.challenges.average}</th>
             </tr>
           </thead>
           <tbody>
@@ -71,7 +74,7 @@ export default async function ChallengePage({
             {!board.rows.length && (
               <tr>
                 <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
-                  لا توجد حلقات فيها طلاب بعد
+                  {S.challenges.noRows}
                 </td>
               </tr>
             )}
@@ -85,8 +88,8 @@ export default async function ChallengePage({
           <form action={deleteChallenge} className="mt-4">
             <input type="hidden" name="orgId" value={org.id} />
             <input type="hidden" name="id" value={id} />
-            <ConfirmSubmitButton confirmMessage="حذف المنافسة؟" pendingText="..." className="rounded border border-red-200 px-4 py-2 text-sm text-red-600">
-              حذف
+            <ConfirmSubmitButton confirmMessage={S.challenges.confirmDelete} pendingText="..." className="rounded border border-red-200 px-4 py-2 text-sm text-red-600">
+              {S.common.delete}
             </ConfirmSubmitButton>
           </form>
         </>

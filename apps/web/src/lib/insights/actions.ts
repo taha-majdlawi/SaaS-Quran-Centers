@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { safeBack, withParam } from '@/lib/calendar/actions-shared';
+import { staffStrings } from '@/lib/i18n/server';
 
 const s = (formData: FormData, key: string) => ((formData.get(key) as string) ?? '').trim();
 
@@ -20,14 +21,14 @@ export async function addStudentNote(formData: FormData) {
     p_body: s(formData, 'body'),
     p_visibility: s(formData, 'visibility') || 'staff_only',
   });
-  await finish(back, error, 'أُضيفت الملاحظة');
+  await finish(back, error, (await staffStrings()).dash.okNote);
 }
 
 export async function teacherCheckIn(formData: FormData) {
   const back = safeBack(formData.get('back'), '/dashboard');
   const supabase = await createClient();
   const { error } = await supabase.rpc('teacher_check_in', { p_org: s(formData, 'orgId'), p_circle: s(formData, 'circleId'), p_date: null });
-  await finish(back, error, 'سُجّل حضورك');
+  await finish(back, error, (await staffStrings()).dash.okCheckIn);
 }
 
 export async function setTeacherAttendance(formData: FormData) {
@@ -41,5 +42,5 @@ export async function setTeacherAttendance(formData: FormData) {
     p_status: s(formData, 'status'),
     p_note: s(formData, 'note') || null,
   });
-  await finish(back, error, 'حُفظ حضور المعلم');
+  await finish(back, error, (await staffStrings()).dash.okTeacherAttendance);
 }

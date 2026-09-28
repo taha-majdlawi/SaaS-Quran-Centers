@@ -21,11 +21,10 @@ export function fmt(template: string, vars: Record<string, string | number> = {}
   return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 }
 
-// ---- which screens are translated yet --------------------------------------
-// Only these render in the viewer's language; everything else stays Arabic /
-// right-to-left until its phase is done, so choosing English on the login
-// page can never flip a not-yet-translated dashboard into a broken LTR layout.
-// middleware.ts marks a request as translatable (header below) from this.
+// ---- which screens are translated -------------------------------------------
+// Every screen renders in the viewer's language except the platform owner's
+// console, which stays Arabic / right-to-left by design. middleware.ts marks a
+// request as translatable (header below) from this.
 
 /** Request header set by middleware.ts on a translatable request. */
 export const I18N_READY_HEADER = 'x-bustan-i18n';
@@ -34,24 +33,9 @@ export const LANG_OVERRIDE_HEADER = 'x-bustan-lang';
 /** Request header with the center's slug on a tenant request (its default language is the fallback). */
 export const ORG_SLUG_HEADER = 'x-bustan-org';
 
-/** Tenant-subdomain paths translated so far: phase 1 the public + sign-in screens, phase 2 the student / guardian portal. */
-const TENANT_READY = [
-  /^\/$/,
-  /^\/login$/,
-  /^\/join$/,
-  /^\/forgot-password$/,
-  /^\/reset-password$/,
-  /^\/privacy$/,
-  /^\/support$/,
-  /^\/delete-account$/,
-  /^\/my(\/.*)?$/,
-];
-
 /** scope: how middleware.ts routed the request ('platform' is Arabic-only by design). */
-export function isI18nReady(scope: 'marketing' | 'tenant' | 'platform', pathname: string): boolean {
-  if (scope === 'platform') return false;
-  if (scope === 'marketing') return true;
-  return TENANT_READY.some((r) => r.test(pathname));
+export function isI18nReady(scope: 'marketing' | 'tenant' | 'platform'): boolean {
+  return scope !== 'platform';
 }
 
 /** The browser's first choice we support - Arabic whenever the visitor lists it at all. */

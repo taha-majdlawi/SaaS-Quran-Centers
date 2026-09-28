@@ -2,6 +2,8 @@ import { OrgLogo } from '@/components/org-logo';
 import { createClient } from '@/lib/supabase/server';
 import { getPublicSite } from '@/lib/tenant/public-site';
 import { fmtDay } from '@/lib/reports/format';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Verified {
   valid: boolean;
@@ -18,7 +20,9 @@ export default async function VerifyPage({ params }: { params: Promise<{ org: st
   const supabase = await createClient();
   const { data } = await supabase.rpc('verify_certificate', { p_slug: slug, p_serial: decodeURIComponent(serial).slice(0, 40) });
   const c = data as Verified | null;
-  const name = site?.name ?? 'بستان القرآن';
+  const { t: T } = await getI18n();
+  const S = T.staff;
+  const name = site?.name ?? T.meta.title;
 
   return (
     <div
@@ -32,24 +36,24 @@ export default async function VerifyPage({ params }: { params: Promise<{ org: st
         </span>
       </header>
       <main className="mx-auto w-full max-w-lg flex-1 px-6 py-12 text-center">
-        <h1 className="mb-6 text-2xl font-bold">التحقق من شهادة</h1>
+        <h1 className="mb-6 text-2xl font-bold">{S.certs.verifyTitle}</h1>
         {!c ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-red-700">
-            <p className="text-lg font-bold">لم نجد شهادة بهذا الرقم</p>
-            <p className="mt-1 text-sm">تأكد من الرقم المكتوب على الشهادة.</p>
+            <p className="text-lg font-bold">{S.certs.verifyNone}</p>
+            <p className="mt-1 text-sm">{S.certs.verifyCheck}</p>
           </div>
         ) : c.valid ? (
           <div className="rounded-lg border border-green-200 bg-green-50 p-6">
-            <p className="text-lg font-bold text-green-700">✓ شهادة صحيحة</p>
+            <p className="text-lg font-bold text-green-700">{S.certs.verifyValid}</p>
             <p className="mt-3 text-xl font-bold">{c.recipient_name}</p>
             <p className="mt-1 text-gray-700">{c.title}</p>
             <p className="mt-1 text-sm text-gray-500">
-              صادرة عن {c.center.name} بتاريخ {fmtDay(c.issued_at)}
+              {fmt(S.certs.verifyIssued, { center: c.center.name, date: fmtDay(c.issued_at, T.labels.dateLocale) })}
             </p>
           </div>
         ) : (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-amber-800">
-            <p className="text-lg font-bold">هذه الشهادة أُلغيت</p>
+            <p className="text-lg font-bold">{S.certs.verifyRevoked}</p>
             <p className="mt-1 text-sm">{c.title} — {c.recipient_name}</p>
           </div>
         )}

@@ -11,8 +11,8 @@ const DICTIONARIES: Record<Locale, Dictionary> = { ar, en };
  * The language of THIS request: an explicit ?lang= (forwarded by middleware),
  * else the viewer's saved choice (cookie), else - on a center's subdomain - the
  * center's default language (0069), else - on the marketing site - the
- * browser's language, else Arabic. Screens not translated yet always get
- * Arabic (see isI18nReady in config.ts).
+ * browser's language, else Arabic. The platform console is always Arabic
+ * (see isI18nReady in config.ts).
  */
 export const getLocale = cache(async (): Promise<Locale> => {
   const h = await headers();

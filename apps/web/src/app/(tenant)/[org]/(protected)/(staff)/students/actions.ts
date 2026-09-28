@@ -113,7 +113,7 @@ export async function deleteStudent(formData: FormData) {
     .maybeSingle();
 
   const { data: removed, error: delError } = await supabase.from('students_profile').delete().eq('id', id).select('id');
-  if (delError || !removed?.length) redirect(`/students/${id}?error=${encodeURIComponent(deleteErrorMessage(delError))}` as never);
+  if (delError || !removed?.length) redirect(`/students/${id}?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
 
   if (student && user) {
     await logAudit(supabase, {

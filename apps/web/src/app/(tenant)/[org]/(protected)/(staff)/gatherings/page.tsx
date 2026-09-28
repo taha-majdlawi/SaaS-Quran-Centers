@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { submitGathering, deleteGathering } from '@/lib/gatherings/actions';
+import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 interface Row {
   id: string;
@@ -24,6 +26,8 @@ export default async function GatheringsPage({ params, searchParams }: { params:
   const { org: slug } = await params;
   const { ok, error } = await searchParams;
   const org = await getOrgContext(slug);
+  const { t: T } = await getI18n();
+  const S = T.staff;
   const supabase = await createClient();
   const isAdmin = org.myRole === 'admin';
 
@@ -36,49 +40,49 @@ export default async function GatheringsPage({ params, searchParams }: { params:
 
   return (
     <div className="max-w-3xl">
-      <h1 className="mb-1 text-2xl font-bold">المجالس والأنشطة المشتركة</h1>
+      <h1 className="mb-1 text-2xl font-bold">{S.gather.heading}</h1>
       <p className="mb-5 text-sm text-gray-500">
-        نشاط يجمع طلابًا من عدة حلقات (حلقة ذكر، مخيم، زيارة). ارفع أسماء الحاضرين كما تعرفها، ثم يربط المشرف كل اسم بملف الطالب فيُسجَّل حضوره ذلك اليوم.
+        {S.gather.intro}
       </p>
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
       <details className="mb-6 rounded-lg border bg-white" open={!rows.length}>
-        <summary className="cursor-pointer px-4 py-3 font-semibold">رفع نشاط جديد</summary>
+        <summary className="cursor-pointer px-4 py-3 font-semibold">{S.gather.uploadNew}</summary>
         <form action={submitGathering} className="flex flex-col gap-3 border-t p-4">
           <input type="hidden" name="orgId" value={org.id} />
           <label className="text-sm font-medium text-gray-700">
-            اسم النشاط
-            <input name="title" required maxLength={120} className={field} placeholder="مثال: رحلة الحديقة" />
+            {S.gather.name}
+            <input name="title" required maxLength={120} className={field} placeholder={S.gather.namePh} />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm font-medium text-gray-700">
-              نوع النشاط
+              {S.gather.type}
               <select name="type" defaultValue="" className={field}>
-                <option value="">— بدون —</option>
+                <option value="">{S.gather.none}</option>
                 {(types ?? []).map((t) => (
                   <option key={t.id as string} value={t.id as string}>{t.name as string}</option>
                 ))}
               </select>
             </label>
             <label className="text-sm font-medium text-gray-700">
-              التاريخ
+              {S.gather.date}
               <input type="date" name="date" defaultValue={today} max={today} required className={field} />
             </label>
           </div>
           <label className="text-sm font-medium text-gray-700">
-            المكان (اختياري)
+            {S.gather.placeOpt}
             <input name="location" className={field} />
           </label>
           <label className="text-sm font-medium text-gray-700">
-            الحاضرون — اسم في كل سطر
-            <textarea name="names" required rows={6} className={field} placeholder={'أحمد محمد\nعمر خالد\n...'} />
+            {S.gather.attendees}
+            <textarea name="names" required rows={6} className={field} placeholder={S.gather.namesPh} />
           </label>
           <label className="text-sm font-medium text-gray-700">
-            ملاحظات (اختياري)
+            {S.gather.notesOpt}
             <input name="notes" className={field} />
           </label>
-          <SubmitButton className="self-start rounded bg-brand px-5 py-2 text-sm text-white" pendingText="جاري الرفع...">رفع النشاط</SubmitButton>
+          <SubmitButton className="self-start rounded bg-brand px-5 py-2 text-sm text-white" pendingText={S.gather.uploading}>{S.gather.uploadBtn}</SubmitButton>
         </form>
       </details>
 
@@ -88,26 +92,26 @@ export default async function GatheringsPage({ params, searchParams }: { params:
             <a href={`/gatherings/${g.id}` as never} className="min-w-0 flex-1">
               <p className="font-semibold text-brand">{g.title}</p>
               <p className="text-xs text-gray-500">
-                {new Date(g.session_date).toLocaleDateString('ar')}
+                {new Date(g.session_date).toLocaleDateString(T.labels.dateLocale)}
                 {g.activity_type_label ? ` · ${g.activity_type_label}` : ''}
-                {g.teacher_name ? ` · ${g.teacher_name}` : ''} · {g.total} اسم · رُبط {g.matched}
-                {g.skipped ? ` · تُجوهل ${g.skipped}` : ''}
+                {g.teacher_name ? ` · ${g.teacher_name}` : ''} · {fmt(S.gather.counts, { n: g.total, m: g.matched })}
+                {g.skipped ? ` · ${fmt(S.gather.skippedN, { n: g.skipped })}` : ''}
               </p>
             </a>
             <span className={`rounded px-2 py-0.5 text-xs ${g.status === 'reviewed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-800'}`}>
-              {g.status === 'reviewed' ? 'تمت المراجعة' : g.pending !== undefined ? `بانتظار الربط (${g.pending})` : 'بانتظار المشرف'}
+              {g.status === 'reviewed' ? S.gather.reviewed : g.pending !== undefined ? fmt(S.gather.pendingN, { n: g.pending }) : S.gather.waitingAdmin}
             </span>
             {(isAdmin || g.matched + g.skipped === 0) && (
               <form action={deleteGathering}>
                 <input type="hidden" name="id" value={g.id} />
-                <ConfirmSubmitButton confirmMessage="حذف هذا النشاط بأسمائه؟" pendingText="..." className="rounded border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50">
-                  حذف
+                <ConfirmSubmitButton confirmMessage={S.gather.confirmDelete} pendingText="..." className="rounded border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50">
+                  {S.common.delete}
                 </ConfirmSubmitButton>
               </form>
             )}
           </div>
         ))}
-        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">لا أنشطة مرفوعة بعد</p>}
+        {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{S.gather.empty}</p>}
       </div>
     </div>
   );

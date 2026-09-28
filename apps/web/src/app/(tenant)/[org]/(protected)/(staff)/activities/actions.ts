@@ -54,7 +54,7 @@ export async function deleteActivity(formData: FormData) {
 
   const supabase = await createClient();
   const { data: removed, error } = await supabase.from('activities').delete().eq('id', id).select('id');
-  if (error || !removed?.length) redirect(`/activities/${id}?error=${encodeURIComponent(deleteErrorMessage(error))}` as never);
+  if (error || !removed?.length) redirect(`/activities/${id}?error=${encodeURIComponent(await deleteErrorMessage(error))}` as never);
 
   redirect('/activities');
 }
