@@ -205,7 +205,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
             <h2 className="mb-3 font-semibold">{S.dash.trend}</h2>
             <div className="flex h-28 items-end gap-1">
               {trend.map((t) => (
-                <div key={t.date} className="group relative flex-1" title={fmt(S.dash.trendTip, { date: fmtDay(t.date, T.labels.dateLocale), n: t.recitations, a: t.attendance })}>
+                <div key={t.date} className="group relative flex h-full flex-1 flex-col justify-end" title={fmt(S.dash.trendTip, { date: fmtDay(t.date, T.labels.dateLocale), n: t.recitations, a: t.attendance })}>
                   <div className="w-full rounded-t bg-brand/70" style={{ height: `${Math.max(3, (t.recitations / maxTrend) * 100)}%` }} />
                 </div>
               ))}

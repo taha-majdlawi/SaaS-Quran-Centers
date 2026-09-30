@@ -424,6 +424,16 @@ export const staffAr = {
     deleteLinked: 'لا يمكن الحذف لوجود بيانات مرتبطة به (طلاب أو تسميعات أو غيرها). انقلها أولًا أو غيّر الحالة بدل الحذف.',
     deleteFailed: 'تعذّر الحذف',
   },
+  /** Comparing a period with the one before it (reports, profiles). */
+  compare: {
+    vs: 'مقارنة بالفترة السابقة: {from} – {to}',
+    toggle: 'قارن بالفترة السابقة',
+    prev: 'السابقة: {v}',
+    same: 'بلا تغيير',
+    pts: 'نقطة مئوية',
+    colChange: 'التغيّر',
+    new: 'جديد',
+  },
   /** The dashboard home. */
   dash: {
     riskTags: { "never": 'لم يسمّع إطلاقًا', "regressed": 'توقّف بعد انتظام', "slowing": 'تباطأ', "attendance_gap": 'يحضر ولا يسمّع' } as Record<string, string>,
@@ -1723,6 +1733,16 @@ export const staffEn: typeof staffAr = {
     deleteDenied: 'You can’t delete this, or it no longer exists',
     deleteLinked: 'It can’t be deleted because other data depends on it (students, recitations or more). Move that first, or change the status instead of deleting.',
     deleteFailed: 'Could not delete',
+  },
+  /** Comparing a period with the one before it (reports, profiles). */
+  compare: {
+    vs: 'Compared with the previous period: {from} – {to}',
+    toggle: 'Compare with the previous period',
+    prev: 'Before: {v}',
+    same: 'No change',
+    pts: 'pts',
+    colChange: 'Change',
+    new: 'New',
   },
   /** The dashboard home. */
   dash: {

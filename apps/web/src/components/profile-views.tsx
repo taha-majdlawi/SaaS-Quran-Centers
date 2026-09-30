@@ -67,11 +67,14 @@ export function ActionLink({ href, children, primary }: { href: string; children
   );
 }
 
-export function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: React.ReactNode }) {
+export function Stat({ label, value, hint, change }: { label: string; value: React.ReactNode; hint?: React.ReactNode; change?: React.ReactNode }) {
   return (
     <div className="rounded-xl border bg-white p-4">
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-brand">{value}</p>
+      <p className="mt-1 flex flex-wrap items-baseline gap-2 text-2xl font-bold text-brand">
+        {value}
+        {change}
+      </p>
       {hint && <p className="mt-0.5 text-xs text-gray-400">{hint}</p>}
     </div>
   );
@@ -248,4 +251,25 @@ export function relDay(iso: string | null | undefined, L: { today: string; yeste
   if (days === 1) return L.yesterday;
   if (days < 30) return L.daysAgo.replace('{n}', String(days));
   return fmtDay(iso, lang);
+}
+
+/**
+ * A small ↑ / ↓ with the change from the previous period (green up, red down).
+ * `points` shows an absolute change (for percentages, in percentage points).
+ */
+export function Delta({ now, prev, points, labels }: { now: number | null | undefined; prev: number | null | undefined; points?: boolean; labels: { same: string; pts: string; new: string } }) {
+  if (now == null || prev == null) return null;
+  const diff = Math.round((Number(now) - Number(prev)) * 10) / 10;
+  if (diff === 0) return <span className="text-xs font-semibold text-gray-400">→ {labels.same}</span>;
+  const up = diff > 0;
+  const cls = up ? 'text-green-700' : 'text-red-600';
+  let text: string;
+  if (points) text = `${up ? '+' : ''}${diff} ${labels.pts}`;
+  else if (Number(prev) === 0) text = labels.new;
+  else text = `${up ? '+' : ''}${Math.round((diff / Number(prev)) * 100)}%`;
+  return (
+    <span className={`text-xs font-semibold ${cls}`} dir="ltr">
+      {up ? '↑' : '↓'} {text}
+    </span>
+  );
 }

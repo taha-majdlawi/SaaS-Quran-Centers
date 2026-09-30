@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { RangeForm } from '@/components/report-views';
-import { ActionLink, Chip, CountList, DailyBars, Facts, Panel, ProfileHeader, RecitationTable, gradeLabelMap, Stat, StatGrid, relDay, type RecRow } from '@/components/profile-views';
-import { defaultRange, fmtDay, pct } from '@/lib/reports/format';
+import { ActionLink, Chip, CountList, DailyBars, Facts, Panel, ProfileHeader, Delta, RecitationTable, gradeLabelMap, Stat, StatGrid, relDay, type RecRow } from '@/components/profile-views';
+import { defaultRange, fmtDay, pct, previousRange } from '@/lib/reports/format';
 import { getI18n } from '@/lib/i18n/server';
 
 interface CircleProfile {
@@ -54,12 +54,18 @@ export default async function CircleProfilePage({
   const supabase = await createClient();
 
   const grades = gradeLabelMap((await supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id)).data);
-  const { data, error } = await supabase.rpc('circle_profile', { p_org: org.id, p_circle: id, p_from: f, p_to: t });
+  const pr = previousRange(f, t);
+  const [{ data, error }, { data: prevData }] = await Promise.all([
+    supabase.rpc('circle_profile', { p_org: org.id, p_circle: id, p_from: f, p_to: t }),
+    supabase.rpc('circle_profile', { p_org: org.id, p_circle: id, p_from: pr.from, p_to: pr.to }),
+  ]);
   if (error && /غير موجود|not found/i.test(error.message)) notFound();
   const r = data as CircleProfile | null;
   if (!r) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error?.message ?? P.notAllowed}</p>;
   const c = r.circle;
   const tt = r.totals;
+  const pt = (prevData as { totals: typeof r.totals } | null)?.totals;
+  const C = S.compare;
   const isAdmin = org.myRole === 'admin';
   const sep = T.labels.listSep;
   const active = r.students.filter((s) => s.status === 'active').length;
@@ -108,12 +114,12 @@ export default async function CircleProfilePage({
       <RangeForm from={f} to={t} />
 
       <StatGrid>
-        <Stat label={P.recitations} value={tt.recitations} />
-        <Stat label={P.recitingStudents} value={`${tt.reciting_students} / ${tt.students}`} />
-        <Stat label={P.points} value={tt.points} />
-        <Stat label={P.attendanceRate} value={pct(tt.attendance_rate)} />
-        <Stat label={P.serdApproved} value={tt.serd_approved} />
-        <Stat label={P.teacherDays} value={tt.teacher_days} />
+        <Stat label={P.recitations} value={tt.recitations} change={pt && <Delta now={tt.recitations} prev={pt.recitations} labels={C} />} />
+        <Stat label={P.recitingStudents} value={`${tt.reciting_students} / ${tt.students}`} change={pt && <Delta now={tt.reciting_students} prev={pt.reciting_students} labels={C} />} />
+        <Stat label={P.points} value={tt.points} change={pt && <Delta now={tt.points} prev={pt.points} labels={C} />} />
+        <Stat label={P.attendanceRate} value={pct(tt.attendance_rate)} change={pt && <Delta now={tt.attendance_rate} prev={pt.attendance_rate} points labels={C} />} />
+        <Stat label={P.serdApproved} value={tt.serd_approved} change={pt && <Delta now={tt.serd_approved} prev={pt.serd_approved} labels={C} />} />
+        <Stat label={P.teacherDays} value={tt.teacher_days} change={pt && <Delta now={tt.teacher_days} prev={pt.teacher_days} labels={C} />} />
       </StatGrid>
 
       <Panel title={P.students} className="mb-6" flush>

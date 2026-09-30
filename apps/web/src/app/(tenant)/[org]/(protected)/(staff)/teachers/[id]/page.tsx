@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { RangeForm } from '@/components/report-views';
-import { ActionLink, Chip, CountList, DailyBars, Facts, Panel, ProfileHeader, RecitationTable, gradeLabelMap, Stat, StatGrid, relDay, type RecRow } from '@/components/profile-views';
-import { defaultRange, fmtDay, pct } from '@/lib/reports/format';
+import { ActionLink, Chip, CountList, DailyBars, Facts, Panel, ProfileHeader, Delta, RecitationTable, gradeLabelMap, Stat, StatGrid, relDay, type RecRow } from '@/components/profile-views';
+import { defaultRange, fmtDay, pct, previousRange } from '@/lib/reports/format';
 import { getI18n } from '@/lib/i18n/server';
 
 interface TeacherProfile {
@@ -52,8 +52,9 @@ export default async function TeacherProfilePage({
   const supabase = await createClient();
 
   const grades = gradeLabelMap((await supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id)).data);
-  const [{ data, error }, { data: me }] = await Promise.all([
+  const [{ data, error }, { data: prevData }, { data: me }] = await Promise.all([
     supabase.rpc('teacher_profile', { p_org: org.id, p_id: id, p_from: f, p_to: t }),
+    supabase.rpc('teacher_profile', { p_org: org.id, p_id: id, p_from: previousRange(f, t).from, p_to: previousRange(f, t).to }),
     supabase.auth.getUser(),
   ]);
   if (error && /غير موجود|not found/i.test(error.message)) notFound();
@@ -61,6 +62,8 @@ export default async function TeacherProfilePage({
   if (!r) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error?.message ?? P.notAllowed}</p>;
   const x = r.teacher;
   const tt = r.totals;
+  const pt = (prevData as { totals: typeof r.totals } | null)?.totals;
+  const C = S.compare;
   const isAdmin = org.myRole === 'admin';
   const ATT: Record<string, string> = S.teachers.attStatus;
   const attTone = (s: string) => (s === 'present' ? 'green' : s === 'late' ? 'amber' : s === 'absent' ? 'red' : 'gray') as 'green' | 'amber' | 'red' | 'gray';
@@ -150,10 +153,10 @@ export default async function TeacherProfilePage({
 
       <StatGrid>
         <Stat label={P.students} value={tt.students} />
-        <Stat label={P.recitations} value={tt.recitations} />
-        <Stat label={P.recitingStudents} value={tt.reciting_students} />
-        <Stat label={P.points} value={tt.points} />
-        <Stat label={P.serdExamined} value={tt.serd} />
+        <Stat label={P.recitations} value={tt.recitations} change={pt && <Delta now={tt.recitations} prev={pt.recitations} labels={C} />} />
+        <Stat label={P.recitingStudents} value={tt.reciting_students} change={pt && <Delta now={tt.reciting_students} prev={pt.reciting_students} labels={C} />} />
+        <Stat label={P.points} value={tt.points} change={pt && <Delta now={tt.points} prev={pt.points} labels={C} />} />
+        <Stat label={P.serdExamined} value={tt.serd} change={pt && <Delta now={tt.serd} prev={pt.serd} labels={C} />} />
         <Stat label={P.daysPresent} value={tt.present + tt.late} hint={tt.absent ? `${ATT.absent}: ${tt.absent}` : undefined} />
       </StatGrid>
 
