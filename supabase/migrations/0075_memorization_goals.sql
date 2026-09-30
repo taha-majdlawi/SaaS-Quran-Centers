@@ -1,5 +1,5 @@
 -- =====================================================================
--- 0074: memorization goals and the khatm forecast
+-- 0075: memorization goals and the khatm forecast
 -- ---------------------------------------------------------------------
 -- A teacher (or admin) sets a pace for a student, e.g. one page per working
 -- day. The system measures what the student has memorized in mushaf pages

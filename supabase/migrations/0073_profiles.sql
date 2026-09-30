@@ -1,5 +1,5 @@
 -- =====================================================================
--- 0072: one-page profiles for the dashboard
+-- 0073: one-page profiles for the dashboard
 -- ---------------------------------------------------------------------
 -- Clicking a student, teacher or circle name opens a page with everything
 -- about it. Three read-only RPCs gather that in one round trip each:
