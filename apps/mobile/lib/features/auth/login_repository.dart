@@ -64,6 +64,12 @@ class LoginRepository {
     );
   }
 
+  /// The center's default language, readable before sign-in (get_public_site, 0069).
+  Future<String?> publicDefaultLanguage(String slug) async {
+    final res = await _client.rpc('get_public_site', params: {'p_slug': slug.trim().toLowerCase()});
+    return res is Map ? res['default_language'] as String? : null;
+  }
+
   Future<void> signInToCenter({required CenterInfo center, required String identifier, required String password}) async {
     final prefs = await SharedPreferences.getInstance();
     // Set before signing in so TenantController opens THIS center first.

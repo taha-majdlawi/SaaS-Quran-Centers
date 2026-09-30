@@ -15,16 +15,18 @@ export function SubmitButton({
   children,
   pendingText,
   className,
+  disabled = false,
 }: {
   children: React.ReactNode;
   pendingText?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
   const i18n = useClientI18n();
 
   return (
-    <button type="submit" disabled={pending} className={className}>
+    <button type="submit" disabled={pending || disabled} className={className}>
       {pending ? (
         <span className="flex items-center justify-center gap-2">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

@@ -27,3 +27,13 @@ export async function PlanCapacityNote({ orgId, kind, isAdmin }: { orgId: string
     </p>
   );
 }
+
+/** True when the plan has no seat left for one more student / teacher - the add form is then not submittable. */
+export async function planIsFull(orgId: string, kind: 'students' | 'teachers'): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc('my_access', { p_org: orgId });
+  const u = (data as { usage?: Usage | null } | null)?.usage;
+  if (!u) return false;
+  const left = kind === 'students' ? u.students_left : u.teachers_left;
+  return left === 0;
+}

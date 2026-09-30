@@ -330,6 +330,13 @@ begin
     begin perform public.platform_record_payment(v_org, (select id from public.plans limit 1), 'yearly', 0, 'cash'); v_fail := v_fail || text 'center admin recorded own payment'; exception when others then null; end;
   end if;
   reset role;
+  -- 0072: approving a payment must not lift a suspension the owner imposed (the center is still 'suspended' here)
+  begin
+    insert into public.billing_requests (organization_id, plan_id, period, amount_cents, currency, method)
+      select v_org, id, 'monthly', 0, 'USD', 'cash' from public.plans limit 1 returning id into v_cert;
+    perform public._billing_apply(v_cert);
+    v_fail := v_fail || text 'approving a payment lifted a suspension';
+  exception when others then null; end;
 
   -- ===== the anonymous door is exactly four functions (public_plans: 0068, the marketing price list)
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace

@@ -48,14 +48,16 @@ export default async function PlatformBillingPage({ searchParams }: { searchPara
   const supabase = await createClient();
   const [{ data: pendingData }, { data: allData }, { data: settingsData }, { data: orgs }, { data: plans }] = await Promise.all([
     supabase.rpc('platform_billing_requests', { p_status: 'pending', p_limit: 200 }),
-    supabase.rpc('platform_billing_requests', { p_status: '', p_limit: 50 }),
+    supabase.rpc('platform_billing_requests', { p_status: 'history', p_limit: 50 }),
     supabase.rpc('platform_get_billing_settings'),
     supabase.from('organizations').select('id, name').order('name'),
     supabase.from('plans').select('id, name, price_cents, yearly_price_cents, currency').order('price_cents'),
   ]);
   const pending = (pendingData ?? []) as Row[];
-  const history = ((allData ?? []) as Row[]).filter((r) => r.status !== 'pending');
+  const history = (allData ?? []) as Row[];
   const st = (settingsData ?? { enforce: false, grace_days: 7, instructions: '', would_lock: [] }) as Settings;
+  // nobody pays for the free plan (billing_submit_request / platform_record_payment refuse it)
+  const payablePlans = (plans ?? []).filter((p) => p.id !== st.free_plan?.id);
 
   return (
     <div className="flex max-w-5xl flex-col gap-8">
@@ -136,7 +138,7 @@ export default async function PlatformBillingPage({ searchParams }: { searchPara
           <label className="text-sm">
             الخطة
             <select name="plan" required className={field}>
-              {(plans ?? []).map((p) => (
+              {payablePlans.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
