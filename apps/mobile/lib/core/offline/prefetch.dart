@@ -15,6 +15,7 @@ import '../../features/my_portal/my_portal_repository.dart';
 import '../../features/quran/quran_data.dart';
 import '../../features/recitation/recitation_repository.dart';
 import '../../features/serd/serd_repository.dart';
+import '../../features/profiles/profiles_repository.dart';
 import '../../features/students/students_repository.dart';
 import '../tenant/organization.dart';
 import 'sync_service.dart';
@@ -151,6 +152,8 @@ class OfflinePrefetch extends ChangeNotifier {
     final eng = EngagementRepository(client);
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final month = DateTime(DateTime.now().year, DateTime.now().month);
+    final prof = ProfilesRepository(client);
+    final period = ProfilePeriod.of('month');
 
     // 1. the day and the circles (an admin downloads every circle of the center)
     final circles = <MyCircle>[];
@@ -191,7 +194,13 @@ class OfflinePrefetch extends ChangeNotifier {
         () => att.fetchExisting(c.id, today),
         () => ins.dueReviews(orgId, circleId: c.id),
         () => SyncService.instance.raw('circle-name:${c.id}', () => client.from('circles').select('name').eq('id', c.id).single()),
+        // the circle's profile, this month and the month before (for the comparison)
+        () => prof.circle(orgId, c.id, period),
+        () => prof.circle(orgId, c.id, period.previous),
       ],
+      // my own profile
+      () => prof.teacher(orgId, userId, period),
+      () => prof.teacher(orgId, userId, period.previous),
     ]);
 
     // 3. every student's file
@@ -203,6 +212,7 @@ class OfflinePrefetch extends ChangeNotifier {
         () => students.fetchStudent(id),
         () => SyncService.instance.raw('student-guardian:$id', () => client.from('students_profile').select('guardian_member_id').eq('id', id).maybeSingle()),
         if (m.hasModule('serd')) () => serd.studentSummary(orgId, id),
+        () => prof.goal(orgId, id),
       ],
     ]);
   }
@@ -220,6 +230,7 @@ class OfflinePrefetch extends ChangeNotifier {
       for (final id in kids) ...[
         () => portal.fetchDashboard(orgId, id),
         () => portal.fetchRecordDetail(orgId, id),
+        () => ProfilesRepository(client).goal(orgId, id),
       ],
     ]);
   }

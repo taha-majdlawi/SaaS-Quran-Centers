@@ -91,10 +91,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           ]),
           _section(tr(context).ins.staff, [
             for (final t in r.teachers)
-              ListTile(title: Text('${t['name']}'), subtitle: Text(t['role'] == 'admin' ? tr(context).ins.admin : tr(context).ins.teacher), onTap: () => context.push('/members/${t['id']}')),
+              ListTile(title: Text('${t['name']}'), subtitle: Text(t['role'] == 'admin' ? tr(context).ins.admin : tr(context).ins.teacher), onTap: () => context.push('/teachers/${t['id']}')),
           ]),
           _section(tr(context).ins.circles, [
-            for (final c in r.circles) ListTile(title: Text('${c['name']}'), onTap: () => context.push('/circle/${c['id']}')),
+            for (final c in r.circles) ListTile(title: Text('${c['name']}'), onTap: () => context.push('/circles/${c['id']}/profile')),
           ]),
         ],
       ]),

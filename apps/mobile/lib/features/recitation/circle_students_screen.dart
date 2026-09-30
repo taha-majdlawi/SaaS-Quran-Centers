@@ -78,6 +78,13 @@ class _CircleStudentsScreenState extends State<CircleStudentsScreen> {
                 context,
                 title: data?.name ?? tr(context).rec.circle,
                 expandedHeight: 150,
+                actions: [
+                  IconButton(
+                    tooltip: tr(context).prof.profile,
+                    icon: const Icon(Icons.insights_rounded),
+                    onPressed: () => context.push('/circles/${widget.circleId}/profile'),
+                  ),
+                ],
                 background: Align(
                   alignment: AlignmentDirectional.bottomStart,
                   child: Padding(
