@@ -1,5 +1,14 @@
 import type { Config } from 'tailwindcss';
 
+// A CSS-variable colour that still honours opacity modifiers (bg-brand/10):
+// plain var() colours silently drop them, so mix with transparent instead.
+// (Tailwind accepts a function here; its types only list strings.)
+const withAlpha = (cssVar: string) =>
+  (({ opacityValue }: { opacityValue?: string }) =>
+    opacityValue === undefined || opacityValue === '1'
+      ? cssVar
+      : `color-mix(in srgb, ${cssVar} calc(${opacityValue} * 100%), transparent)`) as unknown as string;
+
 export default {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
@@ -15,8 +24,8 @@ export default {
         // the platform's own identity - marketing pages, the platform owner
         // console, and a brand-new center before it picks its own colors.
         // See design/brand/README.md.
-        brand: 'var(--brand-primary, #1E7A54)',
-        'brand-accent': 'var(--brand-secondary, #D4A24C)',
+        brand: withAlpha('var(--brand-primary, #1E7A54)'),
+        'brand-accent': withAlpha('var(--brand-secondary, #D4A24C)'),
       },
     },
   },

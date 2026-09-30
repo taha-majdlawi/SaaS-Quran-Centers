@@ -76,7 +76,7 @@ export async function updateStudent(formData: FormData) {
   const fields = readStudentFields(formData);
 
   if (!fields.circle_id) {
-    redirect(`/students/${id}?error=${encodeURIComponent((await staffStrings()).students.needCircle)}` as never);
+    redirect(`/students/${id}/edit?error=${encodeURIComponent((await staffStrings()).students.needCircle)}` as never);
   }
 
   // Contact fields are only touched when the form actually carries them.
@@ -93,10 +93,10 @@ export async function updateStudent(formData: FormData) {
 
   if (error) {
     const message = error.code === '23505' ? (await staffStrings()).students.codeTaken : error.message;
-    redirect(`/students/${id}?error=${encodeURIComponent(message)}` as never);
+    redirect(`/students/${id}/edit?error=${encodeURIComponent(message)}` as never);
   }
 
-  redirect('/students');
+  redirect(`/students/${id}` as never);
 }
 
 export async function deleteStudent(formData: FormData) {
@@ -113,7 +113,7 @@ export async function deleteStudent(formData: FormData) {
     .maybeSingle();
 
   const { data: removed, error: delError } = await supabase.from('students_profile').delete().eq('id', id).select('id');
-  if (delError || !removed?.length) redirect(`/students/${id}?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
+  if (delError || !removed?.length) redirect(`/students/${id}/edit?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
 
   if (student && user) {
     await logAudit(supabase, {

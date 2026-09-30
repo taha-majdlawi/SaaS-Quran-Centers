@@ -74,7 +74,7 @@ export default async function StudentRecitationsPage({
       <a href="/students" className="text-sm text-brand hover:underline">
         {S.recitations.backStudents}
       </a>
-      <h1 className="mb-1 mt-2 text-2xl font-bold">{student.full_name}</h1>
+      <h1 className="mb-1 mt-2 text-2xl font-bold"><a href={`/students/${student.id}` as never} className="hover:underline">{student.full_name}</a></h1>
       <p className="mb-6 text-sm text-gray-500">
         {student.student_code} · {fmt(S.recitations.points, { n: student.total_points })}
       </p>

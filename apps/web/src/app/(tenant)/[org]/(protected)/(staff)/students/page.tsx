@@ -70,7 +70,7 @@ export default async function StudentsPage({
           {(students ?? []).map((s) => (
             <tr key={s.id} className="border-t">
               <td className="px-4 py-2">{s.student_code}</td>
-              <td className="px-4 py-2">{s.full_name}</td>
+              <td className="px-4 py-2"><a href={`/students/${s.id}` as never} className="font-medium text-brand hover:underline">{s.full_name}</a></td>
               <td className="px-4 py-2">{(s.circles as unknown as { name: string } | null)?.name ?? '—'}</td>
               <td className="px-4 py-2">{S.students.status[s.status] ?? s.status}</td>
               <td className="px-4 py-2 text-end">
@@ -78,7 +78,7 @@ export default async function StudentsPage({
                   <a href={`/students/${s.id}/recitations`} className="text-brand hover:underline">
                     {S.students.recite}
                   </a>
-                  <a href={`/students/${s.id}`} className="text-brand hover:underline">
+                  <a href={`/students/${s.id}/edit` as never} className="text-brand hover:underline">
                     {S.common.edit}
                   </a>
                   <form action={deleteStudent}>

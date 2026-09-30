@@ -38,7 +38,7 @@ export async function updateTeacherAccount(formData: FormData) {
     .maybeSingle();
 
   if (callerMembership?.role !== 'admin') {
-    redirect(`/teachers/${memberId}?error=${encodeURIComponent((await staffStrings()).common.notAllowed)}` as never);
+    redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent((await staffStrings()).common.notAllowed)}` as never);
   }
 
   const admin = createAdminClient();
@@ -56,7 +56,7 @@ export async function updateTeacherAccount(formData: FormData) {
     redirect(`/teachers?error=${encodeURIComponent((await staffStrings()).common.noMember)}` as never);
   }
   if (!['admin', 'teacher', 'student', 'guardian'].includes(role) || !['active', 'suspended'].includes(status)) {
-    redirect(`/teachers/${memberId}?error=${encodeURIComponent((await staffStrings()).common.invalid)}` as never);
+    redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent((await staffStrings()).common.invalid)}` as never);
   }
 
   const authUpdate: { email?: string; password?: string } = {};
@@ -66,7 +66,7 @@ export async function updateTeacherAccount(formData: FormData) {
   if (Object.keys(authUpdate).length > 0) {
     const { error: authError } = await admin.auth.admin.updateUserById(userId, authUpdate);
     if (authError) {
-      redirect(`/teachers/${memberId}?error=${encodeURIComponent(authError.message)}` as never);
+      redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(authError.message)}` as never);
     }
   }
 
@@ -79,7 +79,7 @@ export async function updateTeacherAccount(formData: FormData) {
     .eq('organization_id', orgId);
 
   if (memberError) {
-    redirect(`/teachers/${memberId}?error=${encodeURIComponent(memberError.message)}` as never);
+    redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(memberError.message)}` as never);
   }
 
   if (caller) {
@@ -92,5 +92,5 @@ export async function updateTeacherAccount(formData: FormData) {
     });
   }
 
-  redirect('/teachers');
+  redirect(`/teachers/${memberId}` as never);
 }

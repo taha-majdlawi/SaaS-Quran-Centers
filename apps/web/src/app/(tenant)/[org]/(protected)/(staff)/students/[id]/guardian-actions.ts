@@ -21,7 +21,7 @@ export async function createGuardianForStudent(formData: FormData) {
   const studentId = formData.get('studentId') as string;
   const identifier = (formData.get('identifier') as string)?.trim();
   const password = formData.get('password') as string;
-  const back = `/students/${studentId}`;
+  const back = `/students/${studentId}/edit`;
 
   try {
     await provisionGuardian(createAdminClient(), await callerId(), {
@@ -46,7 +46,7 @@ export async function setStudentGuardian(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const studentId = formData.get('studentId') as string;
   const guardianMemberId = ((formData.get('guardianMemberId') as string) ?? '') || null;
-  const back = `/students/${studentId}`;
+  const back = `/students/${studentId}/edit`;
 
   try {
     await linkGuardian(createAdminClient(), await callerId(), { orgId, studentId, guardianMemberId });

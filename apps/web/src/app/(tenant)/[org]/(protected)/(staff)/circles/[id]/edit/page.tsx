@@ -3,7 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { updateCircle, deleteCircle, setCircleAssistants } from '../actions';
+import { updateCircle, deleteCircle, setCircleAssistants } from '../../actions';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 
@@ -50,7 +50,10 @@ export default async function EditCirclePage({
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-6 text-2xl font-bold">{S.circles.editTitle}</h1>
+      <a href={`/circles/${circle.id}` as never} className="text-sm text-brand hover:underline">
+        {S.profile.backProfile}
+      </a>
+      <h1 className="mb-6 mt-2 text-2xl font-bold">{S.circles.editTitle}</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}

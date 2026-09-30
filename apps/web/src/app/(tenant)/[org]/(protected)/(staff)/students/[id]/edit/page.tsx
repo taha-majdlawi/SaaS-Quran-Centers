@@ -3,9 +3,8 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
-import { updateStudent, deleteStudent } from '../actions';
-import { addStudentNote } from '@/lib/insights/actions';
-import { createGuardianForStudent, setStudentGuardian } from './guardian-actions';
+import { updateStudent, deleteStudent } from '../../actions';
+import { createGuardianForStudent, setStudentGuardian } from '../guardian-actions';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 
@@ -47,17 +46,15 @@ export default async function EditStudentPage({
     .filter((m) => m.role === 'guardian');
   const currentGuardian = guardians.find((g) => g.id === student?.guardian_member_id);
   const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
-  const { data: notesData } = await supabase.rpc('list_student_notes', { p_org: org.id, p_student: id });
-  const notes = (notesData ?? []) as { id: string; body: string; visibility: string; created_at: string; author: string | null }[];
 
   if (!student) notFound();
 
   return (
     <div className="max-w-lg">
-      <h1 className="mb-2 text-2xl font-bold">{S.students.editTitle}</h1>
-      <a href={`/students/${student.id}/report` as never} className="mb-6 inline-block text-sm text-brand hover:underline">
-        {S.students.reportLink}
+      <a href={`/students/${student.id}` as never} className="text-sm text-brand hover:underline">
+        {S.profile.backProfile}
       </a>
+      <h1 className="mb-6 mt-2 text-2xl font-bold">{S.students.editTitle}</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
@@ -217,35 +214,6 @@ export default async function EditStudentPage({
           {S.students.deleteStudent}
         </ConfirmSubmitButton>
       </form>
-      <section className="mt-8 rounded-lg border bg-white p-6">
-        <h2 className="mb-1 font-semibold">{S.students.notes}</h2>
-        <p className="mb-3 text-xs text-gray-500">{S.students.notesHint}</p>
-        <form action={addStudentNote} className="mb-4 flex flex-col gap-2">
-          <input type="hidden" name="orgId" value={org.id} />
-          <input type="hidden" name="studentId" value={student.id} />
-          <input type="hidden" name="back" value={`/students/${student.id}`} />
-          <textarea name="body" required maxLength={1000} rows={2} placeholder={S.students.notePh} className="w-full rounded border px-3 py-2 text-sm" />
-          <div className="flex items-center gap-3">
-            <select name="visibility" className="rounded border px-2 py-1.5 text-sm">
-              <option value="staff_only">{S.students.staffOnly}</option>
-              <option value="guardian_visible">{S.students.guardianVisible}</option>
-            </select>
-            <SubmitButton className="rounded bg-brand px-4 py-1.5 text-sm text-white" pendingText="...">{S.common.add}</SubmitButton>
-          </div>
-        </form>
-        <ul className="flex flex-col gap-2 text-sm">
-          {notes.map((n) => (
-            <li key={n.id} className="rounded bg-gray-50 p-3">
-              <p>{n.body}</p>
-              <p className="mt-1 text-xs text-gray-400">
-                {n.author ?? '—'} · {new Date(n.created_at).toLocaleDateString(T.labels.dateLocale)}
-                {n.visibility === 'guardian_visible' ? ` · ${S.students.guardianVisible}` : ''}
-              </p>
-            </li>
-          ))}
-          {!notes.length && <li className="text-gray-400">{S.students.noNotes}</li>}
-        </ul>
-      </section>
     </div>
   );
 }

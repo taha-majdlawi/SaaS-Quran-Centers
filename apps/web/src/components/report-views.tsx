@@ -128,7 +128,7 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
           <tbody>
             {r.circles.map((c) => (
               <tr key={c.id} className="border-t">
-                <td className={td}>{c.name}</td>
+                <td className={td}><a href={`/circles/${c.id}` as never} className="text-brand hover:underline">{c.name}</a></td>
                 <td className={td}>{c.teacher ?? '—'}</td>
                 <td className={td}>{c.students}</td>
                 <td className={td}>{c.recitations}</td>
@@ -147,7 +147,7 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
             <tbody>
               {r.teachers.map((x, i) => (
                 <tr key={x.id ?? i} className="border-t first:border-0">
-                  <td className={td}>{x.name ?? '—'}</td>
+                  <td className={td}>{x.id ? <a href={`/teachers/${x.id}` as never} className="text-brand hover:underline">{x.name ?? '—'}</a> : x.name ?? '—'}</td>
                   <td className={td}>{x.recitations}</td>
                   <td className={td}>{fmt(R.pointsN, { n: x.points })}</td>
                 </tr>
@@ -168,7 +168,7 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
                 <tr key={s.id} className="border-t first:border-0">
                   <td className={td}>{i + 1}</td>
                   <td className={td}>
-                    <a href={`/students/${s.id}/report` as never} className="text-brand hover:underline">
+                    <a href={`/students/${s.id}` as never} className="text-brand hover:underline">
                       {s.name}
                     </a>
                     <span className="text-xs text-gray-400"> · {s.circle ?? '—'}</span>

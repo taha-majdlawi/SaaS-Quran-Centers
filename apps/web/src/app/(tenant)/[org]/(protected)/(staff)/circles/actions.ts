@@ -42,10 +42,10 @@ export async function updateCircle(formData: FormData) {
     .eq('id', id);
 
   if (error) {
-    redirect(`/circles/${id}?error=${encodeURIComponent(error.message)}` as never);
+    redirect(`/circles/${id}/edit?error=${encodeURIComponent(error.message)}` as never);
   }
 
-  redirect('/circles');
+  redirect(`/circles/${id}` as never);
 }
 
 export async function deleteCircle(formData: FormData) {
@@ -58,7 +58,7 @@ export async function deleteCircle(formData: FormData) {
   const { data: circle } = await supabase.from('circles').select('organization_id').eq('id', id).maybeSingle();
 
   const { data: removed, error: delError } = await supabase.from('circles').delete().eq('id', id).select('id');
-  if (delError || !removed?.length) redirect(`/circles/${id}?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
+  if (delError || !removed?.length) redirect(`/circles/${id}/edit?error=${encodeURIComponent(await deleteErrorMessage(delError))}` as never);
 
   if (circle && user) {
     await logAudit(supabase, {
@@ -82,6 +82,6 @@ export async function setCircleAssistants(formData: FormData) {
     p_circle: id,
     p_users: formData.getAll('assistant').map(String),
   });
-  if (error) redirect(`/circles/${id}?error=${encodeURIComponent(error.message)}` as never);
-  redirect(`/circles/${id}?ok=${encodeURIComponent((await staffStrings()).circles.assistantsSaved)}` as never);
+  if (error) redirect(`/circles/${id}/edit?error=${encodeURIComponent(error.message)}` as never);
+  redirect(`/circles/${id}/edit?ok=${encodeURIComponent((await staffStrings()).circles.assistantsSaved)}` as never);
 }

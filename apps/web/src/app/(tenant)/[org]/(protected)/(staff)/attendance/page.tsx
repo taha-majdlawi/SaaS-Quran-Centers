@@ -109,7 +109,7 @@ export default async function AttendancePage({
               {students.map((s) => (
                 <tr key={s.id} className="border-t">
                   <td className="px-4 py-2">{s.student_code}</td>
-                  <td className="px-4 py-2">{s.full_name}</td>
+                  <td className="px-4 py-2"><a href={`/students/${s.id}` as never} className="font-medium text-brand hover:underline">{s.full_name}</a></td>
                   <td className="px-4 py-2">
                     <div className="flex gap-4">
                       {STATUS_OPTIONS.map((opt) => (

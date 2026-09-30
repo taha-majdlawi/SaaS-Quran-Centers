@@ -3,7 +3,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { MODULE_DEFS } from '@/lib/permissions/modules';
-import { updateTeacherAccount } from '../actions';
+import { updateTeacherAccount } from '../../actions';
 import { setTeacherAttendance } from '@/lib/insights/actions';
 import { getI18n } from '@/lib/i18n/server';
 
@@ -56,7 +56,10 @@ export default async function EditTeacherPage({
 
   return (
     <div className="max-w-md">
-      <h1 className="mb-6 text-2xl font-bold">{S.teachers.editTitle}</h1>
+      <a href={`/teachers/${member.id}` as never} className="text-sm text-brand hover:underline">
+        {S.profile.backProfile}
+      </a>
+      <h1 className="mb-6 mt-2 text-2xl font-bold">{S.teachers.editTitle}</h1>
 
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
@@ -156,7 +159,7 @@ export default async function EditTeacherPage({
           <form action={setTeacherAttendance} className="mb-4 grid grid-cols-2 gap-2 text-sm">
             <input type="hidden" name="orgId" value={org.id} />
             <input type="hidden" name="teacherId" value={member.user_id} />
-            <input type="hidden" name="back" value={`/teachers/${member.id}`} />
+            <input type="hidden" name="back" value={`/teachers/${member.id}/edit`} />
             <select name="circleId" className="rounded border px-2 py-1.5">
               {teacherCircles.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
