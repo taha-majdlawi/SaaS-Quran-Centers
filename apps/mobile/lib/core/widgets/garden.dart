@@ -77,7 +77,9 @@ class ConnectionPill extends StatelessWidget {
     final waiting = sync.pendingCount;
     final (IconData icon, String label, Color color) = sync.failedCount > 0
         ? (Icons.error_outline_rounded, fmt(t.failedN, {'n': sync.failedCount}), const Color(0xFFE5484D))
-        : !sync.online
+        : sync.unreachable && waiting == 0
+            ? (Icons.wifi_off_rounded, t.noInternet, const Color(0xFFF2A93B))
+            : !sync.online
             ? (Icons.cloud_off_rounded, waiting > 0 ? fmt(t.offlineWaiting, {'n': waiting}) : t.offline, const Color(0xFFF2A93B))
             : sync.flushing
                 ? (Icons.sync_rounded, t.syncing, const Color(0xFF4CC38A))
@@ -101,6 +103,41 @@ class ConnectionPill extends StatelessWidget {
             Text(label, style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w700)),
           ]),
         ),
+      ),
+    );
+  }
+}
+
+/// The header's round sync button: a cloud that says the state at a glance
+/// (done / uploading / offline / something failed) with a count of what is
+/// still on the phone. Opens the sync center.
+class SyncButton extends StatelessWidget {
+  const SyncButton({super.key, this.onDark = true});
+
+  final bool onDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final sync = context.watch<SyncService>();
+    final waiting = sync.pendingCount + sync.failedCount;
+    final icon = sync.failedCount > 0
+        ? Icons.sync_problem_rounded
+        : !sync.online
+            ? Icons.cloud_off_rounded
+            : sync.flushing
+                ? Icons.cloud_sync_rounded
+                : waiting > 0
+                    ? Icons.cloud_upload_rounded
+                    : Icons.cloud_done_rounded;
+    final badge = sync.failedCount > 0 ? const Color(0xFFE5484D) : const Color(0xFFF2A93B);
+    return IconButton(
+      tooltip: tr(context).garden.syncCenter,
+      onPressed: () => context.push('/sync'),
+      icon: Badge(
+        isLabelVisible: waiting > 0,
+        backgroundColor: badge,
+        label: Text('$waiting'),
+        child: Icon(icon, color: onDark ? Colors.white : kInk),
       ),
     );
   }

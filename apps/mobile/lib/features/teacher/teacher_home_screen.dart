@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
 import '../../core/offline/sync_service.dart';
+import '../../core/push/instant_delivery.dart';
+import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -98,6 +100,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                 title: _teacherName.isEmpty ? org.name : _teacherName,
                 subtitle: longToday(context),
                 actions: [
+                  const SyncButton(),
                   if (tenant.hasModule('students'))
                     IconButton(tooltip: t.teach.findStudent, onPressed: () => context.push('/search'), icon: const Icon(Icons.person_search_rounded, color: Colors.white)),
                 ],
@@ -113,6 +116,8 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  // messages from the office arrive late while the phone saves battery on this app
+                  if (PushService.instance.isReady) const InstantDeliveryCard(margin: EdgeInsets.only(bottom: 14)),
                   TeacherQuickActions(actions: [
                     if (tenant.hasModule('attendance'))
                       (icon: Icons.fact_check_rounded, label: t.nav.items['/attendance']!, color: TeacherStyle.success, onTap: () => context.push('/attendance')),

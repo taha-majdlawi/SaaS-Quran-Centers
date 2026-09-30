@@ -8,7 +8,12 @@ import 'sync_service.dart';
 /// (`client_ref` for recitations / serd, upsert for attendance), so replaying
 /// after a half-received answer never duplicates anything.
 SyncService createSyncService(SupabaseClient client) {
-  final sync = SyncService(SqliteOfflineStore(), currentUser: () => client.auth.currentUser?.id);
+  final sync = SyncService(
+    SqliteOfflineStore(),
+    currentUser: () => client.auth.currentUser?.id,
+    // the cheapest call anyone may make: it answers only if the server is really there
+    probe: () => client.rpc('public_plans'),
+  );
 
   sync.register('log_recitation', (payload) => client.rpc('log_recitation', params: payload));
   sync.register('serd_submit', (payload) => client.rpc('teacher_submit_serd', params: payload));

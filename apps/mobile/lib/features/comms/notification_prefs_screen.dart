@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/i18n/i18n.dart';
 
+import '../../core/push/instant_delivery.dart';
 import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -98,6 +99,7 @@ class _NotificationPrefsScreenState extends State<NotificationPrefsScreen> {
                         return const SizedBox.shrink();
                       },
                     ),
+                    if (PushService.instance.isReady) const InstantDeliveryCard(showWhenOk: true),
                     if (prefs.paused)
                       _banner(Icons.pause_circle_rounded, tr(context).notif.paused, color: Colors.orange),
                     if (prefs.quietFrom.isNotEmpty && prefs.quietTo.isNotEmpty)

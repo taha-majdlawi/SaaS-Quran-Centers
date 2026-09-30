@@ -178,4 +178,53 @@ void main() {
       await expectLater(sync.raw('mine', () async => throw const SocketException('offline')), throwsA(isA<SocketException>()));
     });
   });
+  group('network without internet', () {
+    test('a failing request switches to the saved copy until the server answers again', () async {
+      var serverUp = true;
+      final probed = <int>[];
+      final wifi = SyncService(
+        store,
+        currentUser: () => user,
+        connectivity: const Stream.empty(),
+        probe: () async {
+          probed.add(1);
+          if (!serverUp) throw const SocketException('no route');
+        },
+        probeEvery: const Duration(milliseconds: 20),
+      );
+      await wifi.raw('list', () async => [1]);
+      expect(wifi.online, isTrue);
+
+      // the Wi-Fi is up but nothing gets through
+      serverUp = false;
+      expect(await wifi.raw('list', () async => throw const SocketException('no route')), [1]);
+      expect(wifi.unreachable, isTrue);
+      expect(wifi.online, isFalse);
+
+      // meanwhile reads don't wait on the network, and writes queue at once
+      var called = false;
+      expect(await wifi.raw('list', () async {
+        called = true;
+        return [2];
+      }), [1]);
+      expect(called, isFalse);
+      wifi.register('x', (_) async => 'sent');
+      expect((await wifi.submit('x', {}, label: 'x')).queued, isTrue);
+
+      // the server comes back: the probe notices and the queue goes up
+      serverUp = true;
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      expect(probed, isNotEmpty);
+      expect(wifi.online, isTrue);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(wifi.pendingCount, 0);
+      wifi.dispose();
+    });
+
+    test('without a probe it never gets stuck offline', () async {
+      await sync.raw('k', () async => 1);
+      await sync.raw('k', () async => throw const SocketException('no route'));
+      expect(sync.online, isTrue);
+    });
+  });
 }

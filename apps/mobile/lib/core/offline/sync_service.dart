@@ -45,9 +45,16 @@ class SubmitOutcome {
 /// the connection returns. Reads that were served from the cache raise
 /// [usingCache] so the UI can say so.
 class SyncService extends ChangeNotifier with WidgetsBindingObserver {
-  SyncService(this._store, {String? Function()? currentUser, Stream<dynamic>? connectivity, this.readTimeout = const Duration(seconds: 12)})
-      : _currentUser = currentUser ?? (() => null),
-        _connectivity = connectivity;
+  SyncService(
+    this._store, {
+    String? Function()? currentUser,
+    Stream<dynamic>? connectivity,
+    this.readTimeout = const Duration(seconds: 12),
+    Future<void> Function()? probe,
+    this.probeEvery = const Duration(seconds: 15),
+  })  : _currentUser = currentUser ?? (() => null),
+        _connectivity = connectivity,
+        _probe = probe;
 
   /// The app-wide instance (repositories are not widgets, so they reach it here).
   static late SyncService instance;
@@ -66,6 +73,14 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   DateTime? _lastSync;
   StreamSubscription<dynamic>? _connectivitySub;
   Timer? _timer;
+  Timer? _probeTimer;
+
+  /// A tiny request that succeeds only when the server can really be reached
+  /// (being on a Wi-Fi is not the same as having internet).
+  final Future<void> Function()? _probe;
+
+  /// How often an unreachable server is tried again.
+  final Duration probeEvery;
 
   List<OutboxItem> get items => List.unmodifiable(_items);
   List<OutboxItem> get mine => _items.where((i) => i.userId == _currentUser()).toList();
@@ -86,16 +101,17 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     WidgetsBinding.instance.addObserver(this);
     _connectivitySub = (_connectivity ?? Connectivity().onConnectivityChanged).listen((r) {
-      _setOnline(_hasNetwork(r));
-      unawaited(flush());
+      _setNetwork(_hasNetwork(r));
+      unawaited(checkReachable().then((_) => flush()));
     });
     if (_connectivity == null) {
       try {
-        _setOnline(_hasNetwork(await Connectivity().checkConnectivity()));
+        _setNetwork(_hasNetwork(await Connectivity().checkConnectivity()));
       } catch (_) {}
     }
     _timer = Timer.periodic(const Duration(seconds: 60), (_) => flush());
-    unawaited(flush());
+    // opening the app: find out at once whether the server answers, then upload
+    unawaited(checkReachable().then((_) => flush()));
   }
 
   @override
@@ -103,12 +119,13 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySub?.cancel();
     _timer?.cancel();
+    _probeTimer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) unawaited(flush());
+    if (state == AppLifecycleState.resumed) unawaited(checkReachable().then((_) => flush()));
   }
 
   static bool _hasNetwork(dynamic result) {
@@ -137,12 +154,19 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     // Something older for the same thing is still waiting: stay behind it.
     if (_hasPendingWithKey(orderKey, user)) return _enqueue(user, kind, payload, label, orderKey);
 
+    // no way through right now: keep it on the phone at once, no waiting
+    if (!online) return _enqueue(user, kind, payload, label, orderKey);
+
     try {
       final data = await (send != null ? send() : handler!(payload)).timeout(readTimeout);
       _markCache(false);
+      _setReachable(true);
       return SubmitOutcome(queued: false, data: data);
     } catch (e) {
-      if (isNetworkError(e)) return _enqueue(user, kind, payload, label, orderKey);
+      if (isNetworkError(e)) {
+        _setReachable(false);
+        return _enqueue(user, kind, payload, label, orderKey);
+      }
       rethrow;
     }
   }
@@ -165,7 +189,7 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   /// Uploads this account's pending items, oldest first. Stops at the first
   /// network failure; marks an item failed when the server refuses it.
   Future<void> flush() async {
-    if (_flushing) return;
+    if (_flushing || !online) return;
     final user = _currentUser();
     if (user == null) return;
     _flushing = true;
@@ -177,12 +201,14 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
         item.attempts++;
         try {
           await handler(item.payload);
+          _setReachable(true);
           await _store.remove(item.id);
           _items.removeWhere((i) => i.id == item.id);
           _lastSync = DateTime.now();
         } catch (e) {
           if (isNetworkError(e)) {
             await _store.update(item);
+            _setReachable(false);
             break;
           }
           item.status = 'failed';
@@ -217,19 +243,63 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   /// used / the write is queued instead - a weak signal should not freeze a screen.
   final Duration readTimeout;
 
-  bool _online = true;
+  bool _network = true;
+  bool _reachable = true;
 
-  /// False while the phone reports no network at all (reads then go straight to the cache).
-  bool get online => _online;
+  /// False while the phone has no network, or has one that does not reach the
+  /// server (a Wi-Fi without internet, a captive portal). Reads then go
+  /// straight to the saved copy and writes straight to the queue.
+  bool get online => _network && _reachable;
+
+  /// The phone has a network but the server does not answer through it.
+  bool get unreachable => _network && !_reachable;
 
   /// What the phone reports about its network (also called by tests).
-  void reportConnectivity(bool value) => _setOnline(value);
+  void reportConnectivity(bool value) => _setNetwork(value);
 
-  void _setOnline(bool value) {
-    if (_online == value) return;
-    _online = value;
+  void _setNetwork(bool value) {
+    if (_network == value) return;
+    final was = online;
+    _network = value;
+    // a new network: assume it works until a request says otherwise
+    if (value) _reachable = true;
+    _changed(was);
+  }
+
+  void _setReachable(bool value) {
+    // without a way to ask the server again, never get stuck on "unreachable"
+    if (_reachable == value || (!value && _probe == null)) return;
+    final was = online;
+    _reachable = value;
+    _probeTimer?.cancel();
+    _probeTimer = null;
+    // keep knocking until the server answers again
+    if (!value && _probe != null) _probeTimer = Timer.periodic(probeEvery, (_) => checkReachable());
+    _changed(was);
+  }
+
+  void _changed(bool was) {
     notifyListeners();
-    if (value) unawaited(flush());
+    if (online && !was) unawaited(flush());
+  }
+
+  bool _probing = false;
+
+  /// Asks the server a tiny question to learn whether it can really be reached.
+  Future<bool> checkReachable() async {
+    final probe = _probe;
+    if (probe == null || !_network) return online;
+    if (_probing) return online;
+    _probing = true;
+    try {
+      await probe().timeout(const Duration(seconds: 6));
+      _setReachable(true);
+    } catch (e) {
+      if (isNetworkError(e)) _setReachable(false);
+    } finally {
+      _probing = false;
+    }
+    return online;
   }
 
   /// Fetches JSON-able data from the network and remembers it; when the network
@@ -238,7 +308,7 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   Future<T> cached<T>(String key, Future<dynamic> Function() fetch, T Function(dynamic json) parse) async {
     final user = _currentUser() ?? '';
     final k = '$user|$key';
-    if (!_online) {
+    if (!online) {
       final saved = await _store.readCache(k);
       if (saved != null) {
         _markCache(true);
@@ -250,9 +320,11 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
       final data = await fetch().timeout(readTimeout);
       await _store.writeCache(k, jsonEncode(data));
       _markCache(false);
+      _setReachable(true);
       return parse(data);
     } catch (e) {
       if (!isNetworkError(e)) rethrow;
+      if (_network) _setReachable(false);
       final saved = await _store.readCache(k);
       if (saved == null) rethrow;
       _markCache(true);

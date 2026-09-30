@@ -539,9 +539,11 @@ class SDash {
 
 /// The garden design (headers, hub, navigation).
 class SGarden {
-  const SGarden({required this.online, required this.offline, required this.offlineWaiting, required this.syncing, required this.waitingN, required this.failedN, required this.tabHome, required this.tabStudents, required this.tabSerd, required this.tabChat, required this.tabMore, required this.seeAll, required this.moreTitle, required this.checkedInShort, required this.checkInShort, required this.studentsN, required this.statCircles, required this.statStudents, required this.statRecited, required this.statPresent, required this.quickTitle, required this.account, required this.notificationPrefs, required this.statJuz, required this.statPoints, required this.statStreak, required this.explore, required this.statAttendance, required this.itemsN});
+  const SGarden({required this.online, required this.offline, required this.noInternet, required this.syncCenter, required this.offlineWaiting, required this.syncing, required this.waitingN, required this.failedN, required this.tabHome, required this.tabStudents, required this.tabSerd, required this.tabChat, required this.tabMore, required this.seeAll, required this.moreTitle, required this.checkedInShort, required this.checkInShort, required this.studentsN, required this.statCircles, required this.statStudents, required this.statRecited, required this.statPresent, required this.quickTitle, required this.account, required this.notificationPrefs, required this.statJuz, required this.statPoints, required this.statStreak, required this.explore, required this.statAttendance, required this.itemsN});
   final String online;
   final String offline;
+  final String noInternet;
+  final String syncCenter;
   final String offlineWaiting;
   final String syncing;
   final String waitingN;
@@ -768,7 +770,7 @@ class SNav {
 
 /// Notifications.
 class SNotif {
-  const SNotif({required this.now, required this.minutesAgo, required this.hoursAgo, required this.today, required this.yesterday, required this.title, required this.markAll, required this.prefs, required this.none, required this.notSaved, required this.noPush, required this.noPermission, required this.paused, required this.quiet, required this.types});
+  const SNotif({required this.now, required this.minutesAgo, required this.hoursAgo, required this.today, required this.yesterday, required this.title, required this.markAll, required this.prefs, required this.none, required this.notSaved, required this.noPush, required this.noPermission, required this.paused, required this.quiet, required this.types, required this.instantTitle, required this.instantBody, required this.instantBattery, required this.instantBatteryHint, required this.instantAutostart, required this.instantAutostartHint, required this.instantOk});
   final String now;
   final String minutesAgo;
   final String hoursAgo;
@@ -784,6 +786,13 @@ class SNotif {
   final String paused;
   final String quiet;
   final String types;
+  final String instantTitle;
+  final String instantBody;
+  final String instantBattery;
+  final String instantBatteryHint;
+  final String instantAutostart;
+  final String instantAutostartHint;
+  final String instantOk;
 }
 
 /// Circles, stages, grades, attendance, activities and the public page (admin).
@@ -1929,6 +1938,8 @@ class S {
     garden: SGarden(
       online: 'متصل',
       offline: 'دون اتصال',
+      noInternet: 'الشبكة بلا إنترنت',
+      syncCenter: 'مركز المزامنة',
       offlineWaiting: 'دون اتصال · {n} بانتظار الرفع',
       syncing: 'جاري الرفع',
       waitingN: '{n} بانتظار الرفع',
@@ -2153,6 +2164,13 @@ class S {
       paused: 'أوقف المركز إرسال الإشعارات مؤقتًا — تبقى القائمة داخل التطبيق تعمل.',
       quiet: 'لا تصل إشعارات الهاتف بين {from} و{to} — تُؤجَّل إلى الصباح.',
       types: 'أنواع الإشعارات',
+      instantTitle: 'لتصل الإشعارات فورًا',
+      instantBody: 'الهاتف يوفّر البطارية بتأخير إشعارات هذا التطبيق. اسمح له بالعمل دون قيود لتصلك الرسائل لحظة إرسالها.',
+      instantBattery: 'إيقاف توفير البطارية',
+      instantBatteryHint: 'اختر «كل التطبيقات» ← بستان القرآن ← «عدم التحسين» أو «غير مقيّد».',
+      instantAutostart: 'السماح بالتشغيل التلقائي',
+      instantAutostartHint: 'في هواتف {maker} فعّل «التشغيل التلقائي» لبستان القرآن، وإلا توقفت الإشعارات حين يُغلق التطبيق.',
+      instantOk: 'الإشعارات تصل فورًا على هذا الهاتف',
     ),
     org: SOrg(
       circleStatus: {'active': 'نشطة', 'archived': 'مؤرشفة'},
@@ -3223,6 +3241,8 @@ class S {
     garden: SGarden(
       online: 'Online',
       offline: 'Offline',
+      noInternet: 'Network has no internet',
+      syncCenter: 'Sync center',
       offlineWaiting: 'Offline · {n} waiting',
       syncing: 'Uploading',
       waitingN: '{n} waiting',
@@ -3447,6 +3467,13 @@ class S {
       paused: 'The center has paused notifications for now — the in-app list still works.',
       quiet: 'Phone notifications are held between {from} and {to} — they arrive in the morning.',
       types: 'Notification types',
+      instantTitle: 'Get notifications instantly',
+      instantBody: 'The phone is saving battery by delaying this app’s notifications. Let it run unrestricted so messages arrive the moment they are sent.',
+      instantBattery: 'Turn off battery saving',
+      instantBatteryHint: 'Choose “All apps” → Bustan Al-Quran → “Don’t optimise” or “Unrestricted”.',
+      instantAutostart: 'Allow auto-start',
+      instantAutostartHint: 'On {maker} phones turn on “Auto-start” for Bustan Al-Quran, or notifications stop when the app is closed.',
+      instantOk: 'Notifications arrive instantly on this phone',
     ),
     org: SOrg(
       circleStatus: {'active': 'Active', 'archived': 'Archived'},

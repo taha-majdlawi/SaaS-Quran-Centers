@@ -15,4 +15,11 @@ SPEC = {'notif': ('Notifications.', (
   ('paused', 'أوقف المركز إرسال الإشعارات مؤقتًا — تبقى القائمة داخل التطبيق تعمل.', 'The center has paused notifications for now — the in-app list still works.'),
   ('quiet', 'لا تصل إشعارات الهاتف بين {from} و{to} — تُؤجَّل إلى الصباح.', 'Phone notifications are held between {from} and {to} — they arrive in the morning.'),
   ('types', 'أنواع الإشعارات', 'Notification types'),
+  ('instantTitle', 'لتصل الإشعارات فورًا', 'Get notifications instantly'),
+  ('instantBody', 'الهاتف يوفّر البطارية بتأخير إشعارات هذا التطبيق. اسمح له بالعمل دون قيود لتصلك الرسائل لحظة إرسالها.', 'The phone is saving battery by delaying this app’s notifications. Let it run unrestricted so messages arrive the moment they are sent.'),
+  ('instantBattery', 'إيقاف توفير البطارية', 'Turn off battery saving'),
+  ('instantBatteryHint', 'اختر «كل التطبيقات» ← بستان القرآن ← «عدم التحسين» أو «غير مقيّد».', 'Choose “All apps” → Bustan Al-Quran → “Don’t optimise” or “Unrestricted”.'),
+  ('instantAutostart', 'السماح بالتشغيل التلقائي', 'Allow auto-start'),
+  ('instantAutostartHint', 'في هواتف {maker} فعّل «التشغيل التلقائي» لبستان القرآن، وإلا توقفت الإشعارات حين يُغلق التطبيق.', 'On {maker} phones turn on “Auto-start” for Bustan Al-Quran, or notifications stop when the app is closed.'),
+  ('instantOk', 'الإشعارات تصل فورًا على هذا الهاتف', 'Notifications arrive instantly on this phone'),
 ))}

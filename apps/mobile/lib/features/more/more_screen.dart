@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/i18n/i18n.dart';
 import '../../core/offline/prefetch.dart';
+import '../../core/push/instant_delivery.dart';
+import '../../core/push/push_service.dart';
 import '../../core/offline/sync_service.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/theme/app_theme.dart';
@@ -51,6 +53,8 @@ class MoreScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // notifications held back by the phone's battery saving?
+            if (PushService.instance.isReady && tenant.hasModule('notifications')) const InstantDeliveryCard(margin: EdgeInsets.only(bottom: 14)),
             // in step with the server?
             GardenCard(
               onTap: () => context.push('/sync'),

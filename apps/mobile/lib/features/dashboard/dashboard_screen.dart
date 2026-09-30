@@ -106,6 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 title: org?.name ?? '',
                 subtitle: longToday(context),
                 actions: [
+                  const SyncButton(),
                   IconButton(tooltip: t.nav.items['/search'], onPressed: () => context.push('/search'), icon: const Icon(Icons.search_rounded, color: Colors.white)),
                 ],
                 stats: stats == null

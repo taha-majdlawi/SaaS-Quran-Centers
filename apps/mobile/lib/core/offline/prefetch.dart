@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -65,7 +65,11 @@ class OfflinePrefetch extends ChangeNotifier {
       _wasOnline = online;
     });
     _timer = Timer.periodic(staleAfter, (_) => _kick());
+    // back to the app after a while: refresh what went stale meanwhile
+    _lifecycle = AppLifecycleListener(onResume: _kick);
   }
+
+  AppLifecycleListener? _lifecycle;
 
   void _kick() {
     final client = _client;
@@ -76,6 +80,7 @@ class OfflinePrefetch extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _lifecycle?.dispose();
     super.dispose();
   }
 

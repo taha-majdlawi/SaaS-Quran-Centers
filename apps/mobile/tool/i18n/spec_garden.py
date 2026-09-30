@@ -2,6 +2,8 @@
 SPEC = {'garden': ('The garden design (headers, hub, navigation).', (
   ('online', 'متصل', 'Online'),
   ('offline', 'دون اتصال', 'Offline'),
+  ('noInternet', 'الشبكة بلا إنترنت', 'Network has no internet'),
+  ('syncCenter', 'مركز المزامنة', 'Sync center'),
   ('offlineWaiting', 'دون اتصال · {n} بانتظار الرفع', 'Offline · {n} waiting'),
   ('syncing', 'جاري الرفع', 'Uploading'),
   ('waitingN', '{n} بانتظار الرفع', '{n} waiting'),
