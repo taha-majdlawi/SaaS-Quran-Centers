@@ -92,7 +92,7 @@ export default async function MarketPage({
               {((wallets ?? []) as WalletRow[]).map((w) => (
                 <tr key={w.student_id} className="border-t">
                   <td className="px-4 py-2">
-                    {w.student_name} <span className="text-xs text-gray-500">{w.student_code}</span>
+                    <a href={`/students/${w.student_id}` as never} className="font-medium text-brand hover:underline">{w.student_name}</a> <span className="text-xs text-gray-500">{w.student_code}</span>
                   </td>
                   <td className="px-4 py-2">{w.earned_points}</td>
                   <td className="px-4 py-2 font-semibold text-brand">{money(w.balance, sym)}</td>

@@ -3,6 +3,7 @@ import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 import { PrintButton } from '@/components/print-button';
 import { fmtDay, pct, type CenterReport, type StudentReport } from '@/lib/reports/format';
+import { Delta } from '@/components/profile-views';
 
 const field = 'rounded border px-3 py-2 text-sm';
 
@@ -24,11 +25,14 @@ export async function RangeForm({ from, to, extra }: { from: string; to: string;
   );
 }
 
-function Kpi({ label, value }: { label: string; value: React.ReactNode }) {
+function Kpi({ label, value, change }: { label: string; value: React.ReactNode; change?: React.ReactNode }) {
   return (
     <div className="rounded-lg border bg-white p-4">
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-2xl font-bold text-brand">{value}</p>
+      <p className="flex flex-wrap items-baseline gap-2 text-2xl font-bold text-brand">
+        {value}
+        {change}
+      </p>
     </div>
   );
 }
@@ -36,11 +40,16 @@ function Kpi({ label, value }: { label: string; value: React.ReactNode }) {
 const th = 'px-3 py-2 text-start font-semibold';
 const td = 'px-3 py-2';
 
-export async function CenterReportView({ r, exportHref }: { r: CenterReport; exportHref: string }) {
+export async function CenterReportView({ r, exportHref, prev }: { r: CenterReport; exportHref: string; prev?: CenterReport | null }) {
   const { t: T } = await getI18n();
   const R = T.staff.centerReport;
+  const C = T.staff.compare;
   const lang = T.labels.dateLocale;
   const t = r.totals;
+  const p = prev?.totals;
+  const ch = (k: keyof CenterReport['totals'], points?: boolean) => (p ? <Delta now={t[k]} prev={p[k]} points={points} labels={C} /> : null);
+  const prevCircle = new Map((prev?.circles ?? []).map((c) => [c.id, c]));
+  const prevTeacher = new Map((prev?.teachers ?? []).map((x) => [x.id, x]));
   const max = Math.max(1, ...r.daily.map((d) => d.recitations));
   return (
     <div>
@@ -52,17 +61,18 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
       </div>
       <p className="mb-4 text-sm text-gray-500">
         {fmt(R.period, { from: fmtDay(r.from, lang), to: fmtDay(r.to, lang) })}
+        {prev && <span className="block text-xs text-gray-400">{fmt(C.vs, { from: fmtDay(prev.from, lang), to: fmtDay(prev.to, lang) })}</span>}
       </p>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Kpi label={R.activeStudents} value={t.students_active} />
-        <Kpi label={R.newStudents} value={t.new_students} />
-        <Kpi label={R.recitations} value={t.recitations} />
-        <Kpi label={R.recitingStudents} value={t.reciting_students} />
-        <Kpi label={R.points} value={t.points} />
-        <Kpi label={R.attendanceRate} value={pct(t.attendance_rate)} />
-        <Kpi label={R.serdApproved} value={`${t.serd_approved}${t.serd_average != null ? ` · ${t.serd_average}%` : ''}`} />
-        <Kpi label={R.certsIssued} value={t.certificates} />
+        <Kpi label={R.activeStudents} value={t.students_active} change={ch('students_active')} />
+        <Kpi label={R.newStudents} value={t.new_students} change={ch('new_students')} />
+        <Kpi label={R.recitations} value={t.recitations} change={ch('recitations')} />
+        <Kpi label={R.recitingStudents} value={t.reciting_students} change={ch('reciting_students')} />
+        <Kpi label={R.points} value={t.points} change={ch('points')} />
+        <Kpi label={R.attendanceRate} value={pct(t.attendance_rate)} change={ch('attendance_rate', true)} />
+        <Kpi label={R.serdApproved} value={`${t.serd_approved}${t.serd_average != null ? ` · ${t.serd_average}%` : ''}`} change={ch('serd_approved')} />
+        <Kpi label={R.certsIssued} value={t.certificates} change={ch('certificates')} />
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2">
@@ -104,7 +114,7 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
           <h2 className="mb-3 text-sm font-semibold">{R.daily}</h2>
           <div className="flex h-24 items-end gap-1">
             {r.daily.map((d) => (
-              <div key={d.date} className="flex flex-1 flex-col items-center justify-end" title={`${fmtDay(d.date, lang)}: ${d.recitations}`}>
+              <div key={d.date} className="flex h-full flex-1 flex-col items-center justify-end" title={`${fmtDay(d.date, lang)}: ${d.recitations}`}>
                 <div className="w-full min-w-1 rounded-t bg-brand" style={{ height: `${(d.recitations / max) * 100}%` }} />
               </div>
             ))}
@@ -123,17 +133,23 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
               <th className={th}>{R.recitations}</th>
               <th className={th}>{R.points}</th>
               <th className={th}>{R.attendance}</th>
+              {prev && <th className={th}>{C.colChange}</th>}
             </tr>
           </thead>
           <tbody>
             {r.circles.map((c) => (
               <tr key={c.id} className="border-t">
-                <td className={td}>{c.name}</td>
+                <td className={td}><a href={`/circles/${c.id}` as never} className="text-brand hover:underline">{c.name}</a></td>
                 <td className={td}>{c.teacher ?? '—'}</td>
                 <td className={td}>{c.students}</td>
                 <td className={td}>{c.recitations}</td>
                 <td className={td}>{c.points}</td>
                 <td className={td}>{pct(c.attendance_rate)}</td>
+                {prev && (
+                  <td className={td}>
+                    <Delta now={c.recitations} prev={prevCircle.get(c.id)?.recitations ?? 0} labels={C} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -147,9 +163,14 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
             <tbody>
               {r.teachers.map((x, i) => (
                 <tr key={x.id ?? i} className="border-t first:border-0">
-                  <td className={td}>{x.name ?? '—'}</td>
+                  <td className={td}>{x.id ? <a href={`/teachers/${x.id}` as never} className="text-brand hover:underline">{x.name ?? '—'}</a> : x.name ?? '—'}</td>
                   <td className={td}>{x.recitations}</td>
                   <td className={td}>{fmt(R.pointsN, { n: x.points })}</td>
+                  {prev && (
+                    <td className={td}>
+                      <Delta now={x.recitations} prev={prevTeacher.get(x.id)?.recitations ?? 0} labels={C} />
+                    </td>
+                  )}
                 </tr>
               ))}
               {!r.teachers.length && (
@@ -168,7 +189,7 @@ export async function CenterReportView({ r, exportHref }: { r: CenterReport; exp
                 <tr key={s.id} className="border-t first:border-0">
                   <td className={td}>{i + 1}</td>
                   <td className={td}>
-                    <a href={`/students/${s.id}/report` as never} className="text-brand hover:underline">
+                    <a href={`/students/${s.id}` as never} className="text-brand hover:underline">
                       {s.name}
                     </a>
                     <span className="text-xs text-gray-400"> · {s.circle ?? '—'}</span>

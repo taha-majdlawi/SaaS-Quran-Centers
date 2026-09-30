@@ -1,3 +1,4 @@
+import { GoalCard, type GoalProgress } from '@/components/goal-card';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
@@ -58,14 +59,16 @@ export default async function MyPortalPage({
   const current = rows.find((x) => x.id === s) ?? rows[0];
   const today = localDate((orgRow?.timezone as string | null) || 'UTC');
 
-  const [dash, serd, ann, cal, badges, settings] = await Promise.all([
+  const [dash, serd, ann, cal, badges, settings, goalRes] = await Promise.all([
     supabase.rpc('get_student_dashboard', { p_org: org.id, p_student_id: current.id }),
     supabase.rpc('serd_student_summary', { p_org: org.id, p_student: current.id }),
     on('announcements') ? supabase.rpc('list_announcements', { p_org: org.id }) : Promise.resolve({ data: [] }),
     on('calendar') ? supabase.rpc('calendar_range', { p_org: org.id, p_from: today, p_to: addDays(today, 7), p_circle: null }) : Promise.resolve({ data: null }),
     on('badges') ? supabase.rpc('get_student_badges', { p_org: org.id, p_student: current.id }) : Promise.resolve({ data: [] }),
     supabase.from('organization_settings').select('key, value').eq('organization_id', org.id).in('key', PRAYER_KEYS),
+    supabase.rpc('student_goal_progress', { p_org: org.id, p_student: current.id }),
   ]);
+  const goal = goalRes.data as GoalProgress | null;
 
   const d = dash.data as Dashboard | null;
   const announcements = ((ann.data ?? []) as AnnouncementRow[]).filter((a) => !a.draft).slice(0, 2);
@@ -157,6 +160,7 @@ export default async function MyPortalPage({
           prayerSettings={prayerSettings}
           inspiration={inspiration}
           recordHref={`/my/record?s=${current.id}`}
+          goalCard={goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
           t={t}
         />
       )}
@@ -173,6 +177,7 @@ function StudentHome({
   prayerSettings,
   inspiration,
   recordHref,
+  goalCard,
   t,
 }: {
   d: Dashboard;
@@ -183,6 +188,7 @@ function StudentHome({
   prayerSettings: Record<string, string>;
   inspiration: ReturnType<typeof dailyInspiration>;
   recordHref: string;
+  goalCard: React.ReactNode;
   t: Dictionary;
 }) {
   const p = t.portal;
@@ -230,6 +236,8 @@ function StudentHome({
         <p className="font-semibold">{fmt(p.progress, { parts: student.total_parts_count, pct: student.total_progress })}</p>
         {student.next_plan && <p className="mt-3 rounded bg-amber-50 p-3">{fmt(p.nextPlan, { plan: student.next_plan })}</p>}
       </section>
+
+      {goalCard}
 
       <section className="flex flex-col gap-4 rounded-lg border bg-white p-4 text-sm">
         {goals.map((g) => (

@@ -68,12 +68,12 @@ export default async function TeachersPage({ params }: { params: Promise<{ org: 
         <tbody>
           {teachers.map((t) => (
             <tr key={t.id} className="border-t">
-              <td className="px-4 py-2">{t.full_name ?? '—'}</td>
+              <td className="px-4 py-2"><a href={`/teachers/${t.id}` as never} className="font-medium text-brand hover:underline">{t.full_name ?? t.email ?? '—'}</a></td>
               <td className="px-4 py-2">{t.email}</td>
               <td className="px-4 py-2">{(circleNamesByTeacher.get(t.user_id) ?? []).join(T.labels.listSep) || '—'}</td>
               {isAdmin && (
                 <td className="px-4 py-2 text-end">
-                  <a href={`/teachers/${t.id}`} className="text-brand hover:underline">
+                  <a href={`/teachers/${t.id}/edit` as never} className="text-brand hover:underline">
                     {S.common.edit}
                   </a>
                 </td>

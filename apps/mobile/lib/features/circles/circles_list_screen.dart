@@ -33,7 +33,7 @@ class CirclesListScreen extends StatelessWidget {
           label: kCircleStatusLabels[c.status] ?? c.status,
           color: c.status == 'active' ? Colors.green : Colors.grey,
         ),
-        path: '/circles/${c.id}',
+        path: '/circles/${c.id}/profile',
         searchText: '${c.stageName ?? ''} ${c.teacherName ?? ''}',
       ),
     );

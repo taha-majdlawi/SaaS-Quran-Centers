@@ -1,0 +1,72 @@
+# Checks every change before it can reach the users: the web app builds (types
+# and lint included), the mobile app analyses and its tests pass, the i18n
+# files match their specs, and every migration applies to a fresh database
+# where the invariants hold.
+name: CI
+
+on:
+  # every branch: a pull request shows these results on its commits
+  push:
+    branches: ['**']
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  web:
+    name: Web (build, types, lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: i18n strings match their specs
+        working-directory: apps/web
+        run: python3 tool/i18n/gen.py && git diff --exit-code -- src/lib/i18n
+      - name: Build
+        run: npm run build --workspace apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+  mobile:
+    name: Mobile (analyze, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: i18n strings match their specs
+        run: python3 tool/i18n/gen.py && git diff --exit-code -- lib/core/i18n
+      - run: flutter analyze
+      - run: flutter test
+
+  db:
+    name: Database (migrations, invariants)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply every migration to a fresh database and run the invariants
+        run: bash supabase/tests/ci/run.sh
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres

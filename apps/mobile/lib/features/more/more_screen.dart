@@ -8,6 +8,7 @@ import '../../core/offline/prefetch.dart';
 import '../../core/push/instant_delivery.dart';
 import '../../core/push/push_service.dart';
 import '../../core/offline/sync_service.dart';
+import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_drawer.dart';
@@ -78,6 +79,19 @@ class MoreScreen extends StatelessWidget {
                 const ConnectionPill(onDark: false),
               ]),
             ),
+            if (membership?.role == OrgRole.teacher || membership?.role == OrgRole.admin)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: GardenCard(
+                  onTap: () => context.push('/teachers/${context.read<AuthController>().currentUser?.id}'),
+                  child: Row(children: [
+                    const IconBubble(Icons.insights_rounded, color: Color(0xFF6D4AA8)),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(t.prof.myProfile, style: const TextStyle(fontWeight: FontWeight.w800, color: kInk))),
+                    Icon(forwardChevron(context), color: kInkMuted),
+                  ]),
+                ),
+              ),
             for (final section in kNavSections)
               ..._section(context, section, tenant, tabs),
             GardenSection(

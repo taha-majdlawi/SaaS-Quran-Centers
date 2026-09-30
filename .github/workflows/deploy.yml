@@ -1,0 +1,91 @@
+# Ships main: once CI is green, the database migrations go to Supabase (and the
+# invariants are re-checked there), then the site is built and deployed to
+# Cloudflare. Nothing to run on a laptop.
+#
+# Repository secrets (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_DB_URL        the same value as SUPABASE_DB_URL in supabase/.env
+#   WEB_ENV                the whole content of apps/web/.env.local
+#   CLOUDFLARE_API_TOKEN   a token with "Edit Cloudflare Workers" permission
+#   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account id
+# See docs/DEPLOY.md.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  database:
+    name: Database migrations
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secrets are set
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then echo "::error::SUPABASE_DB_URL secret is missing (see docs/DEPLOY.md)"; exit 1; fi
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Push migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - name: Invariants on the live database (rolled back)
+        run: |
+          out=$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/invariants.sql 2>&1 || true)
+          result=$(grep -o 'RESULT: .*' <<< "$out" | head -1)
+          echo "${result:-$out}"
+          [[ "$result" == "RESULT: OK"* ]]
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+  web:
+    name: Website (Cloudflare)
+    needs: database
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secrets are set
+        env:
+          WEB_ENV: ${{ secrets.WEB_ENV }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          for k in WEB_ENV CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!k}" ]; then echo "::error::$k secret is missing (see docs/DEPLOY.md)"; exit 1; fi
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Environment file
+        run: printf '%s\n' "$WEB_ENV" > apps/web/.env.local
+        env:
+          WEB_ENV: ${{ secrets.WEB_ENV }}
+      - name: Build and deploy
+        run: npm run deploy --workspace apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Site answers
+        run: |
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://bustan-alquran.com/) && [ "$code" -lt 500 ] && { echo "HTTP $code"; exit 0; }
+            sleep 10
+          done
+          echo "::error::bustan-alquran.com did not answer after the deploy"; exit 1

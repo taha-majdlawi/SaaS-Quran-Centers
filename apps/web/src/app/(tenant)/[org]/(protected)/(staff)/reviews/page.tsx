@@ -47,7 +47,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ org: s
             <ul className="divide-y text-sm">
               {[...students.entries()].map(([id, list]) => (
                 <li key={id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <a href={`/students/${id}/report` as never} className="font-medium text-brand hover:underline">
+                  <a href={`/students/${id}` as never} className="font-medium text-brand hover:underline">
                     {list[0].student_name}
                   </a>
                   <span className="flex flex-wrap gap-1.5">

@@ -65,9 +65,9 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
         <tbody>
           {(circles ?? []).map((c) => (
             <tr key={c.id} className="border-t">
-              <td className="px-4 py-2">{c.name}</td>
+              <td className="px-4 py-2"><a href={`/circles/${c.id}` as never} className="font-medium text-brand hover:underline">{c.name}</a></td>
               <td className="px-4 py-2">{(c.stages as unknown as { name: string } | null)?.name ?? '—'}</td>
-              <td className="px-4 py-2">{c.teacher_id ? teacherNameByUserId.get(c.teacher_id) ?? '—' : '—'}
+              <td className="px-4 py-2">{c.teacher_id ? <a href={`/teachers/${c.teacher_id}` as never} className="text-brand hover:underline">{teacherNameByUserId.get(c.teacher_id) ?? '—'}</a> : '—'}
                 {(assistantsByCircle.get(c.id) ?? []).length > 0 && (
                   <span className="mt-0.5 block text-xs text-gray-500">{fmt(S.circles.assistant, { names: (assistantsByCircle.get(c.id) ?? []).join(T.labels.listSep) })}</span>
                 )}
@@ -76,7 +76,7 @@ export default async function CirclesPage({ params }: { params: Promise<{ org: s
               <td className="px-4 py-2">{S.circles.status[c.status] ?? c.status}</td>
               <td className="px-4 py-2 text-end">
                 {isAdmin && (
-                  <a href={`/circles/${c.id}`} className="text-brand hover:underline">
+                  <a href={`/circles/${c.id}/edit` as never} className="text-brand hover:underline">
                     {S.common.edit}
                   </a>
                 )}

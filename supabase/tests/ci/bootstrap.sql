@@ -1,0 +1,43 @@
+-- A bare Postgres made to look enough like Supabase for the migrations to apply:
+-- the API roles, the auth / storage / cron / net / vault schemas as stubs.
+-- Used by CI (supabase/tests/ci/run.sh), never by a real project.
+do $r$ begin create role anon nologin noinherit; exception when duplicate_object then null; end $r$;
+do $r$ begin create role authenticated nologin noinherit; exception when duplicate_object then null; end $r$;
+do $r$ begin create role service_role nologin noinherit bypassrls; exception when duplicate_object then null; end $r$;
+do $r$ begin create role authenticator login noinherit; exception when duplicate_object then null; end $r$;
+grant anon, authenticated, service_role to authenticator;
+grant anon, authenticated, service_role to postgres;
+create schema extensions;
+create extension pgcrypto with schema extensions;
+do $r$ begin execute format('alter database %I set search_path = public, extensions', current_database()); end $r$;
+create schema auth;
+create table auth.users (id uuid primary key default gen_random_uuid(), email text, phone text, raw_user_meta_data jsonb default '{}', raw_app_meta_data jsonb default '{}', created_at timestamptz default now(), last_sign_in_at timestamptz, encrypted_password text, email_confirmed_at timestamptz, deleted_at timestamptz, banned_until timestamptz, is_anonymous boolean default false, instance_id uuid, aud text, role text, updated_at timestamptz, confirmation_token text, recovery_token text, email_change_token_new text, email_change text, is_sso_user boolean default false);
+create table auth.identities (id uuid primary key default gen_random_uuid(), user_id uuid, provider text, provider_id text, identity_data jsonb, created_at timestamptz, updated_at timestamptz, last_sign_in_at timestamptz);
+create function auth.uid() returns uuid language sql stable as $$ select nullif(coalesce(current_setting('request.jwt.claim.sub', true), (current_setting('request.jwt.claims', true)::jsonb ->> 'sub')), '')::uuid $$;
+create function auth.role() returns text language sql stable as $$ select coalesce(current_setting('request.jwt.claim.role', true), (current_setting('request.jwt.claims', true)::jsonb ->> 'role')) $$;
+create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
+grant usage on schema auth to anon, authenticated, service_role;
+grant execute on all functions in schema auth to anon, authenticated, service_role;
+create schema storage;
+create table storage.buckets (id text primary key, name text, owner uuid, public boolean default false, file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now(), updated_at timestamptz default now());
+create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text references storage.buckets, name text, owner uuid, owner_id text, metadata jsonb, path_tokens text[] generated always as (string_to_array(name, '/')) stored, created_at timestamptz default now(), updated_at timestamptz default now(), last_accessed_at timestamptz);
+alter table storage.objects enable row level security;
+create function storage.foldername(name text) returns text[] language sql immutable as $$ select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'),1)-1] $$;
+create function storage.filename(name text) returns text language sql immutable as $$ select (string_to_array(name, '/'))[array_length(string_to_array(name, '/'),1)] $$;
+create function storage.extension(name text) returns text language sql immutable as $$ select reverse(split_part(reverse(name), '.', 1)) $$;
+grant usage on schema storage to anon, authenticated, service_role;
+grant all on storage.objects, storage.buckets to anon, authenticated, service_role;
+create schema cron;
+create table cron.job (jobid bigserial primary key, schedule text, command text, jobname text unique, active boolean default true);
+create table cron.job_run_details (runid bigserial, jobid bigint, status text, start_time timestamptz, end_time timestamptz, return_message text);
+create function cron.schedule(n text, s text, c text) returns bigint language sql as $$ insert into cron.job(jobname, schedule, command) values (n, s, c) on conflict (jobname) do update set schedule = excluded.schedule, command = excluded.command returning jobid $$;
+create function cron.unschedule(n text) returns boolean language sql as $$ delete from cron.job where jobname = n returning true $$;
+create schema net;
+create function net.http_post(url text, body jsonb default '{}', params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds int default 5000) returns bigint language sql as $$ select 1::bigint $$;
+create schema vault;
+create table vault.decrypted_secrets (name text, decrypted_secret text);
+create publication supabase_realtime;
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;

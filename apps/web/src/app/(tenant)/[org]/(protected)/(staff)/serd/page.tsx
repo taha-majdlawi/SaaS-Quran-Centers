@@ -26,7 +26,11 @@ async function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmi
     <div className="rounded-lg border bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <span className="font-semibold">{row.student_name}</span>
+          {row.student_id ? (
+            <a href={`/students/${row.student_id}` as never} className="font-semibold text-brand hover:underline">{row.student_name}</a>
+          ) : (
+            <span className="font-semibold">{row.student_name}</span>
+          )}
           {row.student_code && <span className="text-xs text-gray-500"> · {row.student_code}</span>}
           {!row.student_id && row.status !== 'scheduled' && (
             <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{S.serd.unlinked}</span>

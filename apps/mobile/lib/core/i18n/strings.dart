@@ -912,6 +912,65 @@ class SPriv {
   final String submit;
 }
 
+/// Teacher / circle profiles and the memorization goal.
+class SProf {
+  const SProf({required this.thisMonth, required this.lastMonth, required this.last90, required this.vsPrev, required this.same, required this.newV, required this.recitations, required this.reciting, required this.points, required this.attendance, required this.serdHeard, required this.serdApproved, required this.daysPresent, required this.teacherDays, required this.students, required this.circles, required this.assistant, required this.teacher, required this.assistants, required this.recent, required this.teacherAtt, required this.nothing, required this.lastRec, required this.never, required this.today, required this.daysAgo, required this.profile, required this.myProfile, required this.message, required this.call, required this.notAllowed, required this.goalTitle, required this.memorized, required this.percentQuran, required this.pace, required this.paceV, required this.goalPace, required this.goalPaceV, required this.sinceStart, required this.forecast, required this.forecastGoal, required this.noPace, required this.noGoal, required this.goalStatus, required this.setGoal, required this.editGoal, required this.pagesPerDay, required this.targetPages, required this.note, required this.save, required this.clearGoal, required this.goalSaved, required this.invalidPages, required this.outboxGoal});
+  final String thisMonth;
+  final String lastMonth;
+  final String last90;
+  final String vsPrev;
+  final String same;
+  final String newV;
+  final String recitations;
+  final String reciting;
+  final String points;
+  final String attendance;
+  final String serdHeard;
+  final String serdApproved;
+  final String daysPresent;
+  final String teacherDays;
+  final String students;
+  final String circles;
+  final String assistant;
+  final String teacher;
+  final String assistants;
+  final String recent;
+  final String teacherAtt;
+  final String nothing;
+  final String lastRec;
+  final String never;
+  final String today;
+  final String daysAgo;
+  final String profile;
+  final String myProfile;
+  final String message;
+  final String call;
+  final String notAllowed;
+  final String goalTitle;
+  final String memorized;
+  final String percentQuran;
+  final String pace;
+  final String paceV;
+  final String goalPace;
+  final String goalPaceV;
+  final String sinceStart;
+  final String forecast;
+  final String forecastGoal;
+  final String noPace;
+  final String noGoal;
+  final Map<String, String> goalStatus;
+  final String setGoal;
+  final String editGoal;
+  final String pagesPerDay;
+  final String targetPages;
+  final String note;
+  final String save;
+  final String clearGoal;
+  final String goalSaved;
+  final String invalidPages;
+  final String outboxGoal;
+}
+
 /// The Quran screens (the text itself stays Arabic).
 class SQuran {
   const SQuran({required this.title, required this.surahs, required this.search, required this.continueReading, required this.position, required this.ayahs, required this.noBookmarks, required this.noBookmarksHint, required this.playFailed, required this.ayahOf, required this.playFromHere, required this.unmark, required this.copyAyah, required this.copied, required this.smaller, required this.bigger, required this.loadFailed, required this.repeat, required this.noRepeat, required this.prevAyah, required this.nextAyah, required this.credit, required this.bookmarks, required this.mark, required this.repeatN});
@@ -1404,7 +1463,7 @@ class SUi {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui});
   /// 'ar' or 'en'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1433,6 +1492,7 @@ class S {
   final SOrg org;
   final SPlan plan;
   final SPriv priv;
+  final SProf prof;
   final SQuran quran;
   final SRec rec;
   final SRep rep;
@@ -2279,6 +2339,62 @@ class S {
       last: 'آخر طلب: {status}',
       reason: 'السبب (اختياري)',
       submit: 'طلب حذف حسابي وبياناتي',
+    ),
+    prof: SProf(
+      thisMonth: 'هذا الشهر',
+      lastMonth: 'الشهر الماضي',
+      last90: 'آخر 3 أشهر',
+      vsPrev: 'مقارنة بالفترة السابقة',
+      same: 'بلا تغيير',
+      newV: 'جديد',
+      recitations: 'التسميعات',
+      reciting: 'طلاب سمّعوا',
+      points: 'النقاط',
+      attendance: 'الحضور',
+      serdHeard: 'سرد استمع له',
+      serdApproved: 'سرد معتمد',
+      daysPresent: 'أيام حضوره',
+      teacherDays: 'أيام حضور المعلم',
+      students: 'الطلاب',
+      circles: 'الحلقات',
+      assistant: 'مساعد',
+      teacher: 'المعلم',
+      assistants: 'المساعدون',
+      recent: 'آخر التسميعات',
+      teacherAtt: 'حضور المعلم',
+      nothing: 'لا شيء في هذه الفترة',
+      lastRec: 'آخر تسميع: {v}',
+      never: 'لم يسمّع بعد',
+      today: 'اليوم',
+      daysAgo: 'منذ {n} يوم',
+      profile: 'الملف',
+      myProfile: 'ملفي وإنجازي',
+      message: 'مراسلة',
+      call: 'اتصال',
+      notAllowed: 'ليست لديك صلاحية لعرض هذا الملف',
+      goalTitle: 'هدف الحفظ والختمة',
+      memorized: '{n} من {total} صفحة',
+      percentQuran: '{p}% من القرآن',
+      pace: 'السرعة الفعلية',
+      paceV: '{n} صفحة/يوم دوام',
+      goalPace: 'الهدف',
+      goalPaceV: '{n} صفحة يوميًا',
+      sinceStart: 'منذ بدء الهدف: {actual} من {expected} صفحة',
+      forecast: 'الختمة المتوقعة',
+      forecastGoal: 'بسرعة الهدف',
+      noPace: 'لا حفظ جديد مؤخرًا',
+      noGoal: 'لم يُحدَّد هدف بعد',
+      goalStatus: {'ahead': 'متقدّم', 'on_track': 'على الخطة', 'behind': 'متأخر', 'done': 'أتمّ الهدف'},
+      setGoal: 'تحديد الهدف',
+      editGoal: 'تعديل الهدف',
+      pagesPerDay: 'صفحات في كل يوم دوام',
+      targetPages: 'الهدف بالصفحات (604 = الختمة)',
+      note: 'ملاحظة (اختياري)',
+      save: 'حفظ',
+      clearGoal: 'إلغاء الهدف',
+      goalSaved: 'حُفظ الهدف',
+      invalidPages: 'أدخل عددًا بين 0.25 و20',
+      outboxGoal: 'هدف حفظ {name}',
     ),
     quran: SQuran(
       title: 'المصحف',
@@ -3582,6 +3698,62 @@ class S {
       last: 'Latest request: {status}',
       reason: 'Reason (optional)',
       submit: 'Request deletion of my account and data',
+    ),
+    prof: SProf(
+      thisMonth: 'This month',
+      lastMonth: 'Last month',
+      last90: 'Last 3 months',
+      vsPrev: 'Compared with the period before',
+      same: 'No change',
+      newV: 'New',
+      recitations: 'Recitations',
+      reciting: 'Students who recited',
+      points: 'Points',
+      attendance: 'Attendance',
+      serdHeard: 'Serd heard',
+      serdApproved: 'Serd approved',
+      daysPresent: 'Days present',
+      teacherDays: 'Teacher’s days present',
+      students: 'Students',
+      circles: 'Circles',
+      assistant: 'Assistant',
+      teacher: 'Teacher',
+      assistants: 'Assistants',
+      recent: 'Latest recitations',
+      teacherAtt: 'Teacher attendance',
+      nothing: 'Nothing in this period',
+      lastRec: 'Last: {v}',
+      never: 'Not yet',
+      today: 'Today',
+      daysAgo: '{n} days ago',
+      profile: 'Profile',
+      myProfile: 'My profile & results',
+      message: 'Message',
+      call: 'Call',
+      notAllowed: 'You don’t have access to this profile',
+      goalTitle: 'Memorization goal & khatm',
+      memorized: '{n} of {total} pages',
+      percentQuran: '{p}% of the Quran',
+      pace: 'Actual pace',
+      paceV: '{n} pages/working day',
+      goalPace: 'Goal',
+      goalPaceV: '{n} pages a day',
+      sinceStart: 'Since the goal started: {actual} of {expected} pages',
+      forecast: 'Expected finish',
+      forecastGoal: 'At the goal pace',
+      noPace: 'No new memorisation lately',
+      noGoal: 'No goal set yet',
+      goalStatus: {'ahead': 'Ahead', 'on_track': 'On track', 'behind': 'Behind', 'done': 'Done'},
+      setGoal: 'Set goal',
+      editGoal: 'Edit goal',
+      pagesPerDay: 'Pages per working day',
+      targetPages: 'Target in pages (604 = whole Quran)',
+      note: 'Note (optional)',
+      save: 'Save',
+      clearGoal: 'Remove goal',
+      goalSaved: 'Goal saved',
+      invalidPages: 'Enter a number between 0.25 and 20',
+      outboxGoal: 'Memorization goal for {name}',
     ),
     quran: SQuran(
       title: 'Quran',

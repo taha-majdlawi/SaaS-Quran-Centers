@@ -23,7 +23,9 @@ import 'comms_repository.dart';
       'badge_awarded' => (icon: Icons.emoji_events_rounded, color: const Color(0xFFF9A825)),
       'weekly_digest' => (icon: Icons.insights_rounded, color: const Color(0xFF3949AB)),
       'attendance_reminder' => (icon: Icons.fact_check_rounded, color: const Color(0xFF00897B)),
-      'student_idle' => (icon: Icons.notifications_active_rounded, color: const Color(0xFFEF6C00)),
+      'student_idle' || 'student_idle_teacher' => (icon: Icons.notifications_active_rounded, color: const Color(0xFFEF6C00)),
+      'student_absences' => (icon: Icons.person_off_rounded, color: const Color(0xFFC62828)),
+      'teacher_checkin_reminder' => (icon: Icons.how_to_reg_rounded, color: const Color(0xFF00897B)),
       'deletion_request' || 'deletion_reviewed' => (icon: Icons.privacy_tip_rounded, color: const Color(0xFF546E7A)),
       'billing_reminder' || 'billing_reviewed' || 'billing_downgraded' || 'capacity_warning' => (icon: Icons.receipt_long_rounded, color: const Color(0xFF6A1B9A)),
       'manual' => (icon: Icons.mark_email_unread_rounded, color: const Color(0xFF6D4C41)),
@@ -101,6 +103,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return portal ? '/my' : '/serd';
       case 'student_idle':
         return portal ? '/my' : null;
+      case 'student_idle_teacher':
+      case 'student_absences':
+        return portal ? null : '/students/${n.refId}/file';
+      case 'teacher_checkin_reminder':
+        return portal ? null : '/dashboard';
       case 'market_order':
       case 'market_fulfilled':
       case 'market_cancelled':

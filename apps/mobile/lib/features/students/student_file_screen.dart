@@ -22,6 +22,7 @@ import '../serd/serd_models.dart';
 import '../serd/serd_repository.dart';
 import '../serd/serd_widgets.dart';
 import '../teacher/teacher_widgets.dart';
+import '../profiles/profile_widgets.dart';
 import '../../core/i18n/i18n.dart';
 
 class _FileData {
@@ -386,6 +387,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
             mainAxisSpacing: 10,
             children: stats,
           ),
+          const SizedBox(height: 14),
+          GoalCard(studentId: widget.studentId, studentName: d.fullName),
           if (last != null) ...[
             SectionTitle(tr(context).stu.lastRecitation),
             Builder(builder: (context) {

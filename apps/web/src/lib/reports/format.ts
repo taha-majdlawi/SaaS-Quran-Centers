@@ -96,3 +96,34 @@ export function defaultRange(): { from: string; to: string } {
 }
 
 export const pct = (v: number | null | undefined) => (v == null ? '—' : `${v}%`);
+
+/**
+ * The period to compare [from, to] with: when it starts on the 1st, the same
+ * days of the previous month (1–15 Oct vs 1–15 Sep; a whole month vs the whole
+ * previous month); otherwise the same number of days just before it.
+ */
+export function previousRange(from: string, to: string): { from: string; to: string } {
+  const iso = (d: Date) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  const f = new Date(`${from}T00:00:00Z`);
+  const t = new Date(`${to}T00:00:00Z`);
+  if (f.getUTCDate() === 1) {
+    const pf = new Date(Date.UTC(f.getUTCFullYear(), f.getUTCMonth() - 1, 1));
+    const lastOfPrev = new Date(Date.UTC(f.getUTCFullYear(), f.getUTCMonth(), 0)).getUTCDate();
+    const sameMonth = t.getUTCFullYear() === f.getUTCFullYear() && t.getUTCMonth() === f.getUTCMonth();
+    const lastOfThis = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0)).getUTCDate();
+    if (sameMonth) {
+      const day = t.getUTCDate() === lastOfThis ? lastOfPrev : Math.min(t.getUTCDate(), lastOfPrev);
+      return { from: iso(pf), to: iso(new Date(Date.UTC(pf.getUTCFullYear(), pf.getUTCMonth(), day))) };
+    }
+  }
+  const days = Math.round((t.getTime() - f.getTime()) / 86400000) + 1;
+  const pt = new Date(f.getTime() - 86400000);
+  return { from: iso(new Date(pt.getTime() - (days - 1) * 86400000)), to: iso(pt) };
+}
+
+/** Change from `prev` to `now`: the difference and, when it means something, the percentage. */
+export function delta(now: number | null | undefined, prev: number | null | undefined): { diff: number; pct: number | null } | null {
+  if (now == null || prev == null) return null;
+  const diff = Math.round((Number(now) - Number(prev)) * 10) / 10;
+  return { diff, pct: Number(prev) === 0 ? null : Math.round((diff / Number(prev)) * 100) };
+}

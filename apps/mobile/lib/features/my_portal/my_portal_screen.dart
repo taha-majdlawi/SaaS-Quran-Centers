@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../profiles/profile_widgets.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/data/quran_data.dart';
 import '../../core/i18n/i18n.dart';
@@ -156,7 +157,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
                               return RefreshIndicator(
                                 onRefresh: () async => _reload(),
                                 child: switch (_tab) {
-                                  0 => _HomeTab(data: data, kidSwitcher: _students.length > 1 ? _kidChips(org!.id, onDark: true) : null),
+                                  0 => _HomeTab(key: ValueKey('home$_studentId'), data: data, studentId: _studentId!, kidSwitcher: _students.length > 1 ? _kidChips(org!.id, onDark: true) : null),
                                   1 => _RecordTab(key: ValueKey(_studentId), orgId: org!.id, studentId: _studentId!, serd: data.serd),
                                   _ => _AccountTab(data: data),
                                 },
@@ -171,8 +172,9 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
 }
 
 class _HomeTab extends StatelessWidget {
-  const _HomeTab({required this.data, this.kidSwitcher});
+  const _HomeTab({super.key, required this.data, required this.studentId, this.kidSwitcher});
   final PortalDashboard data;
+  final String studentId;
 
   /// The children's chips (a guardian with several), shown in the header.
   final Widget? kidSwitcher;
@@ -215,6 +217,8 @@ class _HomeTab extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         AnnouncementsPreviewCard(announcements: data.announcements),
+        const SizedBox(height: 12),
+        GoalCard(key: ValueKey('goal$studentId'), studentId: studentId, studentName: data.fullName),
         SectionTitle(p.progressTitle),
         Card(
           child: Padding(

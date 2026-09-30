@@ -125,7 +125,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
               <ul className="flex flex-col gap-1 text-sm">
                 {att.inactive_students.map((s) => (
                   <li key={s.id} className="flex justify-between">
-                    <a href={`/students/${s.id}/report` as never} className="text-brand hover:underline">
+                    <a href={`/students/${s.id}` as never} className="text-brand hover:underline">
                       {s.name}
                     </a>
                     <span className="text-xs text-gray-400">
@@ -189,7 +189,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
               <ul className="flex flex-col gap-1.5 text-sm">
                 {risk.map((r) => (
                   <li key={r.id} className="flex items-center justify-between gap-2">
-                    <a href={`/students/${r.id}/report` as never} className="text-brand hover:underline">{r.name}</a>
+                    <a href={`/students/${r.id}` as never} className="text-brand hover:underline">{r.name}</a>
                     <span className="text-xs text-gray-500">
                       <span className="me-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">{S.dash.riskTags[r.tag] ?? r.tag}</span>
                       {r.circle} · {fmt(S.dash.idleDays, { n: r.idle_days })}
@@ -205,7 +205,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
             <h2 className="mb-3 font-semibold">{S.dash.trend}</h2>
             <div className="flex h-28 items-end gap-1">
               {trend.map((t) => (
-                <div key={t.date} className="group relative flex-1" title={fmt(S.dash.trendTip, { date: fmtDay(t.date, T.labels.dateLocale), n: t.recitations, a: t.attendance })}>
+                <div key={t.date} className="group relative flex h-full flex-1 flex-col justify-end" title={fmt(S.dash.trendTip, { date: fmtDay(t.date, T.labels.dateLocale), n: t.recitations, a: t.attendance })}>
                   <div className="w-full rounded-t bg-brand/70" style={{ height: `${Math.max(3, (t.recitations / maxTrend) * 100)}%` }} />
                 </div>
               ))}
@@ -225,7 +225,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
                 <tbody className="divide-y">
                   {perf.map((p) => (
                     <tr key={p.teacher_id}>
-                      <td className="p-1">{p.name ?? '—'}</td><td className="p-1">{p.circles}</td><td className="p-1">{p.students}</td>
+                      <td className="p-1"><a href={`/teachers/${p.teacher_id}` as never} className="font-medium text-brand hover:underline">{p.name ?? '—'}</a></td><td className="p-1">{p.circles}</td><td className="p-1">{p.students}</td>
                       <td className="p-1 font-semibold text-brand">{p.recitations}</td><td className="p-1">{p.reciting_students}</td><td className="p-1">{p.check_ins}</td>
                     </tr>
                   ))}
@@ -246,7 +246,7 @@ export default async function DashboardPage({ params, searchParams }: { params: 
           <div className="grid gap-3 sm:grid-cols-2">
             {today.circles.map((c) => (
               <div key={c.id} className="rounded-lg border bg-white p-4">
-                <p className="font-semibold">{c.name}</p>
+                <a href={`/circles/${c.id}` as never} className="font-semibold text-brand hover:underline">{c.name}</a>
                 <p className="mt-1 text-sm text-gray-600">
                   {fmt(S.dash.circleToday, { students: c.students, recited: c.recited, present: c.present })}
                   {c.absent > 0 && fmt(S.dash.absentN, { n: c.absent })}

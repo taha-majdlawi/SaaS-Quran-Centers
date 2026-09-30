@@ -56,6 +56,8 @@ import '../../features/my_portal/portal_engagement_screens.dart';
 import '../../features/stages/stages_list_screen.dart';
 import '../../features/stages/stage_form_screen.dart';
 import '../../features/members/members_list_screen.dart';
+import '../../features/profiles/circle_profile_screen.dart';
+import '../../features/profiles/teacher_profile_screen.dart';
 import '../../features/members/member_edit_screen.dart';
 import '../../features/members/teacher_form_screen.dart';
 import '../../features/audit/audit_screen.dart';
@@ -179,6 +181,8 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => StudentFormScreen(studentId: state.pathParameters['id']),
       ),
       GoRoute(path: '/circles', builder: (context, state) => const CirclesListScreen()),
+      GoRoute(path: '/circles/:id/profile', builder: (context, state) => CircleProfileScreen(circleId: state.pathParameters['id']!)),
+      GoRoute(path: '/teachers/:id', builder: (context, state) => TeacherProfileScreen(teacherId: state.pathParameters['id']!)),
       GoRoute(path: '/circles/new', builder: (context, state) => const CircleFormScreen()),
       GoRoute(
         path: '/circles/:id',

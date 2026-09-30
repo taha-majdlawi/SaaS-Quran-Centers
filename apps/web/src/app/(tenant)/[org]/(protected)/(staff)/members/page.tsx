@@ -93,7 +93,11 @@ export default async function MembersPage({
             {((members ?? []) as MemberRow[]).map((m) => (
               <tr key={m.id} className="border-t">
                 <td className="px-4 py-2">
-                  {m.full_name ?? '—'}
+                  {m.role === 'teacher' || m.role === 'admin' ? (
+                    <a href={`/teachers/${m.id}` as never} className="font-medium text-brand hover:underline">{m.full_name ?? m.email ?? '—'}</a>
+                  ) : (
+                    m.full_name ?? '—'
+                  )}
                   {viewers.has(m.user_id) && <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{S.members.viewOnly}</span>}
                 </td>
                 <td className="px-4 py-2">{m.email}</td>
