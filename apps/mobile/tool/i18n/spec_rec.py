@@ -38,4 +38,10 @@ SPEC = {'rec': ('Recording recitations (sheet, lesson mode).', (
   ('doneToday', 'سمّع اليوم {done} من {total}', '{done} of {total} recited today'),
   ('outboxAttendance', 'حضور {studentName}: {status}', 'Attendance {studentName}: {status}'),
   ('outboxRecitation', 'تسميع {studentName} — سورة {surah} ({ayahFrom}–{ayahTo})', 'Recitation {studentName} — surah {surah} ({ayahFrom}–{ayahTo})'),
+  ('today', 'اليوم', 'Today'),
+  ('dayMonth', '{day}/{month}', '{day}/{month}'),
+  ('addNote', 'إضافة ملاحظة', 'Add a note'),
+  ('saveWithPoints', 'حفظ التسميع  •  {n}+ نقطة', 'Save recitation  •  +{n} pts'),
+  ('change', 'تغيير', 'Change'),
+  ('wholeSurah', 'السورة كاملة', 'Whole surah'),
 ))}

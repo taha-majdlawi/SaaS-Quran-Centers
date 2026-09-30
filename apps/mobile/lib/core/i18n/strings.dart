@@ -935,7 +935,7 @@ class SQuran {
 
 /// Recording recitations (sheet, lesson mode).
 class SRec {
-  const SRec({required this.pickGrade, required this.pickSurah, required this.enterRange, required this.rangeOrder, required this.tooFar, required this.partial, required this.newTitle, required this.editTitle, required this.prefilled, required this.dateToday, required this.dateV, required this.type, required this.addSurah, required this.grade, required this.notes, required this.saveBtn, required this.saveEdit, required this.fromAyah, required this.toAyah, required this.maxV, required this.searchSurah, required this.ayahsN, required this.absenceFailed, required this.lessonTitle, required this.studentXofY, required this.plan, required this.recordBtn, required this.absent, required this.later, required this.nobody, required this.done, required this.summary, required this.anotherRound, required this.finish, required this.circle, required this.doneToday, required this.outboxAttendance, required this.outboxRecitation});
+  const SRec({required this.pickGrade, required this.pickSurah, required this.enterRange, required this.rangeOrder, required this.tooFar, required this.partial, required this.newTitle, required this.editTitle, required this.prefilled, required this.dateToday, required this.dateV, required this.type, required this.addSurah, required this.grade, required this.notes, required this.saveBtn, required this.saveEdit, required this.fromAyah, required this.toAyah, required this.maxV, required this.searchSurah, required this.ayahsN, required this.absenceFailed, required this.lessonTitle, required this.studentXofY, required this.plan, required this.recordBtn, required this.absent, required this.later, required this.nobody, required this.done, required this.summary, required this.anotherRound, required this.finish, required this.circle, required this.doneToday, required this.outboxAttendance, required this.outboxRecitation, required this.today, required this.dayMonth, required this.addNote, required this.saveWithPoints, required this.change, required this.wholeSurah});
   final String pickGrade;
   final String pickSurah;
   final String enterRange;
@@ -974,6 +974,12 @@ class SRec {
   final String doneToday;
   final String outboxAttendance;
   final String outboxRecitation;
+  final String today;
+  final String dayMonth;
+  final String addNote;
+  final String saveWithPoints;
+  final String change;
+  final String wholeSurah;
 }
 
 /// Reports (the student report is also the portal's).
@@ -2322,6 +2328,12 @@ class S {
       doneToday: 'سمّع اليوم {done} من {total}',
       outboxAttendance: 'حضور {studentName}: {status}',
       outboxRecitation: 'تسميع {studentName} — سورة {surah} ({ayahFrom}–{ayahTo})',
+      today: 'اليوم',
+      dayMonth: '{day}/{month}',
+      addNote: 'إضافة ملاحظة',
+      saveWithPoints: 'حفظ التسميع  •  {n}+ نقطة',
+      change: 'تغيير',
+      wholeSurah: 'السورة كاملة',
     ),
     rep: SRep(
       from: 'من {date}',
@@ -3610,6 +3622,12 @@ class S {
       doneToday: '{done} of {total} recited today',
       outboxAttendance: 'Attendance {studentName}: {status}',
       outboxRecitation: 'Recitation {studentName} — surah {surah} ({ayahFrom}–{ayahTo})',
+      today: 'Today',
+      dayMonth: '{day}/{month}',
+      addNote: 'Add a note',
+      saveWithPoints: 'Save recitation  •  +{n} pts',
+      change: 'Change',
+      wholeSurah: 'Whole surah',
     ),
     rep: SRep(
       from: 'From {date}',
