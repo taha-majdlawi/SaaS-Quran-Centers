@@ -46,6 +46,10 @@ export async function saveNotificationSettings(formData: FormData) {
     p_grace: Number(s(formData, 'late_grace_hours')),
     p_idle: Number(s(formData, 'idle_days')),
     p_paused: formData.get('is_paused') === 'on',
+    p_idle_teacher: Number(s(formData, 'idle_teacher_days')) || null,
+    p_absence_count: Number(s(formData, 'absence_alert_count')) || null,
+    p_absence_window: Number(s(formData, 'absence_alert_window')) || null,
+    p_checkin_time: s(formData, 'checkin_reminder_time') || null,
   });
   if (error) to('settings', 'error', error.message);
   to('settings', 'ok', (await N()).okSettings);

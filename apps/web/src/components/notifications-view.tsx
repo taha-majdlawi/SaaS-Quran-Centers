@@ -50,6 +50,11 @@ function linkFor(n: Item, portal: boolean): string | null {
       return portal ? '/my' : '/serd';
     case 'student_idle':
       return portal ? '/my' : null;
+    case 'student_idle_teacher':
+    case 'student_absences':
+      return portal ? null : `/students/${n.ref_id}`;
+    case 'teacher_checkin_reminder':
+      return portal ? null : '/dashboard';
     case 'market_order':
     case 'market_fulfilled':
     case 'market_cancelled':

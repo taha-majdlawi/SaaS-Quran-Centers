@@ -357,6 +357,10 @@ interface Settings {
   late_grace_hours: number;
   idle_days: number;
   is_paused: boolean;
+  idle_teacher_days: number;
+  absence_alert_count: number;
+  absence_alert_window: number;
+  checkin_reminder_time: string;
 }
 
 export async function SettingsTab({ orgId }: { orgId: string }) {
@@ -411,6 +415,29 @@ export async function SettingsTab({ orgId }: { orgId: string }) {
             <span className="font-medium text-gray-700">{S.notif.pause}</span>
             <span className="block text-xs text-gray-400">{S.notif.pauseHint}</span>
           </span>
+        </label>
+        <div className="sm:col-span-2 border-t pt-4">
+          <h3 className="font-semibold text-gray-800">{S.notif.smartTitle}</h3>
+          <p className="text-xs text-gray-400">{S.notif.smartHint}</p>
+        </div>
+        <label className="text-sm">
+          <span className="font-medium text-gray-700">{S.notif.idleTeacherDays}</span>
+          <input type="number" name="idle_teacher_days" min={1} max={30} defaultValue={s.idle_teacher_days} required className={field} />
+          <span className="mt-1 block text-xs text-gray-400">{S.notif.idleTeacherHint}</span>
+        </label>
+        <label className="text-sm">
+          <span className="font-medium text-gray-700">{S.notif.checkinTime}</span>
+          <input type="time" name="checkin_reminder_time" defaultValue={s.checkin_reminder_time} required className={field} />
+          <span className="mt-1 block text-xs text-gray-400">{S.notif.checkinHint}</span>
+        </label>
+        <label className="text-sm">
+          <span className="font-medium text-gray-700">{S.notif.absenceCount}</span>
+          <input type="number" name="absence_alert_count" min={2} max={30} defaultValue={s.absence_alert_count} required className={field} />
+          <span className="mt-1 block text-xs text-gray-400">{S.notif.absenceHint}</span>
+        </label>
+        <label className="text-sm">
+          <span className="font-medium text-gray-700">{S.notif.absenceWindow}</span>
+          <input type="number" name="absence_alert_window" min={7} max={90} defaultValue={s.absence_alert_window} required className={field} />
         </label>
         <div className="sm:col-span-2">
           <SubmitButton className="rounded bg-brand px-5 py-2 text-sm text-white" pendingText="...">{S.notif.saveSettings}</SubmitButton>
