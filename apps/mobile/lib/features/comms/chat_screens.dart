@@ -461,6 +461,10 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
       final threadId = result['thread_id'] as String?;
       if (threadId != null) _subscribe(threadId);
       _finalizeSent(m.id, messageId);
+    } on PostgrestException catch (e) {
+      _failLocal(m.id, e.message);
+    } on StateError catch (e) {
+      _failLocal(m.id, e.message);
     } catch (_) {
       _failLocal(m.id, currentStrings.chat.stillFailing);
     }

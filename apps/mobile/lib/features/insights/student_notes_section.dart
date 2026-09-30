@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/widgets/format.dart';
@@ -53,7 +54,12 @@ class _StudentNotesSectionState extends State<StudentNotesSection> {
         if (queued) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(kQueuedMessage)));
         setState(() => _future = _repository.notes(widget.orgId, widget.studentId));
       }
-    } catch (e) {
+    } on PostgrestException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } on StateError catch (e) {
+      // a viewing account / a center locked for non-payment: say which, not just "failed"
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).ins.noteFailed)));
     }
   }

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { billingBanner, usageBanner, type BillingState, type Usage } from '@/lib/billing/format';
 import { getI18n, isTranslatedScreen } from '@/lib/i18n/server';
 import { LanguageSwitcher } from '@/lib/i18n/client';
+import { LockedFormGuard } from '@/components/locked-form-guard';
 
 // Shell shared by the full staff dashboard (see (staff)/layout.tsx, which
 // adds the sidebar and blocks student/guardian from these routes) and the
@@ -43,6 +44,7 @@ export default async function TenantProtectedLayout({
     billing = { ...billing, text: st === 'suspended' || st === 'cancelled' ? t.shell.suspended : t.shell.locked };
   }
   const capacity = isStaff ? usageBanner(acc?.usage, t.staff.billing) : null;
+  const billingLocked = isStaff && acc?.is_read_only === true && acc.reason === 'billing';
   const { data: noticeData } = await supabase.rpc('active_platform_notices');
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
@@ -73,6 +75,7 @@ export default async function TenantProtectedLayout({
             {n.body && <span> — {n.body}</span>}
           </div>
         ))}
+        {billingLocked && <LockedFormGuard message={billing?.text ?? t.shell.locked} />}
         {billing && (
           <div
             className={`px-6 py-2 text-center text-sm font-semibold print:hidden ${billing.tone === 'red' ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-900'}`}
@@ -108,7 +111,7 @@ export default async function TenantProtectedLayout({
           <div className="flex items-center gap-4 text-sm text-gray-500">
             {translated && <LanguageSwitcher />}
             <span>{t.shell.roles[org.myRole] ?? org.myRole}</span>
-            <form action={signOut}>
+            <form action={signOut} data-allow-locked>
               <SubmitButton className="hover:text-red-600" pendingText={t.shell.signingOut}>
                 {t.shell.signOut}
               </SubmitButton>

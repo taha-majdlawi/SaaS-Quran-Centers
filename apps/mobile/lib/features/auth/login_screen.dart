@@ -75,6 +75,15 @@ class _LoginScreenState extends State<LoginScreen> {
         _center = center;
         _centerNotFound = center == null;
       });
+      // a center that works in English opens its sign-in in English (same as the web)
+      if (center == null) {
+        LocaleController.instance.setLoginDefault(null);
+      } else {
+        unawaited(_repository
+            .publicDefaultLanguage(center.slug)
+            .then((lang) => mounted && _center?.id == center.id ? LocaleController.instance.setLoginDefault(lang) : null)
+            .catchError((_) {}));
+      }
       return center;
     } catch (_) {
       return null;

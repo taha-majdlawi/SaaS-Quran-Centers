@@ -1,7 +1,7 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { SubmitButton } from '@/components/submit-button';
 import { createTeacherDirectly } from './actions';
-import { PlanCapacityNote } from '@/components/plan-capacity-note';
+import { PlanCapacityNote, planIsFull } from '@/components/plan-capacity-note';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 
@@ -19,6 +19,7 @@ export default async function NewTeacherPage({
   const { org: slug } = await params;
   const { error } = await searchParams;
   const org = await getOrgContext(slug);
+  const atCapacity = await planIsFull(org.id, 'teachers');
   const { t: T } = await getI18n();
   const S = T.staff;
 
@@ -66,6 +67,7 @@ export default async function NewTeacherPage({
         </label>
 
         <SubmitButton
+          disabled={atCapacity}
           className="mt-2 rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           pendingText={S.common.creating}
         >

@@ -21,9 +21,10 @@ class LocaleController extends ChangeNotifier {
   String? _chosen;
   String? _centerDefault;
   String? _centerOrg;
+  String? _loginDefault;
 
   /// The language showing right now.
-  String get effective => _chosen ?? _centerDefault ?? 'ar';
+  String get effective => _chosen ?? _centerDefault ?? _loginDefault ?? 'ar';
 
   /// Whether the person picked a language themselves (else the center's default applies).
   bool get hasChoice => _chosen != null;
@@ -42,6 +43,16 @@ class LocaleController extends ChangeNotifier {
     try {
       await (await SharedPreferences.getInstance()).setString(_key, lang);
     } catch (_) {}
+  }
+
+  /// Before sign-in: the center typed on the login screen may have a default
+  /// language (get_public_site) - use it until the person signs in or picks one.
+  void setLoginDefault(String? lang) {
+    final v = lang != null && kLocales.contains(lang) ? lang : null;
+    if (v == _loginDefault) return;
+    final before = effective;
+    _loginDefault = v;
+    if (effective != before) notifyListeners();
   }
 
   /// Follow the signed-in center's default language; [fetch] reads it (null = none set).

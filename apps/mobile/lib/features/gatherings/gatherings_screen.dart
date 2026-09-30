@@ -91,6 +91,9 @@ class _GatheringsScreenState extends State<GatheringsScreen> {
       }
     } on PostgrestException catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } on StateError catch (e) {
+      // a viewing account / a center locked for non-payment: say which, not just "failed"
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).gather.uploadFailed)));
     }
