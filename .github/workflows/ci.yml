@@ -5,15 +5,15 @@
 name: CI
 
 on:
-  pull_request:
+  # every branch: a pull request shows these results on its commits
   push:
-    branches: [main]
+    branches: ['**']
   workflow_call:
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   web:
