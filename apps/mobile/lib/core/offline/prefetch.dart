@@ -231,6 +231,7 @@ class OfflinePrefetch extends ChangeNotifier {
         () => portal.fetchDashboard(orgId, id),
         () => portal.fetchRecordDetail(orgId, id),
         () => ProfilesRepository(client).goal(orgId, id),
+        () => ProfilesRepository(client).weekly(orgId, id),
       ],
     ]);
   }

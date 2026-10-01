@@ -66,6 +66,12 @@ class ProfilesRepository {
     }
   }
 
+  /// This week against the last (and the goal and the teacher's note) - the family's weekly report.
+  Future<Map<String, dynamic>> weekly(String orgId, String studentId) async => (await SyncService.instance.raw(
+        'prof.weekly:$orgId:$studentId',
+        () => _client.rpc('student_weekly_report', params: {'p_org': orgId, 'p_student': studentId}),
+      )) as Map<String, dynamic>;
+
   static String goalKey(String orgId, String studentId) => 'prof.goal:$orgId:$studentId';
 
   Future<Map<String, dynamic>> goal(String orgId, String studentId) async => (await SyncService.instance.raw(

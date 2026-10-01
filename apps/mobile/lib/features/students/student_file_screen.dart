@@ -389,6 +389,14 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           ),
           const SizedBox(height: 14),
           GoalCard(studentId: widget.studentId, studentName: d.fullName),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: () => context.push('/weekly/${widget.studentId}'),
+              icon: const Icon(Icons.insights_rounded, size: 18),
+              label: Text(tr(context).weekly.open),
+            ),
+          ),
           if (last != null) ...[
             SectionTitle(tr(context).stu.lastRecitation),
             Builder(builder: (context) {

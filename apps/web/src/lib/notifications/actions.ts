@@ -113,6 +113,7 @@ export async function saveDigestSetting(formData: FormData) {
     p_enabled: formData.get('enabled') === 'on',
     p_dow: Number(formData.get('dow')),
     p_hour: Number(formData.get('hour')),
+    p_smart: formData.get('smart') === 'on',
   });
   if (error) to('settings', 'error', error.message);
   to('settings', 'ok', (await N()).okDigest);

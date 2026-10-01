@@ -15,7 +15,13 @@ import '../../core/i18n/i18n.dart';
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {}
 
 /// Where a tapped push should lead: chats open the chat list, everything else the inbox.
-String routeForPush(Map<String, dynamic> data) => data['kind'] == 'chat' ? '/chat' : '/notifications';
+String routeForPush(Map<String, dynamic> data) {
+  if (data['kind'] == 'chat') return '/chat';
+  final ref = '${data['ref_id'] ?? ''}';
+  // the weekly report opens itself; the rest go to the inbox
+  if (data['event_key'] == 'weekly_digest' && ref.isNotEmpty) return '/weekly/$ref';
+  return '/notifications';
+}
 
 /// Firebase Cloud Messaging on the phone. Completely optional: when the Firebase config file
 /// (`android/app/google-services.json`) is not in the build, [init] quietly turns push off and

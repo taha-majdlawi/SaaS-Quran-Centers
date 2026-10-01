@@ -68,7 +68,7 @@ function linkFor(n: Item, portal: boolean): string | null {
     case 'deletion_reviewed':
       return portal ? '/my/privacy' : null;
     case 'weekly_digest':
-      return portal ? `/my/report?student=${n.ref_id}` : null;
+      return portal ? `/my/weekly?student=${n.ref_id}` : `/students/${n.ref_id}/weekly`;
     case 'badge_awarded':
       return portal ? '/my/badges' : `/badges/${n.ref_id}`;
     default:

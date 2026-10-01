@@ -1462,8 +1462,29 @@ class SUi {
   final String waitingUpload;
 }
 
+/// The smart weekly report.
+class SWeekly {
+  const SWeekly({required this.smartToggle, required this.smartHint, required this.title, required this.period, required this.thisWeek, required this.lastWeek, required this.recitations, required this.newPages, required this.reviews, required this.points, required this.attendance, required this.attV, required this.teacherNote, required this.noNote, required this.nextPlan, required this.open});
+  final String smartToggle;
+  final String smartHint;
+  final String title;
+  final String period;
+  final String thisWeek;
+  final String lastWeek;
+  final String recitations;
+  final String newPages;
+  final String reviews;
+  final String points;
+  final String attendance;
+  final String attV;
+  final String teacherNote;
+  final String noNote;
+  final String nextPlan;
+  final String open;
+}
+
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
   /// 'ar' or 'en'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1502,6 +1523,7 @@ class S {
   final SSync sync;
   final STeach teach;
   final SUi ui;
+  final SWeekly weekly;
 
   static const ar = S(
     lang: 'ar',
@@ -2859,6 +2881,24 @@ class S {
       outboxDeleteRecitation: 'حذف تسميع',
       outboxPlan: 'الخطة القادمة لطالب',
       waitingUpload: 'بانتظار الرفع',
+    ),
+    weekly: SWeekly(
+      smartToggle: 'التقرير الأسبوعي الذكي',
+      smartHint: 'يضيف: هدف الحفظ، متقدم أو متأخر، المقارنة مع الأسبوع الماضي، وملاحظة المعلم',
+      title: 'التقرير الأسبوعي',
+      period: 'من {from} إلى {to}',
+      thisWeek: 'هذا الأسبوع',
+      lastWeek: 'الماضي',
+      recitations: 'التسميعات',
+      newPages: 'صفحات حفظ جديدة',
+      reviews: 'مراجعات',
+      points: 'النقاط',
+      attendance: 'الحضور',
+      attV: '{present} من {days}',
+      teacherNote: 'ملاحظة المعلم',
+      noNote: 'لا ملاحظة من المعلم هذا الأسبوع',
+      nextPlan: 'المطلوب للأسبوع القادم',
+      open: 'التقرير الأسبوعي',
     ),
   );
 
@@ -4218,6 +4258,24 @@ class S {
       outboxDeleteRecitation: 'Recitation delete',
       outboxPlan: 'A student\'s next plan',
       waitingUpload: 'Waiting to upload',
+    ),
+    weekly: SWeekly(
+      smartToggle: 'Smart weekly report',
+      smartHint: 'Adds: the memorization goal, ahead or behind, last-week comparison and the teacher’s note',
+      title: 'Weekly report',
+      period: '{from} to {to}',
+      thisWeek: 'This week',
+      lastWeek: 'Last week',
+      recitations: 'Recitations',
+      newPages: 'New pages',
+      reviews: 'Reviews',
+      points: 'Points',
+      attendance: 'Attendance',
+      attV: '{present} of {days}',
+      teacherNote: 'Teacher’s note',
+      noNote: 'No note from the teacher this week',
+      nextPlan: 'For next week',
+      open: 'Weekly report',
     ),
   );
 

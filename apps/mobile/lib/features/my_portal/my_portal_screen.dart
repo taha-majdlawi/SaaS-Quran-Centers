@@ -219,6 +219,12 @@ class _HomeTab extends StatelessWidget {
         AnnouncementsPreviewCard(announcements: data.announcements),
         const SizedBox(height: 12),
         GoalCard(key: ValueKey('goal$studentId'), studentId: studentId, studentName: data.fullName),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/weekly/$studentId'),
+          icon: const Icon(Icons.insights_rounded),
+          label: Text(tr(context).weekly.open),
+        ),
         SectionTitle(p.progressTitle),
         Card(
           child: Padding(

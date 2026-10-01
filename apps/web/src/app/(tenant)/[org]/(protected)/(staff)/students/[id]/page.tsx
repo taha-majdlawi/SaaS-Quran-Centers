@@ -105,6 +105,7 @@ export default async function StudentProfilePage({
           <>
             <ActionLink href={`/students/${p.id}/recitations`} primary>{P.recite}</ActionLink>
             <ActionLink href={`/students/${p.id}/report?from=${f}&to=${t}`}>{P.printReport}</ActionLink>
+            <ActionLink href={`/students/${p.id}/weekly`}>{S.weekly.open}</ActionLink>
             {canEdit && <ActionLink href={`/students/${p.id}/edit`}>{P.edit}</ActionLink>}
           </>
         }

@@ -160,7 +160,14 @@ export default async function MyPortalPage({
           prayerSettings={prayerSettings}
           inspiration={inspiration}
           recordHref={`/my/record?s=${current.id}`}
-          goalCard={goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
+          goalCard={
+            <>
+              {goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
+              <a href={`/my/weekly?student=${current.id}` as never} className="block rounded-lg border bg-white p-3 text-center text-sm font-semibold text-brand hover:bg-gray-50">
+                📊 {t.staff.weekly.open}
+              </a>
+            </>
+          }
           t={t}
         />
       )}

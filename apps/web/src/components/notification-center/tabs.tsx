@@ -375,7 +375,7 @@ export async function SettingsTab({ orgId }: { orgId: string }) {
   ]);
   const s = (data as { settings?: Settings } | null)?.settings;
   if (!s) return null;
-  const digest = digestData as { enabled: boolean; dow: number; hour: number } | null;
+  const digest = digestData as { enabled: boolean; dow: number; hour: number; smart?: boolean } | null;
   const att = new Map(((settingRows ?? []) as { key: string; value: string | null }[]).map((r) => [r.key, r.value ?? '']));
   const DAYS = T.labels.weekdays;
   const field = 'mt-1 w-full rounded border px-3 py-2 text-sm';
@@ -468,6 +468,13 @@ export async function SettingsTab({ orgId }: { orgId: string }) {
             <p className="text-xs text-gray-500">{S.notif.digestHint}</p>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="enabled" defaultChecked={digest.enabled} /> {S.notif.digestEnable}
+            </label>
+            <label className="flex items-start gap-2 rounded border border-brand/30 bg-brand/5 p-3 text-sm">
+              <input type="checkbox" name="smart" defaultChecked={digest.smart === true} className="mt-1" />
+              <span>
+                <span className="font-semibold">{S.weekly.smartToggle}</span>
+                <span className="block text-xs text-gray-500">{S.weekly.smartHint}</span>
+              </span>
             </label>
             <div className="flex gap-3">
               <label className="flex-1 text-sm">

@@ -27,6 +27,7 @@ class DigestTile extends StatelessWidget {
     var enabled = s['enabled'] == true;
     var dow = (s['dow'] as num).toInt();
     var hour = (s['hour'] as num).toInt();
+    var smart = s['smart'] == true;
     final ok = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -38,6 +39,13 @@ class DigestTile extends StatelessWidget {
             const SizedBox(height: 4),
             Text(tr(context).set.digestHint, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
             SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr(context).set.digestEnable), value: enabled, onChanged: (v) => setSheet(() => enabled = v)),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr(context).weekly.smartToggle, style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(tr(context).weekly.smartHint, style: const TextStyle(fontSize: 12)),
+              value: smart,
+              onChanged: (v) => setSheet(() => smart = v),
+            ),
             DropdownButtonFormField<int>(
               initialValue: dow,
               decoration: InputDecoration(labelText: tr(context).set.day),
@@ -59,7 +67,7 @@ class DigestTile extends StatelessWidget {
     );
     if (ok != true) return;
     try {
-      await AppSupabase.client.rpc('set_digest_settings', params: {'p_org': orgId, 'p_enabled': enabled, 'p_dow': dow, 'p_hour': hour});
+      await AppSupabase.client.rpc('set_digest_settings', params: {'p_org': orgId, 'p_enabled': enabled, 'p_dow': dow, 'p_hour': hour, 'p_smart': smart});
       messenger.showSnackBar(SnackBar(content: Text(currentStrings.set.digestSaved)));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : currentStrings.set.saveFailed)));

@@ -1,0 +1,22 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'weekly': ('The smart weekly report (family portal, student profile, admin switch).', (
+  ('smartToggle', 'التقرير الأسبوعي الذكي', 'Smart weekly report'),
+  ('smartHint', 'يضيف للملخص: وين وصل الطالب من هدف الحفظ، هل هو متقدم أو متأخر، المقارنة مع الأسبوع الماضي، وآخر ملاحظة من المعلم لولي الأمر.', 'Adds to the digest: progress on the memorization goal, ahead or behind, the comparison with last week, and the teacher’s latest note for the family.'),
+  ('title', 'التقرير الأسبوعي', 'Weekly report'),
+  ('period', 'من {from} إلى {to}', '{from} to {to}'),
+  ('thisWeek', 'هذا الأسبوع', 'This week'),
+  ('lastWeek', 'الأسبوع الماضي', 'Last week'),
+  ('recitations', 'التسميعات', 'Recitations'),
+  ('newPages', 'صفحات حفظ جديدة', 'New pages memorised'),
+  ('reviews', 'مراجعات', 'Reviews'),
+  ('points', 'النقاط', 'Points'),
+  ('attendance', 'الحضور', 'Attendance'),
+  ('attV', '{present} من {days}', '{present} of {days}'),
+  ('teacherNote', 'ملاحظة المعلم', 'Teacher’s note'),
+  ('noNote', 'لا ملاحظة من المعلم هذا الأسبوع', 'No note from the teacher this week'),
+  ('nextPlan', 'المطلوب للأسبوع القادم', 'For next week'),
+  ('lastRecitation', 'آخر تسميع', 'Last recitation'),
+  ('open', 'التقرير الأسبوعي', 'Weekly report'),
+  ('prevWeek', '← الأسبوع السابق', '← Previous week'),
+  ('nextWeek', 'الأسبوع التالي →', 'Next week →'),
+))}
