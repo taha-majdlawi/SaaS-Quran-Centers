@@ -11,7 +11,9 @@ declare
   v_exempt text[] := array['account_access', 'account_admin_grants', 'audit_log', 'deletion_requests', 'device_tokens',
                            'notification_prefs', 'notifications', 'quran_bookmarks', 'quran_positions', 'calendar_reminders', 'weekly_digests_sent', 'attendance_reminders_sent',
                            -- 0066: a center locked for non-payment must still be able to report its payment (RPC-only writes)
-                           'billing_requests'];
+                           'billing_requests',
+                           -- 0076: crash reports must arrive from view-only accounts too (RPC-only writes)
+                           'app_errors'];
 begin
   select id into v_org from public.organizations where slug = 'eqraa';
   -- prefer an admin who is NOT also a platform owner: an owner may legitimately use the platform console,
@@ -338,10 +340,11 @@ begin
     v_fail := v_fail || text 'approving a payment lifted a suspension';
   exception when others then null; end;
 
-  -- ===== the anonymous door is exactly four functions (public_plans: 0068, the marketing price list)
+  -- ===== the anonymous door is exactly five functions (public_plans: 0068, the marketing price list;
+  --       report_client_error: 0076, crash reports from signed-out pages)
   select count(*) into v_n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
-      and p.proname not in ('get_invitation', 'get_public_site', 'verify_certificate', 'public_plans');
+      and p.proname not in ('get_invitation', 'get_public_site', 'verify_certificate', 'public_plans', 'report_client_error');
   if v_n > 0 then v_fail := v_fail || ('anon can execute ' || v_n || ' extra functions'); end if;
 
   raise exception 'RESULT: %', case when array_length(v_fail, 1) is null then 'OK' else 'FAILED - ' || array_to_string(v_fail, '; ') end;

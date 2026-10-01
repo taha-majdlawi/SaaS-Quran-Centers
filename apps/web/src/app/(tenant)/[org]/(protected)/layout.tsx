@@ -1,3 +1,4 @@
+import { MonitoringOrg } from '@/components/error-reporter';
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { SubmitButton } from '@/components/submit-button';
@@ -58,6 +59,7 @@ export default async function TenantProtectedLayout({
         } as React.CSSProperties
       }
     >
+      <MonitoringOrg orgId={org.id} />
       <div className="flex-1">
         {org.isPlatformOwner && (
           <div className="bg-purple-700 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">

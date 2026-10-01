@@ -19,6 +19,8 @@ export default async function PlatformProtectedLayout({ children }: { children: 
   const supabase = await createClient();
   const { data: alerts } = await supabase.rpc('platform_billing_alerts');
   const alertCount = ((alerts as { rows?: unknown[] } | null)?.rows ?? []).length;
+  const { data: openErrors } = await supabase.rpc('platform_open_error_count');
+  const errorCount = Number(openErrors ?? 0);
 
   return (
     <div className="flex min-h-screen">
@@ -37,6 +39,10 @@ export default async function PlatformProtectedLayout({ children }: { children: 
           <a href="/alerts" className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-800">
             تنبيهات المراكز
             {alertCount > 0 && <span className="rounded-full bg-red-500 px-2 text-xs font-bold text-white">{alertCount}</span>}
+          </a>
+          <a href="/errors" className="flex items-center justify-between rounded px-3 py-2 hover:bg-gray-800">
+            الأخطاء
+            {errorCount > 0 && <span className="rounded-full bg-red-500 px-2 text-xs font-bold text-white">{errorCount}</span>}
           </a>
           <a href="/users" className="rounded px-3 py-2 hover:bg-gray-800">
             الحسابات
