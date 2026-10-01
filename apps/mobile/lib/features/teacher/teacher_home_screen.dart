@@ -9,6 +9,7 @@ import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/garden.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
@@ -80,6 +81,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
     final t = tr(context);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         color: TeacherStyle.brand(context),
         onRefresh: () async {
@@ -95,7 +97,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
             int sum(int Function(TodayCircle c) f) => circlesToday.fold(0, (a, c) => a + f(c));
             return ListView(padding: EdgeInsets.zero, children: [
               GardenHeader(
-                leading: OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34, onDark: true),
+                leading: Row(mainAxisSize: MainAxisSize.min, children: [const DrawerMenuButton(), OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34, onDark: true)]),
                 greeting: timeGreeting(),
                 title: _teacherName.isEmpty ? org.name : _teacherName,
                 subtitle: longToday(context),

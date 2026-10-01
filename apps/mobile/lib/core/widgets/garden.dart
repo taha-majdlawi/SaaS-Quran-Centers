@@ -143,6 +143,18 @@ class SyncButton extends StatelessWidget {
   }
 }
 
+/// The ☰ button that opens the screen's drawer (white, for the coloured headers).
+class DrawerMenuButton extends StatelessWidget {
+  const DrawerMenuButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+        onPressed: () => Scaffold.of(context).openDrawer(),
+        icon: const Icon(Icons.menu_rounded, color: Colors.white),
+      );
+}
+
 /// Today's date in the reader's language ("الأحد، ٢٨ سبتمبر").
 String longToday(BuildContext context) {
   final lang = tr(context).lang;

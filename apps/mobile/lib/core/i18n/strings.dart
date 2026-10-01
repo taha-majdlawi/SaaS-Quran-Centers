@@ -211,6 +211,26 @@ class SAnn {
   final String yourCircle;
 }
 
+/// Students needing attention.
+class SAttn {
+  const SAttn({required this.title, required this.hint, required this.none, required this.behind, required this.idle, required this.never, required this.absences, required this.all, required this.filterBehind, required this.filterIdle, required this.filterAbsent, required this.recite, required this.call, required this.lastRecited, required this.count});
+  final String title;
+  final String hint;
+  final String none;
+  final String behind;
+  final String idle;
+  final String never;
+  final String absences;
+  final String all;
+  final String filterBehind;
+  final String filterIdle;
+  final String filterAbsent;
+  final String recite;
+  final String call;
+  final String lastRecited;
+  final String count;
+}
+
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
   const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.noCentersHint});
@@ -1484,7 +1504,7 @@ class SWeekly {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
   /// 'ar' or 'en'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1497,6 +1517,7 @@ class S {
   final SMarket market;
   final SSerdCard serdCard;
   final SAnn ann;
+  final SAttn attn;
   final SAuth auth;
   final SBadgesStaff badgesStaff;
   final SCal cal;
@@ -1708,6 +1729,23 @@ class S {
       publishHint: 'يصل إشعار للجمهور عند أول نشر',
       editTitle: 'تعديل إعلان',
       yourCircle: 'حلقتك',
+    ),
+    attn: SAttn(
+      title: 'طلاب يحتاجون اهتمام',
+      hint: 'مرتّبون من الأكثر حاجة: المتأخر عن هدفه، المنقطع عن التسميع، وكثير الغياب.',
+      none: 'لا أحد يحتاج اهتمامًا خاصًا الآن 🌿',
+      behind: 'متأخر عن هدفه {pages} صفحة',
+      idle: 'لم يسمّع منذ {days} أيام دوام',
+      never: 'لم يسمّع أبدًا',
+      absences: 'غاب {count} مرات في أسبوعين',
+      all: 'الكل',
+      filterBehind: 'متأخر عن الهدف',
+      filterIdle: 'منقطع',
+      filterAbsent: 'غياب',
+      recite: 'تسميع',
+      call: 'اتصال',
+      lastRecited: 'آخر تسميع: {v}',
+      count: '{n} طالب',
     ),
     auth: SAuth(
       thisCenter: 'هذا المركز',
@@ -2225,7 +2263,7 @@ class S {
       active: 'فعّال (يظهر للطلاب)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
+      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
       sections: {'teaching': 'التعليم', 'motivation': 'التحفيز', 'comms': 'التواصل', 'admin': 'إدارة المركز'},
       switchCenter: 'تبديل المركز',
       menu: 'القائمة',
@@ -3086,6 +3124,23 @@ class S {
       editTitle: 'Edit announcement',
       yourCircle: 'Your circle',
     ),
+    attn: SAttn(
+      title: 'Students needing attention',
+      hint: 'Most urgent first: behind their goal, not reciting, often absent.',
+      none: 'Nobody needs special attention right now 🌿',
+      behind: 'Behind their goal by {pages} pages',
+      idle: 'Has not recited for {days} working days',
+      never: 'Has never recited',
+      absences: 'Absent {count} times in two weeks',
+      all: 'All',
+      filterBehind: 'Behind goal',
+      filterIdle: 'Not reciting',
+      filterAbsent: 'Absences',
+      recite: 'Recite',
+      call: 'Call',
+      lastRecited: 'Last recitation: {v}',
+      count: '{n} students',
+    ),
     auth: SAuth(
       thisCenter: 'this center',
       noCenter: 'We found no center with this code; check it and try again',
@@ -3602,7 +3657,7 @@ class S {
       active: 'Active (shown to students)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Dashboard', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
+      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
       sections: {'teaching': 'Teaching', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Center management'},
       switchCenter: 'Switch center',
       menu: 'Menu',
