@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/garden.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
@@ -90,6 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
 
     return Scaffold(
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
           if (_loadedForOrgId != null) setState(() => _reload(_loadedForOrgId!));
@@ -101,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final stats = snap.data;
             return ListView(padding: EdgeInsets.zero, children: [
               GardenHeader(
-                leading: org == null ? null : OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34, onDark: true),
+                leading: Row(mainAxisSize: MainAxisSize.min, children: [const DrawerMenuButton(), if (org != null) OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34, onDark: true)]),
                 greeting: '${timeGreeting()} · ${_roleGreeting[membership?.role] ?? ''}',
                 title: org?.name ?? '',
                 subtitle: longToday(context),

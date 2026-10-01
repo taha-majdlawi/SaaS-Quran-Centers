@@ -15,7 +15,9 @@ import '../../features/my_portal/my_portal_repository.dart';
 import '../../features/quran/quran_data.dart';
 import '../../features/recitation/recitation_repository.dart';
 import '../../features/serd/serd_repository.dart';
+import '../../features/attention/attention_screen.dart';
 import '../../features/profiles/profiles_repository.dart';
+import '../../features/review_plan/review_plan_screen.dart';
 import '../../features/students/students_repository.dart';
 import '../tenant/organization.dart';
 import 'sync_service.dart';
@@ -198,7 +200,9 @@ class OfflinePrefetch extends ChangeNotifier {
         () => prof.circle(orgId, c.id, period),
         () => prof.circle(orgId, c.id, period.previous),
       ],
-      // my own profile
+      // my own profile, and who needs attention
+      () => AttentionScreen.load(client, orgId),
+      () => ReviewPlanScreen.load(client, orgId),
       () => prof.teacher(orgId, userId, period),
       () => prof.teacher(orgId, userId, period.previous),
     ]);
@@ -213,6 +217,7 @@ class OfflinePrefetch extends ChangeNotifier {
         () => SyncService.instance.raw('student-guardian:$id', () => client.from('students_profile').select('guardian_member_id').eq('id', id).maybeSingle()),
         if (m.hasModule('serd')) () => serd.studentSummary(orgId, id),
         () => prof.goal(orgId, id),
+        () => TodayReviewCard.load(client, orgId, id),
       ],
     ]);
   }
@@ -231,6 +236,8 @@ class OfflinePrefetch extends ChangeNotifier {
         () => portal.fetchDashboard(orgId, id),
         () => portal.fetchRecordDetail(orgId, id),
         () => ProfilesRepository(client).goal(orgId, id),
+        () => ProfilesRepository(client).weekly(orgId, id),
+        () => TodayReviewCard.load(client, orgId, id),
       ],
     ]);
   }

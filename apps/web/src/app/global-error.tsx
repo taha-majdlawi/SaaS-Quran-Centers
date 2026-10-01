@@ -1,6 +1,8 @@
 'use client';
 
 import './globals.css';
+import { useEffect } from 'react';
+import { reportError } from '@/lib/monitoring/client';
 
 const TEXT = {
   ar: { title: 'حدث خطأ غير متوقع', body: 'نعتذر، صار في مشكلة مؤقتة. جرّب مرة ثانية.', retry: 'أعد المحاولة', home: 'الصفحة الرئيسية' },
@@ -18,6 +20,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   // no layout (and so no I18nProvider) here: the saved choice comes straight from the cookie
+  useEffect(() => reportError(error, { kind: 'global-error' }), [error]);
   const en = typeof document !== 'undefined' && /(?:^|; )lang=en(?:;|$)/.test(document.cookie);
   const t = en ? TEXT.en : TEXT.ar;
   return (

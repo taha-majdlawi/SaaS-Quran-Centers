@@ -1,0 +1,18 @@
+# stages - Français. Same keys as the spec's English column.
+T = {'none': 'Aucun niveau pour l’instant',
+ 'add': '+ Ajouter un niveau',
+ 'title': 'Niveaux',
+ 'colOrder': 'Ordre',
+ 'colName': 'Nom',
+ 'colCode': 'Code',
+ 'deleteConfirm': 'Supprimer le niveau « {name} » ? Action irréversible.',
+ 'code': 'Code du niveau (utilisé dans le numéro d’élève suggéré)',
+ 'order': 'Ordre du niveau',
+ 'saveChanges': 'Enregistrer les modifications',
+ 'editTitle': 'Modifier le niveau',
+ 'name': 'Nom du niveau',
+ 'delete': 'Supprimer le niveau',
+ 'namePh': 'Préparatoire',
+ 'submit': 'Ajouter le niveau',
+ 'addTitle': 'Ajouter un niveau',
+ 'taken': 'Ce nom ou ce code est déjà utilisé dans ce centre'}

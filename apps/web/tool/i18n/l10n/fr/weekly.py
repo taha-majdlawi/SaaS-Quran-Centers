@@ -1,0 +1,21 @@
+# weekly - Français. Same keys as the spec's English column.
+T = {'smartToggle': 'Rapport hebdomadaire intelligent',
+ 'smartHint': 'Ajoute au résumé : la progression vers l’objectif de mémorisation, en avance ou en retard, la comparaison avec la semaine précédente et la '
+              'dernière remarque de l’enseignant pour la famille.',
+ 'title': 'Rapport hebdomadaire',
+ 'period': 'Du {from} au {to}',
+ 'thisWeek': 'Cette semaine',
+ 'lastWeek': 'Semaine précédente',
+ 'recitations': 'Récitations',
+ 'newPages': 'Nouvelles pages mémorisées',
+ 'reviews': 'Révisions',
+ 'points': 'Points',
+ 'attendance': 'Présence',
+ 'attV': '{present} sur {days}',
+ 'teacherNote': 'Remarque de l’enseignant',
+ 'noNote': 'Pas de remarque de l’enseignant cette semaine',
+ 'nextPlan': 'Pour la semaine prochaine',
+ 'lastRecitation': 'Dernière récitation',
+ 'open': 'Rapport hebdomadaire',
+ 'prevWeek': '← Semaine précédente',
+ 'nextWeek': 'Semaine suivante →'}

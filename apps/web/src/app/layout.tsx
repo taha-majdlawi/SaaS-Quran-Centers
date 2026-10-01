@@ -1,3 +1,4 @@
+import { ErrorReporter } from '@/components/error-reporter';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { getI18n } from '@/lib/i18n/server';
@@ -28,6 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} dir={dir}>
       <body>
         <I18nProvider locale={locale} t={t.client}>
+          <ErrorReporter />
           {children}
         </I18nProvider>
       </body>

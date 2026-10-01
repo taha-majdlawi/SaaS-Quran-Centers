@@ -1,0 +1,15 @@
+# annc - Français. Same keys as the spec's English column.
+T = {'publish': 'Publier maintenant (le public est prévenu à la première publication)',
+ 'circleOpt': 'Un cercle précis (facultatif)',
+ 'expires': 'Se termine le (facultatif)',
+ 'pin': 'Épingler en haut',
+ 'pickCircle': 'Choisissez un cercle',
+ 'allCircles': 'Tous les cercles',
+ 'title': 'Titre',
+ 'audience': 'Destinataires',
+ 'yourCircle': 'Votre cercle',
+ 'body': 'Texte',
+ 'back': '← Annonces',
+ 'newTitle': 'Nouvelle annonce',
+ 'editTitle': 'Modifier l’annonce',
+ 'confirmDelete': 'Supprimer cette annonce ?'}

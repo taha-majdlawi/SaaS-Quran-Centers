@@ -14,6 +14,42 @@ for f in sorted(glob.glob(os.path.join(HERE, 'spec_*.py'))):
         assert k not in SPEC, k
         SPEC[k] = v
 
+# Turkish and French: l10n/<lang>/<group>.py, each `T = {key: value}` with the
+# same keys and shapes as the English column. A missing key fails the build.
+EXTRA = ('tr', 'fr')
+L10N = {}
+for lang in EXTRA:
+    L10N[lang] = {}
+    for f in sorted(glob.glob(os.path.join(HERE, 'l10n', lang, '*.py'))):
+        s = importlib.util.spec_from_file_location(f'{lang}_' + os.path.basename(f)[:-3], f); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+        L10N[lang][os.path.basename(f)[:-3]] = m.T
+
+def check_l10n():
+    problems = []
+    for lang in EXTRA:
+        for name, (doc, rows) in SPEC.items():
+            t = L10N[lang].get(name)
+            if t is None:
+                problems.append(f'{lang}: group {name} missing'); continue
+            keys = {r[0] for r in rows}
+            for k in keys - set(t): problems.append(f'{lang}.{name}.{k} missing')
+            for k in set(t) - keys: problems.append(f'{lang}.{name}.{k} is not in the spec')
+            for key, ar, en in rows:
+                if key not in t: continue
+                v = t[key]
+                if type(v) != type(en): problems.append(f'{lang}.{name}.{key}: wrong type'); continue
+                if isinstance(en, dict) and set(v) != set(en): problems.append(f'{lang}.{name}.{key}: map keys differ')
+                if isinstance(en, list) and len(v) != len(en): problems.append(f'{lang}.{name}.{key}: list length differs')
+                # every {placeholder} of the English must survive
+                import re
+                flat = lambda x: ' '.join(x.values()) if isinstance(x, dict) else ' '.join(x) if isinstance(x, list) else x
+                if set(re.findall(r'\{(\w+)\}', flat(en))) != set(re.findall(r'\{(\w+)\}', flat(v))):
+                    problems.append(f'{lang}.{name}.{key}: placeholders differ')
+    if problems:
+        raise SystemExit('translations incomplete:\n  ' + '\n  '.join(problems[:60]) + (f'\n  ... {len(problems) - 60} more' if len(problems) > 60 else ''))
+
+check_l10n()
+
 def lit(v, ind):
     if isinstance(v, str):
         return "'" + v.replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n') + "'"
@@ -26,6 +62,13 @@ def lit(v, ind):
 def block(li):
     out = []
     for name, (doc, rows) in SPEC.items():
+        if isinstance(li, str):
+            out.append(f'  /** {doc} */')
+            out.append(f'  {name}: {{')
+            for row in rows:
+                out.append(f'    {row[0]}: {lit(L10N[li][name][row[0]], 4)},')
+            out.append('  },')
+            continue
         out.append(f'  /** {doc} */')
         out.append(f'  {name}: {{')
         seen = set()
@@ -48,6 +91,14 @@ export const staffAr = {{
 
 export const staffEn: typeof staffAr = {{
 {block(2)}
+}};
+
+export const staffTr: typeof staffAr = {{
+{block('tr')}
+}};
+
+export const staffFr: typeof staffAr = {{
+{block('fr')}
 }};
 """
 open(os.path.join(HERE, '..', '..', 'src', 'lib', 'i18n', 'dictionaries', 'staff.ts'), 'w').write(src)

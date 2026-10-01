@@ -113,10 +113,29 @@ export async function POST(req: Request) {
   }
 
   const { kind, id } = (await req.json().catch(() => ({}))) as { kind?: string; id?: string };
-  if (!id || (kind !== 'notification' && kind !== 'chat')) return new Response('bad request', { status: 400 });
+  if (!id || (kind !== 'notification' && kind !== 'chat' && kind !== 'error')) return new Response('bad request', { status: 400 });
 
   const admin = createAdminClient();
   try {
+    if (kind === 'error') {
+      // a new (or returning) crash: every platform owner's phone, now (0076)
+      const { data: e } = await admin.from('app_errors').select('source, message, screen, device, app_version, fingerprint').eq('id', id).maybeSingle();
+      if (!e) return Response.json({ ok: true, skipped: 'gone' });
+      const { data: owners } = await admin.from('platform_owners').select('user_id');
+      const where = { web: 'الموقع', mobile: 'التطبيق', server: 'الخادم' }[e.source as string] ?? e.source;
+      let sent = 0;
+      for (const o of owners ?? []) {
+        const r = await deliver(sa, {
+          userId: o.user_id,
+          title: `⚠️ خطأ جديد في ${where}`,
+          body: [String(e.message).slice(0, 120), e.screen, e.device].filter(Boolean).join(' · '),
+          data: { kind: 'error', event_key: 'app_error', ref_id: e.fingerprint, org_id: '' },
+        });
+        sent += r.sent;
+      }
+      return Response.json({ ok: true, sent });
+    }
+
     if (kind === 'notification') {
       const { data: n } = await admin.from('notifications').select('user_id, organization_id, event_key, title, body, ref_id, deep_link').eq('id', id).maybeSingle();
       if (!n) return Response.json({ ok: true, skipped: 'gone' });

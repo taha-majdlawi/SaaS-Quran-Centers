@@ -1,0 +1,20 @@
+# (key, arabic, english) - see gen.py
+SPEC = {'rplan': ('The daily review portion (suggested from what is memorized, approved by the teacher).', (
+  ('title', 'ورد المراجعة اليومي', 'Daily review portions'),
+  ('hint', 'يقترح النظام لكل طالب صفحات المراجعة التالية من محفوظه بالترتيب. اعتمدها بضغطة، وتظهر للطالب وولي أمره.', 'For each student the system suggests the next pages of what they memorised, in order. Approve with one tap; the student and the family then see it.'),
+  ('range', 'من {from} إلى {to}', 'From {from} to {to}'),
+  ('ayahRef', '{surah} {ayah}', '{surah} {ayah}'),
+  ('pagesN', '{n} صفحات (ص {a}–{b})', '{n} pages (p. {a}–{b})'),
+  ('approve', 'اعتماد', 'Approve'),
+  ('approveAll', 'اعتماد الكل', 'Approve all'),
+  ('approvedN', 'اعتُمد {n}', '{n} approved'),
+  ('recite', 'تسميع', 'Recite'),
+  ('skip', 'إلغاء', 'Cancel'),
+  ('status', {'suggested': 'مقترح', 'approved': 'معتمد', 'done': 'سمّعه ✓', 'pending': 'بانتظار الرفع'},
+             {'suggested': 'Suggested', 'approved': 'Approved', 'done': 'Done ✓', 'pending': 'Waiting to upload'}),
+  ('none', 'لا يوجد طلاب لهم محفوظ بعد', 'No students with memorised pages yet'),
+  ('cycleStart', 'بداية دورة جديدة', 'A new round starts'),
+  ('today', 'ورد المراجعة اليوم', 'Today’s review'),
+  ('reviewPages', 'صفحات المراجعة اليومية (فارغ = تلقائي)', 'Daily review pages (empty = automatic)'),
+  ('outbox', 'اعتماد مراجعة {name}', 'Approve review for {name}'),
+))}

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { surahLabel } from '@/lib/quran/data';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
+import { ReviewPlansSection, type ReviewRow } from '@/components/review-plans';
 
 interface Due {
   student_id: string;
@@ -22,8 +23,12 @@ export default async function ReviewsPage({ params }: { params: Promise<{ org: s
   const { t: T, locale } = await getI18n();
   const S = T.staff;
   const supabase = await createClient();
-  const { data } = await supabase.rpc('due_reviews', { p_org: org.id, p_circle: null });
+  const [{ data }, { data: planData }] = await Promise.all([
+    supabase.rpc('due_reviews', { p_org: org.id, p_circle: null }),
+    supabase.rpc('review_plans_today', { p_org: org.id }),
+  ]);
   const rows = (data ?? []) as Due[];
+  const plans = (planData ?? []) as ReviewRow[];
 
   const byCircle = new Map<string, Map<string, Due[]>>();
   for (const r of rows) {
@@ -35,6 +40,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ org: s
 
   return (
     <div className="max-w-3xl">
+      <ReviewPlansSection rows={plans} orgId={org.id} back="/reviews" />
       <h1 className="mb-1 text-2xl font-bold">{S.reviews.title}</h1>
       <p className="mb-5 text-sm text-gray-500">
         {S.reviews.intro}

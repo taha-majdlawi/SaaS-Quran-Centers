@@ -1,0 +1,16 @@
+# attn - Türkçe. Same keys as the spec's English column.
+T = {'title': 'İlgi bekleyen öğrenciler',
+ 'hint': 'En acil olan önce: hedefinin gerisinde, dinletmeyen, sık devamsız.',
+ 'none': 'Şu anda özel ilgi bekleyen kimse yok 🌿',
+ 'behind': 'Hedefinin {pages} sayfa gerisinde',
+ 'idle': '{days} çalışma günüdür dinletmedi',
+ 'never': 'Hiç dinletmedi',
+ 'absences': 'İki haftada {count} kez gelmedi',
+ 'all': 'Tümü',
+ 'filterBehind': 'Hedefin gerisinde',
+ 'filterIdle': 'Dinletmeyen',
+ 'filterAbsent': 'Devamsızlık',
+ 'recite': 'Dinlet',
+ 'call': 'Ara',
+ 'lastRecited': 'Son dinletme: {v}',
+ 'count': '{n} öğrenci'}

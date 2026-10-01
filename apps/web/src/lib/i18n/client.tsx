@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext } from 'react';
-import { LOCALE_COOKIE, LOCALE_NAMES, LOCALES, type Locale } from './config';
+import { createContext, useContext, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { LOCALE_COOKIE, LOCALE_NAMES, LOCALES, isLocale, type Locale } from './config';
 import type { Dictionary } from './dictionaries/ar';
 
 type ClientStrings = Dictionary['client'];
@@ -45,4 +46,28 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
       ))}
     </select>
   );
+}
+
+/**
+ * Signed-in screens: the language the person picked (the cookie) is also saved
+ * on their profile (0080), so what the database sends them - notifications,
+ * the weekly digest - comes in that language too. Once per tab per change.
+ */
+export function LocaleSync() {
+  useEffect(() => {
+    const picked = document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]+)`))?.[1];
+    if (!isLocale(picked)) return;
+    try {
+      if (sessionStorage.getItem('lang-synced') === picked) return;
+    } catch {}
+    createClient()
+      .rpc('set_my_locale', { p_locale: picked })
+      .then(({ error }) => {
+        if (error) return;
+        try {
+          sessionStorage.setItem('lang-synced', picked);
+        } catch {}
+      });
+  }, []);
+  return null;
 }

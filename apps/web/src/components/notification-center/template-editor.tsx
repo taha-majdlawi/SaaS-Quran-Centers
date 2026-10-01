@@ -42,7 +42,7 @@ export function TemplateEditor({ orgId, t, labels, lang }: { orgId: string; t: T
     <details className="rounded-lg border bg-white open:shadow-sm">
       <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 px-4 py-3">
         <span className="flex items-center gap-2">
-          <b>{t.name}</b>
+          <b>{(S.notif.events as Record<string, string>)[t.event_key] ?? t.name}</b>
           {t.customized && <span className="rounded bg-brand/10 px-1.5 py-0.5 text-[11px] text-brand">{S.notif.customized}</span>}
           {!enabled && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">{S.notif.off}</span>}
         </span>

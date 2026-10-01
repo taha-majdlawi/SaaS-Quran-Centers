@@ -1,0 +1,16 @@
+# audit - Français. Same keys as the spec's English column.
+T = {'tables': {'students_profile': 'Élève',
+            'circles': 'Cercle',
+            'stages': 'Niveau',
+            'serd_sessions': 'Séance de serd',
+            'organization_members': 'Membre',
+            'billing_requests': 'Paiement',
+            'organizations': 'Le centre'},
+ 'actions': {'delete': 'Supprimé', 'update': 'Modifié', 'create': 'Ajouté', 'insert': 'Ajouté'},
+ 'intro': 'Les 100 dernières suppressions / modifications sensibles du centre.',
+ 'none': 'Rien d’enregistré pour l’instant',
+ 'colWho': 'Par',
+ 'title': 'Journal d’activité',
+ 'colDate': 'Date',
+ 'colAction': 'Action',
+ 'colOn': 'Sur'}

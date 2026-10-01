@@ -41,6 +41,8 @@ class MainActivity : FlutterActivity() {
                 )
                 "openAutostart" -> result.success(autostartScreens.any { open(Intent().setComponent(it)) } || openAppDetails())
                 "openApp" -> result.success(openAppDetails())
+                // for crash reports: which phone this is
+                "device" -> result.success("${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE}, SDK ${Build.VERSION.SDK_INT})")
                 else -> result.notImplemented()
             }
         }

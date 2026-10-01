@@ -81,7 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (n.refId == null) return null;
     switch (n.eventKey) {
       case 'weekly_digest':
-        return '/my/report';
+        return n.refId == null ? '/my/report' : '/weekly/${n.refId}';
       case 'calendar_entry':
       case 'center_closed':
       case 'event_reminder':

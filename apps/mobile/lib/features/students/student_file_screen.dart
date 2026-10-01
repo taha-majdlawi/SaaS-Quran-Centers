@@ -23,6 +23,7 @@ import '../serd/serd_repository.dart';
 import '../serd/serd_widgets.dart';
 import '../teacher/teacher_widgets.dart';
 import '../profiles/profile_widgets.dart';
+import '../review_plan/review_plan_screen.dart';
 import '../../core/i18n/i18n.dart';
 
 class _FileData {
@@ -389,6 +390,15 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           ),
           const SizedBox(height: 14),
           GoalCard(studentId: widget.studentId, studentName: d.fullName),
+          TodayReviewCard(studentId: widget.studentId),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: () => context.push('/weekly/${widget.studentId}'),
+              icon: const Icon(Icons.insights_rounded, size: 18),
+              label: Text(tr(context).weekly.open),
+            ),
+          ),
           if (last != null) ...[
             SectionTitle(tr(context).stu.lastRecitation),
             Builder(builder: (context) {

@@ -1,0 +1,15 @@
+# record - Français. Same keys as the spec's English column.
+T = {'tabRecitations': 'Récitation',
+ 'tabAttendance': 'Présence',
+ 'tabSerd': 'Serd',
+ 'thisMonth': 'Ce mois-ci',
+ 'recitations': 'Récitations',
+ 'ayahs': 'Versets',
+ 'attendance': 'Présence',
+ 'points': 'Points',
+ 'breakdown': 'Détail des points',
+ 'noAttendance': 'Aucune présence enregistrée pour l’instant',
+ 'search': 'Rechercher par sourate ou remarque',
+ 'all': 'Tout',
+ 'noResults': 'Aucun résultat',
+ 'session': '{n} récitations en une séance'}

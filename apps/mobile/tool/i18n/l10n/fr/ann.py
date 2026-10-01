@@ -1,0 +1,18 @@
+# ann - Français. Same keys as the spec's English column.
+T = {'title': 'Annonces',
+ 'newTitle': 'Nouvelle annonce',
+ 'none': 'Aucune annonce',
+ 'draft': 'Brouillon',
+ 'required': 'Le titre et le texte sont obligatoires',
+ 'deleteTitle': 'Supprimer l’annonce',
+ 'sure': 'Êtes-vous sûr ?',
+ 'fieldTitle': 'Titre',
+ 'fieldBody': 'Texte',
+ 'audience': 'Public',
+ 'circleOptional': 'Un cercle précis (facultatif)',
+ 'allCircles': 'Tous les cercles',
+ 'pin': 'Épingler en haut',
+ 'publish': 'Publier maintenant',
+ 'publishHint': 'Le public est notifié à la première publication',
+ 'editTitle': 'Modifier l’annonce',
+ 'yourCircle': 'Votre cercle'}

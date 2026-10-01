@@ -109,7 +109,7 @@ class _NotificationPrefsScreenState extends State<NotificationPrefsScreen> {
                       child: Column(children: [
                         for (final t in _types ?? prefs.types)
                           SwitchListTile(
-                            title: Text(t.name),
+                            title: Text(tr(context).notif.events[t.key] ?? t.name),
                             value: t.enabled,
                             onChanged: _saving.contains(t.key) ? null : (v) => _toggle(t, v),
                           ),

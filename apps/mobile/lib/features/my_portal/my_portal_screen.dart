@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../profiles/profile_widgets.dart';
+import '../review_plan/review_plan_screen.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/data/quran_data.dart';
 import '../../core/i18n/i18n.dart';
@@ -219,6 +220,13 @@ class _HomeTab extends StatelessWidget {
         AnnouncementsPreviewCard(announcements: data.announcements),
         const SizedBox(height: 12),
         GoalCard(key: ValueKey('goal$studentId'), studentId: studentId, studentName: data.fullName),
+        TodayReviewCard(key: ValueKey('review$studentId'), studentId: studentId),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/weekly/$studentId'),
+          icon: const Icon(Icons.insights_rounded),
+          label: Text(tr(context).weekly.open),
+        ),
         SectionTitle(p.progressTitle),
         Card(
           child: Padding(
@@ -588,11 +596,11 @@ class LanguagePicker extends StatelessWidget {
           const Icon(Icons.translate_rounded),
           const SizedBox(width: 12),
           Expanded(child: Text(tr(context).portal.languageHint, style: const TextStyle(fontWeight: FontWeight.w700))),
-          SegmentedButton<String>(
-            segments: [for (final l in kLocales) ButtonSegment(value: l, label: Text(kLocaleNames[l]!))],
-            selected: {locale.effective},
-            showSelectedIcon: false,
-            onSelectionChanged: (s) => locale.choose(s.first),
+          DropdownButton<String>(
+            value: locale.effective,
+            underline: const SizedBox.shrink(),
+            items: [for (final l in kLocales) DropdownMenuItem(value: l, child: Text(kLocaleNames[l]!))],
+            onChanged: (v) => v == null ? null : locale.choose(v),
           ),
         ]),
       ),

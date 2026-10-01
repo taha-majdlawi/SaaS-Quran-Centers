@@ -1,0 +1,17 @@
+# weekly - Türkçe. Same keys as the spec's English column.
+T = {'smartToggle': 'Akıllı haftalık rapor',
+ 'smartHint': 'Ekler: ezber hedefi, önde mi geride mi, geçen haftayla karşılaştırma ve öğretmenin notu',
+ 'title': 'Haftalık rapor',
+ 'period': '{from} – {to}',
+ 'thisWeek': 'Bu hafta',
+ 'lastWeek': 'Geçen hafta',
+ 'recitations': 'Dinletmeler',
+ 'newPages': 'Yeni sayfalar',
+ 'reviews': 'Tekrarlar',
+ 'points': 'Puan',
+ 'attendance': 'Devam',
+ 'attV': '{days} günden {present}',
+ 'teacherNote': 'Öğretmenin notu',
+ 'noNote': 'Bu hafta öğretmenden not yok',
+ 'nextPlan': 'Gelecek hafta için',
+ 'open': 'Haftalık rapor'}

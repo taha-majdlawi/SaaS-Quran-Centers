@@ -8,7 +8,7 @@ export interface PublicSite {
   primary_color: string;
   secondary_color: string;
   enabled: boolean;
-  /** The center's default language (0069): 'ar' | 'en'. */
+  /** The center's default language (0069, 0080): 'ar' | 'en' | 'tr' | 'fr'. */
   default_language?: string;
   hero_title: string | null;
   hero_body: string | null;

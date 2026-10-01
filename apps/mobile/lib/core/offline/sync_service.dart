@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'outbox.dart';
+import '../monitoring/error_reporter.dart';
 import '../../core/i18n/i18n.dart';
 
 /// Was this failure "no usable network" (retry later) rather than a refusal by
@@ -147,6 +148,7 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
     Future<dynamic> Function()? send,
   }) async {
     writeGuard?.call();
+    ErrorReporter.instance.crumb('save $kind');
     final user = _currentUser();
     if (user == null) throw StateError('not signed in');
     final handler = _handlers[kind];
@@ -259,6 +261,7 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
 
   void _setNetwork(bool value) {
     if (_network == value) return;
+    ErrorReporter.instance.crumb(value ? 'network on' : 'network off');
     final was = online;
     _network = value;
     // a new network: assume it works until a request says otherwise

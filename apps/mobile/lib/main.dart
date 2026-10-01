@@ -9,6 +9,7 @@ import 'core/access/account_access.dart';
 import 'core/push/push_service.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/i18n/i18n.dart';
+import 'core/monitoring/error_reporter.dart';
 import 'core/offline/offline_setup.dart';
 import 'core/offline/prefetch.dart';
 import 'core/offline/sync_service.dart';
@@ -36,6 +37,9 @@ Future<void> main() async {
   }
 
   await AppSupabase.initialize(url: _supabaseUrl, publishableKey: _supabasePublishableKey);
+
+  // every crash goes to the error log with the screen, the device and the last steps
+  await ErrorReporter.instance.install();
 
   // Push notifications (Firebase): a no-op when this build has no Firebase config file.
   await PushService.instance.init();
@@ -140,6 +144,12 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     _router = buildAppRouter(auth: context.read<AuthController>(), tenant: context.read<TenantController>(), onboarding: widget.onboarding);
     // a tapped push opens the right screen (also when it launched the app)
     PushService.instance.openRoute = (route) => _router.push(route);
+    // the screen showing, for crash reports
+    _router.routerDelegate.addListener(() {
+      try {
+        ErrorReporter.instance.screen(_router.routerDelegate.currentConfiguration.uri.path);
+      } catch (_) {}
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => PushService.instance.flushPending());
   }
 
@@ -160,6 +170,8 @@ class _AppRouterHostState extends State<_AppRouterHost> {
     final accessOrg = auth.isAuthenticated ? tenant.active?.organization.id : null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AccessController.instance.bind(AppSupabase.client, accessOrg);
+      ErrorReporter.instance.orgId = accessOrg;
+      ErrorReporter.instance.locale = LocaleController.instance.effective;
       if (accessOrg != null) PushService.instance.register(AppSupabase.client, accessOrg);
       // keep what this person needs on the phone, so the app works without a connection
       OfflinePrefetch.instance.autoRun(AppSupabase.client, () => context.read<AuthController>().isAuthenticated ? context.read<TenantController>().active : null);
@@ -168,6 +180,9 @@ class _AppRouterHostState extends State<_AppRouterHost> {
         unawaited(OfflinePrefetch.instance.run(AppSupabase.client, active));
       } else {
         unawaited(OfflinePrefetch.instance.bind(null, null));
+      }
+      if (accessOrg != null) {
+        LocaleController.instance.syncProfile((lang) => AppSupabase.client.rpc('set_my_locale', params: {'p_locale': lang}));
       }
       LocaleController.instance.bindCenter(accessOrg, (orgId) async {
         final row = await AppSupabase.client
@@ -182,7 +197,7 @@ class _AppRouterHostState extends State<_AppRouterHost> {
 
     // The person's choice, else the center's default language, else Arabic.
     final lang = context.watch<LocaleController>().effective;
-    final strings = lang == 'en' ? S.en : S.ar;
+    final strings = stringsFor(lang);
     currentStrings = strings;
 
     return MaterialApp.router(

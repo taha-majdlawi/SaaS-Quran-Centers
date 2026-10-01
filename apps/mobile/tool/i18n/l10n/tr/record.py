@@ -1,0 +1,15 @@
+# record - Türkçe. Same keys as the spec's English column.
+T = {'tabRecitations': 'Dinletme',
+ 'tabAttendance': 'Devam',
+ 'tabSerd': 'Serd',
+ 'thisMonth': 'Bu ay',
+ 'recitations': 'Dinletmeler',
+ 'ayahs': 'Ayetler',
+ 'attendance': 'Devam',
+ 'points': 'Puan',
+ 'breakdown': 'Puan dağılımı',
+ 'noAttendance': 'Henüz yoklama kaydı yok',
+ 'search': 'Sure veya nota göre ara',
+ 'all': 'Tümü',
+ 'noResults': 'Sonuç yok',
+ 'session': 'Bir oturumda {n} dinletme'}

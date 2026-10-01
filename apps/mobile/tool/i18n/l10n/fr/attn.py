@@ -1,0 +1,16 @@
+# attn - Français. Same keys as the spec's English column.
+T = {'title': 'Élèves à suivre de près',
+ 'hint': 'Les plus urgents d’abord : en retard sur leur objectif, sans récitation, souvent absents.',
+ 'none': 'Personne n’a besoin d’une attention particulière pour l’instant 🌿',
+ 'behind': 'En retard de {pages} pages sur son objectif',
+ 'idle': 'N’a pas récité depuis {days} jours ouvrés',
+ 'never': 'N’a jamais récité',
+ 'absences': 'Absent {count} fois en deux semaines',
+ 'all': 'Tous',
+ 'filterBehind': 'Retard sur l’objectif',
+ 'filterIdle': 'Sans récitation',
+ 'filterAbsent': 'Absences',
+ 'recite': 'Réciter',
+ 'call': 'Appeler',
+ 'lastRecited': 'Dernière récitation : {v}',
+ 'count': '{n} élèves'}

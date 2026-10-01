@@ -15,6 +15,8 @@ const securityHeaders = [
 const nextConfig = {
   typedRoutes: true,
   poweredByHeader: false,
+  // which build an error report came from (the commit when built by CI)
+  env: { NEXT_PUBLIC_BUILD_ID: (process.env.GITHUB_SHA ?? '').slice(0, 7) || 'local' },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
