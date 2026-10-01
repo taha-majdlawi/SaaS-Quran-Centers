@@ -1117,6 +1117,27 @@ class SRep {
   final String sumCircle;
 }
 
+/// The daily review portion (suggested from what is memorized, approved by the teacher).
+class SRplan {
+  const SRplan({required this.title, required this.hint, required this.range, required this.ayahRef, required this.pagesN, required this.approve, required this.approveAll, required this.approvedN, required this.recite, required this.skip, required this.status, required this.none, required this.cycleStart, required this.today, required this.reviewPages, required this.outbox});
+  final String title;
+  final String hint;
+  final String range;
+  final String ayahRef;
+  final String pagesN;
+  final String approve;
+  final String approveAll;
+  final String approvedN;
+  final String recite;
+  final String skip;
+  final Map<String, String> status;
+  final String none;
+  final String cycleStart;
+  final String today;
+  final String reviewPages;
+  final String outbox;
+}
+
 /// Quran serd (staff): list, entry, schedule, settings, report.
 class SSerd {
   const SSerd({required this.overdueSuffix, required this.inactiveSuffix, required this.passSuffix, required this.wholeJuz, required this.noCircle, required this.linkStudent, required this.approved, required this.rejectTitle, required this.rejectReason, required this.reject, required this.rejected, required this.deleteTitle, required this.deleteBody, required this.deleted, required this.approve, required this.reapprove, required this.certIssued, required this.issueCert, required this.schedule, required this.report, required this.settings, required this.record, required this.all, required this.pending, required this.scheduled, required this.approvedChip, required this.rejectedChip, required this.empty, required this.requestedN, required this.assigned, required this.openAny, required this.recordShort, required this.mine, required this.mineEmpty, required this.saved, required this.wholeAlways, required this.newErrorType, required this.editErrorType, required this.name, required this.perErrors, required this.deductPct, required this.active, required this.fillAll, required this.stagePortions, required this.stagePass, required this.settingsTitle, required this.settingsHint, required this.general, required this.passPct, required this.wholePoints, required this.defaultPortions, required this.wholeNumbers, required this.saveGeneral, required this.errorTypes, required this.perRule, required this.byStage, required this.byStageHint, required this.usesGeneral, required this.pickOrType, required this.pickPart, required this.sentScore, required this.saveFailedNet, required this.newTitle, required this.scheduledTitle, required this.pickStudent, required this.typeName, required this.clearPick, required this.dateLine, required this.parts, required this.errors, required this.perRule2, required this.expected, required this.notesOpt, required this.submit, required this.noResults, required this.reportTitle, required this.totalSessions, required this.waiting, required this.avgScore, required this.pointsGiven, required this.approvedParts, required this.juzLine, required this.topErrors, required this.examiners, required this.partsLine, required this.examiner, required this.circleTeacher, required this.assignedTo, required this.openToAny, required this.noStudent, required this.scoreLabel, required this.resultLine, required this.rejectReasonV, required this.whole, required this.pickJuz, required this.juzLine2, required this.addJuz, required this.passed, required this.repeat, required this.pickBoth, required this.scheduledOk, required this.scheduleHint, required this.student, required this.when, required this.partsWanted, required this.assign, required this.scheduleBtn, required this.outboxLabel});
@@ -1504,7 +1525,7 @@ class SWeekly {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
   /// 'ar' or 'en'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1538,6 +1559,7 @@ class S {
   final SQuran quran;
   final SRec rec;
   final SRep rep;
+  final SRplan rplan;
   final SSerd serd;
   final SSet set;
   final SStu stu;
@@ -2263,7 +2285,7 @@ class S {
       active: 'فعّال (يظهر للطلاب)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
+      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/review-plan': 'ورد المراجعة اليومي', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
       sections: {'teaching': 'التعليم', 'motivation': 'التحفيز', 'comms': 'التواصل', 'admin': 'إدارة المركز'},
       switchCenter: 'تبديل المركز',
       menu: 'القائمة',
@@ -2572,6 +2594,24 @@ class S {
       sumSerd: 'سرد معتمد: {serd_approved}',
       sumRecitations: 'التسميعات: {recitations} ({reciting_students} طالب)',
       sumCircle: '• {name}: {recitations} تسميع، حضور {v}',
+    ),
+    rplan: SRplan(
+      title: 'ورد المراجعة اليومي',
+      hint: 'يقترح النظام لكل طالب صفحات المراجعة التالية من محفوظه بالترتيب. اعتمدها بضغطة، وتظهر للطالب وولي أمره.',
+      range: 'من {from} إلى {to}',
+      ayahRef: '{surah} {ayah}',
+      pagesN: '{n} صفحات (ص {a}–{b})',
+      approve: 'اعتماد',
+      approveAll: 'اعتماد الكل',
+      approvedN: 'اعتُمد {n}',
+      recite: 'تسميع',
+      skip: 'إلغاء',
+      status: {'suggested': 'مقترح', 'approved': 'معتمد', 'done': 'سمّعه ✓', 'pending': 'بانتظار الرفع'},
+      none: 'لا يوجد طلاب لهم محفوظ بعد',
+      cycleStart: 'بداية دورة جديدة',
+      today: 'ورد المراجعة اليوم',
+      reviewPages: 'صفحات المراجعة اليومية (فارغ = تلقائي)',
+      outbox: 'اعتماد مراجعة {name}',
     ),
     serd: SSerd(
       overdueSuffix: '  ·  متأخر',
@@ -3657,7 +3697,7 @@ class S {
       active: 'Active (shown to students)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
+      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/review-plan': 'Daily review portions', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
       sections: {'teaching': 'Teaching', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Center management'},
       switchCenter: 'Switch center',
       menu: 'Menu',
@@ -3966,6 +4006,24 @@ class S {
       sumSerd: 'Approved serd: {serd_approved}',
       sumRecitations: 'Recitations: {recitations} ({reciting_students} students)',
       sumCircle: '• {name}: {recitations} recitations, attendance {v}',
+    ),
+    rplan: SRplan(
+      title: 'Daily review portions',
+      hint: 'For each student the system suggests the next pages of what they memorised, in order. Approve with one tap; the student and the family then see it.',
+      range: 'From {from} to {to}',
+      ayahRef: '{surah} {ayah}',
+      pagesN: '{n} pages (p. {a}–{b})',
+      approve: 'Approve',
+      approveAll: 'Approve all',
+      approvedN: '{n} approved',
+      recite: 'Recite',
+      skip: 'Cancel',
+      status: {'suggested': 'Suggested', 'approved': 'Approved', 'done': 'Done ✓', 'pending': 'Waiting to upload'},
+      none: 'No students with memorised pages yet',
+      cycleStart: 'A new round starts',
+      today: 'Today’s review',
+      reviewPages: 'Daily review pages (empty = automatic)',
+      outbox: 'Approve review for {name}',
     ),
     serd: SSerd(
       overdueSuffix: '  ·  overdue',

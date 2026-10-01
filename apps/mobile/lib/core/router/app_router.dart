@@ -59,6 +59,7 @@ import '../../features/members/members_list_screen.dart';
 import '../../features/profiles/circle_profile_screen.dart';
 import '../../features/profiles/teacher_profile_screen.dart';
 import '../../features/attention/attention_screen.dart';
+import '../../features/review_plan/review_plan_screen.dart';
 import '../../features/profiles/weekly_report_screen.dart';
 import '../../features/members/member_edit_screen.dart';
 import '../../features/members/teacher_form_screen.dart';
@@ -184,6 +185,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       ),
       GoRoute(path: '/circles', builder: (context, state) => const CirclesListScreen()),
       GoRoute(path: '/circles/:id/profile', builder: (context, state) => CircleProfileScreen(circleId: state.pathParameters['id']!)),
+      GoRoute(path: '/review-plan', builder: (context, state) => const ReviewPlanScreen()),
       GoRoute(path: '/attention', builder: (context, state) => const AttentionScreen()),
       GoRoute(path: '/weekly/:id', builder: (context, state) => WeeklyReportScreen(studentId: state.pathParameters['id']!)),
       GoRoute(path: '/teachers/:id', builder: (context, state) => TeacherProfileScreen(teacherId: state.pathParameters['id']!)),

@@ -6,7 +6,7 @@ import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
 import { clearStudentGoal, saveStudentGoal } from '@/lib/goals/actions';
 
 export interface GoalProgress {
-  goal: { pages_per_day: number; target_pages: number; start_date: string; note: string | null; set_by: string | null } | null;
+  goal: { pages_per_day: number; target_pages: number; start_date: string; note: string | null; set_by: string | null; review_pages_per_day?: number | null } | null;
   memorized_pages: number;
   memorized_percent: number;
   target_pages: number;
@@ -105,6 +105,11 @@ export async function GoalCard({ g, orgId, studentId, back, edit }: { g: GoalPro
               <label className="text-xs text-gray-600">
                 {G.startDate}
                 <input type="date" name="startDate" defaultValue={g.goal?.start_date ?? today} className={field} />
+              </label>
+              <label className="text-xs text-gray-600">
+                {t.staff.rplan.reviewPages}
+                <input type="number" name="reviewPages" step="1" min="1" max="40" defaultValue={g.goal?.review_pages_per_day ?? ''} className={field} />
+                <span className="text-[11px] text-gray-400">{t.staff.rplan.reviewHint}</span>
               </label>
               <label className="text-xs text-gray-600">
                 {G.note}

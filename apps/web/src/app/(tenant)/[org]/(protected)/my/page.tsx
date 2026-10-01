@@ -1,4 +1,5 @@
 import { GoalCard, type GoalProgress } from '@/components/goal-card';
+import { TodayReview, type ReviewPlan } from '@/components/review-plans';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
@@ -59,7 +60,7 @@ export default async function MyPortalPage({
   const current = rows.find((x) => x.id === s) ?? rows[0];
   const today = localDate((orgRow?.timezone as string | null) || 'UTC');
 
-  const [dash, serd, ann, cal, badges, settings, goalRes] = await Promise.all([
+  const [dash, serd, ann, cal, badges, settings, goalRes, reviewRes] = await Promise.all([
     supabase.rpc('get_student_dashboard', { p_org: org.id, p_student_id: current.id }),
     supabase.rpc('serd_student_summary', { p_org: org.id, p_student: current.id }),
     on('announcements') ? supabase.rpc('list_announcements', { p_org: org.id }) : Promise.resolve({ data: [] }),
@@ -67,6 +68,7 @@ export default async function MyPortalPage({
     on('badges') ? supabase.rpc('get_student_badges', { p_org: org.id, p_student: current.id }) : Promise.resolve({ data: [] }),
     supabase.from('organization_settings').select('key, value').eq('organization_id', org.id).in('key', PRAYER_KEYS),
     supabase.rpc('student_goal_progress', { p_org: org.id, p_student: current.id }),
+    supabase.rpc('my_review_plan', { p_org: org.id, p_student: current.id }),
   ]);
   const goal = goalRes.data as GoalProgress | null;
 
@@ -163,6 +165,7 @@ export default async function MyPortalPage({
           goalCard={
             <>
               {goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
+              <TodayReview plan={reviewRes.data as ReviewPlan | null} />
               <a href={`/my/weekly?student=${current.id}` as never} className="block rounded-lg border bg-white p-3 text-center text-sm font-semibold text-brand hover:bg-gray-50">
                 📊 {t.staff.weekly.open}
               </a>

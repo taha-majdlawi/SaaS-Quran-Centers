@@ -80,10 +80,10 @@ class ProfilesRepository {
       )) as Map<String, dynamic>;
 
   /// Saves the goal now, or queues it (it is an upsert, safe to replay).
-  Future<SubmitOutcome> setGoal(String orgId, String studentId, {required double pagesPerDay, int targetPages = 604, String? note, required String label}) =>
+  Future<SubmitOutcome> setGoal(String orgId, String studentId, {required double pagesPerDay, int targetPages = 604, String? note, double? reviewPages, required String label}) =>
       SyncService.instance.submit(
         'student_goal',
-        {'p_org': orgId, 'p_student': studentId, 'p_pages_per_day': pagesPerDay, 'p_target_pages': targetPages, 'p_note': note},
+        {'p_org': orgId, 'p_student': studentId, 'p_pages_per_day': pagesPerDay, 'p_target_pages': targetPages, 'p_note': note, 'p_review_pages': reviewPages},
         label: label,
         orderKey: 'goal:$studentId',
       );

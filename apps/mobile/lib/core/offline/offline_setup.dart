@@ -23,6 +23,7 @@ SyncService createSyncService(SupabaseClient client) {
   sync.register('external_recitation', (payload) => client.rpc('submit_external_recitation', params: payload));
   sync.register('gathering', (payload) => client.rpc('submit_gathering', params: payload));
   sync.register('recitation_update', (payload) => client.rpc('update_recitation', params: payload));
+  sync.register('review_approve', (payload) => client.rpc('approve_review_plan', params: payload));
   sync.register('student_goal', (payload) => client.rpc('set_student_goal', params: payload));
   sync.register('recitation_delete', (payload) => client.rpc('delete_recitation', params: payload));
   sync.register('attendance', (payload) async {

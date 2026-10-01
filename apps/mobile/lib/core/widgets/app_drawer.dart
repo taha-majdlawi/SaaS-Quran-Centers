@@ -39,6 +39,7 @@ const kNavSections = [
   ]),
   NavSection('teaching', [
     NavItem(Icons.priority_high_rounded, '/attention'),
+    NavItem(Icons.event_repeat_rounded, '/review-plan'),
     NavItem(Icons.people_alt_rounded, '/students', module: 'students'),
     NavItem(Icons.groups_rounded, '/circles', adminOnly: true),
     NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),

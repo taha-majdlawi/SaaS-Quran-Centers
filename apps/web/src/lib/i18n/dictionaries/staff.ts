@@ -990,6 +990,23 @@ export const staffAr = {
     title: 'المراجعة المقترحة اليوم',
     noCircle: 'بدون حلقة',
   },
+  /** The daily review portion (suggested from what is memorized, approved by the teacher). */
+  rplan: {
+    title: 'ورد المراجعة اليومي',
+    hint: 'لكل طالب صفحات المراجعة التالية من محفوظه بالترتيب، تكمل من حيث توقّف آخر ورد. اعتمدها فتظهر للطالب وولي أمره، وتُعلَّم «سمّعه» عند تسجيل مراجعة لها.',
+    range: 'من {from} إلى {to}',
+    pagesN: '{n} صفحات (ص {a}–{b})',
+    approve: 'اعتماد',
+    approveAll: 'اعتماد كل المقترح',
+    cancel: 'إلغاء الاعتماد',
+    status: { "suggested": 'مقترح', "approved": 'معتمد', "done": 'سمّعه ✓' } as Record<string, string>,
+    none: 'لا يوجد طلاب لهم محفوظ بعد',
+    cycleStart: 'بداية دورة جديدة',
+    today: 'ورد المراجعة اليوم',
+    reviewPages: 'صفحات المراجعة اليومية',
+    reviewHint: 'فارغ = تلقائي (كل المحفوظ خلال 20 يوم دوام تقريبًا)',
+    approvedN: 'اعتُمد {n}',
+  },
   /** Global search. */
   search: {
     noCircle: 'بدون حلقة',
@@ -2321,6 +2338,23 @@ export const staffEn: typeof staffAr = {
     none: 'No reviews due today ✓',
     title: 'Suggested review today',
     noCircle: 'No circle',
+  },
+  /** The daily review portion (suggested from what is memorized, approved by the teacher). */
+  rplan: {
+    title: 'Daily review portions',
+    hint: 'For each student, the next pages of what they memorised, in order, continuing from the last portion. Approve it and the student and the family see it; it is marked done when a review covering it is recorded.',
+    range: 'From {from} to {to}',
+    pagesN: '{n} pages (p. {a}–{b})',
+    approve: 'Approve',
+    approveAll: 'Approve all suggestions',
+    cancel: 'Withdraw',
+    status: { "suggested": 'Suggested', "approved": 'Approved', "done": 'Done ✓' } as Record<string, string>,
+    none: 'No students with memorised pages yet',
+    cycleStart: 'A new round starts',
+    today: 'Today’s review',
+    reviewPages: 'Daily review pages',
+    reviewHint: 'Empty = automatic (everything memorised in about 20 working days)',
+    approvedN: '{n} approved',
   },
   /** Global search. */
   search: {

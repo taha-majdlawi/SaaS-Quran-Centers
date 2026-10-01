@@ -331,6 +331,7 @@ class _GoalSheetState extends State<_GoalSheet> {
   late double _pages = (_n(widget.goal?['pages_per_day']) ?? 1).toDouble();
   late final _target = TextEditingController(text: '${widget.goal?['target_pages'] ?? 604}');
   late final _note = TextEditingController(text: '${widget.goal?['note'] ?? ''}');
+  late final _review = TextEditingController(text: widget.goal?['review_pages_per_day'] == null ? '' : numText(widget.goal!['review_pages_per_day']));
   bool _saving = false;
   String? _error;
 
@@ -340,6 +341,7 @@ class _GoalSheetState extends State<_GoalSheet> {
   void dispose() {
     _target.dispose();
     _note.dispose();
+    _review.dispose();
     super.dispose();
   }
 
@@ -356,7 +358,11 @@ class _GoalSheetState extends State<_GoalSheet> {
     });
     try {
       final out = await widget.repo.setGoal(widget.orgId, widget.studentId,
-          pagesPerDay: _pages, targetPages: target, note: _note.text.trim().isEmpty ? null : _note.text.trim(), label: fmt(t.outboxGoal, {'name': widget.studentName}));
+          pagesPerDay: _pages,
+          targetPages: target,
+          note: _note.text.trim().isEmpty ? null : _note.text.trim(),
+          reviewPages: double.tryParse(_review.text.trim()),
+          label: fmt(t.outboxGoal, {'name': widget.studentName}));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(out.queued ? kQueuedMessage : t.goalSaved)));
       Navigator.pop(context, true);
@@ -410,6 +416,8 @@ class _GoalSheetState extends State<_GoalSheet> {
         ]),
         const SizedBox(height: 8),
         TextField(controller: _target, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: t.targetPages)),
+        const SizedBox(height: 10),
+        TextField(controller: _review, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(context).rplan.reviewPages)),
         const SizedBox(height: 10),
         TextField(controller: _note, maxLength: 300, decoration: InputDecoration(labelText: t.note)),
         const SizedBox(height: 8),

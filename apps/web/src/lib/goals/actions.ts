@@ -17,6 +17,7 @@ export async function saveStudentGoal(formData: FormData) {
     p_target_pages: Number(s(formData, 'targetPages')) || 604,
     p_start_date: s(formData, 'startDate') || null,
     p_note: s(formData, 'note') || null,
+    p_review_pages: Number(s(formData, 'reviewPages')) || null,
   });
   if (error) redirect(withParam(back, 'error', error.message) as never);
   redirect(withParam(back, 'ok', (await staffStrings()).goal.saved) as never);

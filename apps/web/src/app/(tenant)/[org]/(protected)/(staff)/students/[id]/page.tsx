@@ -6,6 +6,7 @@ import { RangeForm } from '@/components/report-views';
 import { ActionLink, Chip, CountList, Facts, Panel, ProfileHeader, RecitationTable, gradeLabelMap, Stat, StatGrid, relDay } from '@/components/profile-views';
 import { addStudentNote } from '@/lib/insights/actions';
 import { GoalCard, type GoalProgress } from '@/components/goal-card';
+import { TodayReview, type ReviewPlan } from '@/components/review-plans';
 import { defaultRange, fmtDay, pct, type StudentReport } from '@/lib/reports/format';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
@@ -57,11 +58,12 @@ export default async function StudentProfilePage({
   const supabase = await createClient();
 
   const grades = gradeLabelMap((await supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id)).data);
-  const [{ data: pData, error: pError }, { data: rData, error: rError }, { data: notesData }, { data: goalData }] = await Promise.all([
+  const [{ data: pData, error: pError }, { data: rData, error: rError }, { data: notesData }, { data: goalData }, { data: reviewData }] = await Promise.all([
     supabase.rpc('student_profile', { p_org: org.id, p_student: id }),
     supabase.rpc('student_report', { p_org: org.id, p_student: id, p_from: f, p_to: t }),
     supabase.rpc('list_student_notes', { p_org: org.id, p_student: id }),
     supabase.rpc('student_goal_progress', { p_org: org.id, p_student: id }),
+    supabase.rpc('my_review_plan', { p_org: org.id, p_student: id }),
   ]);
   const goal = goalData as GoalProgress | null;
   if (pError && /غير موجود|not found/i.test(pError.message)) notFound();
@@ -124,6 +126,9 @@ export default async function StudentProfilePage({
       {goal && (
         <div className="mb-6">
           <GoalCard g={goal} orgId={org.id} studentId={p.id} back={`/students/${p.id}`} edit />
+          <div className="mt-3">
+            <TodayReview plan={reviewData as ReviewPlan | null} />
+          </div>
         </div>
       )}
 
