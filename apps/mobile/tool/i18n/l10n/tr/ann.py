@@ -1,0 +1,18 @@
+# ann - Türkçe. Same keys as the spec's English column.
+T = {'title': 'Duyurular',
+ 'newTitle': 'Yeni duyuru',
+ 'none': 'Duyuru yok',
+ 'draft': 'Taslak',
+ 'required': 'Başlık ve metin zorunludur',
+ 'deleteTitle': 'Duyuruyu sil',
+ 'sure': 'Emin misiniz?',
+ 'fieldTitle': 'Başlık',
+ 'fieldBody': 'Metin',
+ 'audience': 'Hedef kitle',
+ 'circleOptional': 'Belirli bir halka (isteğe bağlı)',
+ 'allCircles': 'Tüm halkalar',
+ 'pin': 'En üste sabitle',
+ 'publish': 'Şimdi yayımla',
+ 'publishHint': 'Hedef kitle ilk yayımlandığında bilgilendirilir',
+ 'editTitle': 'Duyuruyu düzenle',
+ 'yourCircle': 'Halkanız'}

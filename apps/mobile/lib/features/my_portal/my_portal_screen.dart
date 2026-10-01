@@ -596,11 +596,11 @@ class LanguagePicker extends StatelessWidget {
           const Icon(Icons.translate_rounded),
           const SizedBox(width: 12),
           Expanded(child: Text(tr(context).portal.languageHint, style: const TextStyle(fontWeight: FontWeight.w700))),
-          SegmentedButton<String>(
-            segments: [for (final l in kLocales) ButtonSegment(value: l, label: Text(kLocaleNames[l]!))],
-            selected: {locale.effective},
-            showSelectedIcon: false,
-            onSelectionChanged: (s) => locale.choose(s.first),
+          DropdownButton<String>(
+            value: locale.effective,
+            underline: const SizedBox.shrink(),
+            items: [for (final l in kLocales) DropdownMenuItem(value: l, child: Text(kLocaleNames[l]!))],
+            onChanged: (v) => v == null ? null : locale.choose(v),
           ),
         ]),
       ),

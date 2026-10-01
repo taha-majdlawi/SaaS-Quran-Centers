@@ -1,0 +1,16 @@
+# market - Français. Same keys as the spec's English column.
+T = {'title': 'Boutique de points',
+ 'disabled': 'La boutique n’est pas activée dans votre centre pour le moment',
+ 'balance': 'Solde',
+ 'earned': 'Sur {n} points  ·  dépensé {spent}',
+ 'pending': '  ·  {n} points en attente de compléter une unité de conversion',
+ 'available': 'Disponible à l’achat',
+ 'empty': 'Rien de disponible pour le moment',
+ 'stock': 'Restant : {n}',
+ 'bought': 'Commandé ✓ — le centre vous le remettra',
+ 'soldOut': 'Épuisé',
+ 'buy': 'Acheter',
+ 'tooPoor': 'Solde insuffisant',
+ 'orders': 'Mes commandes',
+ 'noOrders': 'Aucune commande pour l’instant',
+ 'cancelled': 'Commande annulée et solde restitué'}

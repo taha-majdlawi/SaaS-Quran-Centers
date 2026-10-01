@@ -1,6 +1,6 @@
 // Languages of the web app (docs/I18N.md). Adding one = a dictionary file +
 // an entry here; the build fails until every key is translated.
-export const LOCALES = ['ar', 'en'] as const;
+export const LOCALES = ['ar', 'en', 'tr', 'fr'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'ar';
@@ -8,7 +8,7 @@ export const DEFAULT_LOCALE: Locale = 'ar';
 /** The viewer's choice - shared across every subdomain (see authCookieDomain). */
 export const LOCALE_COOKIE = 'lang';
 
-export const LOCALE_NAMES: Record<Locale, string> = { ar: 'العربية', en: 'English' };
+export const LOCALE_NAMES: Record<Locale, string> = { ar: 'العربية', en: 'English', tr: 'Türkçe', fr: 'Français' };
 
 const RTL: ReadonlySet<Locale> = new Set<Locale>(['ar']);
 

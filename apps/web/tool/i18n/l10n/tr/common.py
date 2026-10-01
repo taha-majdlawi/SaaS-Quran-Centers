@@ -1,0 +1,18 @@
+# common - Türkçe. Same keys as the spec's English column.
+T = {'deleting': 'Siliniyor...',
+ 'edit': 'Düzenle',
+ 'delete': 'Sil',
+ 'saving': 'Kaydediliyor...',
+ 'add': 'Ekle',
+ 'forbidden': 'İzin verilmiyor',
+ 'notAllowed': 'Bu işlemi yapma yetkiniz yok',
+ 'noMember': 'Bu üye bu merkezde değil',
+ 'invalid': 'Geçersiz değer',
+ 'adding': 'Ekleniyor...',
+ 'creating': 'Oluşturuluyor...',
+ 'save': 'Kaydet',
+ 'loadFailed': 'Yüklenemedi',
+ 'cancel': 'İptal',
+ 'deleteDenied': 'Bunu silemezsiniz ya da artık mevcut değil',
+ 'deleteLinked': 'Başka veriler (öğrenciler, dinletmeler vb.) buna bağlı olduğu için silinemez. Önce onları taşıyın ya da silmek yerine durumu değiştirin.',
+ 'deleteFailed': 'Silinemedi'}

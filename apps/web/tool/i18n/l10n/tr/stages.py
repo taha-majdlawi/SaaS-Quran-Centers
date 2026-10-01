@@ -1,0 +1,18 @@
+# stages - Türkçe. Same keys as the spec's English column.
+T = {'none': 'Henüz aşama yok',
+ 'add': '+ Aşama ekle',
+ 'title': 'Aşamalar',
+ 'colOrder': 'Sıra',
+ 'colName': 'Ad',
+ 'colCode': 'Kod',
+ 'deleteConfirm': '"{name}" aşaması silinsin mi? Bu geri alınamaz.',
+ 'code': 'Aşama kodu (önerilen öğrenci numarasında kullanılır)',
+ 'order': 'Aşama sırası',
+ 'saveChanges': 'Değişiklikleri kaydet',
+ 'editTitle': 'Aşamayı düzenle',
+ 'name': 'Aşama adı',
+ 'delete': 'Aşamayı sil',
+ 'namePh': 'Hazırlık',
+ 'submit': 'Aşamayı ekle',
+ 'addTitle': 'Aşama ekle',
+ 'taken': 'Bu ad veya kod bu merkezde zaten kullanılıyor'}

@@ -1,0 +1,15 @@
+# annc - Türkçe. Same keys as the spec's English column.
+T = {'publish': 'Şimdi yayınla (hedef kitle ilk yayında bilgilendirilir)',
+ 'circleOpt': 'Belirli bir halka (isteğe bağlı)',
+ 'expires': 'Bitiş tarihi (isteğe bağlı)',
+ 'pin': 'En üste sabitle',
+ 'pickCircle': 'Bir halka seçin',
+ 'allCircles': 'Tüm halkalar',
+ 'title': 'Başlık',
+ 'audience': 'Hedef kitle',
+ 'yourCircle': 'Halkanız',
+ 'body': 'Metin',
+ 'back': '← Duyurular',
+ 'newTitle': 'Yeni duyuru',
+ 'editTitle': 'Duyuruyu düzenle',
+ 'confirmDelete': 'Bu duyuru silinsin mi?'}

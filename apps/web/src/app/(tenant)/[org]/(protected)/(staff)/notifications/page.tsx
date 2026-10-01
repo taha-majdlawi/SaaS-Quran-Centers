@@ -32,7 +32,7 @@ export default async function NotificationsPage({ params, searchParams }: { para
     const supabase = await createClient();
     const { data } = await supabase.rpc('admin_notification_config', { p_org: org.id });
     const list = ((data as { templates?: { event_key: string; name: string }[] } | null)?.templates ?? []) as { event_key: string; name: string }[];
-    names = Object.fromEntries(list.map((t) => [t.event_key, t.name]));
+    names = Object.fromEntries(list.map((t) => [t.event_key, (S.notif.events as Record<string, string>)[t.event_key] ?? t.name]));
   }
 
   return (

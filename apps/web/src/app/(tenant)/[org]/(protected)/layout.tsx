@@ -7,7 +7,7 @@ import { signOut } from '@/lib/auth/actions';
 import { createClient } from '@/lib/supabase/server';
 import { billingBanner, usageBanner, type BillingState, type Usage } from '@/lib/billing/format';
 import { getI18n, isTranslatedScreen } from '@/lib/i18n/server';
-import { LanguageSwitcher } from '@/lib/i18n/client';
+import { LanguageSwitcher, LocaleSync } from '@/lib/i18n/client';
 import { LockedFormGuard } from '@/components/locked-form-guard';
 
 // Shell shared by the full staff dashboard (see (staff)/layout.tsx, which
@@ -60,6 +60,7 @@ export default async function TenantProtectedLayout({
       }
     >
       <MonitoringOrg orgId={org.id} />
+      <LocaleSync />
       <div className="flex-1">
         {org.isPlatformOwner && (
           <div className="bg-purple-700 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">

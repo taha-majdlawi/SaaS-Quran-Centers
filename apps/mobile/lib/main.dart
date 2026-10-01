@@ -181,6 +181,9 @@ class _AppRouterHostState extends State<_AppRouterHost> {
       } else {
         unawaited(OfflinePrefetch.instance.bind(null, null));
       }
+      if (accessOrg != null) {
+        LocaleController.instance.syncProfile((lang) => AppSupabase.client.rpc('set_my_locale', params: {'p_locale': lang}));
+      }
       LocaleController.instance.bindCenter(accessOrg, (orgId) async {
         final row = await AppSupabase.client
             .from('organization_settings')
@@ -194,7 +197,7 @@ class _AppRouterHostState extends State<_AppRouterHost> {
 
     // The person's choice, else the center's default language, else Arabic.
     final lang = context.watch<LocaleController>().effective;
-    final strings = lang == 'en' ? S.en : S.ar;
+    final strings = stringsFor(lang);
     currentStrings = strings;
 
     return MaterialApp.router(

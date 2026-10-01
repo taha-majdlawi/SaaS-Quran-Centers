@@ -4,8 +4,10 @@ import { DEFAULT_LOCALE, I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE,
 import { getPublicSite } from '@/lib/tenant/public-site';
 import { ar, type Dictionary } from './dictionaries/ar';
 import { en } from './dictionaries/en';
+import { tr } from './dictionaries/tr';
+import { fr } from './dictionaries/fr';
 
-const DICTIONARIES: Record<Locale, Dictionary> = { ar, en };
+const DICTIONARIES: Record<Locale, Dictionary> = { ar, en, tr, fr };
 
 /**
  * The language of THIS request: an explicit ?lang= (forwarded by middleware),

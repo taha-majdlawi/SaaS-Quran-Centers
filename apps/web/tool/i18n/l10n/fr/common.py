@@ -1,0 +1,19 @@
+# common - Français. Same keys as the spec's English column.
+T = {'deleting': 'Suppression...',
+ 'edit': 'Modifier',
+ 'delete': 'Supprimer',
+ 'saving': 'Enregistrement...',
+ 'add': 'Ajouter',
+ 'forbidden': 'Non autorisé',
+ 'notAllowed': 'Vous n’êtes pas autorisé à faire cela',
+ 'noMember': 'Ce membre n’appartient pas à ce centre',
+ 'invalid': 'Valeur invalide',
+ 'adding': 'Ajout...',
+ 'creating': 'Création...',
+ 'save': 'Enregistrer',
+ 'loadFailed': 'Chargement impossible',
+ 'cancel': 'Annuler',
+ 'deleteDenied': 'Vous ne pouvez pas supprimer ceci, ou cela n’existe plus',
+ 'deleteLinked': 'Impossible de supprimer : d’autres données en dépendent (élèves, récitations ou autres). Déplacez-les d’abord, ou changez le statut au lieu '
+                 'de supprimer.',
+ 'deleteFailed': 'Suppression impossible'}

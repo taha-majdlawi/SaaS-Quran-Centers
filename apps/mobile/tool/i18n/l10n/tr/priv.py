@@ -1,0 +1,20 @@
+# priv - Türkçe. Same keys as the spec's English column.
+T = {'updated': 'Talep güncellendi',
+ 'updateFailed': 'Güncellenemedi',
+ 'requestsTitle': 'Veri silme talepleri',
+ 'noRequests': 'Talep yok',
+ 'reviewHint': '“Onayla”, hesabı ve verileri kendiniz sileceğiniz anlamına gelir; ardından talep sahibinin bilgilendirilmesi için “Silindi”ye basın.',
+ 'student': 'Öğrenci: {name}',
+ 'approve': 'Onayla',
+ 'reject': 'Reddet',
+ 'done': 'Silindi',
+ 'confirmTitle': 'Hesabın ve verilerin silinmesini iste',
+ 'confirmBody': 'Talebiniz incelenmek üzere merkez yönetimine gider. Emin misiniz?',
+ 'sendRequest': 'Talebi gönder',
+ 'sendFailed': 'Talep gönderilemedi',
+ 'title': 'Hesabım ve verilerim',
+ 'intro': '{org} merkezinden hesabınızı ve verilerinizi silmesini isteyebilirsiniz. Yönetim talebi inceler ve sonuçtan haberdar edilirsiniz. Bu yalnızca bu '
+          'merkezi kapsar.',
+ 'last': 'Son talep: {status}',
+ 'reason': 'Neden (isteğe bağlı)',
+ 'submit': 'Hesabımın ve verilerimin silinmesini iste'}

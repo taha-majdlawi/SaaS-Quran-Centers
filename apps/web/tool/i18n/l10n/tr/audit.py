@@ -1,0 +1,16 @@
+# audit - Türkçe. Same keys as the spec's English column.
+T = {'tables': {'students_profile': 'Öğrenci',
+            'circles': 'Halka',
+            'stages': 'Aşama',
+            'serd_sessions': 'Serd oturumu',
+            'organization_members': 'Üye',
+            'billing_requests': 'Ödeme',
+            'organizations': 'Merkez'},
+ 'actions': {'delete': 'Silindi', 'update': 'Değiştirildi', 'create': 'Eklendi', 'insert': 'Eklendi'},
+ 'intro': 'Merkezdeki son 100 önemli silme / değişiklik.',
+ 'none': 'Henüz kayıt yok',
+ 'colWho': 'Yapan',
+ 'title': 'İşlem kaydı',
+ 'colDate': 'Tarih',
+ 'colAction': 'İşlem',
+ 'colOn': 'Üzerinde'}

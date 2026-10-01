@@ -103,7 +103,7 @@ export const en: Dictionary = {
     trustTitle: 'Your orchard is safe',
     trust: [
       { icon: '🔒', title: 'Every center isolated', body: 'No other center can reach your data, and it’s never shared for marketing.' },
-      { icon: '🕌', title: 'Arabic first', body: 'Built for Quran circles and their terms — with English and more languages coming.' },
+      { icon: '🕌', title: 'Arabic first', body: 'Built for Quran circles and their terms — with English, Turkish and French.' },
       { icon: '🤝', title: 'Easy move', body: 'Have data in an older system? We’ll help you bring it into your orchard.' },
     ],
     faqTitle: 'Frequently asked questions',

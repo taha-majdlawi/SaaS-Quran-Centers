@@ -138,7 +138,7 @@ export async function NotificationsView({ orgId, portal, embedded = false }: { o
             <input type="hidden" name="event" value={pt.event_key} />
             <input type="hidden" name="enabled" value={pt.enabled ? '0' : '1'} />
             <input type="hidden" name="back" value={back} />
-            <span>{pt.name}</span>
+            <span>{(t.staff.notif.events as Record<string, string>)[pt.event_key] ?? pt.name}</span>
             <button className={`rounded-full px-3 py-1 text-xs ${pt.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{pt.enabled ? N.on : N.off}</button>
           </form>
         ))}

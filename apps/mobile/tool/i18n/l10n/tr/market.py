@@ -1,0 +1,16 @@
+# market - Türkçe. Same keys as the spec's English column.
+T = {'title': 'Puan marketi',
+ 'disabled': 'Market şu anda merkezinizde etkin değil',
+ 'balance': 'Bakiye',
+ 'earned': '{n} puandan  ·  harcanan {spent}',
+ 'pending': '  ·  bir dönüşüm birimini tamamlamayı bekleyen {n} puan',
+ 'available': 'Satın alınabilir',
+ 'empty': 'Şu anda mevcut bir şey yok',
+ 'stock': 'Kalan: {n}',
+ 'bought': 'Sipariş verildi ✓ — merkez teslim edecek',
+ 'soldOut': 'Tükendi',
+ 'buy': 'Satın al',
+ 'tooPoor': 'Yetersiz bakiye',
+ 'orders': 'Siparişlerim',
+ 'noOrders': 'Henüz sipariş yok',
+ 'cancelled': 'Sipariş iptal edildi ve bakiye iade edildi'}

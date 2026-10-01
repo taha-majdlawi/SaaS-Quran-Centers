@@ -7,8 +7,11 @@ export 'strings.dart';
 
 /// The app's languages (docs/I18N.md). Every screen is translated; the
 /// Quran text, surah headers and certificate wording stay Arabic by design.
-const kLocales = ['ar', 'en'];
-const kLocaleNames = {'ar': 'العربية', 'en': 'English'};
+const kLocales = ['ar', 'en', 'tr', 'fr'];
+const kLocaleNames = {'ar': 'العربية', 'en': 'English', 'tr': 'Türkçe', 'fr': 'Français'};
+
+/// The strings of [lang] (Arabic for anything unknown).
+S stringsFor(String lang) => switch (lang) { 'en' => S.en, 'tr' => S.tr, 'fr' => S.fr, _ => S.ar };
 
 /// The app language: the person's own choice (remembered on the device), else
 /// their center's default language (organization_settings.default_language),
@@ -34,6 +37,18 @@ class LocaleController extends ChangeNotifier {
       final saved = (await SharedPreferences.getInstance()).getString(_key);
       if (saved != null && kLocales.contains(saved)) _chosen = saved;
     } catch (_) {}
+  }
+
+  String? _synced;
+
+  /// Signed in: save the person's own choice on their profile (0080), so what
+  /// the database sends them - notifications, the weekly digest - is in it too.
+  /// [save] calls set_my_locale; repeated calls with the same choice do nothing.
+  void syncProfile(Future<void> Function(String lang) save) {
+    final lang = _chosen;
+    if (lang == null || lang == _synced) return;
+    _synced = lang;
+    save(lang).catchError((_) => _synced = null);
   }
 
   Future<void> choose(String lang) async {

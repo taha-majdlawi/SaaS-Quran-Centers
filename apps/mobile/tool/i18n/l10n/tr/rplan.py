@@ -1,0 +1,17 @@
+# rplan - Türkçe. Same keys as the spec's English column.
+T = {'title': 'Günlük tekrar payları',
+ 'hint': 'Sistem her öğrenci için ezberlediklerinin sıradaki sayfalarını önerir. Tek dokunuşla onaylayın; ardından öğrenci ve ailesi görür.',
+ 'range': '{from} ile {to} arası',
+ 'ayahRef': '{surah} {ayah}',
+ 'pagesN': '{n} sayfa (s. {a}–{b})',
+ 'approve': 'Onayla',
+ 'approveAll': 'Tümünü onayla',
+ 'approvedN': '{n} onaylandı',
+ 'recite': 'Dinlet',
+ 'skip': 'İptal',
+ 'status': {'suggested': 'Önerildi', 'approved': 'Onaylandı', 'done': 'Tamamlandı ✓', 'pending': 'Yüklenmeyi bekliyor'},
+ 'none': 'Henüz ezberlenmiş sayfası olan öğrenci yok',
+ 'cycleStart': 'Yeni bir tur başlıyor',
+ 'today': 'Bugünün tekrarı',
+ 'reviewPages': 'Günlük tekrar sayfası (boş = otomatik)',
+ 'outbox': '{name} için tekrarı onayla'}
