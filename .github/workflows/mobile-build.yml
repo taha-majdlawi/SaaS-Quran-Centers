@@ -1,7 +1,9 @@
 # Builds the Android app (APK) so a new version can be installed or published.
 # Runs after every merge to main that touches the app, on pull requests that
 # touch it, and on demand from the Actions tab ("Run workflow"). The APK is
-# attached to the run as an artifact.
+# attached to the run as an artifact; builds from main are also published as a
+# GitHub release, so the newest app is always at
+#   https://github.com/<owner>/<repo>/releases/latest/download/bustan-alquran.apk
 #
 # Optional secrets (Settings -> Secrets and variables -> Actions):
 #   ANDROID_KEYSTORE_BASE64      the upload keystore (.jks), base64-encoded
@@ -29,6 +31,8 @@ jobs:
   apk:
     name: Android APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # publish the release (main only)
     defaults:
       run:
         working-directory: apps/mobile
@@ -44,6 +48,14 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+
+      # Without a real keystore the APK is signed with the debug key; keep that key
+      # the same from build to build so a newer APK installs over the older one.
+      - name: Keep the debug key between builds
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: android-debug-keystore
 
       - name: Push notifications config
         env:
@@ -98,6 +110,19 @@ jobs:
           path: apps/mobile/${{ steps.out.outputs.name }}
           retention-days: 30
           if-no-files-found: error
+
+      - name: Publish the release (main)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.out.outputs.name }}
+        run: |
+          cp "$NAME" bustan-alquran.apk
+          tag="app-build-${{ github.run_number }}"
+          gh release create "$tag" "$NAME" bustan-alquran.apk \
+            --target "${{ github.sha }}" --latest \
+            --title "تطبيق بستان القرآن - نسخة ${{ github.run_number }}" \
+            --notes "النسخة من ${{ github.sha }}. للتثبيت: نزّل bustan-alquran.apk على جوال أندرويد وافتحه."
 
       - name: Clean up the key
         if: always()
