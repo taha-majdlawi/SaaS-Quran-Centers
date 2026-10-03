@@ -24,7 +24,7 @@ const kTextSettingKeys = [
   'quran_default_reciter',
 ];
 
-const kFlagSettingKeys = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students'];
+const kFlagSettingKeys = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students', 'flag_fees_enabled'];
 
 /// Mirrors apps/web's settings/actions.ts - org name/branding/timezone plus
 /// the per-center weekdays and settings that eqraa hard-codes.

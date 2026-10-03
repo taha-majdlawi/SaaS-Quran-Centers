@@ -34,6 +34,7 @@ export const TENANT_MODULES = [
   { slug: 'notifications', label: 'الإشعارات' },
   { slug: 'reports', label: 'التقارير', module: 'reports' },
   { slug: 'certificates', label: 'الشهادات', module: 'certificates' },
+  { slug: 'fees', label: 'الرسوم', adminOnly: true, needsFees: true },
   { slug: 'members', label: 'الأعضاء والأدوار', adminOnly: true },
   { slug: 'deletion-requests', label: 'طلبات حذف البيانات', adminOnly: true },
   { slug: 'audit', label: 'سجل العمليات', adminOnly: true },
@@ -46,13 +47,16 @@ export async function TenantSidebar({
   activeSlug,
   role,
   permissions,
+  feesEnabled = false,
 }: {
   activeSlug?: string;
   role: 'admin' | 'teacher' | 'guardian' | 'student' | null;
   permissions: ModuleKey[];
+  feesEnabled?: boolean;
 }) {
   const S = (await getI18n()).t.staff;
   const visible = TENANT_MODULES.filter((m) => {
+    if ('needsFees' in m && m.needsFees && !feesEnabled) return false; // optional feature (0081)
     if (role === 'admin') return true;
     if ('adminOnly' in m && m.adminOnly) return false;
     if (!('module' in m)) return true; // dashboard

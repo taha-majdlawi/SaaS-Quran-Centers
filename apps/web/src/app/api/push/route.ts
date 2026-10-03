@@ -80,6 +80,8 @@ async function deliver(sa: ServiceAccount, p: Payload) {
           notification: { title: p.title, body: p.body },
           data: p.data,
           android: { priority: 'HIGH', notification: { channel_id: 'bustan_default' } },
+          // iPhone: the same alert with the default sound
+          apns: { payload: { aps: { sound: 'default' } } },
         },
       }),
     });

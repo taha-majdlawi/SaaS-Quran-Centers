@@ -27,4 +27,5 @@ T = {'items': {'dashboard': 'Tableau de bord',
            'audit': 'Journal d’activité',
            'site': 'Page publique',
            'settings': 'Réglages du centre',
-           'billing': 'Abonnement et paiement'}}
+           'billing': 'Abonnement et paiement',
+           'fees': 'Frais'}}

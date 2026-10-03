@@ -130,6 +130,10 @@ export default async function SettingsPage({
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" name="flag_teacher_manage_students" defaultChecked={flag('flag_teacher_manage_students')} /> {S.settings.teacherStudents}
           </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            {/* off unless switched on: most centers are free (0081) */}
+            <input type="checkbox" name="flag_fees_enabled" defaultChecked={settings.get('flag_fees_enabled') === 'true'} /> {S.settings.fees}
+          </label>
 
           <label className={label}>
             {S.settings.language}

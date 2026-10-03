@@ -35,3 +35,7 @@ flutter run --dart-define-from-file=env.json
 بـ VS Code: بس دوس F5 (أو "Run and Debug") - إعداد التشغيل الجاهز بـ `.vscode/launch.json` بيمرّر نفس الملف تلقائيًا.
 
 ⚠️ لا تشغّل `flutter run` بدون `--dart-define-from-file=env.json` (أو بدون تعبية `--dart-define=SUPABASE_URL=... --dart-define=SUPABASE_PUBLISHABLE_KEY=...` يدويًا) - بدونها بيفتح التطبيق على شاشة "إعدادات الاتصال بالخادم مفقودة" فقط، لأنه ما يقدر يتصل بسوبا بيز أصلاً.
+
+## الآيفون
+
+نفس الكود يبني للآيفون على Codemagic (`codemagic.yaml` بجذر المستودع) — الخطوات كاملة في [docs/IOS.md](../../docs/IOS.md).

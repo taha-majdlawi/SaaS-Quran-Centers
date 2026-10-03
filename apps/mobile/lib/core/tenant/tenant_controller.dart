@@ -41,10 +41,15 @@ class TenantController extends ChangeNotifier {
 
   Set<String> _disabled = {};
 
+  /// Student fees are switched on for the active center (most centers are free).
+  bool get feesEnabled => _feesEnabled;
+  bool _feesEnabled = false;
+
   Future<void> _loadDisabled() async {
     final id = _active?.organization.id;
     if (id == null) {
       _disabled = {};
+      _feesEnabled = false;
       return;
     }
     try {
@@ -52,6 +57,9 @@ class TenantController extends ChangeNotifier {
     } catch (_) {
       // offline / older server: keep what we knew
     }
+    try {
+      _feesEnabled = await _repository.fetchFeesEnabled(id);
+    } catch (_) {}
   }
 
   Future<void> loadMemberships() async {
@@ -111,6 +119,7 @@ class TenantController extends ChangeNotifier {
   void clear() {
     _memberships = [];
     _disabled = {};
+    _feesEnabled = false;
     _active = null;
     _loaded = false;
     _loadFailed = false;

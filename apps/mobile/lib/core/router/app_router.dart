@@ -61,6 +61,7 @@ import '../../features/profiles/teacher_profile_screen.dart';
 import '../../features/attention/attention_screen.dart';
 import '../../features/review_plan/review_plan_screen.dart';
 import '../../features/profiles/weekly_report_screen.dart';
+import '../../features/fees/fees_screens.dart';
 import '../../features/members/member_edit_screen.dart';
 import '../../features/members/teacher_form_screen.dart';
 import '../../features/audit/audit_screen.dart';
@@ -121,7 +122,9 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
           segments.first == 'calendar' &&
           (segments.length == 1 || (segments.length == 2 && segments[1] != 'new' && segments[1] != 'types'));
       final portalOk = path == '/chat' || path == '/chat/new' || (segments.length == 2 && segments.first == 'chat') ||
-          path == '/announcements' || path == '/notifications' || path == '/notifications/prefs' || path == '/quran' || (segments.length == 2 && segments.first == 'quran');
+          path == '/announcements' || path == '/notifications' || path == '/notifications/prefs' || path == '/quran' || (segments.length == 2 && segments.first == 'quran') ||
+          // a child's weekly report and fees account (the server answers only for the family's own children)
+          (segments.length == 2 && (segments.first == 'weekly' || segments.first == 'fees'));
       if (isPortalOnly && path != '/my' && !path.startsWith('/my/') && !calendarOk && !portalOk) {
         return '/my';
       }
@@ -188,6 +191,8 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/review-plan', builder: (context, state) => const ReviewPlanScreen()),
       GoRoute(path: '/attention', builder: (context, state) => const AttentionScreen()),
       GoRoute(path: '/weekly/:id', builder: (context, state) => WeeklyReportScreen(studentId: state.pathParameters['id']!)),
+      GoRoute(path: '/fees', builder: (context, state) => const FeesScreen()),
+      GoRoute(path: '/fees/:id', builder: (context, state) => FeeStudentScreen(studentId: state.pathParameters['id']!)),
       GoRoute(path: '/teachers/:id', builder: (context, state) => TeacherProfileScreen(teacherId: state.pathParameters['id']!)),
       GoRoute(path: '/circles/new', builder: (context, state) => const CircleFormScreen()),
       GoRoute(

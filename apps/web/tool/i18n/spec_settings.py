@@ -22,6 +22,7 @@ SPEC = {'settings': ('Center settings.', (
   ('saved', 'تم حفظ الإعدادات', 'Settings saved'),
   ('features', 'التسميع والميزات', 'Recitation & features'),
   ('market', 'تفعيل سوق النقاط', 'Turn on the points market'),
+  ('fees', 'تفعيل رسوم الطلاب (للمراكز غير المجانية)', 'Turn on student fees (for centers that charge)'),
   ('leaderboard', 'تفعيل لوحة الشرف', 'Turn on the leaderboard'),
   ('defaultReciter', 'القارئ الافتراضي', 'Default reciter'),
   ('firstInList', 'الأول في القائمة', 'First in the list'),

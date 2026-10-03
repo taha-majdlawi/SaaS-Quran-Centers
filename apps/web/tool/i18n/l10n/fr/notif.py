@@ -45,7 +45,9 @@ T = {'tabs': {'inbox': 'Boîte de réception',
             'billing_reminder': 'Rappel d’abonnement',
             'billing_reviewed': 'Résultat de la vérification du paiement',
             'capacity_warning': 'Capacité de la formule',
-            'billing_downgraded': 'Passage à la formule gratuite'},
+            'billing_downgraded': 'Passage à la formule gratuite',
+            'fee_payment': 'Reçu de paiement des frais',
+            'fee_overdue': 'Rappel de frais dus'},
  'templatesHint': 'Le texte de chaque type envoyé par votre centre : modifiez le titre et le texte avec des variables, choisissez qui le reçoit et désactivez '
                   'ce que vous ne voulez pas. Tout type modifié s’applique à votre centre uniquement.',
  'dailyNote': 'Les rappels aux élèves en retard de récitation et aux enseignants pour faire l’appel sont calculés chaque jour et ne sont pas listés ici à '

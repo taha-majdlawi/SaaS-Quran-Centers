@@ -1,0 +1,91 @@
+# iOS builds on Codemagic (Mac machines; GitHub Actions builds Android).
+# Setup, once: docs/IOS.md
+#
+#   ios-check       compiles the iPhone app without signing - proves the code builds
+#   ios-testflight  signs with your Apple Developer account and uploads to TestFlight
+#
+# Both run on demand from Codemagic ("Start new build"); nothing runs on push.
+definitions:
+  env: &env
+    flutter: 3.47.5
+    xcode: latest
+    cocoapods: default
+  scripts:
+    - &pub_get
+      name: Packages
+      script: |
+        cd apps/mobile
+        flutter pub get
+    - &firebase
+      # Push is optional: with the "firebase_ios" group the app gets the Firebase values and the
+      # push entitlement; without it the app builds and runs with in-app notifications only.
+      name: Push notifications (optional)
+      script: |
+        cd apps/mobile
+        if [ -n "$FIREBASE_IOS_API_KEY" ] && [ -n "$FIREBASE_IOS_APP_ID" ]; then
+          echo 'CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements' >> ios/Flutter/Release.xcconfig
+          echo "--dart-define=FIREBASE_IOS_API_KEY=$FIREBASE_IOS_API_KEY --dart-define=FIREBASE_IOS_APP_ID=$FIREBASE_IOS_APP_ID --dart-define=FIREBASE_MESSAGING_SENDER_ID=$FIREBASE_MESSAGING_SENDER_ID --dart-define=FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID" > /tmp/push_defines
+          echo "push: on"
+        else
+          : > /tmp/push_defines
+          echo "push: off (no firebase_ios group)"
+        fi
+
+workflows:
+  ios-check:
+    name: iOS - build check (no signing)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *env
+    scripts:
+      - *pub_get
+      - name: Build (unsigned)
+        script: |
+          cd apps/mobile
+          flutter build ios --release --no-codesign --dart-define-from-file=env.json
+    artifacts:
+      - apps/mobile/build/ios/iphoneos/*.app
+      - /tmp/xcodebuild_logs/*.log
+
+  ios-testflight:
+    name: iOS - TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      # the name you gave the App Store Connect API key in Codemagic (Team settings -> Integrations)
+      app_store_connect: Bustan App Store Connect
+    environment:
+      <<: *env
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.bustanalquran.bustanAlquranApp
+      # push notifications: create the "firebase_ios" group (docs/IOS.md), then uncomment
+      # groups:
+      #   - firebase_ios
+      vars:
+        # App Store Connect -> the app -> App Information -> Apple ID (a number)
+        APP_STORE_APPLE_ID: "0000000000"
+    scripts:
+      - name: Signing profiles into the Xcode project
+        script: xcode-project use-profiles
+      - *pub_get
+      - *firebase
+      - name: Build the .ipa
+        script: |
+          cd apps/mobile
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          BUILD_NUMBER=$(( ${LATEST:-0} + 1 ))
+          echo "build number $BUILD_NUMBER"
+          flutter build ipa --release \
+            --dart-define-from-file=env.json $(cat /tmp/push_defines) \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - apps/mobile/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - apps/mobile/build/ios/archive/Runner.xcarchive/dSYMs/*.dSYM.zip
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
