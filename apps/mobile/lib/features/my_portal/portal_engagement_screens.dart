@@ -10,6 +10,7 @@ import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
 import 'my_portal_repository.dart';
+import '../../core/widgets/net_image.dart';
 
 /// Chips to switch between a guardian's children (nothing shown for one child).
 Widget _childChips(List<PortalStudent> students, String? selected, ValueChanged<String> onSelect) {
@@ -118,7 +119,7 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
                                     padding: const EdgeInsets.only(bottom: 8),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
-                                      child: Image.network(i.imageUrl!, height: 150, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                                      child: NetImage(i.imageUrl!, height: 150, width: double.infinity, error: const SizedBox.shrink()),
                                     ),
                                   ),
                                 Row(children: [

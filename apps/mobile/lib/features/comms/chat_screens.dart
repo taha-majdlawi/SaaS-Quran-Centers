@@ -18,6 +18,7 @@ import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import 'comms_repository.dart';
+import '../../core/widgets/net_image.dart';
 
 bool _isStaff(TenantController t) => t.active?.role == OrgRole.admin || t.active?.role == OrgRole.teacher;
 
@@ -749,16 +750,31 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
 /// A picture inside a bubble: fetched through a short-lived signed link (the
 /// bucket is private); tap to view it full screen.
-class _ChatImage extends StatelessWidget {
+class _ChatImage extends StatefulWidget {
   const _ChatImage({required this.repository, required this.path});
 
   final CommsRepository repository;
   final String path;
 
   @override
+  State<_ChatImage> createState() => _ChatImageState();
+}
+
+class _ChatImageState extends State<_ChatImage> {
+  // asked once per picture, not on every rebuild of the conversation
+  late Future<String> _url = widget.repository.imageUrl(widget.path);
+
+  @override
+  void didUpdateWidget(_ChatImage old) {
+    super.didUpdateWidget(old);
+    if (old.path != widget.path) _url = widget.repository.imageUrl(widget.path);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final path = widget.path;
     return FutureBuilder<String>(
-      future: repository.imageUrl(path),
+      future: _url,
       builder: (context, snap) {
         final url = snap.data;
         if (url == null) {
@@ -772,14 +788,14 @@ class _ChatImage extends StatelessWidget {
               builder: (context) => Dialog.fullscreen(
                 backgroundColor: Colors.black,
                 child: Stack(children: [
-                  Positioned.fill(child: InteractiveViewer(child: Center(child: Image.network(url)))),
+                  Positioned.fill(child: InteractiveViewer(child: Center(child: NetImage(url, cacheKey: path, fit: BoxFit.contain)))),
                   SafeArea(child: IconButton(color: Colors.white, icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context))),
                 ]),
               ),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(url, width: 220, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.broken_image_rounded)),
+              child: NetImage(url, width: 220, cacheKey: path, placeholder: const SizedBox(width: 220, height: 160)),
             ),
           ),
         );

@@ -220,7 +220,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 onRefresh: () async => _reload(),
                 child: list.isEmpty
                     ? ListView(children: [SizedBox(height: 80), EmptyState(icon: Icons.notifications_none_rounded, title: tr(context).notif.none)])
-                    : ListView(padding: const EdgeInsets.all(16), children: _grouped(list, !isStaff)),
+                    : Builder(builder: (context) {
+                        // built lazily: only the rows on screen are laid out
+                        final rows = _grouped(list, !isStaff);
+                        return ListView.builder(padding: const EdgeInsets.all(16), itemCount: rows.length, itemBuilder: (_, i) => rows[i]);
+                      }),
               ),
             ),
     );

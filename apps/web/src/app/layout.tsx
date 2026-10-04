@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { getI18n } from '@/lib/i18n/server';
 import { I18nProvider } from '@/lib/i18n/client';
+import { uiFont } from '@/lib/ui-font';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -26,7 +27,7 @@ export const viewport: Viewport = { themeColor: '#1E7A54', width: 'device-width'
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, dir, t } = await getI18n();
   return (
-    <html lang={locale} dir={dir}>
+    <html lang={locale} dir={dir} className={uiFont.variable}>
       <body>
         <I18nProvider locale={locale} t={t.client}>
           <ErrorReporter />

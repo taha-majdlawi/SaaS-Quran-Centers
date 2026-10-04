@@ -28,4 +28,6 @@ T = {'items': {'dashboard': 'Tableau de bord',
            'site': 'Page publique',
            'settings': 'Réglages du centre',
            'billing': 'Abonnement et paiement',
-           'fees': 'Frais'}}
+           'fees': 'Frais'},
+ 'sections': {'teaching': 'Enseignement', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Gestion du centre'},
+ 'menu': 'Menu'}

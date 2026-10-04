@@ -12,6 +12,7 @@ import '../../core/widgets/ui.dart';
 import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/widgets/net_image.dart';
 
 /// Admin: the points market. Items, orders (deliver / cancel - a cancel refunds
 /// the balance and restores stock), student wallets, and the points -> currency
@@ -233,7 +234,7 @@ class _MarketScreenState extends State<MarketScreen> {
                     ? null
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(i.imageUrl!, width: 48, height: 48, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.broken_image_rounded)),
+                        child: NetImage(i.imageUrl!, width: 48, height: 48),
                       ),
                 onTap: () async {
                   await context.push('/market/${i.id}');

@@ -7,3 +7,39 @@
 html:not([dir]) {
   direction: rtl;
 }
+
+/* ---- shared look (the app's palette: warm page, white cards, brand focus) ---- */
+@layer base {
+  body {
+    @apply bg-page text-ink antialiased;
+  }
+  /* every control shows where the keyboard is, in the center's colour */
+  :where(a, button, input, select, textarea, summary):focus-visible {
+    @apply outline-none ring-2 ring-brand/40 ring-offset-1;
+  }
+  :where(input:not([type='checkbox']):not([type='radio']):not([type='color']):not([type='file']), select, textarea) {
+    @apply transition-colors focus:border-brand;
+  }
+  :where(input[type='checkbox'], input[type='radio']) {
+    accent-color: var(--brand-primary, #1e7a54);
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--brand-primary, #1e7a54) 20%, transparent);
+  }
+  /* tables: a quiet header and a row highlight while reading across */
+  :where(main table thead) {
+    @apply text-xs font-semibold uppercase tracking-wide text-gray-500;
+  }
+  :where(main table tbody tr) {
+    @apply transition-colors hover:bg-gray-50/70;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

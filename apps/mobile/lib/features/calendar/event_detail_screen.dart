@@ -12,6 +12,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'calendar_models.dart';
 import 'calendar_repository.dart';
+import '../../core/widgets/net_image.dart';
 
 const _siteBase = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://bustan-alquran.com');
 
@@ -235,7 +236,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               backgroundColor: Colors.black,
               insetPadding: const EdgeInsets.all(12),
               child: Stack(children: [
-                Positioned.fill(child: InteractiveViewer(child: Center(child: Image.network(images[i].imageUrl)))),
+                Positioned.fill(child: InteractiveViewer(child: Center(child: NetImage(images[i].imageUrl, fit: BoxFit.contain)))),
                 Positioned(
                   top: 4,
                   left: 4,
@@ -249,12 +250,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
+            child: NetImage(
               images[i].imageUrl,
               width: 180,
               height: 140,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(width: 180, height: 140, color: Colors.grey.shade200, child: const Icon(Icons.broken_image_rounded)),
+              error: Container(width: 180, height: 140, color: Colors.grey.shade200, child: const Icon(Icons.broken_image_rounded)),
             ),
           ),
         ),

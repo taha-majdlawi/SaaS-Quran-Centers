@@ -36,17 +36,13 @@ export interface OrgContext {
 export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => {
   const supabase = await createClient();
 
-  const { data: org } = await supabase
-    .from('organizations')
-    .select('id, name, slug, primary_color, secondary_color, logo_url')
-    .eq('slug', slug)
-    .single();
+  // the org row and the session do not depend on each other - fetch them together
+  const [{ data: org }, { data: { user } }] = await Promise.all([
+    supabase.from('organizations').select('id, name, slug, primary_color, secondary_color, logo_url').eq('slug', slug).single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!org) notFound();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   let myRole: OrgContext['myRole'] = null;
   let myPermissions: ModuleKey[] = [];
@@ -54,13 +50,19 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
   let disabledModules: string[] = [];
   let feesEnabled = false;
   if (user) {
-    const { data: membership } = await supabase
-      .from('organization_members')
-      .select('role, permissions')
-      .eq('organization_id', org.id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .maybeSingle();
+    // one round trip instead of three: the two RPCs are only read when the
+    // caller turns out to belong here (they check access themselves)
+    const [{ data: membership }, { data: off }, { data: fees }] = await Promise.all([
+      supabase
+        .from('organization_members')
+        .select('role, permissions')
+        .eq('organization_id', org.id)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle(),
+      supabase.rpc('disabled_modules', { p_org: org.id }),
+      supabase.rpc('get_fee_settings', { p_org: org.id }),
+    ]);
     myRole = (membership?.role as OrgContext['myRole']) ?? null;
     if (myRole === 'admin') {
       myPermissions = ALL_MODULE_KEYS;
@@ -81,12 +83,10 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
     }
 
     if (myRole && !isPlatformOwner) {
-      const { data: off } = await supabase.rpc('disabled_modules', { p_org: org.id });
       disabledModules = (off as string[] | null) ?? [];
       myPermissions = myPermissions.filter((p) => !disabledModules.includes(p));
     }
     if (myRole) {
-      const { data: fees } = await supabase.rpc('get_fee_settings', { p_org: org.id });
       feesEnabled = (fees as { enabled?: boolean } | null)?.enabled === true;
     }
   }
