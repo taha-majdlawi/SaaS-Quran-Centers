@@ -1,5 +1,5 @@
 import type { Dictionary } from './ar';
-import { staffFr } from './staff';
+import { staffFr } from './staff.fr';
 
 // French. Terms of art keep one fixed rendering everywhere (see docs/I18N.md
 // glossary): حلقة = cercle, تسميع = récitation, سرد = serd, مراجعة = révision,

@@ -1,5 +1,5 @@
 import type { Dictionary } from './ar';
-import { staffTr } from './staff';
+import { staffTr } from './staff.tr';
 
 // Turkish. Terms of art keep one fixed rendering everywhere (see docs/I18N.md
 // glossary): حلقة = halka, تسميع = dinletme, سرد = serd, مراجعة = tekrar,
