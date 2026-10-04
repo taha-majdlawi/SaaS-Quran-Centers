@@ -22,6 +22,8 @@ SPEC = {'settings': ('Center settings.', (
   ('saved', 'تم حفظ الإعدادات', 'Settings saved'),
   ('features', 'التسميع والميزات', 'Recitation & features'),
   ('market', 'تفعيل سوق النقاط', 'Turn on the points market'),
+  ('tabs', {'identity': 'الهوية', 'workdays': 'أيام الدوام', 'features': 'الميزات', 'contact': 'التواصل والصلاة', 'quran': 'المصحف', 'more': 'الإشعارات والنسخ الاحتياطي'}, {'identity': 'Identity', 'workdays': 'Working days', 'features': 'Features', 'contact': 'Contact & prayer', 'quran': 'Mushaf', 'more': 'Notifications & backup'}),
+  ('quranTitle', 'المصحف والقرّاء', 'Mushaf & reciters'),
   ('fees', 'تفعيل رسوم الطلاب (للمراكز غير المجانية)', 'Turn on student fees (for centers that charge)'),
   ('leaderboard', 'تفعيل لوحة الشرف', 'Turn on the leaderboard'),
   ('defaultReciter', 'القارئ الافتراضي', 'Default reciter'),

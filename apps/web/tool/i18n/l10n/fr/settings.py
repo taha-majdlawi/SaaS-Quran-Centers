@@ -59,4 +59,11 @@ T = {'backupHint': 'Un seul fichier (JSON) avec les élèves, cercles, récitati
  'languageHint': 'Les pages s’affichent dans cette langue pour qui n’en a pas choisi. Chacun peut toujours changer pour soi avec le bouton de langue.',
  'logoHttps': 'Le lien du logo doit commencer par https',
  'backdateRange': 'La limite d’antidatage doit être comprise entre 0 et 365 jours',
- 'fees': 'Activer les frais des élèves (pour les centres payants)'}
+ 'fees': 'Activer les frais des élèves (pour les centres payants)',
+ 'tabs': {'identity': 'Identité',
+          'workdays': 'Jours ouvrés',
+          'features': 'Fonctionnalités',
+          'contact': 'Contact et prière',
+          'quran': 'Mushaf',
+          'more': 'Notifications et sauvegarde'},
+ 'quranTitle': 'Mushaf et récitateurs'}
