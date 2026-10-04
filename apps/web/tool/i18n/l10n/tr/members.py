@@ -31,4 +31,5 @@ T = {'copyHint': 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-post
  'phoneOptional': 'Cep telefonu (isteğe bağlı)',
  'newTeacherTitle': 'Elle öğretmen ekle',
  'createTeacher': 'Öğretmen hesabı oluştur',
- 'teacherName': 'Öğretmenin adı'}
+ 'teacherName': 'Öğretmenin adı',
+ 'whatsappOptional': 'WhatsApp numarası (isteğe bağlı)'}

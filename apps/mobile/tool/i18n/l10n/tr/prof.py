@@ -52,4 +52,5 @@ T = {'thisMonth': 'Bu ay',
  'clearGoal': 'Hedefi kaldır',
  'goalSaved': 'Hedef kaydedildi',
  'invalidPages': '0,25 ile 20 arasında bir sayı girin',
- 'outboxGoal': '{name} için ezber hedefi'}
+ 'outboxGoal': '{name} için ezber hedefi',
+ 'whatsapp': 'WhatsApp'}

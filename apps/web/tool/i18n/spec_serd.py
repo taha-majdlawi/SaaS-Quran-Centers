@@ -95,4 +95,6 @@ SPEC = {'serd': ('Quran serd (سرد).', (
   ('deduct', '= خصم %', '= % off'),
   ('name', 'الاسم', 'Name'),
   ('active', 'فعّال', 'Active'),
+  ('certDone', 'صدرت الشهادة', 'Certificate issued'),
+  ('issueAnother', 'إصدار شهادة أخرى', 'Issue another certificate'),
 ))}

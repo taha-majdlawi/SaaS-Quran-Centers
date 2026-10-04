@@ -41,4 +41,6 @@ T = {'modules': {'students': 'Élèves',
  'inviteTitle': 'Inviter un nouveau membre',
  'email': 'E-mail',
  'inviteBtn': 'Créer l’invitation',
- 'pendingInvites': 'Invitations pas encore acceptées'}
+ 'pendingInvites': 'Invitations pas encore acceptées',
+ 'contactTitle': 'Contact',
+ 'contactHint': 'De préférence avec l’indicatif du pays, ex. +962791234567'}

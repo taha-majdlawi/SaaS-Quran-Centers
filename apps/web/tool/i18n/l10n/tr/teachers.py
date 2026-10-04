@@ -36,4 +36,7 @@ T = {'none': 'Henüz öğretmen yok — üyeler sayfasından davet edin',
  'saveAtt': 'Devamı kaydet',
  'noRecords': 'Kayıt yok',
  'status': 'Durum',
- 'role': 'Rol'}
+ 'role': 'Rol',
+ 'phone': 'Cep telefonu',
+ 'whatsapp': 'WhatsApp numarası',
+ 'contactHint': 'Tercihen ülke koduyla, ör. +962791234567'}

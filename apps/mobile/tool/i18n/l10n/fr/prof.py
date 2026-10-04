@@ -52,4 +52,5 @@ T = {'thisMonth': 'Ce mois-ci',
  'clearGoal': 'Supprimer l’objectif',
  'goalSaved': 'Objectif enregistré',
  'invalidPages': 'Saisissez un nombre entre 0,25 et 20',
- 'outboxGoal': 'Objectif de mémorisation de {name}'}
+ 'outboxGoal': 'Objectif de mémorisation de {name}',
+ 'whatsapp': 'WhatsApp'}

@@ -22,6 +22,7 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
   final _name = TextEditingController();
   final _identifier = TextEditingController();
   final _phone = TextEditingController();
+  final _whatsapp = TextEditingController();
   final _password = TextEditingController();
   bool _saving = false;
   String? _error;
@@ -31,6 +32,7 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
     _name.dispose();
     _identifier.dispose();
     _phone.dispose();
+    _whatsapp.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -50,6 +52,7 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
         identifier: _identifier.text.trim(),
         password: password,
         phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
+        whatsapp: _whatsapp.text.trim().isEmpty ? null : _whatsapp.text.trim(),
       );
       if (!mounted) return;
       await showCredentialsDialog(
@@ -100,6 +103,13 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
               keyboardType: TextInputType.phone,
               textDirection: TextDirection.ltr,
               decoration: InputDecoration(labelText: tr(context).stu.phoneOpt),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _whatsapp,
+              keyboardType: TextInputType.phone,
+              textDirection: TextDirection.ltr,
+              decoration: InputDecoration(labelText: tr(context).stu.whatsapp, helperText: tr(context).mem.contactHint),
             ),
             const SizedBox(height: 12),
             TextFormField(

@@ -94,4 +94,6 @@ T = {'examiner': ' · Dinleyen: {name}',
  'newType': 'Yeni tür',
  'deduct': '= % kesinti',
  'name': 'Ad',
- 'active': 'Etkin'}
+ 'active': 'Etkin',
+ 'issueAnother': 'Bir sertifika daha ver',
+ 'certDone': 'Sertifika verildi'}

@@ -17,6 +17,7 @@ interface TeacherProfile {
     joined: string;
     name: string | null;
     phone: string | null;
+    whatsapp?: string | null;
     email: string | null;
     last_active: string | null;
   };
@@ -109,6 +110,7 @@ export default async function TeacherProfilePage({
             rows={[
               [P.email, x.email ? <a href={`mailto:${x.email}`} dir="ltr" className="text-brand hover:underline">{x.email}</a> : null],
               [P.phone, x.phone ? <a href={`tel:${x.phone}`} dir="ltr" className="text-brand hover:underline">{x.phone}</a> : null],
+              [P.whatsapp, x.whatsapp ? <a href={`https://wa.me/${x.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" dir="ltr" className="text-brand hover:underline">{x.whatsapp}</a> : null],
               [P.joined, fmtDay(x.joined, lang)],
               [P.lastActive, x.last_active ? fmtDay(x.last_active, lang) : P.never],
             ]}

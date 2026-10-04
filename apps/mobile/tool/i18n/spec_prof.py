@@ -55,4 +55,5 @@ SPEC = {'prof': ('Teacher / circle profiles and the memorization goal.', (
   ('goalSaved', 'حُفظ الهدف', 'Goal saved'),
   ('invalidPages', 'أدخل عددًا بين 0.25 و20', 'Enter a number between 0.25 and 20'),
   ('outboxGoal', 'هدف حفظ {name}', 'Memorization goal for {name}'),
+  ('whatsapp', 'واتساب', 'WhatsApp'),
 ))}

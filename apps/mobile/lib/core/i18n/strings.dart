@@ -756,7 +756,7 @@ class SIns {
 
 /// Members, teachers and permissions (admin).
 class SMem {
-  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites});
+  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
   final Map<String, String> modules;
   final Map<String, String> status;
   final String password8;
@@ -786,6 +786,8 @@ class SMem {
   final String email;
   final String inviteBtn;
   final String pendingInvites;
+  final String contactTitle;
+  final String contactHint;
 }
 
 /// The points market (staff).
@@ -992,7 +994,7 @@ class SPriv {
 
 /// Teacher / circle profiles and the memorization goal.
 class SProf {
-  const SProf({required this.thisMonth, required this.lastMonth, required this.last90, required this.vsPrev, required this.same, required this.newV, required this.recitations, required this.reciting, required this.points, required this.attendance, required this.serdHeard, required this.serdApproved, required this.daysPresent, required this.teacherDays, required this.students, required this.circles, required this.assistant, required this.teacher, required this.assistants, required this.recent, required this.teacherAtt, required this.nothing, required this.lastRec, required this.never, required this.today, required this.daysAgo, required this.profile, required this.myProfile, required this.message, required this.call, required this.notAllowed, required this.goalTitle, required this.memorized, required this.percentQuran, required this.pace, required this.paceV, required this.goalPace, required this.goalPaceV, required this.sinceStart, required this.forecast, required this.forecastGoal, required this.noPace, required this.noGoal, required this.goalStatus, required this.setGoal, required this.editGoal, required this.pagesPerDay, required this.targetPages, required this.note, required this.save, required this.clearGoal, required this.goalSaved, required this.invalidPages, required this.outboxGoal});
+  const SProf({required this.thisMonth, required this.lastMonth, required this.last90, required this.vsPrev, required this.same, required this.newV, required this.recitations, required this.reciting, required this.points, required this.attendance, required this.serdHeard, required this.serdApproved, required this.daysPresent, required this.teacherDays, required this.students, required this.circles, required this.assistant, required this.teacher, required this.assistants, required this.recent, required this.teacherAtt, required this.nothing, required this.lastRec, required this.never, required this.today, required this.daysAgo, required this.profile, required this.myProfile, required this.message, required this.call, required this.notAllowed, required this.goalTitle, required this.memorized, required this.percentQuran, required this.pace, required this.paceV, required this.goalPace, required this.goalPaceV, required this.sinceStart, required this.forecast, required this.forecastGoal, required this.noPace, required this.noGoal, required this.goalStatus, required this.setGoal, required this.editGoal, required this.pagesPerDay, required this.targetPages, required this.note, required this.save, required this.clearGoal, required this.goalSaved, required this.invalidPages, required this.outboxGoal, required this.whatsapp});
   final String thisMonth;
   final String lastMonth;
   final String last90;
@@ -1047,6 +1049,7 @@ class SProf {
   final String goalSaved;
   final String invalidPages;
   final String outboxGoal;
+  final String whatsapp;
 }
 
 /// The Quran screens (the text itself stays Arabic).
@@ -2374,6 +2377,8 @@ class S {
       email: 'البريد الإلكتروني',
       inviteBtn: 'إنشاء دعوة',
       pendingInvites: 'دعوات لسه ما انضمّت',
+      contactTitle: 'التواصل',
+      contactHint: 'يُفضّل مع رمز الدولة، مثل ‎+962791234567',
     ),
     mkt: SMkt(
       rateTitle: 'سعر تحويل النقاط',
@@ -2614,6 +2619,7 @@ class S {
       goalSaved: 'حُفظ الهدف',
       invalidPages: 'أدخل عددًا بين 0.25 و20',
       outboxGoal: 'هدف حفظ {name}',
+      whatsapp: 'واتساب',
     ),
     quran: SQuran(
       title: 'المصحف',
@@ -3864,6 +3870,8 @@ class S {
       email: 'Email',
       inviteBtn: 'Create invitation',
       pendingInvites: 'Invitations not accepted yet',
+      contactTitle: 'Contact',
+      contactHint: 'Preferably with the country code, e.g. +962791234567',
     ),
     mkt: SMkt(
       rateTitle: 'Points exchange rate',
@@ -4104,6 +4112,7 @@ class S {
       goalSaved: 'Goal saved',
       invalidPages: 'Enter a number between 0.25 and 20',
       outboxGoal: 'Memorization goal for {name}',
+      whatsapp: 'WhatsApp',
     ),
     quran: SQuran(
       title: 'Quran',
@@ -5354,6 +5363,8 @@ class S {
       email: 'E-posta',
       inviteBtn: 'Davet oluştur',
       pendingInvites: 'Henüz kabul edilmemiş davetler',
+      contactTitle: 'İletişim',
+      contactHint: 'Tercihen ülke koduyla, ör. +962791234567',
     ),
     mkt: SMkt(
       rateTitle: 'Puan dönüşüm oranı',
@@ -5594,6 +5605,7 @@ class S {
       goalSaved: 'Hedef kaydedildi',
       invalidPages: '0,25 ile 20 arasında bir sayı girin',
       outboxGoal: '{name} için ezber hedefi',
+      whatsapp: 'WhatsApp',
     ),
     quran: SQuran(
       title: 'Kur’an',
@@ -6844,6 +6856,8 @@ class S {
       email: 'E-mail',
       inviteBtn: 'Créer l’invitation',
       pendingInvites: 'Invitations pas encore acceptées',
+      contactTitle: 'Contact',
+      contactHint: 'De préférence avec l’indicatif du pays, ex. +962791234567',
     ),
     mkt: SMkt(
       rateTitle: 'Taux de conversion des points',
@@ -7084,6 +7098,7 @@ class S {
       goalSaved: 'Objectif enregistré',
       invalidPages: 'Saisissez un nombre entre 0,25 et 20',
       outboxGoal: 'Objectif de mémorisation de {name}',
+      whatsapp: 'WhatsApp',
     ),
     quran: SQuran(
       title: 'Coran',

@@ -36,4 +36,7 @@ T = {'none': 'Aucun enseignant pour l’instant — invitez-en un depuis la page
  'saveAtt': 'Enregistrer la présence',
  'noRecords': 'Aucun enregistrement',
  'status': 'Statut',
- 'role': 'Rôle'}
+ 'role': 'Rôle',
+ 'phone': 'Numéro de portable',
+ 'whatsapp': 'Numéro WhatsApp',
+ 'contactHint': 'De préférence avec l’indicatif du pays, ex. +962791234567'}

@@ -29,4 +29,6 @@ SPEC = {'mem': ('Members, teachers and permissions (admin).', (
   ('email', 'البريد الإلكتروني', 'Email'),
   ('inviteBtn', 'إنشاء دعوة', 'Create invitation'),
   ('pendingInvites', 'دعوات لسه ما انضمّت', 'Invitations not accepted yet'),
+  ('contactTitle', 'التواصل', 'Contact'),
+  ('contactHint', 'يُفضّل مع رمز الدولة، مثل \u200e+962791234567', 'Preferably with the country code, e.g. +962791234567'),
 ))}

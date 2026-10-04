@@ -51,7 +51,13 @@ export default async function NewTeacherPage({
 
         <label className="text-sm font-medium text-gray-700">
           {S.members.phoneOptional}
-          <input name="phone" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          <input name="phone" type="tel" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+        </label>
+
+        <label className="text-sm font-medium text-gray-700">
+          {S.members.whatsappOptional}
+          <input name="whatsapp" type="tel" dir="ltr" className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          <span className="mt-1 block text-xs text-gray-400">{S.teachers.contactHint}</span>
         </label>
 
         <label className="text-sm font-medium text-gray-700">

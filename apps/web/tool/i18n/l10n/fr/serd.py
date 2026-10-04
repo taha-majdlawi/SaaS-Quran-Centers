@@ -95,4 +95,6 @@ T = {'examiner': ' · Examinateur : {name}',
  'newType': 'Nouveau type',
  'deduct': '= % retiré',
  'name': 'Nom',
- 'active': 'Actif'}
+ 'active': 'Actif',
+ 'issueAnother': 'Délivrer un autre certificat',
+ 'certDone': 'Certificat délivré'}

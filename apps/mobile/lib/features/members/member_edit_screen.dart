@@ -58,10 +58,16 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
     try {
       _viewer = await _repository.isViewer(orgId, member.userId);
     } catch (_) {}
+    try {
+      final c = await _repository.contact(orgId, member.id);
+      _phone.text = c.phone ?? '';
+      _whatsapp.text = c.whatsapp ?? '';
+    } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
 
   Future<void> _submit() async {
+    final orgId = context.read<TenantController>().active!.organization.id;
     setState(() {
       _submitting = true;
       _error = null;
@@ -73,6 +79,9 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
         status: _status,
         permissions: _permissions.toList(),
       );
+      if (_role == 'teacher' || _role == 'admin') {
+        await _repository.setContact(orgId, widget.memberId, _phone.text.trim(), _whatsapp.text.trim());
+      }
       if (mounted) context.pop();
     } catch (e) {
       setState(() => _error = friendlyError(e, tr(context).stu.saveError));
@@ -82,11 +91,15 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
   }
 
   final _newPassword = TextEditingController();
+  final _phone = TextEditingController();
+  final _whatsapp = TextEditingController();
   bool _resetting = false;
 
   @override
   void dispose() {
     _newPassword.dispose();
+    _phone.dispose();
+    _whatsapp.dispose();
     super.dispose();
   }
 
@@ -185,6 +198,24 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                           .toList(),
                       onChanged: (v) => setState(() => _status = v ?? _status),
                     ),
+                    if (_role == 'teacher' || _role == 'admin') ...[
+                      const SizedBox(height: 16),
+                      Text(tr(context).mem.contactTitle, style: Theme.of(context).textTheme.titleSmall),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _phone,
+                        keyboardType: TextInputType.phone,
+                        textDirection: TextDirection.ltr,
+                        decoration: InputDecoration(labelText: tr(context).stu.phoneOpt),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _whatsapp,
+                        keyboardType: TextInputType.phone,
+                        textDirection: TextDirection.ltr,
+                        decoration: InputDecoration(labelText: tr(context).stu.whatsapp, helperText: tr(context).mem.contactHint),
+                      ),
+                    ],
                     if (_role == 'teacher') ...[
                       const SizedBox(height: 16),
                       Text(tr(context).mem.modulesTitle, style: Theme.of(context).textTheme.titleSmall),
