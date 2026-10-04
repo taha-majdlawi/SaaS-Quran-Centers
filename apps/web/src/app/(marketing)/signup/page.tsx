@@ -3,6 +3,7 @@ import { authInputClass, authLabelClass, authButtonClass } from '@/components/au
 import { SubmitButton } from '@/components/submit-button';
 import { getI18n } from '@/lib/i18n/server';
 import { signUpAndCreateOrganization } from './actions';
+import { Check } from 'lucide-react';
 
 // Creates the auth user AND the organization + first admin membership in
 // one step (see supabase/migrations/0010_self_serve_signup.sql), then sends
@@ -28,7 +29,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
       <ul className="mb-6 flex flex-col gap-2 text-sm text-gray-600">
         {t.signup.benefits.map((b) => (
           <li key={b} className="flex items-start gap-2">
-            <span className="mt-0.5 text-brand">✓</span>
+            <Check size={16} className="mt-0.5 shrink-0 text-brand" aria-hidden />
             <span>{b}</span>
           </li>
         ))}
