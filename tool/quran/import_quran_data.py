@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 import urllib.error
 import urllib.request
 
@@ -22,19 +23,29 @@ OUT = os.path.join(ROOT, 'apps', 'web', 'public', 'quran-data')
 RECITERS_COPY = os.path.join(ROOT, 'apps', 'web', 'src', 'lib', 'quran', 'ayah-reciters.json')
 
 
+def note(msg, level='notice'):
+    # shown as an annotation on the run (readable without the full log)
+    print(f'::{level}::{msg}' if os.environ.get('GITHUB_ACTIONS') else msg, flush=True)
+
+
+def fail(msg):
+    note(msg, 'error')
+    raise SystemExit(1)
+
+
 def fetch(url, optional=False):
     for attempt in range(4):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'bustan-quran-import'}), timeout=60) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'bustan-quran-import'}), timeout=30) as r:
                 return json.loads(r.read().decode('utf-8-sig'))
         except urllib.error.HTTPError as e:
             if e.code in (400, 404) and optional:
                 return None
             if attempt == 3:
-                raise SystemExit(f'failed: {url} ({e.code})')
+                fail(f'failed: {url} ({e.code})')
         except Exception as e:  # network hiccup
             if attempt == 3:
-                raise SystemExit(f'failed: {url} ({e})')
+                fail(f'failed: {url} ({e})')
         time.sleep(2 ** attempt)
 
 
@@ -54,12 +65,15 @@ def main():
         raise SystemExit(__doc__)
     base = sys.argv[1].rstrip('/')
 
+    # many files: download them side by side
+    pool = ThreadPoolExecutor(max_workers=16)
+    raws = dict(zip(range(1, 115), pool.map(lambda n: fetch(f'{base}/surah_{n}.json'), range(1, 115))))
     surahs, total = {}, 0
     for n in range(1, 115):
-        raw = fetch(f'{base}/surah_{n}.json')
+        raw = raws[n]
         verses = raw.get('verses') or []
         if not verses or len(verses) != raw.get('verses_count', len(verses)):
-            raise SystemExit(f'surah {n}: verses missing or count mismatch')
+            fail(f'surah {n}: verses missing or count mismatch')
         slim = {
             'number': n,
             'name': {'ar': ar(raw.get('name'))},
@@ -74,7 +88,7 @@ def main():
         for v in verses:
             page, juz = int(v['page']), int(v['juz'])
             if not (1 <= page <= 604 and 1 <= juz <= 30) or not ar(v.get('text')).strip():
-                raise SystemExit(f'surah {n} ayah {v.get("number")}: bad page/juz/text')
+                fail(f'surah {n} ayah {v.get("number")}: bad page/juz/text')
             sajda = v.get('sajda')
             slim['verses'].append({
                 'number': int(v['number']), 'text': {'ar': ar(v['text'])}, 'juz': juz, 'page': page,
@@ -82,9 +96,9 @@ def main():
             })
         surahs[n] = slim
         total += len(verses)
-        print(f'surah {n}: {len(verses)} ayahs')
+    note(f'text: 114 surahs, {total} ayahs')
     if total != 6236:
-        raise SystemExit(f'expected 6236 ayahs, got {total}')
+        fail(f'expected 6236 ayahs, got {total}')
 
     reciters = fetch(f'{base}/audio/reciters.json', optional=True) or []
     if isinstance(reciters, dict):  # {"reciters": [...]} is accepted too
@@ -93,22 +107,26 @@ def main():
         {'id': str(r['id']), 'name_ar': r.get('name_ar') or str(r['id']), 'style_ar': r.get('style_ar') or '', 'base': r['base']}
         for r in reciters if r.get('id') is not None and str(r.get('base', '')).startswith('https://')
     ]
-    print(f'{len(reciters)} ayah reciters')
+    note(f'{len(reciters)} ayah reciters: ' + ', '.join(r['id'] for r in reciters))
 
     timings = {}
+    jobs = [(r['id'], n) for r in reciters for n in range(1, 115)]
+
+    def get_timing(job):
+        rid, n = job
+        return job, fetch(f'{base}/audio/timings/{rid}/surah_{n}.json', optional=True)
+
+    for (rid, n), t in pool.map(get_timing, jobs):
+        if t is None:
+            continue
+        ok = isinstance(t, dict) and all(
+            isinstance(seg, list) and all(isinstance(s, list) and len(s) == 4 for s in seg) for seg in t.values()
+        )
+        if not ok:
+            fail(f'timings {rid}/{n}: unexpected shape')
+        timings[(rid, n)] = t
     for r in reciters:
-        rid = r['id']
-        for n in range(1, 115):
-            t = fetch(f'{base}/audio/timings/{rid}/surah_{n}.json', optional=True)
-            if t is None:
-                continue
-            ok = isinstance(t, dict) and all(
-                isinstance(seg, list) and all(isinstance(s, list) and len(s) == 4 for s in seg) for seg in t.values()
-            )
-            if not ok:
-                raise SystemExit(f'timings {rid}/{n}: unexpected shape')
-            timings[(rid, n)] = t
-        print(f'timings {rid}: {sum(1 for k in timings if k[0] == rid)}/114 surahs')
+        note(f"timings {r['id']}: {sum(1 for k in timings if k[0] == r['id'])}/114 surahs")
 
     # everything checked - replace the old copy
     if os.path.isdir(OUT):
@@ -122,7 +140,7 @@ def main():
     with open(RECITERS_COPY, 'w', encoding='utf-8') as f:
         json.dump(reciters, f, ensure_ascii=False, indent=2)
         f.write('\n')
-    print('done')
+    note(f'done: 114 surahs, {len(reciters)} reciters, {len(timings)} timing files')
 
 
 if __name__ == '__main__':
