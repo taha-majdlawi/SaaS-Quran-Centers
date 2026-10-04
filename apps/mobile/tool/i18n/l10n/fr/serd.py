@@ -106,4 +106,6 @@ T = {'overdueSuffix': '  ·  en retard',
  'partsWanted': 'Juz demandés',
  'assign': 'Assigner à un enseignant',
  'scheduleBtn': 'Programmer le serd',
- 'outboxLabel': 'Serd {studentName} — {n} juz'}
+ 'outboxLabel': 'Serd {studentName} — {n} juz',
+ 'certDone': 'Certificat délivré',
+ 'issueAnother': 'Délivrer un autre certificat'}

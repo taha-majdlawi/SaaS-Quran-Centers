@@ -108,4 +108,6 @@ SPEC = {'serd': ('Quran serd (staff): list, entry, schedule, settings, report.',
   ('assign', 'إسناد إلى معلم', 'Assign to a teacher'),
   ('scheduleBtn', 'جدولة السرد', 'Schedule the serd'),
   ('outboxLabel', 'سرد {studentName} — {n} جزء', 'Serd {studentName} — {n} juz'),
+  ('certDone', 'صدرت الشهادة', 'Certificate issued'),
+  ('issueAnother', 'إصدار شهادة أخرى', 'Issue another certificate'),
 ))}

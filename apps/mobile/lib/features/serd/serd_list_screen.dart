@@ -41,13 +41,37 @@ class _SerdListScreenState extends State<SerdListScreen> {
 
   bool get _isAdmin => context.read<TenantController>().active?.role == OrgRole.admin;
 
+  /// Live certificates already issued per approved session (automatically or by hand).
+  Map<String, int> _certs = {};
+
   Future<_QueueData> _load(String orgId) async {
     if (_isAdmin) {
       final results = await Future.wait<dynamic>([
         _repository.adminList(orgId, status: _status, page: _page),
         StudentsRepository(AppSupabase.client).fetchStudents(orgId),
       ]);
-      return _QueueData(page: results[0] as SerdListPage, students: results[1] as List<StudentSummary>);
+      final page = results[0] as SerdListPage;
+      final approved = [for (final r in page.rows) if (r.status == 'approved') r.id];
+      final certs = <String, int>{};
+      if (approved.isNotEmpty) {
+        try {
+          final rows = await AppSupabase.client
+              .from('certificates')
+              .select('ref_id')
+              .eq('organization_id', orgId)
+              .eq('kind', 'serd')
+              .isFilter('revoked_at', null)
+              .inFilter('ref_id', approved);
+          for (final c in rows) {
+            final id = c['ref_id'] as String;
+            certs[id] = (certs[id] ?? 0) + 1;
+          }
+        } catch (_) {
+          // offline: the badge just does not show
+        }
+      }
+      _certs = certs;
+      return _QueueData(page: page, students: results[1] as List<StudentSummary>);
     }
     final results = await Future.wait<dynamic>([_repository.teacherScheduled(orgId), _repository.teacherMy(orgId)]);
     return _QueueData(scheduled: results[0] as List<SerdRow>, mine: results[1] as List<SerdRow>);
@@ -160,11 +184,17 @@ class _SerdListScreenState extends State<SerdListScreen> {
             child: Text(tr(context).serd.reapprove),
           ),
         // any approved session of a registered student - the admin decides (0083)
+        if (row.status == 'approved' && row.studentId != null && (_certs[row.id] ?? 0) > 0)
+          ActionChip(
+            avatar: const Icon(Icons.check_circle_rounded, size: 18, color: Colors.green),
+            label: Text((_certs[row.id] ?? 0) > 1 ? '${tr(context).serd.certDone} (${_certs[row.id]})' : tr(context).serd.certDone),
+            onPressed: () => context.push('/certificates'),
+          ),
         if (row.status == 'approved' && row.studentId != null)
           OutlinedButton.icon(
             onPressed: () => _run(() => CertificatesRepository(AppSupabase.client).issueSerd(_loadedForOrgId!, row.id), tr(context).serd.certIssued),
             icon: const Icon(Icons.workspace_premium_rounded, size: 18),
-            label: Text(tr(context).serd.issueCert),
+            label: Text((_certs[row.id] ?? 0) > 0 ? tr(context).serd.issueAnother : tr(context).serd.issueCert),
             style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
           ),
         TextButton(onPressed: () => _delete(row), child: Text(tr(context).common.delete, style: TextStyle(color: Colors.red))),
