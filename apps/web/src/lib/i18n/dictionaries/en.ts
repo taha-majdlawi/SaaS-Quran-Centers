@@ -42,6 +42,7 @@ export const en: Dictionary = {
     ctaPrimary: '🌱 Plant your seed for free',
     ctaSecondary: 'Go to your center',
     heroNote: 'Start in a minute · No card needed · Your data belongs to your center alone',
+    heroImageAlt: 'A teacher listening to his student recite in the mosque',
     verse: '﴿أَلَمْ تَرَ كَيْفَ ضَرَبَ اللَّهُ مَثَلًا كَلِمَةً طَيِّبَةً كَشَجَرَةٍ طَيِّبَةٍ أَصْلُهَا ثَابِتٌ وَفَرْعُهَا فِي السَّمَاءِ﴾',
     verseRef: '“A good word is like a good tree: its root is firm and its branches reach the sky.” — Ibrahim 14:24',
     preview: {
