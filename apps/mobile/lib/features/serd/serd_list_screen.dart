@@ -159,7 +159,8 @@ class _SerdListScreenState extends State<SerdListScreen> {
             style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
             child: Text(tr(context).serd.reapprove),
           ),
-        if (row.status == 'approved' && row.studentId != null && row.scorePercent != null && row.scorePercent! >= (row.passPercentApplied ?? 0))
+        // any approved session of a registered student - the admin decides (0083)
+        if (row.status == 'approved' && row.studentId != null)
           OutlinedButton.icon(
             onPressed: () => _run(() => CertificatesRepository(AppSupabase.client).issueSerd(_loadedForOrgId!, row.id), tr(context).serd.certIssued),
             icon: const Icon(Icons.workspace_premium_rounded, size: 18),

@@ -46,10 +46,12 @@ export default async function EditTeacherPage({
 
   const today = new Date().toISOString().slice(0, 10);
   const from = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-  const [{ data: attData }, { data: circleRows }] = await Promise.all([
+  const [{ data: attData }, { data: circleRows }, { data: contactData }] = await Promise.all([
     supabase.rpc('admin_teacher_attendance', { p_org: org.id, p_teacher: member.user_id, p_from: from, p_to: today }),
     supabase.from('circles').select('id, name').eq('organization_id', org.id).eq('teacher_id', member.user_id),
+    supabase.rpc('member_contact', { p_org: org.id, p_member: member.id }),
   ]);
+  const contact = (contactData ?? {}) as { phone?: string | null; whatsapp?: string | null };
   const att = (attData ?? []) as { id: string; circle_name: string; status: string; date: string; checked_in_at: string | null; note: string | null; set_by_admin: boolean }[];
   const teacherCircles = (circleRows ?? []) as { id: string; name: string }[];
   const STATUS: Record<string, string> = S.teachers.attStatus;
@@ -90,6 +92,18 @@ export default async function EditTeacherPage({
             dir="ltr"
           />
         </label>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-sm font-medium text-gray-700">
+            {S.teachers.phone}
+            <input name="phone" type="tel" defaultValue={contact.phone ?? ''} className="mt-1 w-full rounded border px-3 py-2 text-sm" dir="ltr" />
+          </label>
+          <label className="text-sm font-medium text-gray-700">
+            {S.teachers.whatsapp}
+            <input name="whatsapp" type="tel" defaultValue={contact.whatsapp ?? ''} className="mt-1 w-full rounded border px-3 py-2 text-sm" dir="ltr" />
+          </label>
+          <span className="-mt-2 text-xs text-gray-400 sm:col-span-2">{S.teachers.contactHint}</span>
+        </div>
 
         <label className="text-sm font-medium text-gray-700">
           {S.teachers.newPassword}

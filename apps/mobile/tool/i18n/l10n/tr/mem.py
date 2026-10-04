@@ -41,4 +41,6 @@ T = {'modules': {'students': 'Öğrenciler',
  'inviteTitle': 'Yeni üye davet et',
  'email': 'E-posta',
  'inviteBtn': 'Davet oluştur',
- 'pendingInvites': 'Henüz kabul edilmemiş davetler'}
+ 'pendingInvites': 'Henüz kabul edilmemiş davetler',
+ 'contactTitle': 'İletişim',
+ 'contactHint': 'Tercihen ülke koduyla, ör. +962791234567'}

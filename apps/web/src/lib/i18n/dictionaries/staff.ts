@@ -799,6 +799,7 @@ export const staffAr = {
     newTeacherTitle: 'إضافة معلم يدويًا',
     createTeacher: 'إنشاء حساب المعلم',
     teacherName: 'اسم المعلم',
+    whatsappOptional: 'رقم الواتساب (اختياري)',
   },
   /** The dashboard sidebar (by page slug). */
   nav: {
@@ -1226,6 +1227,8 @@ export const staffAr = {
     deduct: '= خصم %',
     name: 'الاسم',
     active: 'فعّال',
+    certDone: 'صدرت الشهادة',
+    issueAnother: 'إصدار شهادة أخرى',
   },
   /** Center settings. */
   settings: {
@@ -1437,6 +1440,9 @@ export const staffAr = {
     noRecords: 'لا سجلات',
     status: 'الحالة',
     role: 'الدور',
+    phone: 'رقم الجوال',
+    whatsapp: 'رقم الواتساب',
+    contactHint: 'يُفضّل مع رمز الدولة، مثل ‎+962791234567',
   },
   /** The smart weekly report (family portal, student profile, admin switch). */
   weekly: {
@@ -2260,6 +2266,7 @@ export const staffEn: typeof staffAr = {
     newTeacherTitle: 'Add a teacher manually',
     createTeacher: 'Create teacher account',
     teacherName: 'Teacher’s name',
+    whatsappOptional: 'WhatsApp number (optional)',
   },
   /** The dashboard sidebar (by page slug). */
   nav: {
@@ -2687,6 +2694,8 @@ export const staffEn: typeof staffAr = {
     deduct: '= % off',
     name: 'Name',
     active: 'Active',
+    certDone: 'Certificate issued',
+    issueAnother: 'Issue another certificate',
   },
   /** Center settings. */
   settings: {
@@ -2898,6 +2907,9 @@ export const staffEn: typeof staffAr = {
     noRecords: 'No records',
     status: 'Status',
     role: 'Role',
+    phone: 'Mobile number',
+    whatsapp: 'WhatsApp number',
+    contactHint: 'Preferably with the country code, e.g. +962791234567',
   },
   /** The smart weekly report (family portal, student profile, admin switch). */
   weekly: {
@@ -3721,6 +3733,7 @@ export const staffTr: typeof staffAr = {
     newTeacherTitle: 'Elle öğretmen ekle',
     createTeacher: 'Öğretmen hesabı oluştur',
     teacherName: 'Öğretmenin adı',
+    whatsappOptional: 'WhatsApp numarası (isteğe bağlı)',
   },
   /** The dashboard sidebar (by page slug). */
   nav: {
@@ -4148,6 +4161,8 @@ export const staffTr: typeof staffAr = {
     deduct: '= % kesinti',
     name: 'Ad',
     active: 'Etkin',
+    certDone: 'Sertifika verildi',
+    issueAnother: 'Bir sertifika daha ver',
   },
   /** Center settings. */
   settings: {
@@ -4359,6 +4374,9 @@ export const staffTr: typeof staffAr = {
     noRecords: 'Kayıt yok',
     status: 'Durum',
     role: 'Rol',
+    phone: 'Cep telefonu',
+    whatsapp: 'WhatsApp numarası',
+    contactHint: 'Tercihen ülke koduyla, ör. +962791234567',
   },
   /** The smart weekly report (family portal, student profile, admin switch). */
   weekly: {
@@ -5182,6 +5200,7 @@ export const staffFr: typeof staffAr = {
     newTeacherTitle: 'Ajouter un enseignant manuellement',
     createTeacher: 'Créer le compte enseignant',
     teacherName: 'Nom de l’enseignant',
+    whatsappOptional: 'Numéro WhatsApp (facultatif)',
   },
   /** The dashboard sidebar (by page slug). */
   nav: {
@@ -5609,6 +5628,8 @@ export const staffFr: typeof staffAr = {
     deduct: '= % retiré',
     name: 'Nom',
     active: 'Actif',
+    certDone: 'Certificat délivré',
+    issueAnother: 'Délivrer un autre certificat',
   },
   /** Center settings. */
   settings: {
@@ -5820,6 +5841,9 @@ export const staffFr: typeof staffAr = {
     noRecords: 'Aucun enregistrement',
     status: 'Statut',
     role: 'Rôle',
+    phone: 'Numéro de portable',
+    whatsapp: 'Numéro WhatsApp',
+    contactHint: 'De préférence avec l’indicatif du pays, ex. +962791234567',
   },
   /** The smart weekly report (family portal, student profile, admin switch). */
   weekly: {

@@ -31,4 +31,5 @@ T = {'copyHint': 'Copiez le lien et envoyez-le à la personne (WhatsApp / e-mail
  'phoneOptional': 'Mobile (facultatif)',
  'newTeacherTitle': 'Ajouter un enseignant manuellement',
  'createTeacher': 'Créer le compte enseignant',
- 'teacherName': 'Nom de l’enseignant'}
+ 'teacherName': 'Nom de l’enseignant',
+ 'whatsappOptional': 'Numéro WhatsApp (facultatif)'}

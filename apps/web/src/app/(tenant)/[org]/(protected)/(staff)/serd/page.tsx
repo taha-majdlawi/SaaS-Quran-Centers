@@ -18,7 +18,7 @@ function Notice({ text, tone }: { text: string; tone: 'ok' | 'error' }) {
   );
 }
 
-async function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmin: boolean; students: { id: string; full_name: string }[]; orgId: string }) {
+async function RowCard({ row, isAdmin, students, orgId, certs = [] }: { row: SerdRow; isAdmin: boolean; students: { id: string; full_name: string }[]; orgId: string; certs?: string[] }) {
   const { t: T } = await getI18n();
   const S = T.staff;
   const lang = T.labels.dateLocale;
@@ -67,13 +67,19 @@ async function RowCard({ row, isAdmin, students, orgId }: { row: SerdRow; isAdmi
       {row.notes && <p className="mt-1 text-xs text-gray-600">{row.notes}</p>}
       {row.reject_reason && <p className="mt-1 text-xs text-red-600">{fmt(S.serd.rejectReasonIs, { reason: row.reject_reason })}</p>}
 
-      {isAdmin && row.status === 'approved' && row.student_id && row.score_percent != null && row.score_percent >= (row.pass_percent_applied ?? 0) && (
-        <form action={issueSerdCertificate} className="mt-3 border-t pt-3">
+      {isAdmin && row.status === 'approved' && row.student_id && (
+        <form action={issueSerdCertificate} className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+          {/* certificates already issued for this session (automatically or by hand) */}
+          {certs.map((id, i) => (
+            <a key={id} href={`/certificates/${id}` as never} className="rounded bg-green-50 px-2 py-1 text-xs text-green-700 hover:underline">
+              ✓ {S.serd.certDone}{certs.length > 1 ? ` ${i + 1}` : ''}
+            </a>
+          ))}
           <input type="hidden" name="orgId" value={orgId} />
           <input type="hidden" name="sessionId" value={row.id} />
           <input type="hidden" name="back" value="/serd" />
           <SubmitButton className="rounded border border-brand px-3 py-1.5 text-xs text-brand hover:bg-gray-50" pendingText={S.serd.issuing}>
-            {S.serd.issueCert}
+            {certs.length ? S.serd.issueAnother : S.serd.issueCert}
           </SubmitButton>
         </form>
       )}
@@ -158,6 +164,7 @@ export default async function SerdPage({
   let total = 0;
   let students: { id: string; full_name: string }[] = [];
 
+  const certsBySession: Record<string, string[]> = {};
   if (isAdmin) {
     const [{ data: list }, { data: studs }] = await Promise.all([
       supabase.rpc('admin_serd_list', {
@@ -175,6 +182,18 @@ export default async function SerdPage({
     rows = result?.rows ?? [];
     total = result?.total ?? 0;
     students = studs ?? [];
+    const approved = rows.filter((r) => r.status === 'approved').map((r) => r.id);
+    if (approved.length) {
+      const { data: issued } = await supabase
+        .from('certificates')
+        .select('id, ref_id')
+        .eq('organization_id', org.id)
+        .eq('kind', 'serd')
+        .is('revoked_at', null)
+        .in('ref_id', approved)
+        .order('issued_at');
+      for (const c of (issued ?? []) as { id: string; ref_id: string }[]) (certsBySession[c.ref_id] ??= []).push(c.id);
+    }
   } else {
     const [{ data: mine }, { data: open }] = await Promise.all([
       supabase.rpc('teacher_my_serd', { p_org: org.id, p_limit: 60 }),
@@ -258,7 +277,7 @@ export default async function SerdPage({
       {!isAdmin && <h2 className="mb-2 font-semibold">{S.serd.mine}</h2>}
       <div className="flex flex-col gap-3">
         {rows.map((r) => (
-          <RowCard key={r.id} row={r} isAdmin={isAdmin} students={students} orgId={org.id} />
+          <RowCard key={r.id} row={r} isAdmin={isAdmin} students={students} orgId={org.id} certs={certsBySession[r.id]} />
         ))}
         {!rows.length && <p className="rounded-lg border bg-white p-6 text-center text-sm text-gray-400">{S.serd.none}</p>}
       </div>

@@ -88,6 +88,16 @@ class MembersRepository {
     }).eq('id', id);
   }
 
+  /// A member's phone and WhatsApp (0082: the admin, or the person themself).
+  Future<({String? phone, String? whatsapp})> contact(String orgId, String memberId) async {
+    final j = (await _client.rpc('member_contact', params: {'p_org': orgId, 'p_member': memberId})) as Map<String, dynamic>? ?? const {};
+    return (phone: j['phone'] as String?, whatsapp: j['whatsapp'] as String?);
+  }
+
+  /// Saves them (checked by the database; empty clears).
+  Future<void> setContact(String orgId, String memberId, String phone, String whatsapp) =>
+      _client.rpc('set_member_contact', params: {'p_org': orgId, 'p_member': memberId, 'p_phone': phone, 'p_whatsapp': whatsapp});
+
   /// Is this member's account a viewing (read-only) one? (admin only)
   Future<bool> isViewer(String orgId, String userId) async {
     final rows = (await SyncService.instance.raw('mem.isViewer:$orgId:$userId', () => _client.rpc('list_account_flags', params: {'p_org': orgId}))) as List;

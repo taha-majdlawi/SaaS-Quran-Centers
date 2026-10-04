@@ -87,6 +87,7 @@ class AccountsApi {
     required String identifier,
     required String password,
     String? phone,
+    String? whatsapp,
   }) async {
     final result = await _post({
       'action': 'create_teacher',
@@ -95,6 +96,7 @@ class AccountsApi {
       'identifier': identifier,
       'password': password,
       'phone': phone,
+      'whatsapp': whatsapp,
     });
     return CreatedAccount(loginId: identifier, studentId: result['userId'] as String?);
   }

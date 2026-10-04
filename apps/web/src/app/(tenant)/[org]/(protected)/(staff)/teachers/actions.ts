@@ -72,6 +72,17 @@ export async function updateTeacherAccount(formData: FormData) {
 
   await admin.from('profiles').update({ full_name: fullName }).eq('id', userId);
 
+  // phone + WhatsApp: checked and saved by the database (0082)
+  const { error: contactError } = await supabase.rpc('set_member_contact', {
+    p_org: orgId,
+    p_member: memberId,
+    p_phone: ((formData.get('phone') as string) ?? '').trim(),
+    p_whatsapp: ((formData.get('whatsapp') as string) ?? '').trim(),
+  });
+  if (contactError) {
+    redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(contactError.message)}` as never);
+  }
+
   const { error: memberError } = await admin
     .from('organization_members')
     .update({ role, status, permissions })

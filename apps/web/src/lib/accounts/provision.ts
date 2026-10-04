@@ -149,6 +149,7 @@ export interface ProvisionTeacherInput {
   identifier: string;
   password: string;
   phone?: string | null;
+  whatsapp?: string | null;
 }
 
 export async function provisionTeacher(admin: SupabaseClient, callerId: string, input: ProvisionTeacherInput) {
@@ -186,8 +187,9 @@ export async function provisionTeacher(admin: SupabaseClient, callerId: string, 
     throw new AccountError(A.linkFailed);
   }
 
-  if (input.phone?.trim()) {
-    await admin.from('profiles').update({ phone: input.phone.trim() }).eq('id', created.user.id);
+  const contact = { phone: input.phone?.trim() || null, whatsapp: input.whatsapp?.trim() || null };
+  if (contact.phone || contact.whatsapp) {
+    await admin.from('profiles').update(contact).eq('id', created.user.id);
   }
   return { userId: created.user.id as string, loginEmail: email };
 }

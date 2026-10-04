@@ -23,4 +23,7 @@ SPEC = {'teachers': ('Teachers and their accounts.', (
   ('noRecords', 'لا سجلات', 'No records'),
   ('status', 'الحالة', 'Status'),
   ('role', 'الدور', 'Role'),
+  ('phone', 'رقم الجوال', 'Mobile number'),
+  ('whatsapp', 'رقم الواتساب', 'WhatsApp number'),
+  ('contactHint', 'يُفضّل مع رمز الدولة، مثل \u200e+962791234567', 'Preferably with the country code, e.g. +962791234567'),
 ))}

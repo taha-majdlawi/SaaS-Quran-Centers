@@ -74,6 +74,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           final att = (r['attendance'] as List).cast<Map<String, dynamic>>();
           final me = Supabase.instance.client.auth.currentUser?.id;
           final phone = x['phone'] as String?;
+          final whatsapp = (x['whatsapp'] as String?)?.replaceAll(RegExp(r'\D'), '');
           return RefreshIndicator(
             onRefresh: () async => setState(() => _future = _load()),
             child: ListView(padding: EdgeInsets.zero, children: [
@@ -85,6 +86,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 actions: [
                   if (phone != null && phone.isNotEmpty)
                     IconButton(tooltip: P.call, onPressed: () => launchUrl(Uri.parse('tel:$phone')), icon: const Icon(Icons.call_rounded, color: Colors.white)),
+                  if (whatsapp != null && whatsapp.isNotEmpty)
+                    IconButton(
+                      tooltip: P.whatsapp,
+                      onPressed: () => launchUrl(Uri.parse('https://wa.me/$whatsapp'), mode: LaunchMode.externalApplication),
+                      icon: const Icon(Icons.forum_rounded, color: Colors.white),
+                    ),
                   if (x['user_id'] != me)
                     IconButton(tooltip: P.message, onPressed: () => context.push('/chat/${x['user_id']}'), icon: const Icon(Icons.chat_bubble_rounded, color: Colors.white)),
                 ],

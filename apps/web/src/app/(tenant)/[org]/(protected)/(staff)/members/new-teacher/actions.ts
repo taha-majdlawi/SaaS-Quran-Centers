@@ -17,6 +17,7 @@ export async function createTeacherDirectly(formData: FormData) {
   const fullName = (formData.get('fullName') as string)?.trim();
   const identifier = (formData.get('identifier') as string)?.trim();
   const phone = (formData.get('phone') as string)?.trim();
+  const whatsapp = (formData.get('whatsapp') as string)?.trim();
   const password = formData.get('password') as string;
 
   const supabase = await createClient();
@@ -26,7 +27,7 @@ export async function createTeacherDirectly(formData: FormData) {
   if (!user) redirect('/login' as never);
 
   try {
-    await provisionTeacher(createAdminClient(), user.id, { orgId, fullName, identifier, password, phone });
+    await provisionTeacher(createAdminClient(), user.id, { orgId, fullName, identifier, password, phone, whatsapp });
   } catch (e) {
     const message = e instanceof AccountError ? e.message : (await staffStrings()).students.createFailed;
     redirect(`/members/new-teacher?error=${encodeURIComponent(message)}` as never);

@@ -31,4 +31,5 @@ SPEC = {'members': ('Members, roles and invitations.', (
   ('newTeacherTitle', 'إضافة معلم يدويًا', 'Add a teacher manually'),
   ('createTeacher', 'إنشاء حساب المعلم', 'Create teacher account'),
   ('teacherName', 'اسم المعلم', 'Teacher’s name'),
+  ('whatsappOptional', 'رقم الواتساب (اختياري)', 'WhatsApp number (optional)'),
 ))}
