@@ -61,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _logoController.text = org.logoUrl ?? '';
     _primaryColorController.text = org.primaryColor;
     _secondaryColorController.text = org.secondaryColor;
+    _timezoneController.text = org.timezone ?? 'Asia/Amman';
     try {
       final results = await Future.wait<dynamic>([
         _repository.fetchWeekdays(org.id),
@@ -71,8 +72,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       for (final e in _textSettings.entries) {
         e.value.text = settings[e.key] ?? '';
       }
+      // same default as the server (org_setting(..., 'true')): on unless switched off -
+      // except fees, which stay off until the admin turns them on (0081)
       for (final k in _flags.keys) {
-        _flags[k] = settings[k] == 'true';
+        _flags[k] = k == 'flag_fees_enabled' ? settings[k] == 'true' : settings[k] != 'false';
       }
       _reciterSet
         ..clear()
@@ -85,15 +88,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _run(String section, Future<void> Function() action) async {
-    setState(() {
-      _saving = section;
-      _message = null;
-    });
+    setState(() => _saving = section);
     try {
       await action();
-      if (mounted) setState(() { _message = tr(context).set.saved; _isError = false; });
+      if (mounted) {
+        setState(() => _isError = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).set.saved)));
+      }
     } catch (e) {
-      if (mounted) setState(() { _message = friendlyError(e, tr(context).stu.saveError); _isError = true; });
+      if (mounted) {
+        setState(() => _isError = true);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyError(e, tr(context).stu.saveError)), backgroundColor: Colors.red.shade700));
+      }
     } finally {
       if (mounted) setState(() => _saving = null);
     }
@@ -116,10 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (source == null) return;
     final file = await ImagePicker().pickImage(source: source, maxWidth: 512, imageQuality: 90);
     if (file == null) return;
-    setState(() {
-      _uploadingLogo = true;
-      _message = null;
-    });
+    setState(() => _uploadingLogo = true);
     try {
       final bytes = await file.readAsBytes();
       if (bytes.length > 1024 * 1024) throw StateError(currentStrings.set.tooBig1);
@@ -130,30 +133,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final storage = AppSupabase.client.storage.from('org-logos');
       await storage.uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
       if (!mounted) return;
-      setState(() {
-        _logoController.text = storage.getPublicUrl(path);
-        _message = tr(context).set.logoUploaded;
-        _isError = false;
-      });
+      setState(() => _logoController.text = storage.getPublicUrl(path));
+      _toast(tr(context).set.logoUploaded);
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _message = e is StorageException && e.message.contains('row-level security') ? tr(context).set.logoAdminOnly : friendlyError(e, tr(context).set.logoFailed);
-          _isError = true;
-        });
+        _toast(e is StorageException && e.message.contains('row-level security') ? tr(context).set.logoAdminOnly : friendlyError(e, tr(context).set.logoFailed), error: true);
       }
     } finally {
       if (mounted) setState(() => _uploadingLogo = false);
     }
   }
 
+  void _toast(String text, {bool error = false}) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), backgroundColor: error ? Colors.red.shade700 : null));
+
   Future<void> _saveOrg(String orgId) async {
     final logo = _logoController.text.trim();
     if (logo.isNotEmpty && !(Uri.tryParse(logo)?.scheme == 'https')) {
-      setState(() {
-        _message = tr(context).set.logoHttps;
-        _isError = true;
-      });
+      _toast(tr(context).set.logoHttps, error: true);
       return;
     }
     await _run('org', () {
@@ -174,10 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveCenter(String orgId) async {
     final backdate = int.tryParse(_textSettings['backdate_days']!.text.trim());
     if (backdate == null || backdate < 0 || backdate > 365) {
-      setState(() {
-        _message = tr(context).set.backdateRange;
-        _isError = true;
-      });
+      _toast(tr(context).set.backdateRange, error: true);
       return;
     }
     await _run('center', () {
@@ -203,6 +197,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  static const _tabs = ['identity', 'workdays', 'features', 'contact', 'quran', 'notif'];
+  static const _prayerMethods = ['umm_al_qura', 'muslim_world_league', 'egyptian', 'karachi', 'dubai', 'qatar', 'kuwait', 'moon_sighting_committee', 'singapore', 'turkey', 'tehran', 'north_america'];
+
+  /// One tab: its fields, then its own save button (admins) or the read-only note.
+  Widget _tab(List<Widget> children, {String? saveLabel, String? section, VoidCallback? onSave, required bool isAdmin}) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      children: [
+        if (_message != null) MessageBanner(message: _message!, isError: _isError),
+        ...children,
+        const SizedBox(height: 12),
+        if (isAdmin && saveLabel != null)
+          LoadingButton(label: saveLabel, loading: _saving == section, onPressed: onSave)
+        else if (!isAdmin)
+          Text(tr(context).set.adminOnly, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    );
+  }
+
+  /// A dropdown over fixed values whose current text may be anything (kept as-is if unknown).
+  Widget _choice(String label, String key, List<(String, String)> options, bool enabled) {
+    final current = _textSettings[key]!.text;
+    final items = [
+      if (current.isNotEmpty && !options.any((o) => o.$1 == current)) (current, current),
+      ...options,
+    ];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: DropdownButtonFormField<String>(
+        initialValue: current.isEmpty ? options.first.$1 : current,
+        isExpanded: true,
+        decoration: InputDecoration(labelText: label),
+        items: [for (final o in items) DropdownMenuItem(value: o.$1, child: Text(o.$2))],
+        onChanged: enabled ? (v) => setState(() => _textSettings[key]!.text = v ?? '') : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tenant = context.watch<TenantController>();
@@ -211,142 +243,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (org != null && org.id != _loadedForOrgId) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _load(org));
     }
+    final t = tr(context).set;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: DrawerLeading(),title: Text(tr(context).nav.items['/settings']!)),
-      drawer: const AppDrawer(),
-      body: org == null
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(tr(context).set.intro, style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 16),
-                  if (_message != null) MessageBanner(message: _message!, isError: _isError),
-                  SectionTitle(tr(context).set.identity),
-                  _field(tr(context).set.name, _nameController, isAdmin),
+    return DefaultTabController(
+      length: _tabs.length,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: DrawerLeading(),
+          title: Text(tr(context).nav.items['/settings']!),
+          bottom: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            tabs: [for (final k in _tabs) Tab(text: t.tabs[k] ?? k)],
+          ),
+        ),
+        drawer: const AppDrawer(),
+        body: org == null
+            ? const Center(child: CircularProgressIndicator())
+            : TabBarView(children: [
+                // identity
+                _tab([
+                  _field(t.name, _nameController, isAdmin),
                   Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                     OrgAvatar(name: _nameController.text.isEmpty ? 'ب' : _nameController.text, logoUrl: _logoController.text.trim().isEmpty ? null : _logoController.text.trim(), size: 64),
                     const SizedBox(width: 12),
                     if (isAdmin)
                       Expanded(
                         child: Wrap(spacing: 8, runSpacing: 4, children: [
-                          OutlinedButton.icon(onPressed: _uploadingLogo ? null : () => _pickLogo(org.id), icon: Icon(Icons.upload_rounded, size: 18), label: Text(_uploadingLogo ? tr(context).set.uploading : tr(context).set.uploadLogo)),
+                          OutlinedButton.icon(onPressed: _uploadingLogo ? null : () => _pickLogo(org.id), icon: const Icon(Icons.upload_rounded, size: 18), label: Text(_uploadingLogo ? t.uploading : t.uploadLogo)),
                           if (_logoController.text.trim().isNotEmpty)
-                            TextButton(onPressed: () => setState(_logoController.clear), child: Text(tr(context).set.remove, style: TextStyle(color: Colors.red))),
+                            TextButton(onPressed: () => setState(_logoController.clear), child: Text(t.remove, style: const TextStyle(color: Colors.red))),
                         ]),
                       ),
                   ]),
                   const SizedBox(height: 8),
-                  _field(tr(context).set.logoLink, _logoController, isAdmin, ltr: true),
-                  _field(tr(context).set.primary, _primaryColorController, isAdmin, ltr: true),
-                  _field(tr(context).set.secondary, _secondaryColorController, isAdmin, ltr: true),
+                  _field(t.logoLink, _logoController, isAdmin, ltr: true),
+                  _field(t.primary, _primaryColorController, isAdmin, ltr: true),
+                  _field(t.secondary, _secondaryColorController, isAdmin, ltr: true),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: TextField(
                       enabled: false,
                       controller: TextEditingController(text: '${org.slug}.bustan-alquran.com'),
-                      decoration: InputDecoration(labelText: tr(context).set.link),
+                      decoration: InputDecoration(labelText: t.link),
                     ),
                   ),
-                  _field(tr(context).set.timezone, _timezoneController, isAdmin, ltr: true),
-                  if (isAdmin)
-                    LoadingButton(label: tr(context).set.saveIdentity, loading: _saving == 'org', onPressed: () => _saveOrg(org.id)),
-                  SectionTitle(tr(context).set.workdays),
-                  Text(
-                    tr(context).set.workdaysHint,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  _field(t.timezone, _timezoneController, isAdmin, ltr: true),
+                ], saveLabel: t.saveIdentity, section: 'org', onSave: () => _saveOrg(org.id), isAdmin: isAdmin),
+
+                // working days
+                _tab([
+                  Text(t.workdaysHint, style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 8),
                   for (final d in _weekdays)
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        child: Row(
-                          children: [
-                            Expanded(child: Text(d.label, style: const TextStyle(fontWeight: FontWeight.w700))),
-                            Text(tr(context).set.working),
-                            Switch(
-                              value: d.isWorking,
-                              onChanged: isAdmin
-                                  ? (v) => setState(() {
-                                        d.isWorking = v;
-                                        if (!v) d.isSerdDay = false;
-                                      })
-                                  : null,
-                            ),
-                            Text(tr(context).set.serdDay),
-                            Switch(
-                              value: d.isSerdDay,
-                              onChanged: isAdmin && d.isWorking ? (v) => setState(() => d.isSerdDay = v) : null,
-                            ),
-                          ],
-                        ),
+                        child: Row(children: [
+                          Expanded(child: Text(tr(context).labels.weekdays[d.dow], style: const TextStyle(fontWeight: FontWeight.w700))),
+                          Text(t.working),
+                          Switch(
+                            value: d.isWorking,
+                            onChanged: isAdmin
+                                ? (v) => setState(() {
+                                      d.isWorking = v;
+                                      if (!v) d.isSerdDay = false;
+                                    })
+                                : null,
+                          ),
+                          Text(t.serdDay),
+                          Switch(value: d.isSerdDay, onChanged: isAdmin && d.isWorking ? (v) => setState(() => d.isSerdDay = v) : null),
+                        ]),
                       ),
                     ),
-                  if (isAdmin) ...[
-                    const SizedBox(height: 8),
-                    LoadingButton(label: tr(context).set.saveWorkdays, loading: _saving == 'days', onPressed: () => _saveDays(org.id)),
-                  ],
-                  SectionTitle(tr(context).set.features),
-                  _field(tr(context).set.backdate, _textSettings['backdate_days']!, isAdmin,
-                      type: TextInputType.number),
-                  _field(tr(context).set.countryCode, _textSettings['phone_country_code']!, isAdmin,
-                      type: TextInputType.phone, ltr: true),
-                  _field(tr(context).set.whatsapp, _textSettings['whatsapp_group_link']!, isAdmin, ltr: true),
-                  _field(tr(context).set.locationLabel, _textSettings['center_location_label']!, isAdmin),
-                  Row(
-                    children: [
-                      Expanded(child: _field(tr(context).set.lat, _textSettings['prayer_lat']!, isAdmin, ltr: true)),
-                      const SizedBox(width: 10),
-                      Expanded(child: _field(tr(context).set.lng, _textSettings['prayer_lng']!, isAdmin, ltr: true)),
-                    ],
-                  ),
-                  _field(tr(context).set.method, _textSettings['prayer_calc_method']!, isAdmin, ltr: true),
-                  _field(tr(context).set.madhab, _textSettings['prayer_madhab']!, isAdmin, ltr: true),
-                  SectionTitle(tr(context).set.reciters),
-                  Text(tr(context).set.recitersHint, style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      for (final r in kReciters)
-                        FilterChip(
-                          label: Text(r.name),
-                          selected: _reciterSet.contains(r.id),
-                          onSelected: isAdmin
-                              ? (v) => setState(() {
-                                    v ? _reciterSet.add(r.id) : _reciterSet.remove(r.id);
-                                    _textSettings['quran_reciters']!.text = _reciterSet.join(',');
-                                  })
-                              : null,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: kReciters.any((r) => r.id == _textSettings['quran_default_reciter']!.text) ? _textSettings['quran_default_reciter']!.text : '',
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: tr(context).set.defaultReciter),
-                    items: [DropdownMenuItem(value: '', child: Text(tr(context).set.firstInList)), for (final r in kReciters) DropdownMenuItem(value: r.id, child: Text(r.name))],
-                    onChanged: isAdmin ? (v) => setState(() => _textSettings['quran_default_reciter']!.text = v ?? '') : null,
-                  ),
-                  DropdownButtonFormField<String>(
-                    initialValue: kLocales.contains(_textSettings['default_language']!.text) ? _textSettings['default_language']!.text : 'ar',
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: tr(context).set.language, helperText: tr(context).set.languageHint, helperMaxLines: 3),
-                    items: [for (final l in kLocales) DropdownMenuItem(value: l, child: Text(kLocaleNames[l]!))],
-                    onChanged: isAdmin ? (v) => setState(() => _textSettings['default_language']!.text = v ?? 'ar') : null,
-                  ),
+                ], saveLabel: t.saveWorkdays, section: 'days', onSave: () => _saveDays(org.id), isAdmin: isAdmin),
+
+                // features
+                _tab([
+                  _field(t.backdate, _textSettings['backdate_days']!, isAdmin, type: TextInputType.number),
                   for (final f in [
-                    ('flag_market_enabled', tr(context).set.market),
-                    ('flag_leaderboard_enabled', tr(context).set.leaderboard),
-                    ('flag_teacher_manage_students', tr(context).set.teacherStudents),
-                    ('flag_fees_enabled', tr(context).set.fees),
+                    ('flag_market_enabled', t.market),
+                    ('flag_leaderboard_enabled', t.leaderboard),
+                    ('flag_teacher_manage_students', t.teacherStudents),
+                    ('flag_fees_enabled', t.fees),
                   ])
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
@@ -354,18 +333,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       value: _flags[f.$1] ?? false,
                       onChanged: isAdmin ? (v) => setState(() => _flags[f.$1] = v) : null,
                     ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: kLocales.contains(_textSettings['default_language']!.text) ? _textSettings['default_language']!.text : 'ar',
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: t.language, helperText: t.languageHint, helperMaxLines: 3),
+                    items: [for (final l in kLocales) DropdownMenuItem(value: l, child: Text(kLocaleNames[l]!))],
+                    onChanged: isAdmin ? (v) => setState(() => _textSettings['default_language']!.text = v ?? 'ar') : null,
+                  ),
+                ], saveLabel: t.saveSettings, section: 'center', onSave: () => _saveCenter(org.id), isAdmin: isAdmin),
+
+                // contact & prayer
+                _tab([
+                  _field(t.countryCode, _textSettings['phone_country_code']!, isAdmin, type: TextInputType.phone, ltr: true),
+                  _field(t.whatsapp, _textSettings['whatsapp_group_link']!, isAdmin, ltr: true),
+                  _field(t.locationLabel, _textSettings['center_location_label']!, isAdmin),
+                  Row(children: [
+                    Expanded(child: _field(t.lat, _textSettings['prayer_lat']!, isAdmin, ltr: true)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _field(t.lng, _textSettings['prayer_lng']!, isAdmin, ltr: true)),
+                  ]),
+                  _choice(t.method, 'prayer_calc_method', [for (final m in _prayerMethods) (m, t.prayerMethods[m] ?? m)], isAdmin),
+                  _choice(t.madhab, 'prayer_madhab', [('shafi', t.majority), ('hanafi', t.hanafi)], isAdmin),
+                ], saveLabel: t.saveSettings, section: 'center', onSave: () => _saveCenter(org.id), isAdmin: isAdmin),
+
+                // mushaf
+                _tab([
+                  Text(t.reciters, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(t.recitersHint, style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 8),
+                  Wrap(spacing: 8, runSpacing: 4, children: [
+                    for (final r in kReciters)
+                      FilterChip(
+                        label: Text(r.name),
+                        selected: _reciterSet.contains(r.id),
+                        onSelected: isAdmin
+                            ? (v) => setState(() {
+                                  v ? _reciterSet.add(r.id) : _reciterSet.remove(r.id);
+                                  _textSettings['quran_reciters']!.text = _reciterSet.join(',');
+                                })
+                            : null,
+                      ),
+                  ]),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: kReciters.any((r) => r.id == _textSettings['quran_default_reciter']!.text) ? _textSettings['quran_default_reciter']!.text : '',
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: t.defaultReciter),
+                    items: [DropdownMenuItem(value: '', child: Text(t.firstInList)), for (final r in kReciters) DropdownMenuItem(value: r.id, child: Text(r.name))],
+                    onChanged: isAdmin ? (v) => setState(() => _textSettings['quran_default_reciter']!.text = v ?? '') : null,
+                  ),
+                ], saveLabel: t.saveSettings, section: 'center', onSave: () => _saveCenter(org.id), isAdmin: isAdmin),
+
+                // notifications (each tile saves itself)
+                _tab([
                   if (isAdmin) ...[
-                    const SizedBox(height: 8),
                     DigestTile(orgId: org.id),
                     AttendanceReminderTile(orgId: org.id),
-                    LoadingButton(label: tr(context).set.saveSettings, loading: _saving == 'center', onPressed: () => _saveCenter(org.id)),
-                  ] else ...[
-                    const SizedBox(height: 12),
-                    Text(tr(context).set.adminOnly, style: Theme.of(context).textTheme.bodySmall),
                   ],
-                ],
-              ),
-            ),
+                ], isAdmin: isAdmin),
+              ]),
+      ),
     );
   }
 }

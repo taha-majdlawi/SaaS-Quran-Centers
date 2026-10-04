@@ -6,6 +6,7 @@ class Organization {
     this.logoUrl,
     this.primaryColor = '#1E7A54',
     this.secondaryColor = '#D4A24C',
+    this.timezone,
   });
 
   final String id;
@@ -15,6 +16,9 @@ class Organization {
   final String primaryColor;
   final String secondaryColor;
 
+  /// IANA time zone of the center (organizations.timezone).
+  final String? timezone;
+
   factory Organization.fromMap(Map<String, dynamic> map) {
     return Organization(
       id: map['id'] as String,
@@ -23,6 +27,7 @@ class Organization {
       logoUrl: map['logo_url'] as String?,
       primaryColor: (map['primary_color'] as String?) ?? '#1E7A54',
       secondaryColor: (map['secondary_color'] as String?) ?? '#D4A24C',
+      timezone: map['timezone'] as String?,
     );
   }
 }

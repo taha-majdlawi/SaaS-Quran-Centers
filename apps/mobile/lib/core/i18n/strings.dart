@@ -1311,7 +1311,7 @@ class SSerd {
 
 /// Center settings (admin).
 class SSet {
-  const SSet({required this.loadSome, required this.saved, required this.fromGallery, required this.takePhoto, required this.tooBig1, required this.logoUploaded, required this.logoAdminOnly, required this.logoFailed, required this.logoHttps, required this.backdateRange, required this.intro, required this.identity, required this.name, required this.uploading, required this.uploadLogo, required this.remove, required this.logoLink, required this.primary, required this.secondary, required this.link, required this.timezone, required this.saveIdentity, required this.workdays, required this.workdaysHint, required this.working, required this.serdDay, required this.saveWorkdays, required this.features, required this.backdate, required this.countryCode, required this.whatsapp, required this.locationLabel, required this.lat, required this.lng, required this.method, required this.madhab, required this.reciters, required this.recitersHint, required this.defaultReciter, required this.firstInList, required this.market, required this.fees, required this.leaderboard, required this.teacherStudents, required this.saveSettings, required this.adminOnly, required this.loadOne, required this.digestTitle, required this.digestHint, required this.digestEnable, required this.day, required this.hour, required this.digestSaved, required this.saveFailed, required this.digestSub, required this.attTitle, required this.attHint, required this.attEnable, required this.afterHour, required this.attSaved, required this.attTitle2, required this.attSub, required this.language, required this.languageHint});
+  const SSet({required this.loadSome, required this.saved, required this.fromGallery, required this.takePhoto, required this.tooBig1, required this.logoUploaded, required this.logoAdminOnly, required this.logoFailed, required this.logoHttps, required this.backdateRange, required this.intro, required this.identity, required this.name, required this.uploading, required this.uploadLogo, required this.remove, required this.logoLink, required this.primary, required this.secondary, required this.link, required this.timezone, required this.saveIdentity, required this.workdays, required this.workdaysHint, required this.working, required this.serdDay, required this.saveWorkdays, required this.features, required this.backdate, required this.countryCode, required this.whatsapp, required this.locationLabel, required this.lat, required this.lng, required this.method, required this.madhab, required this.reciters, required this.recitersHint, required this.defaultReciter, required this.firstInList, required this.market, required this.tabs, required this.quranTitle, required this.prayerMethods, required this.majority, required this.hanafi, required this.fees, required this.leaderboard, required this.teacherStudents, required this.saveSettings, required this.adminOnly, required this.loadOne, required this.digestTitle, required this.digestHint, required this.digestEnable, required this.day, required this.hour, required this.digestSaved, required this.saveFailed, required this.digestSub, required this.attTitle, required this.attHint, required this.attEnable, required this.afterHour, required this.attSaved, required this.attTitle2, required this.attSub, required this.language, required this.languageHint});
   final String loadSome;
   final String saved;
   final String fromGallery;
@@ -1353,6 +1353,11 @@ class SSet {
   final String defaultReciter;
   final String firstInList;
   final String market;
+  final Map<String, String> tabs;
+  final String quranTitle;
+  final Map<String, String> prayerMethods;
+  final String majority;
+  final String hanafi;
   final String fees;
   final String leaderboard;
   final String teacherStudents;
@@ -2880,6 +2885,11 @@ class S {
       defaultReciter: 'القارئ الافتراضي',
       firstInList: 'الأول في القائمة',
       market: 'تفعيل متجر النقاط',
+      tabs: {'identity': 'الهوية', 'workdays': 'أيام الدوام', 'features': 'الميزات', 'contact': 'التواصل والصلاة', 'quran': 'المصحف', 'notif': 'الإشعارات'},
+      quranTitle: 'المصحف والقرّاء',
+      prayerMethods: {'umm_al_qura': 'أم القرى', 'muslim_world_league': 'رابطة العالم الإسلامي', 'egyptian': 'الهيئة المصرية', 'karachi': 'كراتشي', 'dubai': 'دبي', 'qatar': 'قطر', 'kuwait': 'الكويت', 'moon_sighting_committee': 'لجنة رؤية الهلال', 'singapore': 'سنغافورة', 'turkey': 'تركيا', 'tehran': 'طهران', 'north_america': 'أمريكا الشمالية'},
+      majority: 'الجمهور (شافعي/مالكي/حنبلي)',
+      hanafi: 'حنفي',
       fees: 'تفعيل رسوم الطلاب (للمراكز غير المجانية)',
       leaderboard: 'تفعيل لوحة الصدارة',
       teacherStudents: 'السماح للمعلم بإدارة طلاب حلقته',
@@ -4348,6 +4358,11 @@ class S {
       defaultReciter: 'Default reciter',
       firstInList: 'First in the list',
       market: 'Turn on the points market',
+      tabs: {'identity': 'Identity', 'workdays': 'Working days', 'features': 'Features', 'contact': 'Contact & prayer', 'quran': 'Mushaf', 'notif': 'Notifications'},
+      quranTitle: 'Mushaf & reciters',
+      prayerMethods: {'umm_al_qura': 'Umm al-Qura', 'muslim_world_league': 'Muslim World League', 'egyptian': 'Egyptian authority', 'karachi': 'Karachi', 'dubai': 'Dubai', 'qatar': 'Qatar', 'kuwait': 'Kuwait', 'moon_sighting_committee': 'Moonsighting Committee', 'singapore': 'Singapore', 'turkey': 'Turkey', 'tehran': 'Tehran', 'north_america': 'North America (ISNA)'},
+      majority: 'Majority (Shafi‘i / Maliki / Hanbali)',
+      hanafi: 'Hanafi',
       fees: 'Turn on student fees (for centers that charge)',
       leaderboard: 'Turn on the leaderboard',
       teacherStudents: 'Let teachers manage their circle’s students',
@@ -5816,6 +5831,11 @@ class S {
       defaultReciter: 'Varsayılan kârî',
       firstInList: 'Listedeki ilk',
       market: 'Puan marketini aç',
+      tabs: {'identity': 'Kimlik', 'workdays': 'Çalışma günleri', 'features': 'Özellikler', 'contact': 'İletişim ve namaz', 'quran': 'Mushaf', 'notif': 'Bildirimler'},
+      quranTitle: 'Mushaf ve kârîler',
+      prayerMethods: {'umm_al_qura': 'Ümmü’l-Kurâ', 'muslim_world_league': 'Dünya Müslüman Birliği', 'egyptian': 'Mısır kurumu', 'karachi': 'Karaçi', 'dubai': 'Dubai', 'qatar': 'Katar', 'kuwait': 'Kuveyt', 'moon_sighting_committee': 'Hilal Gözlem Komitesi', 'singapore': 'Singapur', 'turkey': 'Türkiye', 'tehran': 'Tahran', 'north_america': 'Kuzey Amerika (ISNA)'},
+      majority: 'Cumhur (Şâfiî / Mâlikî / Hanbelî)',
+      hanafi: 'Hanefî',
       fees: 'Öğrenci ücretlerini aç (ücretli merkezler için)',
       leaderboard: 'Sıralama tablosunu aç',
       teacherStudents: 'Öğretmenlerin halkalarının öğrencilerini yönetmesine izin ver',
@@ -7284,6 +7304,11 @@ class S {
       defaultReciter: 'Récitateur par défaut',
       firstInList: 'Le premier de la liste',
       market: 'Activer la boutique de points',
+      tabs: {'identity': 'Identité', 'workdays': 'Jours ouvrés', 'features': 'Fonctionnalités', 'contact': 'Contact et prière', 'quran': 'Mushaf', 'notif': 'Notifications'},
+      quranTitle: 'Mushaf et récitateurs',
+      prayerMethods: {'umm_al_qura': 'Umm al-Qura', 'muslim_world_league': 'Ligue islamique mondiale', 'egyptian': 'Autorité égyptienne', 'karachi': 'Karachi', 'dubai': 'Dubaï', 'qatar': 'Qatar', 'kuwait': 'Koweït', 'moon_sighting_committee': 'Moonsighting Committee', 'singapore': 'Singapour', 'turkey': 'Turquie', 'tehran': 'Téhéran', 'north_america': 'Amérique du Nord (ISNA)'},
+      majority: 'Majorité (chaféite / malékite / hanbalite)',
+      hanafi: 'Hanafite',
       fees: 'Activer les frais des élèves (pour les centres payants)',
       leaderboard: 'Activer le classement',
       teacherStudents: 'Permettre aux enseignants de gérer les élèves de leur cercle',

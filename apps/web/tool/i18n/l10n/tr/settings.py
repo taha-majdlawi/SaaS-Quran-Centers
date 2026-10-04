@@ -58,4 +58,11 @@ T = {'backupHint': 'Öğrenciler, halkalar, dinletmeler, yoklama, serd, takvim, 
  'languageHint': 'Sayfalar, dil seçmemiş herkes için bu dilde görünür. Herkes dil düğmesiyle kendi dilini yine değiştirebilir.',
  'logoHttps': 'Logo bağlantısı https ile başlamalıdır',
  'backdateRange': 'Geriye tarih sınırı 0 ile 365 gün arasında olmalıdır',
- 'fees': 'Öğrenci ücretlerini aç (ücretli merkezler için)'}
+ 'fees': 'Öğrenci ücretlerini aç (ücretli merkezler için)',
+ 'tabs': {'identity': 'Kimlik',
+          'workdays': 'Çalışma günleri',
+          'features': 'Özellikler',
+          'contact': 'İletişim ve namaz',
+          'quran': 'Mushaf',
+          'more': 'Bildirimler ve yedek'},
+ 'quranTitle': 'Mushaf ve kârîler'}

@@ -6,6 +6,15 @@ import { safeLogoUrl } from '@/lib/tenant/public-site';
 import { staffStrings } from '@/lib/i18n/server';
 import { LOCALES } from '@/lib/i18n/config';
 
+const TABS = ['identity', 'workdays', 'features', 'contact', 'quran', 'more'] as const;
+
+/** Back to the tab the form was on, with ?saved=1 or ?error=… */
+function back(formData: FormData, result: { error?: string } = {}): string {
+  const raw = formData.get('tab');
+  const tab = typeof raw === 'string' && (TABS as readonly string[]).includes(raw) ? raw : 'identity';
+  return result.error ? `/settings?tab=${tab}&error=${encodeURIComponent(result.error)}` : `/settings?tab=${tab}&saved=1`;
+}
+
 export async function saveAttendanceReminder(formData: FormData) {
   const supabase = await createClient();
   const orgId = formData.get('orgId') as string;
@@ -17,8 +26,8 @@ export async function saveAttendanceReminder(formData: FormData) {
     ],
     { onConflict: 'organization_id,key' },
   );
-  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
-  redirect('/settings?saved=1');
+  if (error) redirect(back(formData, { error: error.message }) as never);
+  redirect(back(formData) as never);
 }
 
 export async function saveDigestSettings(formData: FormData) {
@@ -29,8 +38,8 @@ export async function saveDigestSettings(formData: FormData) {
     p_dow: Number(formData.get('dow')),
     p_hour: Number(formData.get('hour')),
   });
-  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
-  redirect('/settings?saved=1');
+  if (error) redirect(back(formData, { error: error.message }) as never);
+  redirect(back(formData) as never);
 }
 
 export async function updateOrgSettings(formData: FormData) {
@@ -43,7 +52,7 @@ export async function updateOrgSettings(formData: FormData) {
   const timezone = (formData.get('timezone') as string)?.trim();
 
   if (rawLogo && !logoUrl) {
-    redirect(`/settings?error=${encodeURIComponent((await staffStrings()).settings.logoHttps)}` as never);
+    redirect(back(formData, { error: (await staffStrings()).settings.logoHttps }) as never);
   }
 
   const supabase = await createClient();
@@ -52,11 +61,8 @@ export async function updateOrgSettings(formData: FormData) {
     .update({ name, logo_url: logoUrl, primary_color: primaryColor, secondary_color: secondaryColor, timezone })
     .eq('id', orgId);
 
-  if (error) {
-    redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
-  }
-
-  redirect('/settings?saved=1');
+  if (error) redirect(back(formData, { error: error.message }) as never);
+  redirect(back(formData) as never);
 }
 
 /** Working days: attendance % is measured against these, not against 7. */
@@ -77,8 +83,8 @@ export async function saveWeekdays(formData: FormData) {
   });
 
   const { error } = await supabase.from('center_weekdays').upsert(rows, { onConflict: 'organization_id,dow' });
-  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
-  redirect('/settings?saved=1');
+  if (error) redirect(back(formData, { error: error.message }) as never);
+  redirect(back(formData) as never);
 }
 
 const TEXT_SETTINGS = [
@@ -96,43 +102,47 @@ const TEXT_SETTINGS = [
 
 const FLAG_SETTINGS = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students', 'flag_fees_enabled'] as const;
 
-/** Per-center switches and values that eqraa hard-codes. */
+/**
+ * Per-center switches and values that eqraa hard-codes. The settings page is
+ * split into tabs, each its own form, so only what this form carries is
+ * saved: text fields that are present, the switches it lists in `flags`, and
+ * the reciters when `has_reciters` is set - the other tabs stay as they are.
+ */
 export async function saveCenterSettings(formData: FormData) {
   const orgId = formData.get('orgId') as string;
   const supabase = await createClient();
+  const now = new Date().toISOString();
+  const flags = String(formData.get('flags') ?? '')
+    .split(',')
+    .filter((k): k is (typeof FLAG_SETTINGS)[number] => (FLAG_SETTINGS as readonly string[]).includes(k));
 
   const rows = [
-    ...TEXT_SETTINGS.map((key) => ({
+    ...TEXT_SETTINGS.filter((key) => formData.has(key)).map((key) => ({
       organization_id: orgId,
       key,
       value: ((formData.get(key) as string) ?? '').trim(),
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     })),
     // several checkboxes -> one comma-separated value (empty = every reciter)
-    {
-      organization_id: orgId,
-      key: 'quran_reciters',
-      value: (formData.getAll('quran_reciters') as string[]).join(','),
-      updated_at: new Date().toISOString(),
-    },
-    ...FLAG_SETTINGS.map((key) => ({
-      organization_id: orgId,
-      key,
-      value: formData.get(key) === 'on' ? 'true' : 'false',
-      updated_at: new Date().toISOString(),
-    })),
+    ...(formData.has('has_reciters')
+      ? [{ organization_id: orgId, key: 'quran_reciters', value: (formData.getAll('quran_reciters') as string[]).join(','), updated_at: now }]
+      : []),
+    ...flags.map((key) => ({ organization_id: orgId, key, value: formData.get(key) === 'on' ? 'true' : 'false', updated_at: now })),
   ];
 
   // only a language the site ships; anything else falls back to Arabic
   const lang = rows.find((r) => r.key === 'default_language');
   if (lang && !(LOCALES as readonly string[]).includes(lang.value)) lang.value = 'ar';
 
-  const backdate = Number(rows.find((r) => r.key === 'backdate_days')?.value);
-  if (!Number.isInteger(backdate) || backdate < 0 || backdate > 365) {
-    redirect(`/settings?error=${encodeURIComponent((await staffStrings()).settings.backdateRange)}` as never);
+  const backdateRow = rows.find((r) => r.key === 'backdate_days');
+  const backdate = Number(backdateRow?.value);
+  if (backdateRow && (!Number.isInteger(backdate) || backdate < 0 || backdate > 365)) {
+    redirect(back(formData, { error: (await staffStrings()).settings.backdateRange }) as never);
   }
 
-  const { error } = await supabase.from('organization_settings').upsert(rows, { onConflict: 'organization_id,key' });
-  if (error) redirect(`/settings?error=${encodeURIComponent(error.message)}` as never);
-  redirect('/settings?saved=1');
+  if (rows.length) {
+    const { error } = await supabase.from('organization_settings').upsert(rows, { onConflict: 'organization_id,key' });
+    if (error) redirect(back(formData, { error: error.message }) as never);
+  }
+  redirect(back(formData) as never);
 }
