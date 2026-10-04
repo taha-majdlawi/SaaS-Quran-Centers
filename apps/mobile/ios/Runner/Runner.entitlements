@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- Push notifications. Linked into the build only when Firebase is configured
+     (codemagic.yaml appends CODE_SIGN_ENTITLEMENTS to Flutter/Release.xcconfig),
+     so a build without push needs no Push capability on the App ID. -->
+<dict>
+	<key>aps-environment</key>
+	<string>production</string>
+</dict>
+</plist>

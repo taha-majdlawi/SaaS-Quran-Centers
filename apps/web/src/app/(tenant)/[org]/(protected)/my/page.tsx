@@ -115,6 +115,11 @@ export default async function MyPortalPage({
               {p.nav.market}
             </a>
           )}
+          {org.feesEnabled && (
+            <a href={`/my/fees?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
+              {t.staff.fees.title}
+            </a>
+          )}
           <a href="/my/privacy" className="rounded border px-4 py-2 text-sm text-gray-500">
             {p.nav.privacy}
           </a>

@@ -41,6 +41,7 @@ SPEC = {'set': ('Center settings (admin).', (
   ('defaultReciter', 'القارئ الافتراضي', 'Default reciter'),
   ('firstInList', 'الأول في القائمة', 'First in the list'),
   ('market', 'تفعيل متجر النقاط', 'Turn on the points market'),
+  ('fees', 'تفعيل رسوم الطلاب (للمراكز غير المجانية)', 'Turn on student fees (for centers that charge)'),
   ('leaderboard', 'تفعيل لوحة الصدارة', 'Turn on the leaderboard'),
   ('teacherStudents', 'السماح للمعلم بإدارة طلاب حلقته', 'Let teachers manage their circle’s students'),
   ('saveSettings', 'حفظ الإعدادات', 'Save settings'),

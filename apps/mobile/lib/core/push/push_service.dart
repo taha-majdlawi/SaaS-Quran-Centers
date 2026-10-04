@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -20,17 +21,38 @@ String routeForPush(Map<String, dynamic> data) {
   final ref = '${data['ref_id'] ?? ''}';
   // the weekly report opens itself; the rest go to the inbox
   if (data['event_key'] == 'weekly_digest' && ref.isNotEmpty) return '/weekly/$ref';
+  if ((data['event_key'] == 'fee_payment' || data['event_key'] == 'fee_overdue') && ref.isNotEmpty) return '/fees/$ref';
   return '/notifications';
 }
 
-/// Firebase Cloud Messaging on the phone. Completely optional: when the Firebase config file
-/// (`android/app/google-services.json`) is not in the build, [init] quietly turns push off and
-/// the rest of the app is unaffected.
+/// Firebase Cloud Messaging on the phone. Completely optional: when the Firebase config is not
+/// in the build, [init] quietly turns push off and the rest of the app is unaffected.
+/// Android reads `android/app/google-services.json`; iOS takes the same project's values as
+/// build variables (codemagic.yaml: FIREBASE_IOS_*), so no file has to be added to Xcode.
 class PushService {
   PushService._();
   static final PushService instance = PushService._();
 
   static const _channelId = 'bustan_default';
+
+  /// The iOS app of the Firebase project, from --dart-define (null = push off on iOS).
+  static FirebaseOptions? get _iosOptions {
+    const apiKey = String.fromEnvironment('FIREBASE_IOS_API_KEY');
+    const appId = String.fromEnvironment('FIREBASE_IOS_APP_ID');
+    const sender = String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+    const project = String.fromEnvironment('FIREBASE_PROJECT_ID');
+    if (apiKey.isEmpty || appId.isEmpty || sender.isEmpty || project.isEmpty) return null;
+    return const FirebaseOptions(
+      apiKey: apiKey,
+      appId: appId,
+      messagingSenderId: sender,
+      projectId: project,
+      iosBundleId: String.fromEnvironment('FIREBASE_IOS_BUNDLE_ID', defaultValue: 'com.bustanalquran.bustanAlquranApp'),
+    );
+  }
+
+  /// device_tokens.platform
+  static String get _platform => Platform.isIOS ? 'ios' : 'android';
 
   final _local = FlutterLocalNotificationsPlugin();
   bool _ready = false;
@@ -77,7 +99,9 @@ class PushService {
   Future<void> init() async {
     if (_ready) return;
     try {
-      await Firebase.initializeApp();
+      final ios = _iosOptions;
+      if (Platform.isIOS && ios == null) throw StateError('no FIREBASE_IOS_* values');
+      await Firebase.initializeApp(options: Platform.isIOS ? ios : null);
     } catch (e) {
       debugPrint('Push disabled (no Firebase config in this build): $e');
       return;
@@ -86,7 +110,11 @@ class PushService {
       FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
       await _local.initialize(
-        settings: const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')),
+        // iOS: Firebase asks for the permission (register), not this plugin
+        settings: const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          iOS: DarwinInitializationSettings(requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false),
+        ),
         onDidReceiveNotificationResponse: (r) {
           final payload = r.payload;
           if (payload != null && payload.isNotEmpty) _open(Map<String, dynamic>.from(jsonDecode(payload) as Map));
@@ -100,8 +128,13 @@ class PushService {
         importance: Importance.high,
       ));
 
-      // while the app is open FCM shows nothing by itself: draw the banner ourselves
+      // iPhone: the system shows the banner itself while the app is open, too
+      if (Platform.isIOS) {
+        await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
+      }
+      // Android: while the app is open FCM shows nothing by itself: draw the banner ourselves
       FirebaseMessaging.onMessage.listen((m) {
+        if (Platform.isIOS) return;
         final n = m.notification;
         if (n == null) return;
         _local.show(
@@ -141,7 +174,7 @@ class PushService {
       try {
         version = (await PackageInfo.fromPlatform()).version;
       } catch (_) {}
-      await client.rpc('register_device_token', params: {'p_org': orgId, 'p_token': token, 'p_platform': 'android', 'p_app_version': version});
+      await client.rpc('register_device_token', params: {'p_org': orgId, 'p_token': token, 'p_platform': _platform, 'p_app_version': version});
       _registeredFor = key;
       _refreshSub ??= FirebaseMessaging.instance.onTokenRefresh.listen((fresh) async {
         _token = fresh;
@@ -149,7 +182,7 @@ class PushService {
         final o = _registeredFor?.split(':').last;
         if (u != null && o != null) {
           try {
-            await client.rpc('register_device_token', params: {'p_org': o, 'p_token': fresh, 'p_platform': 'android'});
+            await client.rpc('register_device_token', params: {'p_org': o, 'p_token': fresh, 'p_platform': _platform});
           } catch (_) {}
         }
       });

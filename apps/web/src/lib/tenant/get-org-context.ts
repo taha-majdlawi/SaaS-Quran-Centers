@@ -23,6 +23,8 @@ export interface OrgContext {
   disabledModules: string[];
   /** The platform owner looking at a center they are not a member of (support mode). */
   isPlatformOwner: boolean;
+  /** Student fees are switched on (0081 - off by default, most centers are free). */
+  feesEnabled: boolean;
 }
 
 /**
@@ -50,6 +52,7 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
   let myPermissions: ModuleKey[] = [];
   let isPlatformOwner = false;
   let disabledModules: string[] = [];
+  let feesEnabled = false;
   if (user) {
     const { data: membership } = await supabase
       .from('organization_members')
@@ -82,6 +85,10 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
       disabledModules = (off as string[] | null) ?? [];
       myPermissions = myPermissions.filter((p) => !disabledModules.includes(p));
     }
+    if (myRole) {
+      const { data: fees } = await supabase.rpc('get_fee_settings', { p_org: org.id });
+      feesEnabled = (fees as { enabled?: boolean } | null)?.enabled === true;
+    }
   }
 
   return {
@@ -95,5 +102,6 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
     myPermissions,
     disabledModules,
     isPlatformOwner,
+    feesEnabled,
   };
 });

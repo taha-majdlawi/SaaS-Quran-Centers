@@ -557,6 +557,63 @@ class SDash {
   final String perfLine;
 }
 
+/// Student fees (optional feature): the admin's list and record-a-payment, the family's account.
+class SFees {
+  const SFees({required this.title, required this.collectedMonth, required this.outstanding, required this.owingN, required this.filter, required this.search, required this.none, required this.exempt, required this.discountV, required this.noPlan, required this.owes, required this.credit, required this.settled, required this.dueSoFar, required this.paidTotal, required this.upcoming, required this.plan, required this.periods, required this.recordTitle, required this.amount, required this.amountInvalid, required this.method, required this.methods, required this.paidOn, required this.note, required this.record, required this.recorded, required this.outbox, required this.pendingUpload, required this.charges, required this.payments, required this.status, required this.notYetDue, required this.waive, required this.cancelCharge, required this.reopen, required this.cancelChargeConfirm, required this.receiptNo, required this.receiptTitle, required this.voidPayment, required this.voidReason, required this.voidConfirm, required this.voided, required this.noCharges, required this.noPayments, required this.balanceAfter, required this.byLabel, required this.share, required this.receiptText, required this.manageOnWeb, required this.adminOnly, required this.openAccount});
+  final String title;
+  final String collectedMonth;
+  final String outstanding;
+  final String owingN;
+  final Map<String, String> filter;
+  final String search;
+  final String none;
+  final String exempt;
+  final String discountV;
+  final String noPlan;
+  final String owes;
+  final String credit;
+  final String settled;
+  final String dueSoFar;
+  final String paidTotal;
+  final String upcoming;
+  final String plan;
+  final Map<String, String> periods;
+  final String recordTitle;
+  final String amount;
+  final String amountInvalid;
+  final String method;
+  final Map<String, String> methods;
+  final String paidOn;
+  final String note;
+  final String record;
+  final String recorded;
+  final String outbox;
+  final String pendingUpload;
+  final String charges;
+  final String payments;
+  final Map<String, String> status;
+  final String notYetDue;
+  final String waive;
+  final String cancelCharge;
+  final String reopen;
+  final String cancelChargeConfirm;
+  final String receiptNo;
+  final String receiptTitle;
+  final String voidPayment;
+  final String voidReason;
+  final String voidConfirm;
+  final String voided;
+  final String noCharges;
+  final String noPayments;
+  final String balanceAfter;
+  final String byLabel;
+  final String share;
+  final String receiptText;
+  final String manageOnWeb;
+  final String adminOnly;
+  final String openAccount;
+}
+
 /// The garden design (headers, hub, navigation).
 class SGarden {
   const SGarden({required this.online, required this.offline, required this.noInternet, required this.syncCenter, required this.offlineWaiting, required this.syncing, required this.waitingN, required this.failedN, required this.tabHome, required this.tabStudents, required this.tabSerd, required this.tabChat, required this.tabMore, required this.seeAll, required this.moreTitle, required this.checkedInShort, required this.checkInShort, required this.studentsN, required this.statCircles, required this.statStudents, required this.statRecited, required this.statPresent, required this.quickTitle, required this.account, required this.notificationPrefs, required this.statJuz, required this.statPoints, required this.statStreak, required this.explore, required this.statAttendance, required this.itemsN});
@@ -1254,7 +1311,7 @@ class SSerd {
 
 /// Center settings (admin).
 class SSet {
-  const SSet({required this.loadSome, required this.saved, required this.fromGallery, required this.takePhoto, required this.tooBig1, required this.logoUploaded, required this.logoAdminOnly, required this.logoFailed, required this.logoHttps, required this.backdateRange, required this.intro, required this.identity, required this.name, required this.uploading, required this.uploadLogo, required this.remove, required this.logoLink, required this.primary, required this.secondary, required this.link, required this.timezone, required this.saveIdentity, required this.workdays, required this.workdaysHint, required this.working, required this.serdDay, required this.saveWorkdays, required this.features, required this.backdate, required this.countryCode, required this.whatsapp, required this.locationLabel, required this.lat, required this.lng, required this.method, required this.madhab, required this.reciters, required this.recitersHint, required this.defaultReciter, required this.firstInList, required this.market, required this.leaderboard, required this.teacherStudents, required this.saveSettings, required this.adminOnly, required this.loadOne, required this.digestTitle, required this.digestHint, required this.digestEnable, required this.day, required this.hour, required this.digestSaved, required this.saveFailed, required this.digestSub, required this.attTitle, required this.attHint, required this.attEnable, required this.afterHour, required this.attSaved, required this.attTitle2, required this.attSub, required this.language, required this.languageHint});
+  const SSet({required this.loadSome, required this.saved, required this.fromGallery, required this.takePhoto, required this.tooBig1, required this.logoUploaded, required this.logoAdminOnly, required this.logoFailed, required this.logoHttps, required this.backdateRange, required this.intro, required this.identity, required this.name, required this.uploading, required this.uploadLogo, required this.remove, required this.logoLink, required this.primary, required this.secondary, required this.link, required this.timezone, required this.saveIdentity, required this.workdays, required this.workdaysHint, required this.working, required this.serdDay, required this.saveWorkdays, required this.features, required this.backdate, required this.countryCode, required this.whatsapp, required this.locationLabel, required this.lat, required this.lng, required this.method, required this.madhab, required this.reciters, required this.recitersHint, required this.defaultReciter, required this.firstInList, required this.market, required this.fees, required this.leaderboard, required this.teacherStudents, required this.saveSettings, required this.adminOnly, required this.loadOne, required this.digestTitle, required this.digestHint, required this.digestEnable, required this.day, required this.hour, required this.digestSaved, required this.saveFailed, required this.digestSub, required this.attTitle, required this.attHint, required this.attEnable, required this.afterHour, required this.attSaved, required this.attTitle2, required this.attSub, required this.language, required this.languageHint});
   final String loadSome;
   final String saved;
   final String fromGallery;
@@ -1296,6 +1353,7 @@ class SSet {
   final String defaultReciter;
   final String firstInList;
   final String market;
+  final String fees;
   final String leaderboard;
   final String teacherStudents;
   final String saveSettings;
@@ -1526,7 +1584,7 @@ class SWeekly {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1546,6 +1604,7 @@ class S {
   final SCert cert;
   final SChat chat;
   final SDash dash;
+  final SFees fees;
   final SGarden garden;
   final SGather gather;
   final SIns ins;
@@ -2078,6 +2137,60 @@ class S {
       idleDays: '{n} يوم دوام',
       perfLine: '{circles} حلقات · {students} طالب · حضور {days} يوم',
     ),
+    fees: SFees(
+      title: 'الرسوم',
+      collectedMonth: 'المحصّل هذا الشهر',
+      outstanding: 'المستحق على الطلاب',
+      owingN: 'عليهم مستحقات',
+      filter: {'all': 'الكل', 'owing': 'عليهم مستحقات', 'noPlan': 'بلا خطة'},
+      search: 'ابحث باسم الطالب أو رقمه',
+      none: 'لا يوجد طلاب',
+      exempt: 'معفى',
+      discountV: 'خصم {n}٪',
+      noPlan: 'بلا خطة',
+      owes: 'عليه',
+      credit: 'له رصيد',
+      settled: 'لا مستحقات',
+      dueSoFar: 'المستحق حتى اليوم',
+      paidTotal: 'المدفوع',
+      upcoming: 'رسوم قادمة',
+      plan: 'الخطة: {name}',
+      periods: {'monthly': 'شهرية', 'term': 'فصلية', 'once': 'لمرة واحدة'},
+      recordTitle: 'تسجيل دفعة',
+      amount: 'المبلغ',
+      amountInvalid: 'أدخل مبلغًا صحيحًا',
+      method: 'طريقة الدفع',
+      methods: {'cash': 'نقدًا', 'transfer': 'حوالة', 'card': 'بطاقة', 'wallet': 'محفظة إلكترونية', 'other': 'أخرى'},
+      paidOn: 'تاريخ الدفع: {date}',
+      note: 'ملاحظة (اختياري)',
+      record: 'تسجيل الدفعة',
+      recorded: 'تم تسجيل الدفعة ✓',
+      outbox: 'دفعة {name}: {amount}',
+      pendingUpload: 'بانتظار الرفع',
+      charges: 'الرسوم',
+      payments: 'الدفعات',
+      status: {'open': 'مستحقة', 'waived': 'مُعفاة', 'cancelled': 'ملغاة'},
+      notYetDue: 'لم يحن موعدها',
+      waive: 'إعفاء',
+      cancelCharge: 'إلغاء الرسوم',
+      reopen: 'إعادة فتح',
+      cancelChargeConfirm: 'إلغاء هذه الرسوم؟ (للخطأ في الإدخال؛ للمسامحة استخدم «إعفاء»)',
+      receiptNo: 'إيصال رقم {n}',
+      receiptTitle: 'إيصال استلام',
+      voidPayment: 'إلغاء الدفعة',
+      voidReason: 'سبب الإلغاء (اختياري)',
+      voidConfirm: 'إلغاء هذه الدفعة؟ يبقى الإيصال مسجلًا بختم «ملغى».',
+      voided: 'ملغاة',
+      noCharges: 'لا توجد رسوم',
+      noPayments: 'لا توجد دفعات',
+      balanceAfter: 'المتبقي على الطالب',
+      byLabel: 'المستلم',
+      share: 'مشاركة',
+      receiptText: '{center}\n{title} — {no}\n{student}\n{amount} · {date} · {method}\n{left}',
+      manageOnWeb: 'الخطط وتعيينها للطلاب والإعدادات والتقرير من لوحة الموقع.',
+      adminOnly: 'الرسوم يديرها المشرف فقط',
+      openAccount: 'حساب الرسوم',
+    ),
     garden: SGarden(
       online: 'متصل',
       offline: 'دون اتصال',
@@ -2286,7 +2399,7 @@ class S {
       active: 'فعّال (يظهر للطلاب)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/review-plan': 'ورد المراجعة اليومي', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
+      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/review-plan': 'ورد المراجعة اليومي', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/fees': 'الرسوم', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
       sections: {'teaching': 'التعليم', 'motivation': 'التحفيز', 'comms': 'التواصل', 'admin': 'إدارة المركز'},
       switchCenter: 'تبديل المركز',
       menu: 'القائمة',
@@ -2306,7 +2419,7 @@ class S {
       noPermission: 'لم يُمنح التطبيق إذن الإشعارات. افتح إعدادات الهاتف ← التطبيقات ← بستان القرآن ← الإشعارات وفعّلها.',
       paused: 'أوقف المركز إرسال الإشعارات مؤقتًا — تبقى القائمة داخل التطبيق تعمل.',
       quiet: 'لا تصل إشعارات الهاتف بين {from} و{to} — تُؤجَّل إلى الصباح.',
-      events: {'announcement': 'إعلان جديد', 'calendar_entry': 'فعالية جديدة في التقويم', 'center_closed': 'إجازة أو إغلاق', 'event_reminder': 'تذكير بالفعاليات', 'waitlist_promoted': 'الترقية من قائمة الانتظار', 'serd_assigned': 'سرد مطلوب مني', 'serd_approved': 'اعتماد السرد', 'serd_rejected': 'عدم اعتماد السرد', 'market_fulfilled': 'تسليم طلب السوق', 'market_cancelled': 'إلغاء طلب السوق', 'badge_awarded': 'الشارات', 'weekly_digest': 'ملخص الأسبوع', 'attendance_reminder': 'تذكير تسجيل الحضور', 'teacher_checkin_reminder': 'تذكير المعلم بتسجيل حضوره', 'student_idle_teacher': 'تنبيه المعلم: طالب متأخر عن التسميع', 'student_idle': 'تذكير الطالب المتأخر عن التسميع', 'student_absences': 'تنبيه المشرف: غياب متكرر', 'deletion_request': 'طلبات حذف البيانات', 'deletion_reviewed': 'نتيجة طلب حذف بياناتي', 'gathering_submitted': 'رفع مجلس جديد', 'external_submitted': 'تسميع خارجي جديد', 'external_reviewed': 'نتيجة التسميع الخارجي', 'assistant_assigned': 'تعيين معلم مساعد', 'billing_reminder': 'تذكير الاشتراك', 'billing_reviewed': 'نتيجة مراجعة الدفع', 'capacity_warning': 'سعة الخطة', 'billing_downgraded': 'التحويل للخطة المجانية'},
+      events: {'announcement': 'إعلان جديد', 'calendar_entry': 'فعالية جديدة في التقويم', 'center_closed': 'إجازة أو إغلاق', 'event_reminder': 'تذكير بالفعاليات', 'waitlist_promoted': 'الترقية من قائمة الانتظار', 'serd_assigned': 'سرد مطلوب مني', 'serd_approved': 'اعتماد السرد', 'serd_rejected': 'عدم اعتماد السرد', 'market_fulfilled': 'تسليم طلب السوق', 'market_cancelled': 'إلغاء طلب السوق', 'badge_awarded': 'الشارات', 'weekly_digest': 'ملخص الأسبوع', 'attendance_reminder': 'تذكير تسجيل الحضور', 'teacher_checkin_reminder': 'تذكير المعلم بتسجيل حضوره', 'student_idle_teacher': 'تنبيه المعلم: طالب متأخر عن التسميع', 'student_idle': 'تذكير الطالب المتأخر عن التسميع', 'student_absences': 'تنبيه المشرف: غياب متكرر', 'deletion_request': 'طلبات حذف البيانات', 'deletion_reviewed': 'نتيجة طلب حذف بياناتي', 'gathering_submitted': 'رفع مجلس جديد', 'external_submitted': 'تسميع خارجي جديد', 'external_reviewed': 'نتيجة التسميع الخارجي', 'assistant_assigned': 'تعيين معلم مساعد', 'billing_reminder': 'تذكير الاشتراك', 'billing_reviewed': 'نتيجة مراجعة الدفع', 'capacity_warning': 'سعة الخطة', 'billing_downgraded': 'التحويل للخطة المجانية', 'fee_payment': 'إيصال دفع الرسوم', 'fee_overdue': 'تذكير الرسوم المستحقة'},
       types: 'أنواع الإشعارات',
       instantTitle: 'لتصل الإشعارات فورًا',
       instantBody: 'الهاتف يوفّر البطارية بتأخير إشعارات هذا التطبيق. اسمح له بالعمل دون قيود لتصلك الرسائل لحظة إرسالها.',
@@ -2767,6 +2880,7 @@ class S {
       defaultReciter: 'القارئ الافتراضي',
       firstInList: 'الأول في القائمة',
       market: 'تفعيل متجر النقاط',
+      fees: 'تفعيل رسوم الطلاب (للمراكز غير المجانية)',
       leaderboard: 'تفعيل لوحة الصدارة',
       teacherStudents: 'السماح للمعلم بإدارة طلاب حلقته',
       saveSettings: 'حفظ الإعدادات',
@@ -3491,6 +3605,60 @@ class S {
       idleDays: '{n} working days',
       perfLine: '{circles} circles · {students} students · present {days} days',
     ),
+    fees: SFees(
+      title: 'Fees',
+      collectedMonth: 'Collected this month',
+      outstanding: 'Owed by students',
+      owingN: 'Owing',
+      filter: {'all': 'All', 'owing': 'Owing', 'noPlan': 'No plan'},
+      search: 'Search by student name or number',
+      none: 'No students',
+      exempt: 'Exempt',
+      discountV: '{n}% off',
+      noPlan: 'No plan',
+      owes: 'Owes',
+      credit: 'In credit',
+      settled: 'Nothing due',
+      dueSoFar: 'Due so far',
+      paidTotal: 'Paid',
+      upcoming: 'Coming up',
+      plan: 'Plan: {name}',
+      periods: {'monthly': 'Monthly', 'term': 'Per term', 'once': 'One-off'},
+      recordTitle: 'Record a payment',
+      amount: 'Amount',
+      amountInvalid: 'Enter a valid amount',
+      method: 'Method',
+      methods: {'cash': 'Cash', 'transfer': 'Transfer', 'card': 'Card', 'wallet': 'E-wallet', 'other': 'Other'},
+      paidOn: 'Payment date: {date}',
+      note: 'Note (optional)',
+      record: 'Record payment',
+      recorded: 'Payment recorded ✓',
+      outbox: 'Payment {name}: {amount}',
+      pendingUpload: 'Waiting to upload',
+      charges: 'Charges',
+      payments: 'Payments',
+      status: {'open': 'Due', 'waived': 'Waived', 'cancelled': 'Cancelled'},
+      notYetDue: 'Not yet due',
+      waive: 'Waive',
+      cancelCharge: 'Cancel charge',
+      reopen: 'Reopen',
+      cancelChargeConfirm: 'Cancel this charge? (for a mistake; to forgive it use “Waive”)',
+      receiptNo: 'Receipt no. {n}',
+      receiptTitle: 'Payment receipt',
+      voidPayment: 'Void payment',
+      voidReason: 'Reason (optional)',
+      voidConfirm: 'Void this payment? The receipt stays on record, stamped “Void”.',
+      voided: 'Void',
+      noCharges: 'No charges',
+      noPayments: 'No payments',
+      balanceAfter: 'Student’s remaining balance',
+      byLabel: 'Received by',
+      share: 'Share',
+      receiptText: '{center}\n{title} — {no}\n{student}\n{amount} · {date} · {method}\n{left}',
+      manageOnWeb: 'Plans, assigning them to students, settings and the report are on the website dashboard.',
+      adminOnly: 'Only the admin manages fees',
+      openAccount: 'Fees account',
+    ),
     garden: SGarden(
       online: 'Online',
       offline: 'Offline',
@@ -3699,7 +3867,7 @@ class S {
       active: 'Active (shown to students)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/review-plan': 'Daily review portions', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
+      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/review-plan': 'Daily review portions', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/fees': 'Fees', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
       sections: {'teaching': 'Teaching', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Center management'},
       switchCenter: 'Switch center',
       menu: 'Menu',
@@ -3719,7 +3887,7 @@ class S {
       noPermission: 'The app hasn’t been allowed to send notifications. Open the phone’s Settings → Apps → Bustan Al-Quran → Notifications and turn them on.',
       paused: 'The center has paused notifications for now — the in-app list still works.',
       quiet: 'Phone notifications are held between {from} and {to} — they arrive in the morning.',
-      events: {'announcement': 'New announcement', 'calendar_entry': 'New calendar event', 'center_closed': 'Holiday or closure', 'event_reminder': 'Event reminders', 'waitlist_promoted': 'Moved up from the waiting list', 'serd_assigned': 'A serd assigned to me', 'serd_approved': 'Serd approved', 'serd_rejected': 'Serd not approved', 'market_fulfilled': 'Market order delivered', 'market_cancelled': 'Market order cancelled', 'badge_awarded': 'Badges', 'weekly_digest': 'Weekly digest', 'attendance_reminder': 'Attendance reminder', 'teacher_checkin_reminder': 'Teacher check-in reminder', 'student_idle_teacher': 'Teacher alert: student behind on recitation', 'student_idle': 'Reminder to a student behind on recitation', 'student_absences': 'Admin alert: repeated absence', 'deletion_request': 'Data deletion requests', 'deletion_reviewed': 'Outcome of my data deletion request', 'gathering_submitted': 'New gathering submitted', 'external_submitted': 'New external recitation', 'external_reviewed': 'External recitation outcome', 'assistant_assigned': 'Assistant teacher assigned', 'billing_reminder': 'Subscription reminder', 'billing_reviewed': 'Payment review outcome', 'capacity_warning': 'Plan capacity', 'billing_downgraded': 'Moved to the free plan'},
+      events: {'announcement': 'New announcement', 'calendar_entry': 'New calendar event', 'center_closed': 'Holiday or closure', 'event_reminder': 'Event reminders', 'waitlist_promoted': 'Moved up from the waiting list', 'serd_assigned': 'A serd assigned to me', 'serd_approved': 'Serd approved', 'serd_rejected': 'Serd not approved', 'market_fulfilled': 'Market order delivered', 'market_cancelled': 'Market order cancelled', 'badge_awarded': 'Badges', 'weekly_digest': 'Weekly digest', 'attendance_reminder': 'Attendance reminder', 'teacher_checkin_reminder': 'Teacher check-in reminder', 'student_idle_teacher': 'Teacher alert: student behind on recitation', 'student_idle': 'Reminder to a student behind on recitation', 'student_absences': 'Admin alert: repeated absence', 'deletion_request': 'Data deletion requests', 'deletion_reviewed': 'Outcome of my data deletion request', 'gathering_submitted': 'New gathering submitted', 'external_submitted': 'New external recitation', 'external_reviewed': 'External recitation outcome', 'assistant_assigned': 'Assistant teacher assigned', 'billing_reminder': 'Subscription reminder', 'billing_reviewed': 'Payment review outcome', 'capacity_warning': 'Plan capacity', 'billing_downgraded': 'Moved to the free plan', 'fee_payment': 'Fee payment receipt', 'fee_overdue': 'Fees due reminder'},
       types: 'Notification types',
       instantTitle: 'Get notifications instantly',
       instantBody: 'The phone is saving battery by delaying this app’s notifications. Let it run unrestricted so messages arrive the moment they are sent.',
@@ -4180,6 +4348,7 @@ class S {
       defaultReciter: 'Default reciter',
       firstInList: 'First in the list',
       market: 'Turn on the points market',
+      fees: 'Turn on student fees (for centers that charge)',
       leaderboard: 'Turn on the leaderboard',
       teacherStudents: 'Let teachers manage their circle’s students',
       saveSettings: 'Save settings',
@@ -4904,6 +5073,60 @@ class S {
       idleDays: '{n} çalışma günü',
       perfLine: '{circles} halka · {students} öğrenci · {days} gün geldi',
     ),
+    fees: SFees(
+      title: 'Ücretler',
+      collectedMonth: 'Bu ay tahsil edilen',
+      outstanding: 'Öğrencilerin borcu',
+      owingN: 'Borçlu',
+      filter: {'all': 'Tümü', 'owing': 'Borçlu', 'noPlan': 'Plansız'},
+      search: 'Öğrenci adı veya numarasıyla ara',
+      none: 'Öğrenci yok',
+      exempt: 'Muaf',
+      discountV: '%{n} indirim',
+      noPlan: 'Plan yok',
+      owes: 'Borcu var',
+      credit: 'Alacaklı',
+      settled: 'Borç yok',
+      dueSoFar: 'Bugüne kadar ödenecek',
+      paidTotal: 'Ödenen',
+      upcoming: 'Yaklaşan ücretler',
+      plan: 'Plan: {name}',
+      periods: {'monthly': 'Aylık', 'term': 'Dönemlik', 'once': 'Tek seferlik'},
+      recordTitle: 'Ödeme kaydet',
+      amount: 'Tutar',
+      amountInvalid: 'Geçerli bir tutar girin',
+      method: 'Ödeme yöntemi',
+      methods: {'cash': 'Nakit', 'transfer': 'Havale', 'card': 'Kart', 'wallet': 'E-cüzdan', 'other': 'Diğer'},
+      paidOn: 'Ödeme tarihi: {date}',
+      note: 'Not (isteğe bağlı)',
+      record: 'Ödemeyi kaydet',
+      recorded: 'Ödeme kaydedildi ✓',
+      outbox: 'Ödeme {name}: {amount}',
+      pendingUpload: 'Yüklenmeyi bekliyor',
+      charges: 'Ücretler',
+      payments: 'Ödemeler',
+      status: {'open': 'Ödenecek', 'waived': 'Muaf tutuldu', 'cancelled': 'İptal edildi'},
+      notYetDue: 'Henüz vadesi gelmedi',
+      waive: 'Muaf tut',
+      cancelCharge: 'Ücreti iptal et',
+      reopen: 'Yeniden aç',
+      cancelChargeConfirm: 'Bu ücret iptal edilsin mi? (giriş hatası için; bağışlamak için “Muaf tut”u kullanın)',
+      receiptNo: 'Makbuz no. {n}',
+      receiptTitle: 'Tahsilat makbuzu',
+      voidPayment: 'Ödemeyi iptal et',
+      voidReason: 'Neden (isteğe bağlı)',
+      voidConfirm: 'Bu ödeme iptal edilsin mi? Makbuz “İptal” damgasıyla kayıtlı kalır.',
+      voided: 'İptal',
+      noCharges: 'Ücret yok',
+      noPayments: 'Ödeme yok',
+      balanceAfter: 'Öğrencinin kalan borcu',
+      byLabel: 'Teslim alan',
+      share: 'Paylaş',
+      receiptText: '{center}\n{title} — {no}\n{student}\n{amount} · {date} · {method}\n{left}',
+      manageOnWeb: 'Planlar, öğrencilere atanmaları, ayarlar ve rapor web panelindedir.',
+      adminOnly: 'Ücretleri yalnızca yönetici yönetir',
+      openAccount: 'Ücret hesabı',
+    ),
     garden: SGarden(
       online: 'Çevrimiçi',
       offline: 'Çevrimdışı',
@@ -5112,7 +5335,7 @@ class S {
       active: 'Etkin (öğrencilere gösterilir)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Kontrol paneli', '/attention': 'İlgi bekleyen öğrenciler', '/review-plan': 'Günlük tekrar payları', '/sync': 'Eşitleme', '/students': 'Öğrenciler', '/circles': 'Halkalar', '/attendance': 'Yoklama', '/gatherings': 'Toplantılar ve etkinlikler', '/external-recitations': 'Dış dinletmeler', '/reviews': 'Önerilen tekrar', '/search': 'Ara', '/quran': 'Kur’an', '/serd': 'Kur’an serdi', '/stages': 'Aşamalar', '/points': 'Puanlar', '/badges': 'Rozetler', '/market': 'Puan marketi', '/circle-challenges': 'Halka yarışmaları', '/activities': 'Etkinlikler', '/announcements': 'Duyurular', '/calendar': 'Takvim', '/chat': 'Mesajlar', '/notifications': 'Bildirimler', '/reports': 'Raporlar', '/certificates': 'Sertifikalar', '/members': 'Üyeler ve roller', '/deletion-requests': 'Veri silme talepleri', '/audit': 'İşlem kaydı', '/site': 'Herkese açık sayfa', '/settings': 'Merkez ayarları'},
+      items: {'/dashboard': 'Kontrol paneli', '/attention': 'İlgi bekleyen öğrenciler', '/review-plan': 'Günlük tekrar payları', '/sync': 'Eşitleme', '/students': 'Öğrenciler', '/circles': 'Halkalar', '/attendance': 'Yoklama', '/gatherings': 'Toplantılar ve etkinlikler', '/external-recitations': 'Dış dinletmeler', '/reviews': 'Önerilen tekrar', '/search': 'Ara', '/quran': 'Kur’an', '/serd': 'Kur’an serdi', '/stages': 'Aşamalar', '/points': 'Puanlar', '/badges': 'Rozetler', '/market': 'Puan marketi', '/circle-challenges': 'Halka yarışmaları', '/activities': 'Etkinlikler', '/announcements': 'Duyurular', '/calendar': 'Takvim', '/chat': 'Mesajlar', '/notifications': 'Bildirimler', '/reports': 'Raporlar', '/certificates': 'Sertifikalar', '/members': 'Üyeler ve roller', '/deletion-requests': 'Veri silme talepleri', '/audit': 'İşlem kaydı', '/site': 'Herkese açık sayfa', '/settings': 'Merkez ayarları', '/fees': 'Ücretler'},
       sections: {'teaching': 'Öğretim', 'motivation': 'Motivasyon', 'comms': 'İletişim', 'admin': 'Merkez yönetimi'},
       switchCenter: 'Merkez değiştir',
       menu: 'Menü',
@@ -5132,7 +5355,7 @@ class S {
       noPermission: 'Uygulamanın bildirim göndermesine izin verilmedi. Telefonun Ayarlar → Uygulamalar → Bustan Al-Quran → Bildirimler bölümünü açıp etkinleştirin.',
       paused: 'Merkez bildirimleri şimdilik duraklattı — uygulama içi liste çalışmaya devam ediyor.',
       quiet: 'Telefon bildirimleri {from} ile {to} arasında bekletilir — sabah gelir.',
-      events: {'announcement': 'Yeni duyuru', 'calendar_entry': 'Takvimde yeni etkinlik', 'center_closed': 'Tatil veya kapanış', 'event_reminder': 'Etkinlik hatırlatmaları', 'waitlist_promoted': 'Bekleme listesinden kayıt', 'serd_assigned': 'Bana atanan serd', 'serd_approved': 'Serd onayı', 'serd_rejected': 'Serd onaylanmadı', 'market_fulfilled': 'Market siparişi teslim edildi', 'market_cancelled': 'Market siparişi iptal edildi', 'badge_awarded': 'Rozetler', 'weekly_digest': 'Haftalık özet', 'attendance_reminder': 'Yoklama hatırlatması', 'teacher_checkin_reminder': 'Öğretmen giriş hatırlatması', 'student_idle_teacher': 'Öğretmen uyarısı: dinletmede geride kalan öğrenci', 'student_idle': 'Dinletmede geride kalan öğrenciye hatırlatma', 'student_absences': 'Yönetici uyarısı: tekrarlanan devamsızlık', 'deletion_request': 'Veri silme talepleri', 'deletion_reviewed': 'Veri silme talebimin sonucu', 'gathering_submitted': 'Yeni toplantı gönderildi', 'external_submitted': 'Yeni dış dinletme', 'external_reviewed': 'Dış dinletme sonucu', 'assistant_assigned': 'Yardımcı öğretmen ataması', 'billing_reminder': 'Abonelik hatırlatması', 'billing_reviewed': 'Ödeme inceleme sonucu', 'capacity_warning': 'Plan kapasitesi', 'billing_downgraded': 'Ücretsiz plana geçiş'},
+      events: {'announcement': 'Yeni duyuru', 'calendar_entry': 'Takvimde yeni etkinlik', 'center_closed': 'Tatil veya kapanış', 'event_reminder': 'Etkinlik hatırlatmaları', 'waitlist_promoted': 'Bekleme listesinden kayıt', 'serd_assigned': 'Bana atanan serd', 'serd_approved': 'Serd onayı', 'serd_rejected': 'Serd onaylanmadı', 'market_fulfilled': 'Market siparişi teslim edildi', 'market_cancelled': 'Market siparişi iptal edildi', 'badge_awarded': 'Rozetler', 'weekly_digest': 'Haftalık özet', 'attendance_reminder': 'Yoklama hatırlatması', 'teacher_checkin_reminder': 'Öğretmen giriş hatırlatması', 'student_idle_teacher': 'Öğretmen uyarısı: dinletmede geride kalan öğrenci', 'student_idle': 'Dinletmede geride kalan öğrenciye hatırlatma', 'student_absences': 'Yönetici uyarısı: tekrarlanan devamsızlık', 'deletion_request': 'Veri silme talepleri', 'deletion_reviewed': 'Veri silme talebimin sonucu', 'gathering_submitted': 'Yeni toplantı gönderildi', 'external_submitted': 'Yeni dış dinletme', 'external_reviewed': 'Dış dinletme sonucu', 'assistant_assigned': 'Yardımcı öğretmen ataması', 'billing_reminder': 'Abonelik hatırlatması', 'billing_reviewed': 'Ödeme inceleme sonucu', 'capacity_warning': 'Plan kapasitesi', 'billing_downgraded': 'Ücretsiz plana geçiş', 'fee_payment': 'Ücret ödeme makbuzu', 'fee_overdue': 'Ödenmesi gereken ücret hatırlatması'},
       types: 'Bildirim türleri',
       instantTitle: 'Bildirimleri anında alın',
       instantBody: 'Telefon, bu uygulamanın bildirimlerini geciktirerek pil tasarrufu yapıyor. Mesajların gönderildiği anda gelmesi için kısıtlamasız çalışmasına izin verin.',
@@ -5593,6 +5816,7 @@ class S {
       defaultReciter: 'Varsayılan kârî',
       firstInList: 'Listedeki ilk',
       market: 'Puan marketini aç',
+      fees: 'Öğrenci ücretlerini aç (ücretli merkezler için)',
       leaderboard: 'Sıralama tablosunu aç',
       teacherStudents: 'Öğretmenlerin halkalarının öğrencilerini yönetmesine izin ver',
       saveSettings: 'Ayarları kaydet',
@@ -6317,6 +6541,60 @@ class S {
       idleDays: '{n} jours ouvrés',
       perfLine: '{circles} cercles · {students} élèves · présent {days} jours',
     ),
+    fees: SFees(
+      title: 'Frais',
+      collectedMonth: 'Encaissé ce mois-ci',
+      outstanding: 'Dû par les élèves',
+      owingN: 'Redevables',
+      filter: {'all': 'Tous', 'owing': 'Redevables', 'noPlan': 'Sans formule'},
+      search: 'Rechercher par nom ou numéro d’élève',
+      none: 'Aucun élève',
+      exempt: 'Exonéré',
+      discountV: '−{n} %',
+      noPlan: 'Sans formule',
+      owes: 'Doit',
+      credit: 'Créditeur',
+      settled: 'Rien à payer',
+      dueSoFar: 'Dû à ce jour',
+      paidTotal: 'Payé',
+      upcoming: 'Frais à venir',
+      plan: 'Formule : {name}',
+      periods: {'monthly': 'Mensuelle', 'term': 'Par trimestre', 'once': 'Ponctuelle'},
+      recordTitle: 'Enregistrer un paiement',
+      amount: 'Montant',
+      amountInvalid: 'Saisissez un montant valide',
+      method: 'Moyen de paiement',
+      methods: {'cash': 'Espèces', 'transfer': 'Virement', 'card': 'Carte', 'wallet': 'Portefeuille électronique', 'other': 'Autre'},
+      paidOn: 'Date du paiement : {date}',
+      note: 'Remarque (facultatif)',
+      record: 'Enregistrer le paiement',
+      recorded: 'Paiement enregistré ✓',
+      outbox: 'Paiement {name} : {amount}',
+      pendingUpload: 'En attente d’envoi',
+      charges: 'Frais',
+      payments: 'Paiements',
+      status: {'open': 'Dû', 'waived': 'Remis', 'cancelled': 'Annulé'},
+      notYetDue: 'Pas encore échu',
+      waive: 'Remettre',
+      cancelCharge: 'Annuler les frais',
+      reopen: 'Rouvrir',
+      cancelChargeConfirm: 'Annuler ces frais ? (pour une erreur de saisie ; pour les remettre, utilisez « Remettre »)',
+      receiptNo: 'Reçu n° {n}',
+      receiptTitle: 'Reçu de paiement',
+      voidPayment: 'Annuler le paiement',
+      voidReason: 'Motif (facultatif)',
+      voidConfirm: 'Annuler ce paiement ? Le reçu reste enregistré avec la mention « Annulé ».',
+      voided: 'Annulé',
+      noCharges: 'Aucuns frais',
+      noPayments: 'Aucun paiement',
+      balanceAfter: 'Reste dû par l’élève',
+      byLabel: 'Reçu par',
+      share: 'Partager',
+      receiptText: '{center}\n{title} — {no}\n{student}\n{amount} · {date} · {method}\n{left}',
+      manageOnWeb: 'Les formules, leur attribution aux élèves, les réglages et le rapport sont sur le tableau de bord web.',
+      adminOnly: 'Seul l’administrateur gère les frais',
+      openAccount: 'Compte de frais',
+    ),
     garden: SGarden(
       online: 'En ligne',
       offline: 'Hors ligne',
@@ -6525,7 +6803,7 @@ class S {
       active: 'Actif (visible par les élèves)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Tableau de bord', '/attention': 'Élèves à suivre de près', '/review-plan': 'Portions de révision quotidiennes', '/sync': 'Synchronisation', '/students': 'Élèves', '/circles': 'Cercles', '/attendance': 'Présences', '/gatherings': 'Rassemblements et activités', '/external-recitations': 'Récitations externes', '/reviews': 'Révision suggérée', '/search': 'Recherche', '/quran': 'Coran', '/serd': 'Serd du Coran', '/stages': 'Niveaux', '/points': 'Points', '/badges': 'Badges', '/market': 'Boutique de points', '/circle-challenges': 'Défis entre cercles', '/activities': 'Activités', '/announcements': 'Annonces', '/calendar': 'Calendrier', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Rapports', '/certificates': 'Certificats', '/members': 'Membres et rôles', '/deletion-requests': 'Demandes de suppression de données', '/audit': 'Journal d’activité', '/site': 'Page publique', '/settings': 'Réglages du centre'},
+      items: {'/dashboard': 'Tableau de bord', '/attention': 'Élèves à suivre de près', '/review-plan': 'Portions de révision quotidiennes', '/sync': 'Synchronisation', '/students': 'Élèves', '/circles': 'Cercles', '/attendance': 'Présences', '/gatherings': 'Rassemblements et activités', '/external-recitations': 'Récitations externes', '/reviews': 'Révision suggérée', '/search': 'Recherche', '/quran': 'Coran', '/serd': 'Serd du Coran', '/stages': 'Niveaux', '/points': 'Points', '/badges': 'Badges', '/market': 'Boutique de points', '/circle-challenges': 'Défis entre cercles', '/activities': 'Activités', '/announcements': 'Annonces', '/calendar': 'Calendrier', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Rapports', '/certificates': 'Certificats', '/members': 'Membres et rôles', '/deletion-requests': 'Demandes de suppression de données', '/audit': 'Journal d’activité', '/site': 'Page publique', '/settings': 'Réglages du centre', '/fees': 'Frais'},
       sections: {'teaching': 'Enseignement', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Gestion du centre'},
       switchCenter: 'Changer de centre',
       menu: 'Menu',
@@ -6545,7 +6823,7 @@ class S {
       noPermission: 'L’application n’a pas été autorisée à envoyer des notifications. Ouvrez Réglages du téléphone → Applications → Bustan Al-Quran → Notifications et activez-les.',
       paused: 'Le centre a suspendu les notifications pour le moment — la liste dans l’application fonctionne toujours.',
       quiet: 'Les notifications téléphone sont retenues entre {from} et {to} — elles arrivent le matin.',
-      events: {'announcement': 'Nouvelle annonce', 'calendar_entry': 'Nouvel événement au calendrier', 'center_closed': 'Congé ou fermeture', 'event_reminder': 'Rappels d’événements', 'waitlist_promoted': 'Inscription depuis la liste d’attente', 'serd_assigned': 'Un serd qui m’est assigné', 'serd_approved': 'Serd validé', 'serd_rejected': 'Serd non validé', 'market_fulfilled': 'Commande de la boutique remise', 'market_cancelled': 'Commande de la boutique annulée', 'badge_awarded': 'Badges', 'weekly_digest': 'Résumé hebdomadaire', 'attendance_reminder': 'Rappel d’appel', 'teacher_checkin_reminder': 'Rappel de pointage de l’enseignant', 'student_idle_teacher': 'Alerte enseignant : élève en retard de récitation', 'student_idle': 'Rappel à l’élève en retard de récitation', 'student_absences': 'Alerte administrateur : absences répétées', 'deletion_request': 'Demandes de suppression de données', 'deletion_reviewed': 'Résultat de ma demande de suppression', 'gathering_submitted': 'Nouveau rassemblement soumis', 'external_submitted': 'Nouvelle récitation externe', 'external_reviewed': 'Résultat de la récitation externe', 'assistant_assigned': 'Nomination d’enseignant assistant', 'billing_reminder': 'Rappel d’abonnement', 'billing_reviewed': 'Résultat de la vérification du paiement', 'capacity_warning': 'Capacité de la formule', 'billing_downgraded': 'Passage à la formule gratuite'},
+      events: {'announcement': 'Nouvelle annonce', 'calendar_entry': 'Nouvel événement au calendrier', 'center_closed': 'Congé ou fermeture', 'event_reminder': 'Rappels d’événements', 'waitlist_promoted': 'Inscription depuis la liste d’attente', 'serd_assigned': 'Un serd qui m’est assigné', 'serd_approved': 'Serd validé', 'serd_rejected': 'Serd non validé', 'market_fulfilled': 'Commande de la boutique remise', 'market_cancelled': 'Commande de la boutique annulée', 'badge_awarded': 'Badges', 'weekly_digest': 'Résumé hebdomadaire', 'attendance_reminder': 'Rappel d’appel', 'teacher_checkin_reminder': 'Rappel de pointage de l’enseignant', 'student_idle_teacher': 'Alerte enseignant : élève en retard de récitation', 'student_idle': 'Rappel à l’élève en retard de récitation', 'student_absences': 'Alerte administrateur : absences répétées', 'deletion_request': 'Demandes de suppression de données', 'deletion_reviewed': 'Résultat de ma demande de suppression', 'gathering_submitted': 'Nouveau rassemblement soumis', 'external_submitted': 'Nouvelle récitation externe', 'external_reviewed': 'Résultat de la récitation externe', 'assistant_assigned': 'Nomination d’enseignant assistant', 'billing_reminder': 'Rappel d’abonnement', 'billing_reviewed': 'Résultat de la vérification du paiement', 'capacity_warning': 'Capacité de la formule', 'billing_downgraded': 'Passage à la formule gratuite', 'fee_payment': 'Reçu de paiement des frais', 'fee_overdue': 'Rappel de frais dus'},
       types: 'Types de notifications',
       instantTitle: 'Recevoir les notifications instantanément',
       instantBody: 'Le téléphone économise la batterie en retardant les notifications de cette application. Laissez-la fonctionner sans restriction pour que les messages arrivent dès leur envoi.',
@@ -7006,6 +7284,7 @@ class S {
       defaultReciter: 'Récitateur par défaut',
       firstInList: 'Le premier de la liste',
       market: 'Activer la boutique de points',
+      fees: 'Activer les frais des élèves (pour les centres payants)',
       leaderboard: 'Activer le classement',
       teacherStudents: 'Permettre aux enseignants de gérer les élèves de leur cercle',
       saveSettings: 'Enregistrer les réglages',

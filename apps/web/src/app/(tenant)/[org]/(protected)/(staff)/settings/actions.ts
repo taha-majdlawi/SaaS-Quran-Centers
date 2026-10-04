@@ -94,7 +94,7 @@ const TEXT_SETTINGS = [
   'default_language',
 ] as const;
 
-const FLAG_SETTINGS = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students'] as const;
+const FLAG_SETTINGS = ['flag_market_enabled', 'flag_leaderboard_enabled', 'flag_teacher_manage_students', 'flag_fees_enabled'] as const;
 
 /** Per-center switches and values that eqraa hard-codes. */
 export async function saveCenterSettings(formData: FormData) {

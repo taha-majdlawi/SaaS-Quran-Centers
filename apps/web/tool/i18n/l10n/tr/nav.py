@@ -27,4 +27,5 @@ T = {'items': {'dashboard': 'Kontrol paneli',
            'audit': 'İşlem kaydı',
            'site': 'Herkese açık sayfa',
            'settings': 'Merkez ayarları',
-           'billing': 'Abonelik ve ödeme'}}
+           'billing': 'Abonelik ve ödeme',
+           'fees': 'Ücretler'}}

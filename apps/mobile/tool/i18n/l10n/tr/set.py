@@ -61,4 +61,5 @@ T = {'loadSome': 'Bazı ayarlar yüklenemedi',
  'attTitle2': 'Öğretmene yoklama alma hatırlatması',
  'attSub': 'Açma/kapama ve saat',
  'language': 'Merkezin varsayılan dili',
- 'languageHint': 'Ekranlar, dil seçmemiş herkes için bu dilde görünür. Herkes menüden kendi dilini yine değiştirebilir.'}
+ 'languageHint': 'Ekranlar, dil seçmemiş herkes için bu dilde görünür. Herkes menüden kendi dilini yine değiştirebilir.',
+ 'fees': 'Öğrenci ücretlerini aç (ücretli merkezler için)'}

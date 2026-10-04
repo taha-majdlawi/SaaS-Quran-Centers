@@ -57,4 +57,5 @@ T = {'backupHint': 'Öğrenciler, halkalar, dinletmeler, yoklama, serd, takvim, 
  'language': 'Merkezin varsayılan dili',
  'languageHint': 'Sayfalar, dil seçmemiş herkes için bu dilde görünür. Herkes dil düğmesiyle kendi dilini yine değiştirebilir.',
  'logoHttps': 'Logo bağlantısı https ile başlamalıdır',
- 'backdateRange': 'Geriye tarih sınırı 0 ile 365 gün arasında olmalıdır'}
+ 'backdateRange': 'Geriye tarih sınırı 0 ile 365 gün arasında olmalıdır',
+ 'fees': 'Öğrenci ücretlerini aç (ücretli merkezler için)'}

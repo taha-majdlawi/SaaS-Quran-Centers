@@ -186,6 +186,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         for (final e in _flags.entries) e.key: e.value ? 'true' : 'false',
       });
     });
+    // the fees switch shows / hides the fees screen in the menu
+    if (mounted) await context.read<TenantController>().refreshSilently();
   }
 
   Widget _field(String label, TextEditingController c, bool enabled, {TextInputType? type, bool ltr = false}) {
@@ -344,6 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ('flag_market_enabled', tr(context).set.market),
                     ('flag_leaderboard_enabled', tr(context).set.leaderboard),
                     ('flag_teacher_manage_students', tr(context).set.teacherStudents),
+                    ('flag_fees_enabled', tr(context).set.fees),
                   ])
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,

@@ -22,7 +22,7 @@ export default async function StaffLayout({
 
   return (
     <div className="flex">
-      <TenantSidebar role={org.myRole} permissions={org.myPermissions} />
+      <TenantSidebar role={org.myRole} permissions={org.myPermissions} feesEnabled={org.feesEnabled} />
       <div className="flex-1 p-6">{children}</div>
     </div>
   );

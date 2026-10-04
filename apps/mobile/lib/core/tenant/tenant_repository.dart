@@ -18,6 +18,12 @@ class TenantRepository {
     return {for (final k in (rows as List? ?? const [])) k as String};
   }
 
+  /// Whether student fees are on for this center (0081 - off by default).
+  Future<bool> fetchFeesEnabled(String orgId) async {
+    final row = await SyncService.instance.raw('fees-on:$orgId', () => _client.rpc('get_fee_settings', params: {'p_org': orgId}));
+    return row is Map && row['enabled'] == true;
+  }
+
   Future<List<OrganizationMembership>> fetchMyMemberships() async {
     // kept on the phone so the app opens (and knows its center) without a connection
     final rows = await SyncService.instance.raw(

@@ -12,12 +12,15 @@ import '../../core/i18n/i18n.dart';
 
 /// One entry of the staff menu (the drawer and the More hub).
 class NavItem {
-  const NavItem(this.icon, this.path, {this.module, this.adminOnly = false});
+  const NavItem(this.icon, this.path, {this.module, this.adminOnly = false, this.needsFees = false});
 
   final IconData icon;
   final String path;
   final String? module;
   final bool adminOnly;
+
+  /// Shown only where student fees are switched on (an optional feature).
+  final bool needsFees;
 }
 
 /// A titled group of [NavItem]s; [title] is a key into tr(context).nav.sections.
@@ -67,6 +70,7 @@ const kNavSections = [
     NavItem(Icons.workspace_premium_rounded, '/certificates', module: 'certificates'),
   ]),
   NavSection('admin', [
+    NavItem(Icons.payments_rounded, '/fees', adminOnly: true, needsFees: true),
     NavItem(Icons.admin_panel_settings_rounded, '/members', adminOnly: true),
     NavItem(Icons.privacy_tip_rounded, '/deletion-requests', adminOnly: true),
     NavItem(Icons.history_rounded, '/audit', adminOnly: true),
@@ -221,6 +225,7 @@ class AppDrawer extends StatelessWidget {
 
 /// Whether the signed-in member may open [item] (same rules as the web sidebar).
 bool navItemVisible(NavItem item, TenantController tenant) {
+  if (item.needsFees && !tenant.feesEnabled) return false;
   if (item.adminOnly) return tenant.active?.role == OrgRole.admin;
   if (item.module != null) return tenant.hasModule(item.module!);
   return true;

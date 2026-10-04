@@ -61,4 +61,5 @@ T = {'loadSome': 'Certains réglages n’ont pas pu être chargés',
  'attTitle2': 'Rappel à l’enseignant de faire l’appel',
  'attSub': 'Activation et heure',
  'language': 'Langue par défaut du centre',
- 'languageHint': 'Les écrans s’affichent dans cette langue pour qui n’en a pas choisi. Chacun peut toujours changer pour soi depuis le menu.'}
+ 'languageHint': 'Les écrans s’affichent dans cette langue pour qui n’en a pas choisi. Chacun peut toujours changer pour soi depuis le menu.',
+ 'fees': 'Activer les frais des élèves (pour les centres payants)'}
