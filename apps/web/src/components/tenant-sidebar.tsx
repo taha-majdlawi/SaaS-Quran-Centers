@@ -1,5 +1,6 @@
 import type { ModuleKey } from '@/lib/permissions/modules';
 import { getI18n } from '@/lib/i18n/server';
+import { StaffNav, type NavSectionView } from '@/components/staff-nav';
 
 // Single source of truth for the tenant admin nav - the legacy admin/ had
 // this list implicitly, duplicated as 20+ separate <nav> blocks copy-pasted
@@ -43,13 +44,22 @@ export const TENANT_MODULES = [
   { slug: 'billing', label: 'الاشتراك والدفع', adminOnly: true },
 ] as const;
 
+/** Which menu section each page sits in (same groups as the mobile app's drawer). */
+const SECTION_OF: Record<string, 'teaching' | 'motivation' | 'comms' | 'admin' | null> = {
+  dashboard: null, quran: null, search: null,
+  students: 'teaching', teachers: 'teaching', circles: 'teaching', stages: 'teaching', attendance: 'teaching',
+  gatherings: 'teaching', 'external-recitations': 'teaching', reviews: 'teaching', serd: 'teaching',
+  points: 'motivation', badges: 'motivation', market: 'motivation', 'circle-challenges': 'motivation',
+  activities: 'comms', calendar: 'comms', announcements: 'comms', chat: 'comms', notifications: 'comms', reports: 'comms', certificates: 'comms',
+  fees: 'admin', members: 'admin', 'deletion-requests': 'admin', audit: 'admin', site: 'admin', settings: 'admin', billing: 'admin',
+};
+const SECTION_ORDER = [null, 'teaching', 'motivation', 'comms', 'admin'] as const;
+
 export async function TenantSidebar({
-  activeSlug,
   role,
   permissions,
   feesEnabled = false,
 }: {
-  activeSlug?: string;
   role: 'admin' | 'teacher' | 'guardian' | 'student' | null;
   permissions: ModuleKey[];
   feesEnabled?: boolean;
@@ -62,25 +72,10 @@ export async function TenantSidebar({
     if (!('module' in m)) return true; // dashboard
     return permissions.includes(m.module as ModuleKey);
   });
+  const sections: NavSectionView[] = SECTION_ORDER.map((sec) => ({
+    title: sec ? (S.nav.sections[sec] ?? sec) : null,
+    items: visible.filter((m) => (SECTION_OF[m.slug] ?? null) === sec).map((m) => ({ slug: m.slug, label: S.nav.items[m.slug] ?? m.label })),
+  })).filter((s) => s.items.length);
 
-  return (
-    <aside className="w-64 shrink-0 border-e bg-white p-4 print:hidden">
-      <nav className="flex flex-col gap-1 text-sm">
-        {visible.map((m) => (
-          <a
-            key={m.slug}
-            // Relative to the root domain, not `/[org]` - the browser is
-            // already on `{slug}.bustan-alquran.com`, and middleware.ts
-            // re-derives `org` from that hostname on every request.
-            href={`/${m.slug === 'dashboard' ? '' : m.slug}`}
-            className={`rounded px-3 py-2 hover:bg-gray-100 ${
-              activeSlug === m.slug ? 'bg-brand/10 font-semibold text-brand' : 'text-gray-700'
-            }`}
-          >
-            {S.nav.items[m.slug] ?? m.label}
-          </a>
-        ))}
-      </nav>
-    </aside>
-  );
+  return <StaffNav sections={sections} menuLabel={S.nav.menu} />;
 }

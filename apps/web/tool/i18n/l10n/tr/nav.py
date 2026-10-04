@@ -28,4 +28,6 @@ T = {'items': {'dashboard': 'Kontrol paneli',
            'site': 'Herkese açık sayfa',
            'settings': 'Merkez ayarları',
            'billing': 'Abonelik ve ödeme',
-           'fees': 'Ücretler'}}
+           'fees': 'Ücretler'},
+ 'sections': {'teaching': 'Öğretim', 'motivation': 'Motivasyon', 'comms': 'İletişim', 'admin': 'Merkez yönetimi'},
+ 'menu': 'Menü'}

@@ -31,13 +31,17 @@ export default async function TenantProtectedLayout({
 
   // A viewing (read-only) account is told so on every page; the database refuses its writes regardless.
   const supabase = await createClient();
-  const { data: access } = await supabase.rpc('my_access', { p_org: org.id });
+  // independent lookups - run them side by side
+  const [{ data: access }, { data: noticeData }, { t }, translated] = await Promise.all([
+    supabase.rpc('my_access', { p_org: org.id }),
+    supabase.rpc('active_platform_notices'),
+    getI18n(),
+    isTranslatedScreen(),
+  ]);
   const acc = access as { is_read_only?: boolean; reason?: 'account' | 'billing' | null; billing?: BillingState; usage?: Usage | null } | null;
   const viewer = acc?.is_read_only === true && acc.reason !== 'billing';
   // Subscription state (0066/0067): locked for everyone; expiring / grace / capacity for staff.
   const isStaff = org.myRole === 'admin' || org.myRole === 'teacher';
-  const { t } = await getI18n();
-  const translated = await isTranslatedScreen();
   let billing = billingBanner(acc?.billing, isStaff, t.staff.billing, t.labels.dateLocale);
   // the portal only ever sees the lock itself - say it in the viewer's language
   if (billing && !isStaff) {
@@ -46,7 +50,6 @@ export default async function TenantProtectedLayout({
   }
   const capacity = isStaff ? usageBanner(acc?.usage, t.staff.billing) : null;
   const billingLocked = isStaff && acc?.is_read_only === true && acc.reason === 'billing';
-  const { data: noticeData } = await supabase.rpc('active_platform_notices');
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
   return (
@@ -106,14 +109,14 @@ export default async function TenantProtectedLayout({
             {t.shell.viewer}
           </div>
         )}
-        <header className="flex items-center justify-between border-b bg-white px-6 py-4 print:hidden">
-          <span className="flex items-center gap-2 font-bold text-brand">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b bg-white/90 px-4 py-3 backdrop-blur sm:px-6 print:hidden">
+          <a href="/" className="flex min-w-0 items-center gap-2 font-bold text-brand">
             <OrgLogo name={org.name} logoUrl={org.logoUrl} size={32} />
-            {org.name}
-          </span>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+            <span className="truncate">{org.name}</span>
+          </a>
+          <div className="flex shrink-0 items-center gap-3 text-sm text-gray-500 sm:gap-4">
             {translated && <LanguageSwitcher />}
-            <span>{t.shell.roles[org.myRole] ?? org.myRole}</span>
+            <span className="hidden rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 sm:inline">{t.shell.roles[org.myRole] ?? org.myRole}</span>
             <form action={signOut} data-allow-locked>
               <SubmitButton className="hover:text-red-600" pendingText={t.shell.signingOut}>
                 {t.shell.signOut}

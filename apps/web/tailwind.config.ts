@@ -14,6 +14,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        // Tajawal (SIL OFL), the app's UI font too - lib/ui-font.ts
+        sans: ['var(--font-ui)', 'system-ui', 'Segoe UI', 'Tahoma', 'Arial', 'sans-serif'],
         // Amiri Quran (SIL OFL), loaded by components/quran-font.tsx
         quran: ['var(--font-quran)', 'serif'],
       },
@@ -26,6 +28,12 @@ export default {
         // See design/brand/README.md.
         brand: withAlpha('var(--brand-primary, #1E7A54)'),
         'brand-accent': withAlpha('var(--brand-secondary, #D4A24C)'),
+        // the app's warm page background and ink (apps/mobile app_theme.dart)
+        page: '#F6F4EE',
+        ink: '#17241E',
+      },
+      boxShadow: {
+        soft: '0 1px 2px rgb(23 36 30 / 0.04), 0 4px 16px rgb(23 36 30 / 0.05)',
       },
     },
   },

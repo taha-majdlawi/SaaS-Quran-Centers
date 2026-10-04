@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'net_image.dart';
 
 /// The center's logo, or its first letter on the brand colour when there is no
 /// logo (or it fails to load). Used wherever the app says which center this is,
@@ -40,14 +41,7 @@ class OrgAvatar extends StatelessWidget {
         width: size,
         height: size,
         color: Colors.white,
-        child: Image.network(
-          url,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stack) => fallback(),
-          loadingBuilder: (context, child, progress) => progress == null ? child : fallback(),
-        ),
+        child: NetImage(url, width: size, height: size, placeholder: fallback(), error: fallback()),
       ),
     );
   }

@@ -803,6 +803,8 @@ export const staffAr = {
   /** The dashboard sidebar (by page slug). */
   nav: {
     items: { "dashboard": 'لوحة التحكم', "quran": 'المصحف', "students": 'الطلاب', "teachers": 'المعلمون', "circles": 'الحلقات', "stages": 'المراحل', "attendance": 'الحضور', "gatherings": 'المجالس والأنشطة', "external-recitations": 'التسميع الخارجي', "reviews": 'المراجعة المقترحة', "search": 'بحث شامل', "serd": 'السرد القرآني', "points": 'النقاط', "badges": 'الشارات', "market": 'سوق النقاط', "circle-challenges": 'منافسات الحلقات', "activities": 'الأنشطة', "calendar": 'التقويم', "announcements": 'الإعلانات', "chat": 'المحادثات', "notifications": 'الإشعارات', "reports": 'التقارير', "certificates": 'الشهادات', "fees": 'الرسوم', "members": 'الأعضاء والأدوار', "deletion-requests": 'طلبات حذف البيانات', "audit": 'سجل العمليات', "site": 'الموقع العام', "settings": 'إعدادات المركز', "billing": 'الاشتراك والدفع' } as Record<string, string>,
+    sections: { "teaching": 'التعليم', "motivation": 'التحفيز', "comms": 'التواصل', "admin": 'إدارة المركز' } as Record<string, string>,
+    menu: 'القائمة',
   },
   /** The notification center (admins). */
   notif: {
@@ -2262,6 +2264,8 @@ export const staffEn: typeof staffAr = {
   /** The dashboard sidebar (by page slug). */
   nav: {
     items: { "dashboard": 'Dashboard', "quran": 'Quran', "students": 'Students', "teachers": 'Teachers', "circles": 'Circles', "stages": 'Stages', "attendance": 'Attendance', "gatherings": 'Gatherings & activities', "external-recitations": 'External recitations', "reviews": 'Suggested review', "search": 'Search', "serd": 'Quran serd', "points": 'Points', "badges": 'Badges', "market": 'Points market', "circle-challenges": 'Circle challenges', "activities": 'Activities', "calendar": 'Calendar', "announcements": 'Announcements', "chat": 'Messages', "notifications": 'Notifications', "reports": 'Reports', "certificates": 'Certificates', "fees": 'Fees', "members": 'Members & roles', "deletion-requests": 'Data deletion requests', "audit": 'Activity log', "site": 'Public page', "settings": 'Center settings', "billing": 'Subscription & payment' } as Record<string, string>,
+    sections: { "teaching": 'Teaching', "motivation": 'Motivation', "comms": 'Communication', "admin": 'Center management' } as Record<string, string>,
+    menu: 'Menu',
   },
   /** The notification center (admins). */
   notif: {
@@ -3721,6 +3725,8 @@ export const staffTr: typeof staffAr = {
   /** The dashboard sidebar (by page slug). */
   nav: {
     items: { "dashboard": 'Kontrol paneli', "quran": 'Kur’an', "students": 'Öğrenciler', "teachers": 'Öğretmenler', "circles": 'Halkalar', "stages": 'Aşamalar', "attendance": 'Yoklama', "gatherings": 'Toplantılar ve etkinlikler', "external-recitations": 'Dış dinletmeler', "reviews": 'Önerilen tekrar', "search": 'Ara', "serd": 'Kur’an serdi', "points": 'Puanlar', "badges": 'Rozetler', "market": 'Puan marketi', "circle-challenges": 'Halka yarışmaları', "activities": 'Etkinlikler', "calendar": 'Takvim', "announcements": 'Duyurular', "chat": 'Mesajlar', "notifications": 'Bildirimler', "reports": 'Raporlar', "certificates": 'Sertifikalar', "members": 'Üyeler ve roller', "deletion-requests": 'Veri silme talepleri', "audit": 'İşlem kaydı', "site": 'Herkese açık sayfa', "settings": 'Merkez ayarları', "billing": 'Abonelik ve ödeme', "fees": 'Ücretler' } as Record<string, string>,
+    sections: { "teaching": 'Öğretim', "motivation": 'Motivasyon', "comms": 'İletişim', "admin": 'Merkez yönetimi' } as Record<string, string>,
+    menu: 'Menü',
   },
   /** The notification center (admins). */
   notif: {
@@ -5180,6 +5186,8 @@ export const staffFr: typeof staffAr = {
   /** The dashboard sidebar (by page slug). */
   nav: {
     items: { "dashboard": 'Tableau de bord', "quran": 'Coran', "students": 'Élèves', "teachers": 'Enseignants', "circles": 'Cercles', "stages": 'Niveaux', "attendance": 'Présences', "gatherings": 'Rassemblements et activités', "external-recitations": 'Récitations externes', "reviews": 'Révision suggérée', "search": 'Recherche', "serd": 'Serd du Coran', "points": 'Points', "badges": 'Badges', "market": 'Boutique de points', "circle-challenges": 'Défis entre cercles', "activities": 'Activités', "calendar": 'Calendrier', "announcements": 'Annonces', "chat": 'Messages', "notifications": 'Notifications', "reports": 'Rapports', "certificates": 'Certificats', "members": 'Membres et rôles', "deletion-requests": 'Demandes de suppression de données', "audit": 'Journal d’activité', "site": 'Page publique', "settings": 'Réglages du centre', "billing": 'Abonnement et paiement', "fees": 'Frais' } as Record<string, string>,
+    sections: { "teaching": 'Enseignement', "motivation": 'Motivation', "comms": 'Communication', "admin": 'Gestion du centre' } as Record<string, string>,
+    menu: 'Menu',
   },
   /** The notification center (admins). */
   notif: {
