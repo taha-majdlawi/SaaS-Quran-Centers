@@ -4,6 +4,42 @@ import { LanguageSwitcher } from '@/lib/i18n/client';
 import { LOCALES, fmt } from '@/lib/i18n/config';
 import { createClient } from '@/lib/supabase/server';
 import { QuranFont } from '@/components/quran-font';
+import {
+  Award,
+  BarChart3,
+  Bell,
+  BookOpen,
+  BookOpenCheck,
+  Check,
+  ClipboardCheck,
+  Globe,
+  GraduationCap,
+  Handshake,
+  HeartHandshake,
+  Landmark,
+  LayoutDashboard,
+  Leaf,
+  Lock,
+  type LucideIcon,
+  MapPin,
+  Smartphone,
+  Sprout,
+  Star,
+  TreeDeciduous,
+  Trees,
+  Users,
+} from 'lucide-react';
+
+// The page's icons - line icons in the brand colour (the texts name them by key).
+const ICONS: Record<string, LucideIcon> = {
+  book: BookOpen, attendance: ClipboardCheck, award: Award, family: Users, phone: Smartphone, chart: BarChart3, bell: Bell,
+  globe: Globe, admin: LayoutDashboard, teacher: GraduationCap, student: BookOpenCheck, guardian: HeartHandshake,
+  sprout: Sprout, leaf: Leaf, tree: TreeDeciduous, trees: Trees, lock: Lock, landmark: Landmark, handshake: Handshake, star: Star,
+};
+function Icon({ name, size = 22, className = '' }: { name: string; size?: number; className?: string }) {
+  const C = ICONS[name] ?? BookOpen;
+  return <C size={size} strokeWidth={1.75} className={className} aria-hidden />;
+}
 
 // The platform's own marketing page (a center's public page lives at
 // app/(tenant)/[org]/page.tsx). Written in the platform's garden voice:
@@ -44,7 +80,7 @@ export default async function MarketingHomePage() {
         <div className={`${container} flex items-center justify-between gap-3 py-3`}>
           <a href="/" className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.png" alt="" width={36} height={36} className="rounded-lg" />
+            <img src="/icons/icon-192.png" alt="" width={36} height={36} className="rounded-lg" />
             <span className="whitespace-nowrap text-lg font-bold text-brand">{t.common.brand}</span>
           </a>
           <nav className="hidden items-center gap-6 text-sm text-gray-600 md:flex">
@@ -85,7 +121,8 @@ export default async function MarketingHomePage() {
             </picture>
             {/* where the photo was taken - small, in the empty bottom corner */}
             <p className="absolute bottom-3 right-3 max-w-[85%] rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur-sm lg:bottom-5 lg:right-6 lg:text-xs">
-              📍 {m.heroImageCaption}
+              <MapPin size={12} className="-mt-0.5 me-1 inline" aria-hidden />
+              {m.heroImageCaption}
             </p>
           </div>
           {/* shade only behind the words (left on wide screens); the two people stay bright */}
@@ -141,7 +178,7 @@ export default async function MarketingHomePage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {m.features.map((f) => (
               <div key={f.title} className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-2xl">{f.icon}</div>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon name={f.icon} /></div>
                 <h3 className="mb-2 font-bold text-gray-900">{f.title}</h3>
                 <p className="text-sm leading-7 text-gray-600">{f.body}</p>
               </div>
@@ -156,7 +193,7 @@ export default async function MarketingHomePage() {
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {m.roles.map((r) => (
                 <div key={r.title} className="rounded-2xl bg-gradient-to-b from-brand/5 to-transparent p-6 text-center">
-                  <div className="mb-3 text-4xl">{r.icon}</div>
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand shadow-sm ring-1 ring-brand/10"><Icon name={r.icon} size={26} /></div>
                   <h3 className="mb-2 text-lg font-bold text-brand">{r.title}</h3>
                   <p className="text-sm leading-7 text-gray-600">{r.body}</p>
                 </div>
@@ -200,7 +237,7 @@ export default async function MarketingHomePage() {
                           {m.recommended}
                         </span>
                       )}
-                      <div className="mb-2 text-4xl">{stage.icon}</div>
+                      <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon name={stage.icon} /></div>
                       <h3 className="text-2xl font-extrabold text-gray-900">{locale === 'ar' ? p.name : stage.name}</h3>
                       <p className="mt-1 min-h-[3rem] text-sm text-gray-500">{stage.tagline}</p>
                       <div className="my-5">
@@ -221,9 +258,9 @@ export default async function MarketingHomePage() {
                         )}
                       </div>
                       <ul className="mb-6 flex flex-col gap-2 text-sm text-gray-700">
-                        <li>✓ {p.max_students != null ? fmt(m.students, { n: p.max_students }) : m.unlimitedStudents}</li>
-                        <li>✓ {p.max_teachers != null ? fmt(m.teachers, { n: p.max_teachers }) : m.unlimitedTeachers}</li>
-                        <li>✓ {m.allFeatures}</li>
+                        <li className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-brand" aria-hidden />{p.max_students != null ? fmt(m.students, { n: p.max_students }) : m.unlimitedStudents}</li>
+                        <li className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-brand" aria-hidden />{p.max_teachers != null ? fmt(m.teachers, { n: p.max_teachers }) : m.unlimitedTeachers}</li>
+                        <li className="flex items-start gap-2"><Check size={16} className="mt-0.5 shrink-0 text-brand" aria-hidden />{m.allFeatures}</li>
                       </ul>
                       <a
                         href="/signup"
@@ -245,7 +282,7 @@ export default async function MarketingHomePage() {
           <div className="grid gap-5 md:grid-cols-3">
             {m.trust.map((x) => (
               <div key={x.title} className="flex gap-4 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-                <div className="text-3xl">{x.icon}</div>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon name={x.icon} /></div>
                 <div>
                   <h3 className="mb-1 font-bold text-gray-900">{x.title}</h3>
                   <p className="text-sm leading-7 text-gray-600">{x.body}</p>
@@ -276,8 +313,6 @@ export default async function MarketingHomePage() {
         {/* final call */}
         <section className={`${container} py-20`}>
           <div className="relative overflow-hidden rounded-3xl bg-brand px-6 py-14 text-center text-white sm:px-12">
-            <div aria-hidden className="pointer-events-none absolute -bottom-10 -start-10 text-[10rem] opacity-10">🌳</div>
-            <div aria-hidden className="pointer-events-none absolute -end-6 -top-8 text-[8rem] opacity-10">🌱</div>
             <h2 className="relative mx-auto max-w-2xl text-3xl font-extrabold leading-snug sm:text-4xl">{m.finalTitle}</h2>
             <p className="relative mx-auto mt-4 max-w-2xl leading-8 text-white/85">{m.finalBody}</p>
             <a href="/signup" className="relative mt-8 inline-block rounded-full bg-white px-8 py-3.5 font-bold text-brand shadow-lg transition hover:-translate-y-0.5">
@@ -317,7 +352,8 @@ function DashboardPreview({ m }: { m: Awaited<ReturnType<typeof getI18n>>['t']['
       <div className="relative rounded-3xl border border-black/5 bg-white p-5 shadow-2xl shadow-brand/10">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-lg text-white">🌳</div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/icon-192.png" alt="" width={36} height={36} className="rounded-xl" />
             <span className="text-sm font-bold text-gray-900">{m.preview.center}</span>
           </div>
           <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-semibold text-brand">{m.preview.today}</span>
@@ -337,7 +373,7 @@ function DashboardPreview({ m }: { m: Awaited<ReturnType<typeof getI18n>>['t']['
                 <p className="text-sm font-semibold text-gray-900">{r.name}</p>
                 <p className="text-xs text-gray-500">{r.detail}</p>
               </div>
-              <span className="text-xl">{r.badge}</span>
+              <span className="text-brand-accent"><Icon name={r.badge} size={20} /></span>
             </li>
           ))}
         </ul>
