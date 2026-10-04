@@ -41,6 +41,7 @@
 		<string>لاختيار صورة لرسالة أو لشعار المركز · To pick a photo for a message or the center logo</string>
 		<key>UIBackgroundModes</key>
 		<array>
+			<string>audio</string>
 			<string>remote-notification</string>
 		</array>
 		<key>UIApplicationSceneManifest</key>

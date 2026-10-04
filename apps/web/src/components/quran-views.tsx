@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { QuranFont } from '@/components/quran-font';
 import { QuranReader } from '@/components/quran-reader';
 import { AYAH_COUNTS, SURAH_NAMES, SURAH_NAMES_LATIN, surahLabel } from '@/lib/quran/data';
-import { arabicNumber, centerReciters, fetchSurah } from '@/lib/quran/reader';
+import { arabicNumber } from '@/lib/quran/reader';
+import { AYAH_RECITERS, centerAyahReciters, normalizeArabic } from '@/lib/quran/mushaf';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 
@@ -27,8 +28,10 @@ export async function QuranIndexView({ orgId, base, q }: { orgId: string; base: 
   const Q = t.quran;
   const query = (q ?? '').trim();
   const lower = query.toLowerCase();
+  // hamza forms folded: "الاعراف" finds "الأعراف"
+  const folded = normalizeArabic(query);
   const surahs = SURAH_NAMES.map((name, i) => ({ n: i + 1, name, latin: SURAH_NAMES_LATIN[i] })).filter(
-    (s) => !query || s.name.includes(query) || s.latin.toLowerCase().includes(lower) || String(s.n) === query,
+    (s) => !query || normalizeArabic(s.name).includes(folded) || s.latin.toLowerCase().includes(lower) || String(s.n) === query,
   );
 
   return (
@@ -82,17 +85,15 @@ export async function QuranIndexView({ orgId, base, q }: { orgId: string; base: 
 
 export async function QuranReaderView({ orgId, base, surah, ayah }: { orgId: string; base: string; surah: number; ayah?: number }) {
   if (!Number.isInteger(surah) || surah < 1 || surah > 114) notFound();
-  const [ayahs, state] = await Promise.all([fetchSurah(surah), readingState(orgId)]);
-
-  const { t, locale } = await getI18n();
+  const [state, { t, locale }] = await Promise.all([readingState(orgId), getI18n()]);
   const Q = t.quran;
-  const reciters = centerReciters(state?.reciters ?? '', state?.default_reciter ?? '').map((r) => (locale === 'ar' ? r : { ...r, name: r.nameLatin }));
+  const reciters = centerAyahReciters(AYAH_RECITERS, state?.reciters ?? '', state?.default_reciter ?? '');
   const bookmarked = (state?.bookmarks ?? []).filter((b) => b.surah === surah).map((b) => b.ayah);
 
   return (
     <QuranFont>
-      <div className="max-w-3xl">
-        <div className="mb-3 flex items-center justify-between text-sm">
+      <div>
+        <div className="mx-auto mb-3 flex max-w-[720px] items-center justify-between text-sm">
           <a href={base as never} className="text-brand hover:underline">
             {Q.back}
           </a>
@@ -109,16 +110,18 @@ export async function QuranReaderView({ orgId, base, surah, ayah }: { orgId: str
             )}
           </div>
         </div>
-        <h1 className={`${locale === 'ar' ? 'mb-4' : 'mb-1'} text-center font-quran text-3xl`} lang="ar">
-          سورة {SURAH_NAMES[surah - 1]}
-        </h1>
-        {locale !== 'ar' && <p className="mb-4 text-center text-sm text-gray-500">{SURAH_NAMES_LATIN[surah - 1]}</p>}
+        {locale !== 'ar' && <p className="mb-2 text-center text-sm text-gray-500">{SURAH_NAMES_LATIN[surah - 1]}</p>}
 
-        {ayahs ? (
-          <QuranReader orgId={orgId} surah={surah} ayahs={ayahs} reciters={reciters} bookmarked={bookmarked} startAyah={ayah} labels={Q.ui} />
-        ) : (
-          <p className="rounded bg-red-50 px-3 py-4 text-center text-sm text-red-600">{Q.loadFailed}</p>
-        )}
+        <QuranReader
+          key={surah}
+          orgId={orgId}
+          surah={surah}
+          surahName={SURAH_NAMES[surah - 1]}
+          reciters={reciters}
+          bookmarked={bookmarked}
+          startAyah={ayah}
+          labels={Q.ui}
+        />
         <p className="mt-6 text-center text-xs text-gray-400">{Q.credit}</p>
       </div>
     </QuranFont>
