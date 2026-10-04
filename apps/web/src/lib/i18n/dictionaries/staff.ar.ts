@@ -424,6 +424,7 @@ export const staffAr = {
     deleteDenied: 'لا تملك صلاحية الحذف أو أن العنصر غير موجود',
     deleteLinked: 'لا يمكن الحذف لوجود بيانات مرتبطة به (طلاب أو تسميعات أو غيرها). انقلها أولًا أو غيّر الحالة بدل الحذف.',
     deleteFailed: 'تعذّر الحذف',
+    featureOff: 'هذه الميزة غير مفعّلة لهذا المركز حاليًا.',
   },
   /** Comparing a period with the one before it (reports, profiles). */
   compare: {

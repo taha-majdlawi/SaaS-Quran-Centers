@@ -426,6 +426,7 @@ export const staffTr: typeof staffAr = {
     deleteDenied: 'Bunu silemezsiniz ya da artık mevcut değil',
     deleteLinked: 'Başka veriler (öğrenciler, dinletmeler vb.) buna bağlı olduğu için silinemez. Önce onları taşıyın ya da silmek yerine durumu değiştirin.',
     deleteFailed: 'Silinemedi',
+    featureOff: 'Bu özellik şu anda bu merkez için etkin değil.',
   },
   /** Comparing a period with the one before it (reports, profiles). */
   compare: {

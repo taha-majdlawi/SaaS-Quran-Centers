@@ -79,6 +79,8 @@ export async function middleware(req: NextRequest) {
     headers.delete(LANG_OVERRIDE_HEADER);
     if (isI18nReady(scopeName)) headers.set(I18N_READY_HEADER, '1');
     if (forcedLang) headers.set(LANG_OVERRIDE_HEADER, forcedLang);
+    // the path as visited (before the rewrite to /[org]/...), for the staff layout's feature gate
+    headers.set('x-bustan-path', req.nextUrl.pathname);
     return headers;
   };
   const rewriteTo = (target: URL, scopeName: 'tenant' | 'platform', orgSlug?: string) =>

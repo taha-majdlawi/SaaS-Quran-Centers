@@ -426,6 +426,7 @@ export const staffFr: typeof staffAr = {
     deleteDenied: 'Vous ne pouvez pas supprimer ceci, ou cela n’existe plus',
     deleteLinked: 'Impossible de supprimer : d’autres données en dépendent (élèves, récitations ou autres). Déplacez-les d’abord, ou changez le statut au lieu de supprimer.',
     deleteFailed: 'Suppression impossible',
+    featureOff: 'Cette fonctionnalité n’est pas activée pour ce centre pour le moment.',
   },
   /** Comparing a period with the one before it (reports, profiles). */
   compare: {

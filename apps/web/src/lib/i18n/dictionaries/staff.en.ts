@@ -426,6 +426,7 @@ export const staffEn: typeof staffAr = {
     deleteDenied: 'You can’t delete this, or it no longer exists',
     deleteLinked: 'It can’t be deleted because other data depends on it (students, recitations or more). Move that first, or change the status instead of deleting.',
     deleteFailed: 'Could not delete',
+    featureOff: 'This feature is not enabled for this center right now.',
   },
   /** Comparing a period with the one before it (reports, profiles). */
   compare: {

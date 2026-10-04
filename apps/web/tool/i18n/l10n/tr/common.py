@@ -15,4 +15,5 @@ T = {'deleting': 'Siliniyor...',
  'cancel': 'İptal',
  'deleteDenied': 'Bunu silemezsiniz ya da artık mevcut değil',
  'deleteLinked': 'Başka veriler (öğrenciler, dinletmeler vb.) buna bağlı olduğu için silinemez. Önce onları taşıyın ya da silmek yerine durumu değiştirin.',
- 'deleteFailed': 'Silinemedi'}
+ 'deleteFailed': 'Silinemedi',
+ 'featureOff': 'Bu özellik şu anda bu merkez için etkin değil.'}
