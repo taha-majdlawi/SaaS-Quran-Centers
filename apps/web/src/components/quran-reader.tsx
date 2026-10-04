@@ -539,7 +539,7 @@ export function QuranReader({
 
         {sajdas.length > 0 && (
           <p className="mt-3 border-t border-[#E7DFC9] pt-2 text-center text-sm text-gray-600">
-            ۩ {fmt(L.sajda, { list: sajdas.map((a) => arabicNumber(a.number)).join('، ') })}
+            <span className="font-quran">۩</span> {fmt(L.sajda, { list: sajdas.map((a) => arabicNumber(a.number)).join('، ') })}
           </p>
         )}
       </article>

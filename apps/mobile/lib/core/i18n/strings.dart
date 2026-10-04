@@ -1051,7 +1051,7 @@ class SProf {
 
 /// The Quran screens (the text itself stays Arabic).
 class SQuran {
-  const SQuran({required this.title, required this.surahs, required this.search, required this.continueReading, required this.position, required this.ayahs, required this.noBookmarks, required this.noBookmarksHint, required this.playFailed, required this.ayahOf, required this.playFromHere, required this.unmark, required this.copyAyah, required this.copied, required this.smaller, required this.bigger, required this.loadFailed, required this.repeat, required this.noRepeat, required this.prevAyah, required this.nextAyah, required this.credit, required this.bookmarks, required this.mark, required this.repeatN});
+  const SQuran({required this.title, required this.surahs, required this.search, required this.continueReading, required this.position, required this.ayahs, required this.noBookmarks, required this.noBookmarksHint, required this.playFailed, required this.ayahOf, required this.playFromHere, required this.unmark, required this.copyAyah, required this.copied, required this.smaller, required this.bigger, required this.loadFailed, required this.repeat, required this.noRepeat, required this.prevAyah, required this.nextAyah, required this.credit, required this.bookmarks, required this.mark, required this.repeatN, required this.play, required this.pause, required this.sync, required this.syncNone, required this.syncAyah, required this.syncWord, required this.reciter, required this.noTimings, required this.noSurahAudio, required this.fontSize, required this.testMode, required this.testHint, required this.revealPage, required this.hidePage, required this.prevPage, required this.nextPage, required this.readingSettings});
   final String title;
   final String surahs;
   final String search;
@@ -1077,6 +1077,23 @@ class SQuran {
   final String bookmarks;
   final String mark;
   final String repeatN;
+  final String play;
+  final String pause;
+  final String sync;
+  final String syncNone;
+  final String syncAyah;
+  final String syncWord;
+  final String reciter;
+  final String noTimings;
+  final String noSurahAudio;
+  final String fontSize;
+  final String testMode;
+  final String testHint;
+  final String revealPage;
+  final String hidePage;
+  final String prevPage;
+  final String nextPage;
+  final String readingSettings;
 }
 
 /// Recording recitations (sheet, lesson mode).
@@ -2620,10 +2637,27 @@ class S {
       noRepeat: 'بلا تكرار',
       prevAyah: 'الآية السابقة',
       nextAyah: 'الآية التالية',
-      credit: 'نص المصحف: مشروع تنزيل (tanzil.net) · التلاوات: everyayah.com',
+      credit: 'النص: الرسم العثماني برواية حفص عن عاصم · التلاوات: everyayah.com و quran.com · النص الاحتياطي: tanzil.net',
       bookmarks: 'العلامات',
       mark: 'إضافة علامة',
       repeatN: 'تكرار الآية {n} مرات',
+      play: 'تشغيل',
+      pause: 'إيقاف',
+      sync: 'طريقة الاستماع',
+      syncNone: 'السورة كاملة (بدون متابعة)',
+      syncAyah: 'متابعة بالآية',
+      syncWord: 'متابعة بالكلمة',
+      reciter: 'القارئ',
+      noTimings: 'لا توجد توقيتات كلمات لهذا القارئ في هذه السورة بعد — المتابعة تتم بالآية.',
+      noSurahAudio: 'لا توجد تلاوة كاملة لهذه السورة — اختر المتابعة بالآية',
+      fontSize: 'حجم الخط',
+      testMode: 'اختبار ذاتي',
+      testHint: 'وضع الاختبار: الآيات مخفية — اضغط على آية لكشفها، أو شغّل التلاوة لتنكشف معها.',
+      revealPage: 'كشف الصفحة',
+      hidePage: 'إخفاء الصفحة',
+      prevPage: 'الصفحة السابقة',
+      nextPage: 'الصفحة التالية',
+      readingSettings: 'إعدادات القراءة',
     ),
     rec: SRec(
       pickGrade: 'اختر تقييم التلاوة',
@@ -4093,10 +4127,27 @@ class S {
       noRepeat: 'No repeat',
       prevAyah: 'Previous ayah',
       nextAyah: 'Next ayah',
-      credit: 'Quran text: Tanzil project (tanzil.net) · Recitations: everyayah.com',
+      credit: 'Text: Uthmani script, Hafs from Asim · Recitations: everyayah.com and quran.com · Fallback text: tanzil.net',
       bookmarks: 'Bookmarks',
       mark: 'Add bookmark',
       repeatN: 'Repeat the ayah {n} times',
+      play: 'Play',
+      pause: 'Pause',
+      sync: 'Listening',
+      syncNone: 'Whole surah (no following)',
+      syncAyah: 'Follow the ayah',
+      syncWord: 'Follow the word',
+      reciter: 'Reciter',
+      noTimings: 'No word timings for this reciter in this surah yet — following by ayah instead.',
+      noSurahAudio: 'No whole-surah recitation for this surah — choose "Follow the ayah"',
+      fontSize: 'Text size',
+      testMode: 'Self-test',
+      testHint: 'Self-test: the ayahs are hidden — tap an ayah to reveal it, or play the recitation to reveal along with it.',
+      revealPage: 'Reveal page',
+      hidePage: 'Hide page',
+      prevPage: 'Previous page',
+      nextPage: 'Next page',
+      readingSettings: 'Reading settings',
     ),
     rec: SRec(
       pickGrade: 'Choose the recitation grade',
@@ -5566,10 +5617,27 @@ class S {
       noRepeat: 'Tekrar yok',
       prevAyah: 'Önceki ayet',
       nextAyah: 'Sonraki ayet',
-      credit: 'Kur’an metni: Tanzil projesi (tanzil.net) · Tilavetler: everyayah.com',
+      credit: 'Metin: Osmanî hat, Hafs rivayeti · Tilavetler: everyayah.com ve quran.com · Yedek metin: tanzil.net',
       bookmarks: 'Yer imleri',
       mark: 'Yer imi ekle',
       repeatN: 'Ayeti {n} kez tekrarla',
+      play: 'Oynat',
+      pause: 'Duraklat',
+      sync: 'Dinleme',
+      syncNone: 'Tüm sure (takip yok)',
+      syncAyah: 'Ayeti takip et',
+      syncWord: 'Kelimeyi takip et',
+      reciter: 'Kâri',
+      noTimings: 'Bu kâri için bu surede henüz kelime zamanlaması yok — ayet ayet takip ediliyor.',
+      noSurahAudio: 'Bu sure için tam tilavet yok — "Ayeti takip et" seçin',
+      fontSize: 'Yazı boyutu',
+      testMode: 'Kendini sına',
+      testHint: 'Sınama modu: ayetler gizli — açmak için bir ayete dokunun ya da tilaveti başlatın, onunla birlikte açılsın.',
+      revealPage: 'Sayfayı aç',
+      hidePage: 'Sayfayı gizle',
+      prevPage: 'Önceki sayfa',
+      nextPage: 'Sonraki sayfa',
+      readingSettings: 'Okuma ayarları',
     ),
     rec: SRec(
       pickGrade: 'Dinletme notunu seçin',
@@ -7039,10 +7107,27 @@ class S {
       noRepeat: 'Pas de répétition',
       prevAyah: 'Verset précédent',
       nextAyah: 'Verset suivant',
-      credit: 'Texte du Coran : projet Tanzil (tanzil.net) · Récitations : everyayah.com',
+      credit: 'Texte : écriture othmanie, lecture de Hafs · Récitations : everyayah.com et quran.com · Texte de secours : tanzil.net',
       bookmarks: 'Marque-pages',
       mark: 'Ajouter un marque-page',
       repeatN: 'Répéter le verset {n} fois',
+      play: 'Lire',
+      pause: 'Pause',
+      sync: 'Écoute',
+      syncNone: 'Sourate entière (sans suivi)',
+      syncAyah: 'Suivre le verset',
+      syncWord: 'Suivre le mot',
+      reciter: 'Récitateur',
+      noTimings: 'Pas encore de minutage des mots pour ce récitateur dans cette sourate — suivi verset par verset.',
+      noSurahAudio: 'Pas de récitation complète pour cette sourate — choisissez « Suivre le verset »',
+      fontSize: 'Taille du texte',
+      testMode: 'Auto-test',
+      testHint: 'Auto-test : les versets sont masqués — touchez un verset pour le révéler, ou lancez la récitation pour les révéler avec elle.',
+      revealPage: 'Révéler la page',
+      hidePage: 'Masquer la page',
+      prevPage: 'Page précédente',
+      nextPage: 'Page suivante',
+      readingSettings: 'Paramètres de lecture',
     ),
     rec: SRec(
       pickGrade: 'Choisissez la mention de la récitation',

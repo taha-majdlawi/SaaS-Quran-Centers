@@ -11,7 +11,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
-import '../quran/quran_data.dart' show kReciters;
+import '../quran/quran_data.dart' show AyahReciter, QuranAudioData;
 import 'settings_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -36,6 +36,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _flags = {for (final k in kFlagSettingKeys) k: false};
   List<WeekdayRow> _weekdays = [];
   final Set<String> _reciterSet = {};
+  // the uploaded ayah reciters (the built-in list until it has loaded)
+  List<AyahReciter> _reciters = QuranAudioData.instance.current;
+
+  @override
+  void initState() {
+    super.initState();
+    QuranAudioData.instance.reciters().then((list) {
+      if (mounted) setState(() => _reciters = list);
+    });
+  }
 
   String? _loadedForOrgId;
   String? _saving; // 'org' | 'days' | 'center'
@@ -363,9 +373,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text(t.recitersHint, style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, runSpacing: 4, children: [
-                    for (final r in kReciters)
+                    for (final r in _reciters)
                       FilterChip(
-                        label: Text(r.name),
+                        label: Text(r.label),
                         selected: _reciterSet.contains(r.id),
                         onSelected: isAdmin
                             ? (v) => setState(() {
@@ -377,10 +387,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ]),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    initialValue: kReciters.any((r) => r.id == _textSettings['quran_default_reciter']!.text) ? _textSettings['quran_default_reciter']!.text : '',
+                    initialValue: _reciters.any((r) => r.id == _textSettings['quran_default_reciter']!.text) ? _textSettings['quran_default_reciter']!.text : '',
                     isExpanded: true,
                     decoration: InputDecoration(labelText: t.defaultReciter),
-                    items: [DropdownMenuItem(value: '', child: Text(t.firstInList)), for (final r in kReciters) DropdownMenuItem(value: r.id, child: Text(r.name))],
+                    items: [DropdownMenuItem(value: '', child: Text(t.firstInList)), for (final r in _reciters) DropdownMenuItem(value: r.id, child: Text(r.label))],
                     onChanged: isAdmin ? (v) => setState(() => _textSettings['quran_default_reciter']!.text = v ?? '') : null,
                   ),
                 ], saveLabel: t.saveSettings, section: 'center', onSave: () => _saveCenter(org.id), isAdmin: isAdmin),
