@@ -66,27 +66,54 @@ export default async function MarketingHomePage() {
       </header>
 
       <main>
-        {/* hero */}
-        <section className="relative">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_80%_0%,rgba(30,122,84,0.14),transparent),radial-gradient(40%_50%_at_0%_30%,rgba(212,162,76,0.16),transparent)]" />
-          <div className={`${container} relative grid items-center gap-12 py-16 md:grid-cols-2 md:py-24`}>
-            <div className="flex flex-col items-start gap-6">
-              <span className="rounded-full border border-brand/20 bg-white/70 px-3 py-1 text-xs font-semibold text-brand">{m.badge}</span>
-              <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight">
+        {/* hero: a teacher hearing his student, the photo filling the screen */}
+        {/* phones: the photo, then the words on the page colour; wide screens: the words over the photo */}
+        <section className="relative isolate overflow-hidden bg-[#FBFAF6] lg:bg-[#5a1414]">
+          <picture>
+            <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.webp" type="image/webp" />
+            <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.jpg" />
+            <source srcSet="/marketing/hero-phone.webp" type="image/webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/marketing/hero-phone.jpg"
+              alt={m.heroImageAlt}
+              fetchPriority="high"
+              decoding="async"
+              className="block h-[68svh] w-full object-cover object-[50%_40%] lg:absolute lg:inset-0 lg:-z-10 lg:h-full lg:object-[75%_50%]"
+            />
+          </picture>
+          {/* shade only behind the words (left on wide screens); the two people stay bright */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 hidden bg-[linear-gradient(to_right,rgba(20,8,8,0.72)_0%,rgba(20,8,8,0.5)_24%,rgba(20,8,8,0.12)_40%,transparent_48%)] lg:block" />
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-24 bg-gradient-to-t from-black/25 to-transparent lg:block" />
+
+          <div className={`${container} relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:items-center`}>
+            {/* the words keep to the left third so the middle stays clear for the photo */}
+            <div className="flex flex-col items-start gap-5 py-10 lg:mr-auto lg:max-w-[min(30rem,34vw)] lg:py-20 lg:text-white">
+              <span className="rounded-full border border-brand/20 bg-white/80 px-3 py-1 text-xs font-semibold text-brand lg:border-white/30 lg:bg-white/15 lg:text-white lg:backdrop-blur">{m.badge}</span>
+              <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-white lg:drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                 {m.heroTitle}
               </h1>
-              <p className="text-lg leading-8 text-gray-600">{m.heroBody}</p>
+              <p className="text-lg leading-8 text-gray-600 lg:text-white/90 lg:drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">{m.heroBody}</p>
               <div className="flex flex-wrap gap-3">
                 <a href="/signup" className="rounded-full bg-brand px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-brand/20 transition hover:-translate-y-0.5 hover:opacity-95">
                   {m.ctaPrimary}
                 </a>
-                <a href="/login" className="rounded-full border border-gray-300 bg-white px-7 py-3.5 text-base font-semibold text-gray-700 transition hover:border-brand hover:text-brand">
+                <a href="/login" className="rounded-full border border-gray-300 bg-white px-7 py-3.5 text-base font-semibold text-gray-700 transition hover:border-brand hover:text-brand lg:border-white/60 lg:bg-white/10 lg:text-white lg:backdrop-blur lg:hover:bg-white/20 lg:hover:text-white">
                   {m.ctaSecondary}
                 </a>
               </div>
-              <p className="text-sm text-gray-500">{m.heroNote}</p>
+              <p className="text-sm text-gray-500 lg:text-white/75">{m.heroNote}</p>
             </div>
-            <DashboardPreview m={m} />
+          </div>
+        </section>
+
+        {/* the product, right under the photo */}
+        <section className="relative">
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_80%_0%,rgba(30,122,84,0.10),transparent),radial-gradient(40%_50%_at_0%_30%,rgba(212,162,76,0.12),transparent)]" />
+          <div className={`${container} relative py-14 md:py-20`}>
+            <div className="mx-auto max-w-3xl">
+              <DashboardPreview m={m} />
+            </div>
           </div>
         </section>
 

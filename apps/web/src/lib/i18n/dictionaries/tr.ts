@@ -42,6 +42,7 @@ export const tr: Dictionary = {
     ctaPrimary: '🌱 Tohumunuzu ücretsiz ekin',
     ctaSecondary: 'Merkezinize gidin',
     heroNote: 'Bir dakikada başlayın · Kart gerekmez · Verileriniz yalnızca merkezinize aittir',
+    heroImageAlt: 'Camide öğrencisinin okuyuşunu dinleyen bir hoca',
     verse: '﴿أَلَمْ تَرَ كَيْفَ ضَرَبَ اللَّهُ مَثَلًا كَلِمَةً طَيِّبَةً كَشَجَرَةٍ طَيِّبَةٍ أَصْلُهَا ثَابِتٌ وَفَرْعُهَا فِي السَّمَاءِ﴾',
     verseRef: '“Güzel bir söz, kökü sağlam, dalları göğe uzanan güzel bir ağaç gibidir.” — İbrâhîm 14:24',
     preview: {
