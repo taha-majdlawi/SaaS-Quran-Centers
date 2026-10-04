@@ -69,26 +69,32 @@ export default async function MarketingHomePage() {
         {/* hero: a teacher hearing his student, the photo filling the screen */}
         {/* phones: the photo, then the words on the page colour; wide screens: the words over the photo */}
         <section className="relative isolate overflow-hidden bg-[#FBFAF6] lg:bg-[#5a1414]">
-          <picture>
-            <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.webp" type="image/webp" />
-            <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.jpg" />
-            <source srcSet="/marketing/hero-phone.webp" type="image/webp" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/marketing/hero-phone.jpg"
-              alt={m.heroImageAlt}
-              fetchPriority="high"
-              decoding="async"
-              className="block h-[68svh] w-full object-cover object-[50%_40%] lg:absolute lg:inset-0 lg:-z-10 lg:h-full lg:object-[75%_50%]"
-            />
-          </picture>
+          <div className="relative lg:absolute lg:inset-0 lg:-z-10">
+            <picture>
+              <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.webp" type="image/webp" />
+              <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.jpg" />
+              <source srcSet="/marketing/hero-phone.webp" type="image/webp" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/marketing/hero-phone.jpg"
+                alt={m.heroImageAlt}
+                fetchPriority="high"
+                decoding="async"
+                className="block h-[68svh] w-full object-cover object-[50%_40%] lg:h-full lg:object-[60%_40%]"
+              />
+            </picture>
+            {/* where the photo was taken - small, in the empty bottom corner */}
+            <p className="absolute bottom-3 right-3 max-w-[85%] rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur-sm lg:bottom-5 lg:right-6 lg:text-xs">
+              📍 {m.heroImageCaption}
+            </p>
+          </div>
           {/* shade only behind the words (left on wide screens); the two people stay bright */}
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 hidden bg-[linear-gradient(to_right,rgba(20,8,8,0.72)_0%,rgba(20,8,8,0.5)_24%,rgba(20,8,8,0.12)_40%,transparent_48%)] lg:block" />
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-24 bg-gradient-to-t from-black/25 to-transparent lg:block" />
 
           <div className={`${container} relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:items-center`}>
             {/* the words keep to the left third so the middle stays clear for the photo */}
-            <div className="flex flex-col items-start gap-5 py-10 lg:mr-auto lg:max-w-[min(30rem,34vw)] lg:py-20 lg:text-white">
+            <div className="flex flex-col items-start gap-5 py-10 lg:mr-auto lg:max-w-[min(28rem,30vw)] lg:py-20 lg:text-white">
               <span className="rounded-full border border-brand/20 bg-white/80 px-3 py-1 text-xs font-semibold text-brand lg:border-white/30 lg:bg-white/15 lg:text-white lg:backdrop-blur">{m.badge}</span>
               <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-white lg:drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                 {m.heroTitle}

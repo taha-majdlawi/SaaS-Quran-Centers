@@ -43,6 +43,7 @@ export const fr: Dictionary = {
     ctaSecondary: 'Accéder à votre centre',
     heroNote: 'Démarrez en une minute · Sans carte bancaire · Vos données n’appartiennent qu’à votre centre',
     heroImageAlt: 'Un enseignant écoute son élève réciter à la mosquée',
+    heroImageCaption: 'Photo prise au centre Iqra, à Gaza',
     verse: '﴿أَلَمْ تَرَ كَيْفَ ضَرَبَ اللَّهُ مَثَلًا كَلِمَةً طَيِّبَةً كَشَجَرَةٍ طَيِّبَةٍ أَصْلُهَا ثَابِتٌ وَفَرْعُهَا فِي السَّمَاءِ﴾',
     verseRef: '« Une bonne parole est comme un bel arbre dont la racine est ferme et la ramure s’élance dans le ciel. » — Ibrahim 14:24',
     preview: {
