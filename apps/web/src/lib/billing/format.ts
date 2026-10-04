@@ -1,5 +1,5 @@
 import { ar } from '@/lib/i18n/dictionaries/ar';
-import { staffAr } from '@/lib/i18n/dictionaries/staff';
+import { staffAr } from '@/lib/i18n/dictionaries/staff.ar';
 import { fmt } from '@/lib/i18n/config';
 
 // Billing phase 1 (manual payments, migration 0066) - shapes + labels shared by

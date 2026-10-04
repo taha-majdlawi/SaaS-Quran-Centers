@@ -2,7 +2,7 @@
 // other language must provide exactly these keys (the build fails otherwise).
 // Placeholders like {name} are filled with fmt() from ../config.
 
-import { staffAr } from './staff';
+import { staffAr } from './staff.ar';
 
 export const ar = {
   meta: {

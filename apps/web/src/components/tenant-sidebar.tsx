@@ -1,4 +1,4 @@
-import type { ModuleKey } from '@/lib/permissions/modules';
+import { ALL_MODULE_KEYS, type ModuleKey } from '@/lib/permissions/modules';
 import { getI18n } from '@/lib/i18n/server';
 import { StaffNav, type NavSectionView } from '@/components/staff-nav';
 
@@ -55,18 +55,33 @@ const SECTION_OF: Record<string, 'teaching' | 'motivation' | 'comms' | 'admin' |
 };
 const SECTION_ORDER = [null, 'teaching', 'motivation', 'comms', 'admin'] as const;
 
+/**
+ * The platform feature (0034) a page belongs to: its module, or - for pages
+ * every admin reaches (circles, notifications) - the feature of the same name.
+ */
+export function featureOf(slug: string): string | null {
+  const m = TENANT_MODULES.find((x) => x.slug === slug);
+  if (m && 'module' in m && m.module) return m.module;
+  return (ALL_MODULE_KEYS as string[]).includes(slug) ? slug : null;
+}
+
 export async function TenantSidebar({
   role,
   permissions,
   feesEnabled = false,
+  disabledModules = [],
 }: {
   role: 'admin' | 'teacher' | 'guardian' | 'student' | null;
   permissions: ModuleKey[];
   feesEnabled?: boolean;
+  /** Switched off for this center by the platform owner - hidden for everyone, admins included. */
+  disabledModules?: string[];
 }) {
   const S = (await getI18n()).t.staff;
   const visible = TENANT_MODULES.filter((m) => {
     if ('needsFees' in m && m.needsFees && !feesEnabled) return false; // optional feature (0081)
+    const feature = featureOf(m.slug);
+    if (feature && disabledModules.includes(feature)) return false;
     if (role === 'admin') return true;
     if ('adminOnly' in m && m.adminOnly) return false;
     if (!('module' in m)) return true; // dashboard

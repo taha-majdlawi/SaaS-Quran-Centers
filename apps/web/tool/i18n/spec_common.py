@@ -17,4 +17,5 @@ SPEC = {'common': ('Words shared by the dashboards.', (
   ('deleteDenied', 'لا تملك صلاحية الحذف أو أن العنصر غير موجود', 'You can’t delete this, or it no longer exists'),
   ('deleteLinked', 'لا يمكن الحذف لوجود بيانات مرتبطة به (طلاب أو تسميعات أو غيرها). انقلها أولًا أو غيّر الحالة بدل الحذف.', 'It can’t be deleted because other data depends on it (students, recitations or more). Move that first, or change the status instead of deleting.'),
   ('deleteFailed', 'تعذّر الحذف', 'Could not delete'),
+  ('featureOff', 'هذه الميزة غير مفعّلة لهذا المركز حاليًا.', 'This feature is not enabled for this center right now.'),
 ))}

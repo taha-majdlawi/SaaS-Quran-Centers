@@ -44,7 +44,7 @@ const kNavSections = [
     NavItem(Icons.priority_high_rounded, '/attention'),
     NavItem(Icons.event_repeat_rounded, '/review-plan'),
     NavItem(Icons.people_alt_rounded, '/students', module: 'students'),
-    NavItem(Icons.groups_rounded, '/circles', adminOnly: true),
+    NavItem(Icons.groups_rounded, '/circles', module: 'circles', adminOnly: true),
     NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),
     NavItem(Icons.groups_2_rounded, '/gatherings', module: 'attendance'),
     NavItem(Icons.record_voice_over_rounded, '/external-recitations', module: 'students'),
@@ -226,6 +226,8 @@ class AppDrawer extends StatelessWidget {
 /// Whether the signed-in member may open [item] (same rules as the web sidebar).
 bool navItemVisible(NavItem item, TenantController tenant) {
   if (item.needsFees && !tenant.feesEnabled) return false;
+  // switched off by the platform owner: hidden for everyone, admins included
+  if (item.module != null && tenant.isDisabled(item.module!)) return false;
   if (item.adminOnly) return tenant.active?.role == OrgRole.admin;
   if (item.module != null) return tenant.hasModule(item.module!);
   return true;

@@ -3,11 +3,18 @@ import { cookies, headers } from 'next/headers';
 import { DEFAULT_LOCALE, I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE, ORG_SLUG_HEADER, dirOf, fromAcceptLanguage, isLocale, type Locale } from './config';
 import { getPublicSite } from '@/lib/tenant/public-site';
 import { ar, type Dictionary } from './dictionaries/ar';
-import { en } from './dictionaries/en';
-import { tr } from './dictionaries/tr';
-import { fr } from './dictionaries/fr';
 
-const DICTIONARIES: Record<Locale, Dictionary> = { ar, en, tr, fr };
+// Arabic is always there (the default, and the format helpers' fallback); the
+// other languages are loaded the first time a request asks for them, so a fresh
+// server does not build all four dictionaries (~400 KB) before its first page -
+// that start-up work is what pushed requests over the hosting CPU limit.
+const LOADERS: Record<Exclude<Locale, 'ar'>, () => Promise<Dictionary>> = {
+  en: () => import('./dictionaries/en').then((m) => m.en),
+  tr: () => import('./dictionaries/tr').then((m) => m.tr),
+  fr: () => import('./dictionaries/fr').then((m) => m.fr),
+};
+const loaded: Partial<Record<Locale, Promise<Dictionary>>> = { ar: Promise.resolve(ar) };
+const dictionary = (locale: Locale) => (loaded[locale] ??= LOADERS[locale as Exclude<Locale, 'ar'>]());
 
 /**
  * The language of THIS request: an explicit ?lang= (forwarded by middleware),
@@ -40,7 +47,7 @@ export async function isTranslatedScreen(): Promise<boolean> {
 /** Locale, direction and the dictionary for server components and server actions. */
 export async function getI18n(): Promise<{ locale: Locale; dir: 'rtl' | 'ltr'; t: Dictionary }> {
   const locale = await getLocale();
-  return { locale, dir: dirOf(locale), t: DICTIONARIES[locale] };
+  return { locale, dir: dirOf(locale), t: await dictionary(locale) };
 }
 
 /** The dashboards' strings (t.staff) - for server actions and helpers. */

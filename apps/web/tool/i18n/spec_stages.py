@@ -7,7 +7,7 @@ SPEC = {'stages': ('Stages.', (
   ('colName', 'الاسم', 'Name'),
   ('colCode', 'الكود', 'Code'),
   ('deleteConfirm', 'متأكد إنك بدك تحذف مرحلة "{name}"؟ لا يمكن التراجع.', 'Delete the stage "{name}"? This can’t be undone.'),
-  ('code', 'كود المرحلة (يستخدم برقم الطالب المقترح)', 'Stage code (used in the suggested student number)'),
+  ('code', 'رقم المرحلة برقم الطالب (خانة أو خانتين، مثل 2). إذا تركته فاضيًا يُستخدم ترتيب المرحلة', 'Stage number in the student number (1-2 digits, e.g. 2). Left empty, the stage order is used'),
   ('order', 'ترتيب المرحلة', 'Stage order'),
   ('saveChanges', 'حفظ التعديلات', 'Save changes'),
   ('editTitle', 'تعديل مرحلة', 'Edit stage'),

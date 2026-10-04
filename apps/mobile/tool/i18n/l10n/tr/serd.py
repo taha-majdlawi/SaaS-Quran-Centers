@@ -106,4 +106,6 @@ T = {'overdueSuffix': '  ·  gecikmiş',
  'partsWanted': 'İstenen cüzler',
  'assign': 'Bir öğretmene ata',
  'scheduleBtn': 'Serdi planla',
- 'outboxLabel': 'Serd {studentName} — {n} cüz'}
+ 'outboxLabel': 'Serd {studentName} — {n} cüz',
+ 'certDone': 'Sertifika verildi',
+ 'issueAnother': 'Bir sertifika daha ver'}

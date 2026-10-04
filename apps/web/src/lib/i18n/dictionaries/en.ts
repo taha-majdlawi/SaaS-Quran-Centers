@@ -1,5 +1,5 @@
 import type { Dictionary } from './ar';
-import { staffEn } from './staff';
+import { staffEn } from './staff.en';
 
 // English. Terms of art keep one fixed rendering everywhere (see docs/I18N.md
 // glossary): حلقة = circle, تسميع = recitation, سرد = serd (full review),

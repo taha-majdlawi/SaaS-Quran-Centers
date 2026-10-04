@@ -41,7 +41,7 @@ SPEC = {'org': ('Circles, stages, grades, attendance, activities and the public 
   ('addStage', 'إضافة مرحلة', 'Add stage'),
   ('stageName', 'اسم المرحلة', 'Stage name'),
   ('stageNamePh', 'تمهيدي', 'Preparatory'),
-  ('stageCode', 'كود المرحلة (يستخدم برقم الطالب المقترح)', 'Stage code (used in the suggested student number)'),
+  ('stageCode', 'رقم المرحلة برقم الطالب (خانة أو خانتين، مثل 2). إذا تركته فاضيًا يُستخدم ترتيب المرحلة', 'Stage number in the student number (1-2 digits, e.g. 2). Left empty, the stage order is used'),
   ('stageOrder', 'ترتيب المرحلة', 'Stage order'),
   ('addStageBtn', 'إضافة المرحلة', 'Add the stage'),
   ('noStages', 'لا يوجد مراحل بعد', 'No stages yet'),

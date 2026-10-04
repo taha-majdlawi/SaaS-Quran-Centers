@@ -1218,7 +1218,7 @@ class SRplan {
 
 /// Quran serd (staff): list, entry, schedule, settings, report.
 class SSerd {
-  const SSerd({required this.overdueSuffix, required this.inactiveSuffix, required this.passSuffix, required this.wholeJuz, required this.noCircle, required this.linkStudent, required this.approved, required this.rejectTitle, required this.rejectReason, required this.reject, required this.rejected, required this.deleteTitle, required this.deleteBody, required this.deleted, required this.approve, required this.reapprove, required this.certIssued, required this.issueCert, required this.schedule, required this.report, required this.settings, required this.record, required this.all, required this.pending, required this.scheduled, required this.approvedChip, required this.rejectedChip, required this.empty, required this.requestedN, required this.assigned, required this.openAny, required this.recordShort, required this.mine, required this.mineEmpty, required this.saved, required this.wholeAlways, required this.newErrorType, required this.editErrorType, required this.name, required this.perErrors, required this.deductPct, required this.active, required this.fillAll, required this.stagePortions, required this.stagePass, required this.settingsTitle, required this.settingsHint, required this.general, required this.passPct, required this.wholePoints, required this.defaultPortions, required this.wholeNumbers, required this.saveGeneral, required this.errorTypes, required this.perRule, required this.byStage, required this.byStageHint, required this.usesGeneral, required this.pickOrType, required this.pickPart, required this.sentScore, required this.saveFailedNet, required this.newTitle, required this.scheduledTitle, required this.pickStudent, required this.typeName, required this.clearPick, required this.dateLine, required this.parts, required this.errors, required this.perRule2, required this.expected, required this.notesOpt, required this.submit, required this.noResults, required this.reportTitle, required this.totalSessions, required this.waiting, required this.avgScore, required this.pointsGiven, required this.approvedParts, required this.juzLine, required this.topErrors, required this.examiners, required this.partsLine, required this.examiner, required this.circleTeacher, required this.assignedTo, required this.openToAny, required this.noStudent, required this.scoreLabel, required this.resultLine, required this.rejectReasonV, required this.whole, required this.pickJuz, required this.juzLine2, required this.addJuz, required this.passed, required this.repeat, required this.pickBoth, required this.scheduledOk, required this.scheduleHint, required this.student, required this.when, required this.partsWanted, required this.assign, required this.scheduleBtn, required this.outboxLabel});
+  const SSerd({required this.overdueSuffix, required this.inactiveSuffix, required this.passSuffix, required this.wholeJuz, required this.noCircle, required this.linkStudent, required this.approved, required this.rejectTitle, required this.rejectReason, required this.reject, required this.rejected, required this.deleteTitle, required this.deleteBody, required this.deleted, required this.approve, required this.reapprove, required this.certIssued, required this.issueCert, required this.schedule, required this.report, required this.settings, required this.record, required this.all, required this.pending, required this.scheduled, required this.approvedChip, required this.rejectedChip, required this.empty, required this.requestedN, required this.assigned, required this.openAny, required this.recordShort, required this.mine, required this.mineEmpty, required this.saved, required this.wholeAlways, required this.newErrorType, required this.editErrorType, required this.name, required this.perErrors, required this.deductPct, required this.active, required this.fillAll, required this.stagePortions, required this.stagePass, required this.settingsTitle, required this.settingsHint, required this.general, required this.passPct, required this.wholePoints, required this.defaultPortions, required this.wholeNumbers, required this.saveGeneral, required this.errorTypes, required this.perRule, required this.byStage, required this.byStageHint, required this.usesGeneral, required this.pickOrType, required this.pickPart, required this.sentScore, required this.saveFailedNet, required this.newTitle, required this.scheduledTitle, required this.pickStudent, required this.typeName, required this.clearPick, required this.dateLine, required this.parts, required this.errors, required this.perRule2, required this.expected, required this.notesOpt, required this.submit, required this.noResults, required this.reportTitle, required this.totalSessions, required this.waiting, required this.avgScore, required this.pointsGiven, required this.approvedParts, required this.juzLine, required this.topErrors, required this.examiners, required this.partsLine, required this.examiner, required this.circleTeacher, required this.assignedTo, required this.openToAny, required this.noStudent, required this.scoreLabel, required this.resultLine, required this.rejectReasonV, required this.whole, required this.pickJuz, required this.juzLine2, required this.addJuz, required this.passed, required this.repeat, required this.pickBoth, required this.scheduledOk, required this.scheduleHint, required this.student, required this.when, required this.partsWanted, required this.assign, required this.scheduleBtn, required this.outboxLabel, required this.certDone, required this.issueAnother});
   final String overdueSuffix;
   final String inactiveSuffix;
   final String passSuffix;
@@ -1327,6 +1327,8 @@ class SSerd {
   final String assign;
   final String scheduleBtn;
   final String outboxLabel;
+  final String certDone;
+  final String issueAnother;
 }
 
 /// Center settings (admin).
@@ -2498,7 +2500,7 @@ class S {
       addStage: 'إضافة مرحلة',
       stageName: 'اسم المرحلة',
       stageNamePh: 'تمهيدي',
-      stageCode: 'كود المرحلة (يستخدم برقم الطالب المقترح)',
+      stageCode: 'رقم المرحلة برقم الطالب (خانة أو خانتين، مثل 2). إذا تركته فاضيًا يُستخدم ترتيب المرحلة',
       stageOrder: 'ترتيب المرحلة',
       addStageBtn: 'إضافة المرحلة',
       noStages: 'لا يوجد مراحل بعد',
@@ -2882,6 +2884,8 @@ class S {
       assign: 'إسناد إلى معلم',
       scheduleBtn: 'جدولة السرد',
       outboxLabel: 'سرد {studentName} — {n} جزء',
+      certDone: 'صدرت الشهادة',
+      issueAnother: 'إصدار شهادة أخرى',
     ),
     set: SSet(
       loadSome: 'تعذّر تحميل بعض الإعدادات',
@@ -3991,7 +3995,7 @@ class S {
       addStage: 'Add stage',
       stageName: 'Stage name',
       stageNamePh: 'Preparatory',
-      stageCode: 'Stage code (used in the suggested student number)',
+      stageCode: 'Stage number in the student number (1-2 digits, e.g. 2). Left empty, the stage order is used',
       stageOrder: 'Stage order',
       addStageBtn: 'Add the stage',
       noStages: 'No stages yet',
@@ -4375,6 +4379,8 @@ class S {
       assign: 'Assign to a teacher',
       scheduleBtn: 'Schedule the serd',
       outboxLabel: 'Serd {studentName} — {n} juz',
+      certDone: 'Certificate issued',
+      issueAnother: 'Issue another certificate',
     ),
     set: SSet(
       loadSome: 'Some settings could not be loaded',
@@ -5484,7 +5490,7 @@ class S {
       addStage: 'Aşama ekle',
       stageName: 'Aşama adı',
       stageNamePh: 'Hazırlık',
-      stageCode: 'Aşama kodu (önerilen öğrenci numarasında kullanılır)',
+      stageCode: 'Öğrenci numarasındaki aşama numarası (1-2 hane, ör. 2). Boş bırakılırsa aşama sırası kullanılır',
       stageOrder: 'Aşama sırası',
       addStageBtn: 'Aşamayı ekle',
       noStages: 'Henüz aşama yok',
@@ -5868,6 +5874,8 @@ class S {
       assign: 'Bir öğretmene ata',
       scheduleBtn: 'Serdi planla',
       outboxLabel: 'Serd {studentName} — {n} cüz',
+      certDone: 'Sertifika verildi',
+      issueAnother: 'Bir sertifika daha ver',
     ),
     set: SSet(
       loadSome: 'Bazı ayarlar yüklenemedi',
@@ -6977,7 +6985,7 @@ class S {
       addStage: 'Ajouter un niveau',
       stageName: 'Nom du niveau',
       stageNamePh: 'Préparatoire',
-      stageCode: 'Code du niveau (utilisé dans le numéro d’élève suggéré)',
+      stageCode: 'Numéro du niveau dans le numéro d’élève (1 ou 2 chiffres, ex. 2). Vide : l’ordre du niveau est utilisé',
       stageOrder: 'Ordre du niveau',
       addStageBtn: 'Ajouter le niveau',
       noStages: 'Aucun niveau pour l’instant',
@@ -7361,6 +7369,8 @@ class S {
       assign: 'Assigner à un enseignant',
       scheduleBtn: 'Programmer le serd',
       outboxLabel: 'Serd {studentName} — {n} juz',
+      certDone: 'Certificat délivré',
+      issueAnother: 'Délivrer un autre certificat',
     ),
     set: SSet(
       loadSome: 'Certains réglages n’ont pas pu être chargés',
