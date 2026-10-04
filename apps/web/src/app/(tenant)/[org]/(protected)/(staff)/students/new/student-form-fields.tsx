@@ -17,8 +17,8 @@ interface Circle {
 /**
  * Client-side piece of the add-student form: picking a stage filters the
  * circle options down to that stage's circles and swaps in the suggested
- * student code for it (see next_student_code in
- * 0012_stage_codes_and_student_numbering.sql). A circle is required -
+ * student code for it (year + stage + sequence, see next_student_code in
+ * 0084_student_numbers_by_year_stage.sql). A circle is required -
  * every student must belong to one on registration.
  */
 export function StudentFormFields({

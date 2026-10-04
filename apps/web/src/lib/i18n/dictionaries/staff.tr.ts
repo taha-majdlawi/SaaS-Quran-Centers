@@ -1307,7 +1307,7 @@ export const staffTr: typeof staffAr = {
     colName: 'Ad',
     colCode: 'Kod',
     deleteConfirm: '"{name}" aşaması silinsin mi? Bu geri alınamaz.',
-    code: 'Aşama kodu (önerilen öğrenci numarasında kullanılır)',
+    code: 'Öğrenci numarasındaki aşama numarası (1-2 hane, ör. 2). Boş bırakılırsa aşama sırası kullanılır',
     order: 'Aşama sırası',
     saveChanges: 'Değişiklikleri kaydet',
     editTitle: 'Aşamayı düzenle',

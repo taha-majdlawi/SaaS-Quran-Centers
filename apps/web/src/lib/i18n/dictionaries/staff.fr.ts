@@ -1307,7 +1307,7 @@ export const staffFr: typeof staffAr = {
     colName: 'Nom',
     colCode: 'Code',
     deleteConfirm: 'Supprimer le niveau « {name} » ? Action irréversible.',
-    code: 'Code du niveau (utilisé dans le numéro d’élève suggéré)',
+    code: 'Numéro du niveau dans le numéro d’élève (1 ou 2 chiffres, ex. 2). Vide : l’ordre du niveau est utilisé',
     order: 'Ordre du niveau',
     saveChanges: 'Enregistrer les modifications',
     editTitle: 'Modifier le niveau',

@@ -1307,7 +1307,7 @@ export const staffEn: typeof staffAr = {
     colName: 'Name',
     colCode: 'Code',
     deleteConfirm: 'Delete the stage "{name}"? This can’t be undone.',
-    code: 'Stage code (used in the suggested student number)',
+    code: 'Stage number in the student number (1-2 digits, e.g. 2). Left empty, the stage order is used',
     order: 'Stage order',
     saveChanges: 'Save changes',
     editTitle: 'Edit stage',
