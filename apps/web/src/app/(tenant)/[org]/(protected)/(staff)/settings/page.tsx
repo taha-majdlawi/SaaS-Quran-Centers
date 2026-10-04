@@ -2,7 +2,7 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { LogoField } from '@/components/logo-field';
-import { RECITERS } from '@/lib/quran/reader';
+import { AYAH_RECITERS, reciterLabel } from '@/lib/quran/mushaf';
 import { updateOrgSettings, saveWeekdays, saveCenterSettings } from './actions';
 import { getI18n } from '@/lib/i18n/server';
 import { LOCALES, LOCALE_NAMES } from '@/lib/i18n/config';
@@ -241,9 +241,9 @@ export default async function SettingsPage({
             <div className={label}>
               {S.settings.reciters}
               <div className="mt-1 flex flex-wrap gap-2 font-normal">
-                {RECITERS.map((r) => (
+                {AYAH_RECITERS.map((r) => (
                   <label key={r.id} className="flex items-center gap-1 rounded border px-2 py-1">
-                    <input type="checkbox" name="quran_reciters" value={r.id} defaultChecked={(settings.get('quran_reciters') ?? '').split(',').includes(r.id)} /> {r.name}
+                    <input type="checkbox" name="quran_reciters" value={r.id} defaultChecked={(settings.get('quran_reciters') ?? '').split(',').includes(r.id)} /> {reciterLabel(r)}
                   </label>
                 ))}
               </div>
@@ -252,9 +252,9 @@ export default async function SettingsPage({
               {S.settings.defaultReciter}
               <select name="quran_default_reciter" defaultValue={settings.get('quran_default_reciter') ?? ''} className={input}>
                 <option value="">{S.settings.firstInList}</option>
-                {RECITERS.map((r) => (
+                {AYAH_RECITERS.map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.name}
+                    {reciterLabel(r)}
                   </option>
                 ))}
               </select>
