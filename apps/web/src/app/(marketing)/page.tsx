@@ -116,22 +116,22 @@ export default async function MarketingHomePage() {
                 alt={m.heroImageAlt}
                 fetchPriority="high"
                 decoding="async"
-                className="block h-[68svh] w-full object-cover object-[50%_40%] lg:h-full lg:object-[60%_40%]"
+                className="block h-[68svh] w-full object-cover object-[50%_40%] lg:h-full lg:object-[15%_50%]"
               />
             </picture>
             {/* where the photo was taken - small, in the empty bottom corner */}
-            <p className="absolute bottom-3 right-3 max-w-[85%] rounded-full bg-black/35 px-3 py-1 text-[11px] text-white/90 backdrop-blur-sm lg:bottom-5 lg:right-6 lg:text-xs">
+            <p className="absolute bottom-3 right-3 max-w-[85%] rounded-full bg-black/55 px-3 py-1 text-[11px] text-white backdrop-blur-sm lg:bottom-5 lg:right-6 lg:text-xs">
               <MapPin size={12} className="-mt-0.5 me-1 inline" aria-hidden />
               {m.heroImageCaption}
             </p>
           </div>
-          {/* shade only behind the words (left on wide screens); the two people stay bright */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 hidden bg-[linear-gradient(to_right,rgba(20,8,8,0.72)_0%,rgba(20,8,8,0.5)_24%,rgba(20,8,8,0.12)_40%,transparent_48%)] lg:block" />
+          {/* shade only behind the words (right on wide screens); the two people on the left stay bright */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 hidden bg-[linear-gradient(to_left,rgba(28,10,26,0.82)_0%,rgba(28,10,26,0.62)_26%,rgba(28,10,26,0.22)_44%,transparent_56%)] lg:block" />
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-24 bg-gradient-to-t from-black/25 to-transparent lg:block" />
 
           <div className={`${container} relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:items-center`}>
-            {/* the words keep to the left third so the middle stays clear for the photo */}
-            <div className="flex flex-col items-start gap-5 py-10 lg:mr-auto lg:max-w-[min(28rem,30vw)] lg:py-20 lg:text-white">
+            {/* the words keep to the right, over the carpet, so the two people stay clear on the left */}
+            <div className="flex flex-col items-start gap-5 py-10 lg:ml-auto lg:max-w-[min(32rem,38vw)] lg:py-20 lg:text-white">
               <span className="rounded-full border border-brand/20 bg-white/80 px-3 py-1 text-xs font-semibold text-brand lg:border-white/30 lg:bg-white/15 lg:text-white lg:backdrop-blur">{m.badge}</span>
               <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-white lg:drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                 {m.heroTitle}
