@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'core/widgets/growing_tree.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:go_router/go_router.dart';
@@ -216,7 +217,20 @@ class _AppRouterHostState extends State<_AppRouterHost> {
               StatusBanners(onSyncTap: () => _router.push('/sync')),
               Expanded(
                 // the banners (when shown) already sit under the status bar
-                child: MediaQuery.removePadding(context: context, removeTop: bannerShown, child: child!),
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeTop: bannerShown,
+                  // the garden's tree, small and see-through, growing while the app is open
+                  child: Stack(fit: StackFit.expand, children: [
+                    child!,
+                    // not over the mushaf's text
+                    ValueListenableBuilder(
+                      valueListenable: _router.routeInformationProvider,
+                      builder: (context, info, _) =>
+                          info.uri.path.startsWith('/quran/') ? const SizedBox.shrink() : const GrowingTreeOverlay(),
+                    ),
+                  ]),
+                ),
               ),
             ]),
           ),
