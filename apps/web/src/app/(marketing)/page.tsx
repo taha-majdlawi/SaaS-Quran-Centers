@@ -22,6 +22,7 @@ import {
   Lock,
   type LucideIcon,
   MapPin,
+  Plus,
   Smartphone,
   Sprout,
   Star,
@@ -111,7 +112,7 @@ export default async function MarketingHomePage() {
             <a href="/login" className="whitespace-nowrap text-gray-600 hover:text-brand">
               {t.common.login}
             </a>
-            <a href="/signup" className="hidden whitespace-nowrap rounded-full bg-brand px-4 py-2 font-semibold text-white shadow-sm hover:opacity-90 sm:inline-block">
+            <a href="/signup" className="hidden whitespace-nowrap rounded-md bg-brand px-4 py-2 font-semibold text-white hover:bg-brand/90 sm:inline-block">
               {t.common.registerCenter}
             </a>
           </div>
@@ -141,16 +142,16 @@ export default async function MarketingHomePage() {
           <div className={`${container} relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:items-center`}>
             {/* the words keep to the right, over the carpet, so the two people stay clear on the left */}
             <div className="flex flex-col items-start gap-5 py-10 lg:ml-auto lg:max-w-[min(32rem,38vw)] lg:py-20 lg:text-white">
-              <span className="rounded-full border border-brand/20 bg-white/80 px-3 py-1 text-xs font-semibold text-brand lg:border-white/30 lg:bg-white/15 lg:text-white lg:backdrop-blur">{m.badge}</span>
+              <span className="border-s-2 border-brand ps-3 text-sm font-semibold text-brand lg:border-white/70 lg:text-white/90">{m.badge}</span>
               <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-white lg:drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                 {m.heroTitle}
               </h1>
               <p className="text-lg leading-8 text-gray-600 lg:text-white/90 lg:drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">{m.heroBody}</p>
               <div className="flex flex-wrap gap-3">
-                <a href="/signup" className="rounded-full bg-brand px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-brand/20 transition hover:-translate-y-0.5 hover:opacity-95">
+                <a href="/signup" className="rounded-md bg-brand px-6 py-3 text-base font-bold text-white transition hover:bg-brand/90">
                   {m.ctaPrimary}
                 </a>
-                <a href="/login" className="rounded-full border border-gray-300 bg-white px-7 py-3.5 text-base font-semibold text-gray-700 transition hover:border-brand hover:text-brand lg:border-white/60 lg:bg-white/10 lg:text-white lg:backdrop-blur lg:hover:bg-white/20 lg:hover:text-white">
+                <a href="/login" className="rounded-md border border-gray-300 bg-white px-6 py-3 text-base font-semibold text-gray-800 transition hover:border-gray-500 lg:border-white/70 lg:bg-transparent lg:text-white lg:hover:bg-white/10">
                   {m.ctaSecondary}
                 </a>
               </div>
@@ -165,7 +166,6 @@ export default async function MarketingHomePage() {
 
         {/* the product, right under the photo */}
         <section className="relative">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_80%_0%,rgba(30,122,84,0.10),transparent),radial-gradient(40%_50%_at_0%_30%,rgba(212,162,76,0.12),transparent)]" />
           <div className={`${container} relative py-14 md:py-20`}>
             <div className="mx-auto max-w-3xl">
               <DashboardPreview m={m} />
@@ -174,10 +174,10 @@ export default async function MarketingHomePage() {
         </section>
 
         {/* verse */}
-        <section className="border-y border-brand/10 bg-brand/5">
+        <section className="border-y border-black/10 bg-white/70">
           <QuranFont>
             <div className={`${container} flex flex-col items-center gap-2 py-10 text-center`}>
-              <p dir="rtl" lang="ar" className="font-quran text-2xl leading-[2.4] text-brand sm:text-3xl">
+              <p dir="rtl" lang="ar" className="font-quran text-2xl leading-[2.4] text-ink sm:text-3xl">
                 {m.verse}
               </p>
               <p className="mt-3 text-sm text-gray-500">{m.verseRef}</p>
@@ -188,11 +188,13 @@ export default async function MarketingHomePage() {
         {/* features */}
         <section id="features" className={`${container} scroll-mt-20 py-20`}>
           <SectionHead title={m.featuresTitle} body={m.featuresBody} />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             {m.features.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon name={f.icon} /></div>
-                <h3 className="mb-2 font-bold text-gray-900">{f.title}</h3>
+              <div key={f.title} className="border-t border-black/15 pt-5">
+                <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
+                  <Icon name={f.icon} size={18} className="shrink-0 text-brand" />
+                  {f.title}
+                </h3>
                 <p className="text-sm leading-7 text-gray-600">{f.body}</p>
               </div>
             ))}
@@ -200,14 +202,14 @@ export default async function MarketingHomePage() {
         </section>
 
         {/* roles */}
-        <section className="bg-white/50 py-20">
+        <section className="border-y border-black/10 bg-white/60 py-20">
           <div className={container}>
             <SectionHead title={m.rolesTitle} />
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
               {m.roles.map((r) => (
-                <div key={r.title} className="rounded-2xl bg-gradient-to-b from-brand/5 to-transparent p-6 text-center">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand shadow-sm ring-1 ring-brand/10"><Icon name={r.icon} size={26} /></div>
-                  <h3 className="mb-2 text-lg font-bold text-brand">{r.title}</h3>
+                <div key={r.title} className="border-t border-black/15 pt-5">
+                  <Icon name={r.icon} size={22} className="mb-3 text-brand" />
+                  <h3 className="mb-2 text-lg font-bold text-gray-900">{r.title}</h3>
                   <p className="text-sm leading-7 text-gray-600">{r.body}</p>
                 </div>
               ))}
@@ -218,10 +220,10 @@ export default async function MarketingHomePage() {
         {/* how it works */}
         <section id="how" className={`${container} scroll-mt-20 py-20`}>
           <SectionHead title={m.stepsTitle} />
-          <ol className="grid gap-5 md:grid-cols-3">
+          <ol className="grid gap-x-10 gap-y-8 md:grid-cols-3">
             {m.steps.map((s, i) => (
-              <li key={s.title} className="relative rounded-2xl border border-black/5 bg-white p-7 shadow-sm">
-                <span className="absolute -top-3 start-6 rounded-full bg-brand-accent px-3 py-0.5 text-xs font-bold text-white">{i + 1}</span>
+              <li key={s.title} className="border-t-2 border-gray-900 pt-5">
+                <span className="mb-3 block text-sm font-bold tabular-nums text-gray-400">{String(i + 1).padStart(2, '0')}</span>
                 <h3 className="mb-2 text-xl font-bold text-gray-900">{s.title}</h3>
                 <p className="text-sm leading-7 text-gray-600">{s.body}</p>
               </li>
@@ -231,7 +233,7 @@ export default async function MarketingHomePage() {
 
         {/* pricing */}
         {plans.length > 0 && (
-          <section id="pricing" className="scroll-mt-20 bg-gradient-to-b from-white/50 to-brand/5 py-20">
+          <section id="pricing" className="scroll-mt-20 border-y border-black/10 bg-white/60 py-20">
             <div className={container}>
               <SectionHead title={m.pricingTitle} body={m.pricingBody} />
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -243,14 +245,12 @@ export default async function MarketingHomePage() {
                   return (
                     <div
                       key={p.code}
-                      className={`relative flex flex-col rounded-2xl border bg-white p-6 ${highlight ? 'border-brand shadow-xl shadow-brand/10 lg:-translate-y-2' : 'border-black/5 shadow-sm'}`}
+                      className={`relative flex flex-col rounded-lg border bg-white p-6 ${highlight ? 'border-brand ring-1 ring-brand' : 'border-black/15'}`}
                     >
                       {highlight && (
-                        <span className="absolute -top-3 start-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-brand px-3 py-0.5 text-xs font-bold text-white rtl:translate-x-1/2">
-                          {m.recommended}
-                        </span>
+                        <span className="mb-3 text-xs font-bold text-brand">{m.recommended}</span>
                       )}
-                      <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon name={stage.icon} /></div>
+                      <Icon name={stage.icon} size={22} className="mb-3 text-brand" />
                       <h3 className="text-2xl font-extrabold text-gray-900">{locale === 'ar' ? p.name : stage.name}</h3>
                       <p className="mt-1 min-h-[3rem] text-sm text-gray-500">{stage.tagline}</p>
                       <div className="my-5">
@@ -265,7 +265,7 @@ export default async function MarketingHomePage() {
                               <span className="text-sm text-gray-500">{m.perMonth}</span>
                             </p>
                             {p.yearly_price_cents != null && save > 0 && (
-                              <p className="mt-1 text-xs font-semibold text-green-700">{fmt(m.perYear, { price: price(p.yearly_price_cents, p.currency), pct: save })}</p>
+                              <p className="mt-1 text-xs font-semibold text-gray-600">{fmt(m.perYear, { price: price(p.yearly_price_cents, p.currency), pct: save })}</p>
                             )}
                           </>
                         )}
@@ -277,7 +277,7 @@ export default async function MarketingHomePage() {
                       </ul>
                       <a
                         href="/signup"
-                        className={`mt-auto rounded-full px-4 py-2.5 text-center text-sm font-bold transition ${highlight ? 'bg-brand text-white hover:opacity-90' : 'border border-brand/30 text-brand hover:bg-brand/5'}`}
+                        className={`mt-auto rounded-md px-4 py-2.5 text-center text-sm font-bold transition ${highlight ? 'bg-brand text-white hover:bg-brand/90' : 'border border-gray-300 text-gray-800 hover:border-gray-500'}`}
                       >
                         {stage.cta}
                       </a>
@@ -292,10 +292,10 @@ export default async function MarketingHomePage() {
         {/* trust */}
         <section className={`${container} py-20`}>
           <SectionHead title={m.trustTitle} />
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-x-10 gap-y-8 md:grid-cols-3">
             {m.trust.map((x) => (
-              <div key={x.title} className="flex gap-4 rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon name={x.icon} /></div>
+              <div key={x.title} className="flex gap-3 border-t border-black/15 pt-5">
+                <Icon name={x.icon} size={20} className="mt-0.5 shrink-0 text-brand" />
                 <div>
                   <h3 className="mb-1 font-bold text-gray-900">{x.title}</h3>
                   <p className="text-sm leading-7 text-gray-600">{x.body}</p>
@@ -306,15 +306,15 @@ export default async function MarketingHomePage() {
         </section>
 
         {/* faq */}
-        <section id="faq" className="scroll-mt-20 bg-white/50 py-20">
+        <section id="faq" className="scroll-mt-20 border-y border-black/10 bg-white/60 py-20">
           <div className="mx-auto max-w-3xl px-5 sm:px-8">
             <SectionHead title={m.faqTitle} />
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col border-b border-black/15">
               {m.faq.map((f) => (
-                <details key={f.q} className="group rounded-xl border border-black/5 bg-[#FBFAF6] p-5 open:bg-white open:shadow-sm">
+                <details key={f.q} className="group border-t border-black/15 py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-gray-900">
                     {f.q}
-                    <span className="text-brand transition group-open:rotate-45">＋</span>
+                    <Plus size={18} className="shrink-0 text-gray-500 transition group-open:rotate-45" aria-hidden />
                   </summary>
                   <p className="mt-3 text-sm leading-7 text-gray-600">{f.a}</p>
                 </details>
@@ -325,10 +325,12 @@ export default async function MarketingHomePage() {
 
         {/* final call */}
         <section className={`${container} py-20`}>
-          <div className="relative overflow-hidden rounded-3xl bg-brand px-6 py-14 text-center text-white sm:px-12">
-            <h2 className="relative mx-auto max-w-2xl text-3xl font-extrabold leading-snug sm:text-4xl">{m.finalTitle}</h2>
-            <p className="relative mx-auto mt-4 max-w-2xl leading-8 text-white/85">{m.finalBody}</p>
-            <a href="/signup" className="relative mt-8 inline-block rounded-full bg-white px-8 py-3.5 font-bold text-brand shadow-lg transition hover:-translate-y-0.5">
+          <div className="flex flex-col items-start gap-6 border-t-2 border-gray-900 pt-10 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-extrabold leading-snug text-gray-900 sm:text-4xl">{m.finalTitle}</h2>
+              <p className="mt-4 leading-8 text-gray-600">{m.finalBody}</p>
+            </div>
+            <a href="/signup" className="shrink-0 rounded-md bg-brand px-7 py-3.5 font-bold text-white transition hover:bg-brand/90">
               {m.ctaPrimary}
             </a>
           </div>
@@ -351,9 +353,9 @@ export default async function MarketingHomePage() {
 
 function SectionHead({ title, body }: { title: string; body?: string }) {
   return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
+    <div className="mb-10 max-w-2xl">
       <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">{title}</h2>
-      {body && <p className="mt-4 leading-8 text-gray-600">{body}</p>}
+      {body && <p className="mt-3 leading-8 text-gray-600">{body}</p>}
     </div>
   );
 }
@@ -362,37 +364,36 @@ function SectionHead({ title, body }: { title: string; body?: string }) {
 function DashboardPreview({ m }: { m: Awaited<ReturnType<typeof getI18n>>['t']['marketing'] }) {
   return (
     <div aria-hidden className="relative mx-auto w-full max-w-md">
-      <div className="absolute -inset-4 rotate-2 rounded-3xl bg-brand-accent/20" />
-      <div className="relative rounded-3xl border border-black/5 bg-white p-5 shadow-2xl shadow-brand/10">
+      <div className="relative rounded-xl border border-black/15 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icons/icon-192.png" alt="" width={36} height={36} className="rounded-xl" />
+            <img src="/icons/icon-192.png" alt="" width={32} height={32} className="rounded-md" />
             <span className="text-sm font-bold text-gray-900">{m.preview.center}</span>
           </div>
-          <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-semibold text-brand">{m.preview.today}</span>
+          <span className="text-xs font-semibold text-gray-500">{m.preview.today}</span>
         </div>
         <div className="mb-4 grid grid-cols-3 gap-2">
           {m.preview.stats.map((s) => (
-            <div key={s.label} className="rounded-xl bg-[#FBFAF6] p-3 text-center">
-              <p className="text-xl font-extrabold text-brand">{s.value}</p>
+            <div key={s.label} className="rounded-md border border-black/10 p-3 text-center">
+              <p className="text-xl font-extrabold text-gray-900">{s.value}</p>
               <p className="text-[11px] text-gray-500">{s.label}</p>
             </div>
           ))}
         </div>
         <ul className="flex flex-col gap-2">
           {m.preview.rows.map((r) => (
-            <li key={r.name} className="flex items-center justify-between rounded-xl border border-black/5 px-3 py-2.5">
+            <li key={r.name} className="flex items-center justify-between rounded-md border border-black/10 px-3 py-2.5">
               <div>
                 <p className="text-sm font-semibold text-gray-900">{r.name}</p>
                 <p className="text-xs text-gray-500">{r.detail}</p>
               </div>
-              <span className="text-brand-accent"><Icon name={r.badge} size={20} /></span>
+              <span className="text-gray-400"><Icon name={r.badge} size={18} /></span>
             </li>
           ))}
         </ul>
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100">
-          <div className="h-full w-3/4 rounded-full bg-gradient-to-l from-brand to-brand-accent" />
+        <div className="mt-4 h-1.5 overflow-hidden rounded-sm bg-gray-100">
+          <div className="h-full w-3/4 bg-brand" />
         </div>
       </div>
     </div>
