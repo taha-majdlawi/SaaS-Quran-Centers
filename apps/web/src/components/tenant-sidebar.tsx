@@ -20,6 +20,7 @@ export const TENANT_MODULES = [
   { slug: 'stages', label: 'المراحل', adminOnly: true },
   { slug: 'attendance', label: 'الحضور', module: 'attendance' },
   { slug: 'gatherings', label: 'المجالس والأنشطة', module: 'attendance' },
+  { slug: 'recitations', label: 'التسميعات المسجّلة', module: 'students' },
   { slug: 'external-recitations', label: 'التسميع الخارجي', module: 'students' },
   { slug: 'reviews', label: 'المراجعة المقترحة' },
   { slug: 'search', label: 'بحث شامل' },
@@ -48,7 +49,7 @@ export const TENANT_MODULES = [
 const SECTION_OF: Record<string, 'teaching' | 'motivation' | 'comms' | 'admin' | null> = {
   dashboard: null, quran: null, search: null,
   students: 'teaching', teachers: 'teaching', circles: 'teaching', stages: 'teaching', attendance: 'teaching',
-  gatherings: 'teaching', 'external-recitations': 'teaching', reviews: 'teaching', serd: 'teaching',
+  gatherings: 'teaching', recitations: 'teaching', 'external-recitations': 'teaching', reviews: 'teaching', serd: 'teaching',
   points: 'motivation', badges: 'motivation', market: 'motivation', 'circle-challenges': 'motivation',
   activities: 'comms', calendar: 'comms', announcements: 'comms', chat: 'comms', notifications: 'comms', reports: 'comms', certificates: 'comms',
   fees: 'admin', members: 'admin', 'deletion-requests': 'admin', audit: 'admin', site: 'admin', settings: 'admin', billing: 'admin',

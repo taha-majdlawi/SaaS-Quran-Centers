@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   Activity,
+  AudioLines,
   Award,
   BarChart3,
   Bell,
@@ -48,6 +49,7 @@ const ICONS: Record<string, LucideIcon> = {
   stages: Layers,
   attendance: ClipboardCheck,
   gatherings: UsersRound,
+  recitations: AudioLines,
   'external-recitations': Mic,
   reviews: RotateCcw,
   serd: ScrollText,

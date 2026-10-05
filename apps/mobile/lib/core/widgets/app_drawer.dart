@@ -47,6 +47,7 @@ const kNavSections = [
     NavItem(Icons.groups_rounded, '/circles', module: 'circles', adminOnly: true),
     NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),
     NavItem(Icons.groups_2_rounded, '/gatherings', module: 'attendance'),
+    NavItem(Icons.graphic_eq_rounded, '/recitations', module: 'students'),
     NavItem(Icons.record_voice_over_rounded, '/external-recitations', module: 'students'),
     NavItem(Icons.replay_circle_filled_rounded, '/reviews'),
     NavItem(Icons.search_rounded, '/search'),

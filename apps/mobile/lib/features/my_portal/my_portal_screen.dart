@@ -347,6 +347,7 @@ class _HomeTab extends StatelessWidget {
               if (on('reports')) GardenTile(icon: Icons.insights_rounded, label: p.report, color: const Color(0xFF0E7C86), onTap: () => context.push('/my/report')),
               if (on('certificates')) GardenTile(icon: Icons.workspace_premium_rounded, label: p.certificates, color: const Color(0xFFB26A00), onTap: () => context.push('/my/certificates')),
               GardenTile(icon: Icons.auto_stories_rounded, label: p.quran, color: const Color(0xFF16835A), onTap: () => context.push('/quran')),
+              GardenTile(icon: Icons.graphic_eq_rounded, label: t.recite.myTitle, color: const Color(0xFF1E6F5C), onTap: () => context.push('/my/recitations')),
               if (on('badges')) GardenTile(icon: Icons.emoji_events_rounded, label: p.badges, color: const Color(0xFFD4A24C), onTap: () => context.push('/my/badges')),
               if (on('market')) GardenTile(icon: Icons.storefront_rounded, label: p.market, color: const Color(0xFF8E44AD), onTap: () => context.push('/my/market')),
               GardenTile(icon: Icons.privacy_tip_rounded, label: p.privacy, color: const Color(0xFF6B7470), onTap: () => context.push('/my/privacy')),

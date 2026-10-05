@@ -32,6 +32,8 @@ class MushafPageView extends StatefulWidget {
     required this.bookmarks,
     required this.onAyahTap,
     required this.onTogglePage,
+    this.wordMarks = const {},
+    this.onWordTap,
   });
 
   final MushafPage page;
@@ -54,6 +56,12 @@ class MushafPageView extends StatefulWidget {
   /// Self-test: uncover / hide the whole page.
   final VoidCallback onTogglePage;
 
+  /// Words flagged by the recitation check or the teacher ("ayah:word" -> missing / wrong / mistake).
+  final Map<String, String> wordMarks;
+
+  /// The teacher's test: tapping a word marks it (null = ayahs are tapped as a whole).
+  final void Function(int ayah, int word)? onWordTap;
+
   @override
   State<MushafPageView> createState() => _MushafPageViewState();
 }
@@ -62,11 +70,14 @@ class _MushafPageViewState extends State<MushafPageView> {
   // one tap area per ayah inside the running text
   final _taps = <int, TapGestureRecognizer>{};
 
+  final _wordTaps = <String, TapGestureRecognizer>{};
+
   TapGestureRecognizer _tap(int n) => _taps.putIfAbsent(n, () => TapGestureRecognizer())..onTap = () => widget.onAyahTap(n);
+  TapGestureRecognizer _wordTap(int n, int i) => _wordTaps.putIfAbsent('$n:$i', () => TapGestureRecognizer())..onTap = () => widget.onWordTap?.call(n, i);
 
   @override
   void dispose() {
-    for (final t in _taps.values) {
+    for (final t in [..._taps.values, ..._wordTaps.values]) {
       t.dispose();
     }
     super.dispose();
@@ -93,7 +104,38 @@ class _MushafPageViewState extends State<MushafPageView> {
       final shown = widget.isRevealed(a.number);
       final recognizer = _tap(a.number);
       final base = on ? const TextStyle(backgroundColor: Color(0x55F5D78E)) : null;
-      if (on && widget.wordFits(a.number)) {
+      final marked = widget.onWordTap != null || widget.wordMarks.keys.any((k) => k.startsWith('${a.number}:'));
+      if (marked && !(on && widget.wordFits(a.number))) {
+        // the checked or tested ayah word by word: a mark per word, the teacher taps a word to mark it
+        var at = 0;
+        final ranges = wordRanges(a.text);
+        for (var i = 0; i < ranges.length; i++) {
+          final (s, e) = ranges[i];
+          if (s > at) spans.add(TextSpan(text: a.text.substring(at, s), style: shown ? base : hidden.merge(base), recognizer: recognizer));
+          final m = widget.wordMarks['${a.number}:$i'];
+          final style = !shown
+              ? hidden.merge(base)
+              : switch (m) {
+                  'missing' || 'mistake' => (base ?? const TextStyle()).copyWith(
+                      color: const Color(0xFFB42318),
+                      decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.wavy,
+                      decorationColor: const Color(0xFFB42318),
+                      backgroundColor: m == 'mistake' ? const Color(0xFFFDE7E5) : base?.backgroundColor,
+                    ),
+                  'wrong' => (base ?? const TextStyle()).copyWith(
+                      color: const Color(0xFFC2410C),
+                      decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.wavy,
+                      decorationColor: const Color(0xFFC2410C),
+                    ),
+                  _ => base,
+                };
+          spans.add(TextSpan(text: a.text.substring(s, e), style: style, recognizer: widget.onWordTap != null ? _wordTap(a.number, i) : recognizer));
+          at = e;
+        }
+        if (at < a.text.length) spans.add(TextSpan(text: a.text.substring(at), style: base, recognizer: recognizer));
+      } else if (on && widget.wordFits(a.number)) {
         // the ayah written word by word, each word styled on its own - the text itself is untouched
         var at = 0;
         final ranges = wordRanges(a.text);
