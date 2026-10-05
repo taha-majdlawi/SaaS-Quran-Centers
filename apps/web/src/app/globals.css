@@ -43,3 +43,69 @@ html:not([dir]) {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Marketing page motion: quiet, short, and off for "reduce motion".
+ * Items marked data-reveal rise into place as they scroll into view; the
+ * hiding only applies once the page script is running (html.reveal-ready),
+ * so without it everything is simply visible.
+ * ------------------------------------------------------------------------ */
+@layer components {
+  .reveal-ready [data-reveal]:not(.is-shown) {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .reveal-ready [data-reveal] {
+    transition:
+      opacity 0.75s ease,
+      transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--d, 0ms);
+  }
+
+  .hero-in {
+    animation: hero-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .ken-burns {
+    animation: ken-burns 22s ease-out both;
+    transform-origin: 30% 50%;
+  }
+
+  [data-reveal].is-shown .grow-bar {
+    animation: grow-bar 1.6s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .link-underline {
+    background: linear-gradient(currentColor, currentColor) no-repeat 100% 100% / 0 1px;
+    transition: background-size 0.3s ease;
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+    background-position: 0 100%;
+  }
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ken-burns {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes grow-bar {
+  from {
+    width: 0;
+  }
+}

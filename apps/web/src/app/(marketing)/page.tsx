@@ -4,6 +4,7 @@ import { LanguageSwitcher } from '@/lib/i18n/client';
 import { LOCALES, fmt } from '@/lib/i18n/config';
 import { createClient } from '@/lib/supabase/server';
 import { QuranFont } from '@/components/quran-font';
+import { RevealOnScroll } from '@/components/reveal-on-scroll';
 import {
   Award,
   BarChart3,
@@ -88,11 +89,12 @@ export default async function MarketingHomePage() {
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="h-full w-full object-cover object-[50%_30%] lg:object-[15%_50%]"
+            className="ken-burns h-full w-full object-cover object-[50%_30%] lg:object-[15%_50%]"
           />
         </picture>
       </div>
       <span className="sr-only">{m.heroImageAlt}</span>
+      <RevealOnScroll />
       {/* header */}
       <header className="sticky top-0 z-20 border-b border-black/5 bg-[#FBFAF6]/90 backdrop-blur">
         <div className={`${container} flex items-center justify-between gap-3 py-3`}>
@@ -102,10 +104,10 @@ export default async function MarketingHomePage() {
             <span className="whitespace-nowrap text-lg font-bold text-brand">{t.common.brand}</span>
           </a>
           <nav className="hidden items-center gap-6 text-sm text-gray-600 md:flex">
-            <a href="#features" className="hover:text-brand">{m.nav.features}</a>
-            <a href="#how" className="hover:text-brand">{m.nav.how}</a>
-            <a href="#pricing" className="hover:text-brand">{m.nav.pricing}</a>
-            <a href="#faq" className="hover:text-brand">{m.nav.faq}</a>
+            <a href="#features" className="link-underline hover:text-brand">{m.nav.features}</a>
+            <a href="#how" className="link-underline hover:text-brand">{m.nav.how}</a>
+            <a href="#pricing" className="link-underline hover:text-brand">{m.nav.pricing}</a>
+            <a href="#faq" className="link-underline hover:text-brand">{m.nav.faq}</a>
           </nav>
           <div className="flex items-center gap-3 text-sm">
             <LanguageSwitcher />
@@ -142,12 +144,12 @@ export default async function MarketingHomePage() {
           <div className={`${container} relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:items-center`}>
             {/* the words keep to the right, over the carpet, so the two people stay clear on the left */}
             <div className="flex flex-col items-start gap-5 py-10 lg:ml-auto lg:max-w-[min(32rem,38vw)] lg:py-20 lg:text-white">
-              <span className="border-s-2 border-brand ps-3 text-sm font-semibold text-brand lg:border-white/70 lg:text-white/90">{m.badge}</span>
-              <h1 className="text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-white lg:drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
+              <span style={{ '--d': '80ms' } as React.CSSProperties} className="hero-in border-s-2 border-brand ps-3 text-sm font-semibold text-brand lg:border-white/70 lg:text-white/90">{m.badge}</span>
+              <h1 style={{ '--d': '180ms' } as React.CSSProperties} className="hero-in text-4xl font-extrabold leading-tight text-gray-900 sm:text-5xl sm:leading-tight lg:text-white lg:drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)]">
                 {m.heroTitle}
               </h1>
-              <p className="text-lg leading-8 text-gray-600 lg:text-white/90 lg:drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">{m.heroBody}</p>
-              <div className="flex flex-wrap gap-3">
+              <p style={{ '--d': '300ms' } as React.CSSProperties} className="hero-in text-lg leading-8 text-gray-600 lg:text-white/90 lg:drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">{m.heroBody}</p>
+              <div style={{ '--d': '420ms' } as React.CSSProperties} className="hero-in flex flex-wrap gap-3">
                 <a href="/signup" className="rounded-md bg-brand px-6 py-3 text-base font-bold text-white transition hover:bg-brand/90">
                   {m.ctaPrimary}
                 </a>
@@ -155,7 +157,7 @@ export default async function MarketingHomePage() {
                   {m.ctaSecondary}
                 </a>
               </div>
-              <p className="text-sm text-gray-500 lg:text-white/75">{m.heroNote}</p>
+              <p style={{ '--d': '520ms' } as React.CSSProperties} className="hero-in text-sm text-gray-500 lg:text-white/75">{m.heroNote}</p>
             </div>
           </div>
           </div>
@@ -167,7 +169,7 @@ export default async function MarketingHomePage() {
         {/* the product, right under the photo */}
         <section className="relative">
           <div className={`${container} relative py-14 md:py-20`}>
-            <div className="mx-auto max-w-3xl">
+            <div data-reveal className="mx-auto max-w-3xl">
               <DashboardPreview m={m} />
             </div>
           </div>
@@ -176,7 +178,7 @@ export default async function MarketingHomePage() {
         {/* verse */}
         <section className="border-y border-black/10 bg-white/70">
           <QuranFont>
-            <div className={`${container} flex flex-col items-center gap-2 py-10 text-center`}>
+            <div data-reveal className={`${container} flex flex-col items-center gap-2 py-10 text-center`}>
               <p dir="rtl" lang="ar" className="font-quran text-2xl leading-[2.4] text-ink sm:text-3xl">
                 {m.verse}
               </p>
@@ -189,8 +191,8 @@ export default async function MarketingHomePage() {
         <section id="features" className={`${container} scroll-mt-20 py-20`}>
           <SectionHead title={m.featuresTitle} body={m.featuresBody} />
           <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            {m.features.map((f) => (
-              <div key={f.title} className="border-t border-black/15 pt-5">
+            {m.features.map((f, i) => (
+              <div key={f.title} data-reveal style={{ '--d': `${(i % 4) * 90}ms` } as React.CSSProperties} className="border-t border-black/15 pt-5">
                 <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
                   <Icon name={f.icon} size={18} className="shrink-0 text-brand" />
                   {f.title}
@@ -206,8 +208,8 @@ export default async function MarketingHomePage() {
           <div className={container}>
             <SectionHead title={m.rolesTitle} />
             <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-              {m.roles.map((r) => (
-                <div key={r.title} className="border-t border-black/15 pt-5">
+              {m.roles.map((r, i) => (
+                <div key={r.title} data-reveal style={{ '--d': `${i * 90}ms` } as React.CSSProperties} className="border-t border-black/15 pt-5">
                   <Icon name={r.icon} size={22} className="mb-3 text-brand" />
                   <h3 className="mb-2 text-lg font-bold text-gray-900">{r.title}</h3>
                   <p className="text-sm leading-7 text-gray-600">{r.body}</p>
@@ -222,7 +224,7 @@ export default async function MarketingHomePage() {
           <SectionHead title={m.stepsTitle} />
           <ol className="grid gap-x-10 gap-y-8 md:grid-cols-3">
             {m.steps.map((s, i) => (
-              <li key={s.title} className="border-t-2 border-gray-900 pt-5">
+              <li key={s.title} data-reveal style={{ '--d': `${i * 120}ms` } as React.CSSProperties} className="border-t-2 border-gray-900 pt-5">
                 <span className="mb-3 block text-sm font-bold tabular-nums text-gray-400">{String(i + 1).padStart(2, '0')}</span>
                 <h3 className="mb-2 text-xl font-bold text-gray-900">{s.title}</h3>
                 <p className="text-sm leading-7 text-gray-600">{s.body}</p>
@@ -245,6 +247,8 @@ export default async function MarketingHomePage() {
                   return (
                     <div
                       key={p.code}
+                      data-reveal
+                      style={{ '--d': `${i * 90}ms` } as React.CSSProperties}
                       className={`relative flex flex-col rounded-lg border bg-white p-6 ${highlight ? 'border-brand ring-1 ring-brand' : 'border-black/15'}`}
                     >
                       {highlight && (
@@ -293,8 +297,8 @@ export default async function MarketingHomePage() {
         <section className={`${container} py-20`}>
           <SectionHead title={m.trustTitle} />
           <div className="grid gap-x-10 gap-y-8 md:grid-cols-3">
-            {m.trust.map((x) => (
-              <div key={x.title} className="flex gap-3 border-t border-black/15 pt-5">
+            {m.trust.map((x, i) => (
+              <div key={x.title} data-reveal style={{ '--d': `${i * 100}ms` } as React.CSSProperties} className="flex gap-3 border-t border-black/15 pt-5">
                 <Icon name={x.icon} size={20} className="mt-0.5 shrink-0 text-brand" />
                 <div>
                   <h3 className="mb-1 font-bold text-gray-900">{x.title}</h3>
@@ -310,8 +314,8 @@ export default async function MarketingHomePage() {
           <div className="mx-auto max-w-3xl px-5 sm:px-8">
             <SectionHead title={m.faqTitle} />
             <div className="flex flex-col border-b border-black/15">
-              {m.faq.map((f) => (
-                <details key={f.q} className="group border-t border-black/15 py-5">
+              {m.faq.map((f, i) => (
+                <details key={f.q} data-reveal style={{ '--d': `${i * 70}ms` } as React.CSSProperties} className="group border-t border-black/15 py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-gray-900">
                     {f.q}
                     <Plus size={18} className="shrink-0 text-gray-500 transition group-open:rotate-45" aria-hidden />
@@ -325,7 +329,7 @@ export default async function MarketingHomePage() {
 
         {/* final call */}
         <section className={`${container} py-20`}>
-          <div className="flex flex-col items-start gap-6 border-t-2 border-gray-900 pt-10 md:flex-row md:items-end md:justify-between">
+          <div data-reveal className="flex flex-col items-start gap-6 border-t-2 border-gray-900 pt-10 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-extrabold leading-snug text-gray-900 sm:text-4xl">{m.finalTitle}</h2>
               <p className="mt-4 leading-8 text-gray-600">{m.finalBody}</p>
@@ -353,7 +357,7 @@ export default async function MarketingHomePage() {
 
 function SectionHead({ title, body }: { title: string; body?: string }) {
   return (
-    <div className="mb-10 max-w-2xl">
+    <div data-reveal className="mb-10 max-w-2xl">
       <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">{title}</h2>
       {body && <p className="mt-3 leading-8 text-gray-600">{body}</p>}
     </div>
@@ -393,7 +397,7 @@ function DashboardPreview({ m }: { m: Awaited<ReturnType<typeof getI18n>>['t']['
           ))}
         </ul>
         <div className="mt-4 h-1.5 overflow-hidden rounded-sm bg-gray-100">
-          <div className="h-full w-3/4 bg-brand" />
+          <div className="grow-bar h-full w-3/4 bg-brand" />
         </div>
       </div>
     </div>
