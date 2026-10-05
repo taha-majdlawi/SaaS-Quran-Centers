@@ -1,0 +1,33 @@
+name: tmp fetch eqraa hero
+on:
+  push:
+    branches: [claude/optimistic-mccarthy-yd6fip]
+    paths: ['.github/workflows/tmp-fetch-eqraa.yml']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p eqraa && cd eqraa
+          curl -sL -A "Mozilla/5.0" https://www.eqraa-center.com/ -o index.html
+          # every image the page or its css refers to
+          grep -oE '(src|href|srcset|url\()[^"'"'"')]*\.(jpe?g|png|webp|avif)[^"'"'"') ]*' index.html | sed -E 's/^(src|href|srcset)=?["'"'"']?//; s/^url\(["'"'"']?//' > urls.txt || true
+          for css in $(grep -oE 'href="[^"]+\.css[^"]*"' index.html | sed 's/href="//; s/"$//'); do
+            case "$css" in http*) u="$css";; /*) u="https://www.eqraa-center.com$css";; *) u="https://www.eqraa-center.com/$css";; esac
+            curl -sL "$u" | grep -oE 'url\([^)]*\.(jpe?g|png|webp|avif)[^)]*\)' | sed -E "s/url\(['\"]?//; s/['\"]?\)$//" >> urls.txt || true
+          done
+          sort -u urls.txt > list.txt; cat list.txt
+          n=0
+          while read -r u; do
+            case "$u" in http*) full="$u";; //*) full="https:$u";; /*) full="https://www.eqraa-center.com$u";; *) full="https://www.eqraa-center.com/$u";; esac
+            n=$((n+1)); ext="${u##*.}"; ext="${ext%%\?*}"
+            curl -sL -A "Mozilla/5.0" "$full" -o "img_$n.$ext" && echo "::notice::img_$n.$ext $(stat -c%s img_$n.$ext) $full"
+          done < list.txt
+          ls -la
+      - run: |
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B tmp-eqraa-assets
+          git add eqraa && git commit -m "tmp: eqraa page images" && git push -f origin tmp-eqraa-assets
