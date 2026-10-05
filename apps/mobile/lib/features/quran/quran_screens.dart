@@ -142,10 +142,12 @@ class _QuranScreenState extends State<QuranScreen> {
 // ---------------------------------------------------------------------------
 
 class SurahReaderScreen extends StatefulWidget {
-  const SurahReaderScreen({super.key, required this.surah, this.startAyah});
+  const SurahReaderScreen({super.key, required this.surah, this.startAyah, this.reciteTo, this.reciteType});
 
   final int surah;
   final int? startAyah;
+  final int? reciteTo;
+  final String? reciteType;
 
   @override
   State<SurahReaderScreen> createState() => _SurahReaderScreenState();
@@ -270,6 +272,8 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
         _current = start?.number;
         _bookmarked = {for (final b in state.bookmarks.where((b) => b.surah == widget.surah)) b.ayah};
         _loading = false;
+        // from the daily portion: straight to reciting it (the family; staff only read)
+        if (widget.startAyah != null && widget.reciteTo != null && widget.reciteType != null && !_isStaff(context.read<TenantController>())) _panel = 'recite';
       });
       _loadTimings();
     } catch (e) {
@@ -702,8 +706,9 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                       orgId: _orgId,
                       surah: widget.surah,
                       max: detail.ayahs.length,
-                      from: _pageRange.from,
-                      to: _pageRange.to,
+                      from: widget.reciteTo != null && widget.startAyah != null ? widget.startAyah! : _pageRange.from,
+                      to: widget.reciteTo != null && widget.startAyah != null ? widget.reciteTo! : _pageRange.to,
+                      initialType: widget.reciteType,
                       onHide: (h) => setState(() {
                         if (h) _player.stop();
                         _revealed.clear();

@@ -71,6 +71,8 @@ function linkFor(n: Item, portal: boolean): string | null {
       return portal ? `/my/weekly?student=${n.ref_id}` : `/students/${n.ref_id}/weekly`;
     case 'badge_awarded':
       return portal ? '/my/badges' : `/badges/${n.ref_id}`;
+    case 'wird_reminder':
+      return portal ? '/my' : null;
     case 'recitation_submitted':
       return portal ? null : '/recitations';
     case 'recitation_reviewed':

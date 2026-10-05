@@ -662,6 +662,37 @@ export const en: Dictionary = {
     },
   },
 
+  /** The daily portion card (student_wird, 0086). */
+  wird: {
+    title: 'Today\'s portion',
+    newPart: 'New memorization',
+    reviewPart: 'Review',
+    fromTeacher: 'Set by your teacher',
+    suggested: 'Suggested',
+    done: 'Done',
+    sent: 'Sent to the teacher',
+    todo: 'Not recited yet',
+    recite: 'Recite now',
+    open: 'Open in the mushaf',
+    complete: 'Today\'s portion is complete, may Allah bless you',
+    none: 'No portion yet: it appears after the first new memorization in your record.',
+    dayOff: 'Today is not a working day at the center; the portion is optional.',
+    pages: '{n} pages',
+  },
+
+  /** Recurring mistakes (recitation_mistake_stats, 0086). */
+  mistakeStats: {
+    title: 'Recurring mistakes',
+    hint: 'From the teacher\'s tests in the mushaf and the automatic checks of recorded recitations, over the last {days} days. Focus on them when reviewing.',
+    summary: '{sessions} recitations · {mistakes} mistakes',
+    bySurah: 'By surah',
+    byAyah: 'Ayahs with the most mistakes',
+    byWord: 'Words with the most mistakes',
+    times: '×{n}',
+    none: 'No mistakes recorded in this period.',
+    ayah: '{surah} : {ayah}',
+  },
+
   serdCard: {
     none: 'No approved serd yet',
     sessions: 'Approved sessions',

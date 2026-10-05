@@ -10,6 +10,7 @@ import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import 'quran_data.dart';
 import 'recitation_api.dart';
+import 'wird_widgets.dart';
 
 /// Recorded recitations: the teacher's inbox (approve / return) or, for the
 /// family, the student's own list with the teacher's decision.
@@ -180,6 +181,7 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
               children: [
                 ...header,
+                if (widget.family && _studentId != null) MistakeStatsCard(key: ValueKey('stats$_studentId'), studentId: _studentId!),
                 if (items.isEmpty) EmptyState(icon: Icons.mic_none_rounded, title: t.none),
                 for (final r in items) _card(r),
                 const SizedBox(height: 12),

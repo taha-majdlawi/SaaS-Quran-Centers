@@ -669,6 +669,37 @@ export const ar = {
     },
   },
 
+  /** The daily portion card (student_wird, 0086). */
+  wird: {
+    title: 'ورد اليوم',
+    newPart: 'حفظ جديد',
+    reviewPart: 'مراجعة',
+    fromTeacher: 'حدّده معلمك',
+    suggested: 'مقترح',
+    done: 'تمّ',
+    sent: 'أُرسل للمعلم',
+    todo: 'لم يُسمَّع بعد',
+    recite: 'سمّع الآن',
+    open: 'افتح في المصحف',
+    complete: 'أتممت ورد اليوم، بارك الله فيك',
+    none: 'لا يوجد ورد بعد: يظهر بعد أول تسميع حفظ جديد في سجلك.',
+    dayOff: 'اليوم ليس يوم دوام في المركز، والورد اختياري.',
+    pages: '{n} صفحة',
+  },
+
+  /** Recurring mistakes (recitation_mistake_stats, 0086). */
+  mistakeStats: {
+    title: 'مواضع الأخطاء المتكررة',
+    hint: 'من اختبارات المعلم في المصحف والفحص الآلي للتسميعات المسجّلة، في آخر {days} يومًا. ركّز عليها في المراجعة.',
+    summary: '{sessions} تسميع · {mistakes} خطأ',
+    bySurah: 'حسب السورة',
+    byAyah: 'الآيات الأكثر خطأ',
+    byWord: 'الكلمات الأكثر خطأ',
+    times: '×{n}',
+    none: 'لا توجد أخطاء مسجّلة في هذه الفترة.',
+    ayah: '{surah} : {ayah}',
+  },
+
   serdCard: {
     none: 'لا يوجد سرد معتمد بعد',
     sessions: 'جلسات معتمدة',

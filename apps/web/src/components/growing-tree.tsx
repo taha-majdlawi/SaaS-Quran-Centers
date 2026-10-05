@@ -80,7 +80,8 @@ function Limb({ d, width, delay, duration }: { d: string; width: number; delay: 
   );
 }
 
-export function GrowingTree() {
+/** `corner`: the small one for the dashboards - bottom left, out of the way, under every menu. */
+export function GrowingTree({ corner = false }: { corner?: boolean }) {
   const [elapsed, setElapsed] = useState<number | null>(null);
 
   useEffect(() => {
@@ -110,7 +111,11 @@ export function GrowingTree() {
   return (
     <div
       aria-hidden
-      className="growing-tree pointer-events-none fixed bottom-0 left-1 z-30 w-[92px] print:hidden sm:w-[118px] lg:left-1/2 lg:w-[210px] lg:-translate-x-1/2"
+      className={
+        corner
+          ? 'growing-tree pointer-events-none fixed bottom-0 left-1 z-10 w-[62px] opacity-95 print:hidden sm:w-[76px]'
+          : 'growing-tree pointer-events-none fixed bottom-0 left-1 z-30 w-[92px] print:hidden sm:w-[118px] lg:left-1/2 lg:w-[210px] lg:-translate-x-1/2'
+      }
     >
       <svg viewBox="0 0 200 222" className="block h-auto w-full overflow-visible">
         {/* the crown sways gently once the tree is grown */}

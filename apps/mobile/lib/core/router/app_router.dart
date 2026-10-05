@@ -166,6 +166,9 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
         builder: (context, state) => SurahReaderScreen(
           surah: int.tryParse(state.pathParameters['surah'] ?? '') ?? 1,
           startAyah: int.tryParse(state.uri.queryParameters['ayah'] ?? ''),
+          // opened from the daily portion: the recite panel ready on ayah..to
+          reciteTo: int.tryParse(state.uri.queryParameters['to'] ?? ''),
+          reciteType: state.uri.queryParameters['recite'],
         ),
       ),
       GoRoute(path: '/my/market', builder: (context, state) => const PortalMarketScreen()),

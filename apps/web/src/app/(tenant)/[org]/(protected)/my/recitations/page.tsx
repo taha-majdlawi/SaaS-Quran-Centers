@@ -1,3 +1,4 @@
+import { MistakeStats, type MistakeStatsData } from '@/components/mistake-stats';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { RecitationList, recitationAudio, type Recitation } from '@/components/recitation-list';
@@ -18,7 +19,12 @@ export default async function MyRecitationsPage({ params, searchParams }: { para
   ]);
   const list = (students ?? []) as { id: string; full_name: string }[];
   const current = list.find((x) => x.id === s) ?? list[0];
-  const { data } = current ? await supabase.rpc('student_recitations', { p_org: org.id, p_student: current.id, p_limit: 50 }) : { data: [] };
+  const [{ data }, { data: statsData }] = current
+    ? await Promise.all([
+        supabase.rpc('student_recitations', { p_org: org.id, p_student: current.id, p_limit: 50 }),
+        supabase.rpc('recitation_mistake_stats', { p_org: org.id, p_student: current.id, p_days: 90 }),
+      ])
+    : [{ data: [] }, { data: null }];
   const items = (data ?? []) as Recitation[];
   const audio = await recitationAudio(items);
 
@@ -42,6 +48,9 @@ export default async function MyRecitationsPage({ params, searchParams }: { para
           ))}
         </div>
       )}
+      <div className="mb-4">
+        <MistakeStats data={statsData as MistakeStatsData | null} base="/my/quran" locale={locale} M={t.mistakeStats} />
+      </div>
       <RecitationList
         items={items}
         audio={audio}

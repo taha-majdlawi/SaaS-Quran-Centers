@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import '../quran/wird_widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../profiles/profile_widgets.dart';
-import '../review_plan/review_plan_screen.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/data/quran_data.dart';
 import '../../core/i18n/i18n.dart';
@@ -221,7 +221,7 @@ class _HomeTab extends StatelessWidget {
         AnnouncementsPreviewCard(announcements: data.announcements),
         const SizedBox(height: 12),
         GoalCard(key: ValueKey('goal$studentId'), studentId: studentId, studentName: data.fullName),
-        TodayReviewCard(key: ValueKey('review$studentId'), studentId: studentId),
+        WirdCard(key: ValueKey('wird$studentId'), studentId: studentId, canRecite: true),
         FeesTile(studentId: studentId),
         const SizedBox(height: 8),
         OutlinedButton.icon(
