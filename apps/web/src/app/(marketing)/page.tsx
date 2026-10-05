@@ -1,3 +1,4 @@
+import { GrowingTree } from '@/components/growing-tree';
 import type { Metadata } from 'next';
 import { getI18n } from '@/lib/i18n/server';
 import { LanguageSwitcher } from '@/lib/i18n/client';
@@ -95,6 +96,7 @@ export default async function MarketingHomePage() {
       </div>
       <span className="sr-only">{m.heroImageAlt}</span>
       <RevealOnScroll />
+      <GrowingTree />
       {/* header */}
       <header className="sticky top-0 z-20 border-b border-black/5 bg-[#FBFAF6]/90 backdrop-blur">
         <div className={`${container} flex items-center justify-between gap-3 py-3`}>
