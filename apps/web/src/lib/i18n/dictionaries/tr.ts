@@ -662,6 +662,37 @@ export const tr: Dictionary = {
     },
   },
 
+  /** The daily portion card (student_wird, 0086). */
+  wird: {
+    title: 'Bugünün virdi',
+    newPart: 'Yeni ezber',
+    reviewPart: 'Tekrar',
+    fromTeacher: 'Öğretmenin belirledi',
+    suggested: 'Önerilen',
+    done: 'Tamam',
+    sent: 'Öğretmene gönderildi',
+    todo: 'Henüz okunmadı',
+    recite: 'Şimdi dinlet',
+    open: 'Mushafta aç',
+    complete: 'Bugünün virdi tamam, Allah bereketli kılsın',
+    none: 'Henüz vird yok: kaydındaki ilk yeni ezberden sonra görünür.',
+    dayOff: 'Bugün merkezde çalışma günü değil; vird isteğe bağlı.',
+    pages: '{n} sayfa',
+  },
+
+  /** Recurring mistakes (recitation_mistake_stats, 0086). */
+  mistakeStats: {
+    title: 'Tekrarlanan hatalar',
+    hint: 'Son {days} gündeki öğretmen sınavlarından ve kayıtlı dinletmelerin otomatik kontrolünden. Tekrarda bunlara odaklanın.',
+    summary: '{sessions} dinletme · {mistakes} hata',
+    bySurah: 'Sureye göre',
+    byAyah: 'En çok hata yapılan ayetler',
+    byWord: 'En çok hata yapılan kelimeler',
+    times: '×{n}',
+    none: 'Bu dönemde kayıtlı hata yok.',
+    ayah: '{surah} : {ayah}',
+  },
+
   serdCard: {
     none: 'Henüz onaylanmış serd yok',
     sessions: 'Onaylanan oturumlar',

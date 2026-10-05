@@ -1,5 +1,5 @@
 import { GoalCard, type GoalProgress } from '@/components/goal-card';
-import { TodayReview, type ReviewPlan } from '@/components/review-plans';
+import { WirdCard, type Wird } from '@/components/wird-card';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
@@ -40,7 +40,7 @@ export default async function MyPortalPage({
   const org = await getOrgContext(slug);
   const supabase = await createClient();
   const on = (m: string) => !org.disabledModules.includes(m);
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const p = t.portal;
 
   const [{ data: students }, { data: orgRow }] = await Promise.all([
@@ -68,7 +68,7 @@ export default async function MyPortalPage({
     on('badges') ? supabase.rpc('get_student_badges', { p_org: org.id, p_student: current.id }) : Promise.resolve({ data: [] }),
     supabase.from('organization_settings').select('key, value').eq('organization_id', org.id).in('key', PRAYER_KEYS),
     supabase.rpc('student_goal_progress', { p_org: org.id, p_student: current.id }),
-    supabase.rpc('my_review_plan', { p_org: org.id, p_student: current.id }),
+    supabase.rpc('student_wird', { p_org: org.id, p_student: current.id }),
   ]);
   const goal = goalRes.data as GoalProgress | null;
 
@@ -173,7 +173,7 @@ export default async function MyPortalPage({
           goalCard={
             <>
               {goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
-              <TodayReview plan={reviewRes.data as ReviewPlan | null} />
+              <WirdCard wird={reviewRes.data as Wird | null} base="/my/quran" canRecite locale={locale} W={t.wird} />
               <a href={`/my/weekly?student=${current.id}` as never} className="block rounded-lg border bg-white p-3 text-center text-sm font-semibold text-brand hover:bg-gray-50">
                 📊 {t.staff.weekly.open}
               </a>

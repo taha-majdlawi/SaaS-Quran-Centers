@@ -7,7 +7,8 @@ import { RangeForm } from '@/components/report-views';
 import { ActionLink, Chip, CountList, Facts, Panel, ProfileHeader, RecitationTable, gradeLabelMap, Stat, StatGrid, relDay } from '@/components/profile-views';
 import { addStudentNote } from '@/lib/insights/actions';
 import { GoalCard, type GoalProgress } from '@/components/goal-card';
-import { TodayReview, type ReviewPlan } from '@/components/review-plans';
+import { WirdCard, type Wird } from '@/components/wird-card';
+import { MistakeStats, type MistakeStatsData } from '@/components/mistake-stats';
 import { defaultRange, fmtDay, pct, type StudentReport } from '@/lib/reports/format';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
@@ -64,11 +65,14 @@ export default async function StudentProfilePage({
     supabase.rpc('student_report', { p_org: org.id, p_student: id, p_from: f, p_to: t }),
     supabase.rpc('list_student_notes', { p_org: org.id, p_student: id }),
     supabase.rpc('student_goal_progress', { p_org: org.id, p_student: id }),
-    supabase.rpc('my_review_plan', { p_org: org.id, p_student: id }),
+    supabase.rpc('student_wird', { p_org: org.id, p_student: id }),
   ]);
   const goal = goalData as GoalProgress | null;
   // recorded recitations and mushaf tests (only for whoever may review this student; others get none)
-  const { data: recData } = await supabase.rpc('student_recitations', { p_org: org.id, p_student: id, p_limit: 5 });
+  const [{ data: recData }, { data: statsData }] = await Promise.all([
+    supabase.rpc('student_recitations', { p_org: org.id, p_student: id, p_limit: 5 }),
+    supabase.rpc('recitation_mistake_stats', { p_org: org.id, p_student: id, p_days: 90 }),
+  ]);
   const recorded = (recData ?? []) as Recitation[];
   const recordedAudio = await recitationAudio(recorded);
   const { data: gradeRows } = await supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id).eq('is_active', true).order('sort_order');
@@ -133,7 +137,7 @@ export default async function StudentProfilePage({
         <div className="mb-6">
           <GoalCard g={goal} orgId={org.id} studentId={p.id} back={`/students/${p.id}`} edit />
           <div className="mt-3">
-            <TodayReview plan={reviewData as ReviewPlan | null} />
+            <WirdCard wird={reviewData as Wird | null} base="/quran" canRecite={false} locale={locale} W={T.wird} />
           </div>
         </div>
       )}
@@ -183,6 +187,10 @@ export default async function StudentProfilePage({
             <span className="flex items-center gap-1"><i className="inline-block h-2.5 w-2.5 rounded bg-gray-100" />{P.legendNone}</span>
           </div>
         </Panel>
+      </div>
+
+      <div className="mb-6">
+        <MistakeStats data={statsData as MistakeStatsData | null} base="/quran" locale={locale} M={T.mistakeStats} />
       </div>
 
       {recorded.length > 0 && (

@@ -662,6 +662,37 @@ export const fr: Dictionary = {
     },
   },
 
+  /** The daily portion card (student_wird, 0086). */
+  wird: {
+    title: 'La portion du jour',
+    newPart: 'Nouvelle mémorisation',
+    reviewPart: 'Révision',
+    fromTeacher: 'Fixée par l’enseignant',
+    suggested: 'Suggérée',
+    done: 'Fait',
+    sent: 'Envoyé à l’enseignant',
+    todo: 'Pas encore récité',
+    recite: 'Réciter maintenant',
+    open: 'Ouvrir dans le mushaf',
+    complete: 'La portion du jour est terminée, qu’Allah vous bénisse',
+    none: 'Pas encore de portion : elle apparaît après la première mémorisation dans votre dossier.',
+    dayOff: 'Aujourd’hui n’est pas un jour de cours ; la portion est facultative.',
+    pages: '{n} pages',
+  },
+
+  /** Recurring mistakes (recitation_mistake_stats, 0086). */
+  mistakeStats: {
+    title: 'Erreurs récurrentes',
+    hint: 'D’après les tests de l’enseignant et les vérifications automatiques des {days} derniers jours. Concentrez-vous dessus en révisant.',
+    summary: '{sessions} récitations · {mistakes} erreurs',
+    bySurah: 'Par sourate',
+    byAyah: 'Âyahs les plus difficiles',
+    byWord: 'Mots les plus difficiles',
+    times: '×{n}',
+    none: 'Aucune erreur enregistrée sur cette période.',
+    ayah: '{surah} : {ayah}',
+  },
+
   serdCard: {
     none: 'Aucun serd validé pour l’instant',
     sessions: 'Séances validées',

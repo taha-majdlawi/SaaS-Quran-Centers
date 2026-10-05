@@ -55,6 +55,7 @@ export function QuranReader({
   bookmarked: initialBookmarks,
   startAyah,
   role,
+  autoRecite,
   typeLabels,
   labels: L,
   recite: R,
@@ -69,6 +70,8 @@ export function QuranReader({
   startAyah?: number;
   /** staff test students, the family recites */
   role: 'staff' | 'family';
+  /** opened from the daily portion: the recite panel ready on this passage */
+  autoRecite?: { from: number; to: number; type: string };
   /** t.labels.recitationType */
   typeLabels: Record<string, string>;
   /** t.quran.ui */
@@ -100,7 +103,7 @@ export function QuranReader({
   const [error, setError] = useState('');
 
   // passage repeat, reciting, the teacher's test
-  const [panel, setPanel] = useState<'range' | 'recite' | 'test' | null>(null);
+  const [panel, setPanel] = useState<'range' | 'recite' | 'test' | null>(role === 'family' && autoRecite ? 'recite' : null);
   const [range, setRange] = useState<{ from: number; to: number; times: number } | null>(null);
   const [loopNo, setLoopNo] = useState(1);
   const [hideAll, setHideAll] = useState(false);
@@ -625,7 +628,8 @@ export function QuranReader({
           orgId={orgId}
           surah={surah}
           max={ayahCount}
-          initial={pageRange()}
+          initial={autoRecite ? { from: autoRecite.from, to: autoRecite.to } : pageRange()}
+          initialType={autoRecite?.type}
           people={people}
           typeLabels={typeLabels}
           onHide={(h) => {

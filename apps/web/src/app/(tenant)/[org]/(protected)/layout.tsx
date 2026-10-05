@@ -1,3 +1,4 @@
+import { GrowingTree } from '@/components/growing-tree';
 import { MonitoringOrg } from '@/components/error-reporter';
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
@@ -125,6 +126,7 @@ export default async function TenantProtectedLayout({
           </div>
         </header>
         <main>{children}</main>
+        <GrowingTree corner />
       </div>
     </div>
   );

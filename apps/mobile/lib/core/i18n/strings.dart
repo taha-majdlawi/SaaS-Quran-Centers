@@ -790,6 +790,20 @@ class SMem {
   final String contactHint;
 }
 
+/// Recurring mistakes (recitation_mistake_stats).
+class SMistakes {
+  const SMistakes({required this.title, required this.hint, required this.summary, required this.bySurah, required this.byAyah, required this.byWord, required this.times, required this.none, required this.ayah});
+  final String title;
+  final String hint;
+  final String summary;
+  final String bySurah;
+  final String byAyah;
+  final String byWord;
+  final String times;
+  final String none;
+  final String ayah;
+}
+
 /// The points market (staff).
 class SMkt {
   const SMkt({required this.rateTitle, required this.perPoints, required this.equals, required this.currency, required this.rateHint, required this.rateInvalid, required this.rateSaved, required this.cancelOrder, required this.cancelOrderBody, required this.no, required this.yes, required this.orderCancelled, required this.newItem, required this.adminOnly, required this.items, required this.ordersN, required this.orders, required this.balances, required this.noOrders, required this.delivered, required this.walletLine, required this.disabled, required this.rateLine, required this.rateSub, required this.noItems, required this.unlimited, required this.stockN, required this.inactiveSuffix, required this.nameRequired, required this.noUpload, required this.uploadFailed, required this.tooBig3, required this.deleteItem, required this.deleteItemBody, required this.editItem, required this.name, required this.description, required this.uploadDevice, required this.removeImage, required this.imageLink, required this.priceIn, required this.stock, required this.active});
@@ -1691,8 +1705,27 @@ class SWeekly {
   final String open;
 }
 
+/// The daily portion card (student_wird).
+class SWird {
+  const SWird({required this.title, required this.newPart, required this.reviewPart, required this.fromTeacher, required this.suggested, required this.done, required this.sent, required this.todo, required this.recite, required this.open, required this.complete, required this.none, required this.dayOff, required this.pages});
+  final String title;
+  final String newPart;
+  final String reviewPart;
+  final String fromTeacher;
+  final String suggested;
+  final String done;
+  final String sent;
+  final String todo;
+  final String recite;
+  final String open;
+  final String complete;
+  final String none;
+  final String dayOff;
+  final String pages;
+}
+
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.mem, required this.mistakes, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1717,6 +1750,7 @@ class S {
   final SGather gather;
   final SIns ins;
   final SMem mem;
+  final SMistakes mistakes;
   final SMkt mkt;
   final SNav nav;
   final SNotif notif;
@@ -1736,6 +1770,7 @@ class S {
   final STeach teach;
   final SUi ui;
   final SWeekly weekly;
+  final SWird wird;
 
   static const ar = S(
     lang: 'ar',
@@ -2464,6 +2499,17 @@ class S {
       contactTitle: 'التواصل',
       contactHint: 'يُفضّل مع رمز الدولة، مثل ‎+962791234567',
     ),
+    mistakes: SMistakes(
+      title: 'مواضع الأخطاء المتكررة',
+      hint: 'من اختبارات المعلم في المصحف والفحص الآلي للتسميعات المسجّلة، في آخر {days} يومًا. ركّز عليها في المراجعة.',
+      summary: '{sessions} تسميع · {mistakes} خطأ',
+      bySurah: 'حسب السورة',
+      byAyah: 'الآيات الأكثر خطأ',
+      byWord: 'الكلمات الأكثر خطأ',
+      times: '×{n}',
+      none: 'لا توجد أخطاء مسجّلة في هذه الفترة.',
+      ayah: '{surah} : {ayah}',
+    ),
     mkt: SMkt(
       rateTitle: 'سعر تحويل النقاط',
       perPoints: 'كل (نقطة)',
@@ -2530,7 +2576,7 @@ class S {
       noPermission: 'لم يُمنح التطبيق إذن الإشعارات. افتح إعدادات الهاتف ← التطبيقات ← بستان القرآن ← الإشعارات وفعّلها.',
       paused: 'أوقف المركز إرسال الإشعارات مؤقتًا — تبقى القائمة داخل التطبيق تعمل.',
       quiet: 'لا تصل إشعارات الهاتف بين {from} و{to} — تُؤجَّل إلى الصباح.',
-      events: {'announcement': 'إعلان جديد', 'calendar_entry': 'فعالية جديدة في التقويم', 'center_closed': 'إجازة أو إغلاق', 'event_reminder': 'تذكير بالفعاليات', 'waitlist_promoted': 'الترقية من قائمة الانتظار', 'serd_assigned': 'سرد مطلوب مني', 'serd_approved': 'اعتماد السرد', 'serd_rejected': 'عدم اعتماد السرد', 'market_fulfilled': 'تسليم طلب السوق', 'market_cancelled': 'إلغاء طلب السوق', 'badge_awarded': 'الشارات', 'weekly_digest': 'ملخص الأسبوع', 'attendance_reminder': 'تذكير تسجيل الحضور', 'teacher_checkin_reminder': 'تذكير المعلم بتسجيل حضوره', 'student_idle_teacher': 'تنبيه المعلم: طالب متأخر عن التسميع', 'student_idle': 'تذكير الطالب المتأخر عن التسميع', 'student_absences': 'تنبيه المشرف: غياب متكرر', 'deletion_request': 'طلبات حذف البيانات', 'deletion_reviewed': 'نتيجة طلب حذف بياناتي', 'gathering_submitted': 'رفع مجلس جديد', 'external_submitted': 'تسميع خارجي جديد', 'external_reviewed': 'نتيجة التسميع الخارجي', 'assistant_assigned': 'تعيين معلم مساعد', 'billing_reminder': 'تذكير الاشتراك', 'billing_reviewed': 'نتيجة مراجعة الدفع', 'capacity_warning': 'سعة الخطة', 'billing_downgraded': 'التحويل للخطة المجانية', 'fee_payment': 'إيصال دفع الرسوم', 'fee_overdue': 'تذكير الرسوم المستحقة', 'recitation_submitted': 'تسميع مسجّل جديد للمراجعة', 'recitation_reviewed': 'مراجعة التسميع المسجّل'},
+      events: {'announcement': 'إعلان جديد', 'calendar_entry': 'فعالية جديدة في التقويم', 'center_closed': 'إجازة أو إغلاق', 'event_reminder': 'تذكير بالفعاليات', 'waitlist_promoted': 'الترقية من قائمة الانتظار', 'serd_assigned': 'سرد مطلوب مني', 'serd_approved': 'اعتماد السرد', 'serd_rejected': 'عدم اعتماد السرد', 'market_fulfilled': 'تسليم طلب السوق', 'market_cancelled': 'إلغاء طلب السوق', 'badge_awarded': 'الشارات', 'weekly_digest': 'ملخص الأسبوع', 'attendance_reminder': 'تذكير تسجيل الحضور', 'teacher_checkin_reminder': 'تذكير المعلم بتسجيل حضوره', 'student_idle_teacher': 'تنبيه المعلم: طالب متأخر عن التسميع', 'student_idle': 'تذكير الطالب المتأخر عن التسميع', 'student_absences': 'تنبيه المشرف: غياب متكرر', 'deletion_request': 'طلبات حذف البيانات', 'deletion_reviewed': 'نتيجة طلب حذف بياناتي', 'gathering_submitted': 'رفع مجلس جديد', 'external_submitted': 'تسميع خارجي جديد', 'external_reviewed': 'نتيجة التسميع الخارجي', 'assistant_assigned': 'تعيين معلم مساعد', 'billing_reminder': 'تذكير الاشتراك', 'billing_reviewed': 'نتيجة مراجعة الدفع', 'capacity_warning': 'سعة الخطة', 'billing_downgraded': 'التحويل للخطة المجانية', 'fee_payment': 'إيصال دفع الرسوم', 'fee_overdue': 'تذكير الرسوم المستحقة', 'recitation_submitted': 'تسميع مسجّل جديد للمراجعة', 'recitation_reviewed': 'مراجعة التسميع المسجّل', 'wird_reminder': 'تذكير بورد اليوم'},
       types: 'أنواع الإشعارات',
       instantTitle: 'لتصل الإشعارات فورًا',
       instantBody: 'الهاتف يوفّر البطارية بتأخير إشعارات هذا التطبيق. اسمح له بالعمل دون قيود لتصلك الرسائل لحظة إرسالها.',
@@ -3308,6 +3354,22 @@ class S {
       nextPlan: 'المطلوب للأسبوع القادم',
       open: 'التقرير الأسبوعي',
     ),
+    wird: SWird(
+      title: 'ورد اليوم',
+      newPart: 'حفظ جديد',
+      reviewPart: 'مراجعة',
+      fromTeacher: 'حدّده معلمك',
+      suggested: 'مقترح',
+      done: 'تمّ',
+      sent: 'أُرسل للمعلم',
+      todo: 'لم يُسمَّع بعد',
+      recite: 'سمّع الآن',
+      open: 'افتح في المصحف',
+      complete: 'أتممت ورد اليوم، بارك الله فيك',
+      none: 'لا يوجد ورد بعد: يظهر بعد أول تسميع حفظ جديد في سجلك.',
+      dayOff: 'اليوم ليس يوم دوام في المركز، والورد اختياري.',
+      pages: '{n} صفحة',
+    ),
   );
 
   static const en = S(
@@ -4037,6 +4099,17 @@ class S {
       contactTitle: 'Contact',
       contactHint: 'Preferably with the country code, e.g. +962791234567',
     ),
+    mistakes: SMistakes(
+      title: 'Recurring mistakes',
+      hint: 'From the teacher\'s tests in the mushaf and the automatic checks of recorded recitations, over the last {days} days. Focus on them when reviewing.',
+      summary: '{sessions} recitations · {mistakes} mistakes',
+      bySurah: 'By surah',
+      byAyah: 'Ayahs with the most mistakes',
+      byWord: 'Words with the most mistakes',
+      times: '×{n}',
+      none: 'No mistakes recorded in this period.',
+      ayah: '{surah} : {ayah}',
+    ),
     mkt: SMkt(
       rateTitle: 'Points exchange rate',
       perPoints: 'Every (points)',
@@ -4103,7 +4176,7 @@ class S {
       noPermission: 'The app hasn’t been allowed to send notifications. Open the phone’s Settings → Apps → Bustan Al-Quran → Notifications and turn them on.',
       paused: 'The center has paused notifications for now — the in-app list still works.',
       quiet: 'Phone notifications are held between {from} and {to} — they arrive in the morning.',
-      events: {'announcement': 'New announcement', 'calendar_entry': 'New calendar event', 'center_closed': 'Holiday or closure', 'event_reminder': 'Event reminders', 'waitlist_promoted': 'Moved up from the waiting list', 'serd_assigned': 'A serd assigned to me', 'serd_approved': 'Serd approved', 'serd_rejected': 'Serd not approved', 'market_fulfilled': 'Market order delivered', 'market_cancelled': 'Market order cancelled', 'badge_awarded': 'Badges', 'weekly_digest': 'Weekly digest', 'attendance_reminder': 'Attendance reminder', 'teacher_checkin_reminder': 'Teacher check-in reminder', 'student_idle_teacher': 'Teacher alert: student behind on recitation', 'student_idle': 'Reminder to a student behind on recitation', 'student_absences': 'Admin alert: repeated absence', 'deletion_request': 'Data deletion requests', 'deletion_reviewed': 'Outcome of my data deletion request', 'gathering_submitted': 'New gathering submitted', 'external_submitted': 'New external recitation', 'external_reviewed': 'External recitation outcome', 'assistant_assigned': 'Assistant teacher assigned', 'billing_reminder': 'Subscription reminder', 'billing_reviewed': 'Payment review outcome', 'capacity_warning': 'Plan capacity', 'billing_downgraded': 'Moved to the free plan', 'fee_payment': 'Fee payment receipt', 'fee_overdue': 'Fees due reminder', 'recitation_submitted': 'New recorded recitation to review', 'recitation_reviewed': 'Recorded recitation reviewed'},
+      events: {'announcement': 'New announcement', 'calendar_entry': 'New calendar event', 'center_closed': 'Holiday or closure', 'event_reminder': 'Event reminders', 'waitlist_promoted': 'Moved up from the waiting list', 'serd_assigned': 'A serd assigned to me', 'serd_approved': 'Serd approved', 'serd_rejected': 'Serd not approved', 'market_fulfilled': 'Market order delivered', 'market_cancelled': 'Market order cancelled', 'badge_awarded': 'Badges', 'weekly_digest': 'Weekly digest', 'attendance_reminder': 'Attendance reminder', 'teacher_checkin_reminder': 'Teacher check-in reminder', 'student_idle_teacher': 'Teacher alert: student behind on recitation', 'student_idle': 'Reminder to a student behind on recitation', 'student_absences': 'Admin alert: repeated absence', 'deletion_request': 'Data deletion requests', 'deletion_reviewed': 'Outcome of my data deletion request', 'gathering_submitted': 'New gathering submitted', 'external_submitted': 'New external recitation', 'external_reviewed': 'External recitation outcome', 'assistant_assigned': 'Assistant teacher assigned', 'billing_reminder': 'Subscription reminder', 'billing_reviewed': 'Payment review outcome', 'capacity_warning': 'Plan capacity', 'billing_downgraded': 'Moved to the free plan', 'fee_payment': 'Fee payment receipt', 'fee_overdue': 'Fees due reminder', 'recitation_submitted': 'New recorded recitation to review', 'recitation_reviewed': 'Recorded recitation reviewed', 'wird_reminder': 'Today\'s portion reminder'},
       types: 'Notification types',
       instantTitle: 'Get notifications instantly',
       instantBody: 'The phone is saving battery by delaying this app’s notifications. Let it run unrestricted so messages arrive the moment they are sent.',
@@ -4881,6 +4954,22 @@ class S {
       nextPlan: 'For next week',
       open: 'Weekly report',
     ),
+    wird: SWird(
+      title: 'Today\'s portion',
+      newPart: 'New memorization',
+      reviewPart: 'Review',
+      fromTeacher: 'Set by your teacher',
+      suggested: 'Suggested',
+      done: 'Done',
+      sent: 'Sent to the teacher',
+      todo: 'Not recited yet',
+      recite: 'Recite now',
+      open: 'Open in the mushaf',
+      complete: 'Today\'s portion is complete, may Allah bless you',
+      none: 'No portion yet: it appears after the first new memorization in your record.',
+      dayOff: 'Today is not a working day at the center; the portion is optional.',
+      pages: '{n} pages',
+    ),
   );
 
   static const tr = S(
@@ -5610,6 +5699,17 @@ class S {
       contactTitle: 'İletişim',
       contactHint: 'Tercihen ülke koduyla, ör. +962791234567',
     ),
+    mistakes: SMistakes(
+      title: 'Tekrarlanan hatalar',
+      hint: 'Son {days} gündeki öğretmen sınavlarından ve kayıtlı dinletmelerin otomatik kontrolünden. Tekrarda bunlara odaklanın.',
+      summary: '{sessions} dinletme · {mistakes} hata',
+      bySurah: 'Sureye göre',
+      byAyah: 'En çok hata yapılan ayetler',
+      byWord: 'En çok hata yapılan kelimeler',
+      times: '×{n}',
+      none: 'Bu dönemde kayıtlı hata yok.',
+      ayah: '{surah} : {ayah}',
+    ),
     mkt: SMkt(
       rateTitle: 'Puan dönüşüm oranı',
       perPoints: 'Her (puan)',
@@ -5676,7 +5776,7 @@ class S {
       noPermission: 'Uygulamanın bildirim göndermesine izin verilmedi. Telefonun Ayarlar → Uygulamalar → Bustan Al-Quran → Bildirimler bölümünü açıp etkinleştirin.',
       paused: 'Merkez bildirimleri şimdilik duraklattı — uygulama içi liste çalışmaya devam ediyor.',
       quiet: 'Telefon bildirimleri {from} ile {to} arasında bekletilir — sabah gelir.',
-      events: {'announcement': 'Yeni duyuru', 'calendar_entry': 'Takvimde yeni etkinlik', 'center_closed': 'Tatil veya kapanış', 'event_reminder': 'Etkinlik hatırlatmaları', 'waitlist_promoted': 'Bekleme listesinden kayıt', 'serd_assigned': 'Bana atanan serd', 'serd_approved': 'Serd onayı', 'serd_rejected': 'Serd onaylanmadı', 'market_fulfilled': 'Market siparişi teslim edildi', 'market_cancelled': 'Market siparişi iptal edildi', 'badge_awarded': 'Rozetler', 'weekly_digest': 'Haftalık özet', 'attendance_reminder': 'Yoklama hatırlatması', 'teacher_checkin_reminder': 'Öğretmen giriş hatırlatması', 'student_idle_teacher': 'Öğretmen uyarısı: dinletmede geride kalan öğrenci', 'student_idle': 'Dinletmede geride kalan öğrenciye hatırlatma', 'student_absences': 'Yönetici uyarısı: tekrarlanan devamsızlık', 'deletion_request': 'Veri silme talepleri', 'deletion_reviewed': 'Veri silme talebimin sonucu', 'gathering_submitted': 'Yeni toplantı gönderildi', 'external_submitted': 'Yeni dış dinletme', 'external_reviewed': 'Dış dinletme sonucu', 'assistant_assigned': 'Yardımcı öğretmen ataması', 'billing_reminder': 'Abonelik hatırlatması', 'billing_reviewed': 'Ödeme inceleme sonucu', 'capacity_warning': 'Plan kapasitesi', 'billing_downgraded': 'Ücretsiz plana geçiş', 'fee_payment': 'Ücret ödeme makbuzu', 'fee_overdue': 'Ödenmesi gereken ücret hatırlatması', 'recitation_submitted': 'İncelenecek yeni kayıtlı dinletme', 'recitation_reviewed': 'Kayıtlı dinletme incelendi'},
+      events: {'announcement': 'Yeni duyuru', 'calendar_entry': 'Takvimde yeni etkinlik', 'center_closed': 'Tatil veya kapanış', 'event_reminder': 'Etkinlik hatırlatmaları', 'waitlist_promoted': 'Bekleme listesinden kayıt', 'serd_assigned': 'Bana atanan serd', 'serd_approved': 'Serd onayı', 'serd_rejected': 'Serd onaylanmadı', 'market_fulfilled': 'Market siparişi teslim edildi', 'market_cancelled': 'Market siparişi iptal edildi', 'badge_awarded': 'Rozetler', 'weekly_digest': 'Haftalık özet', 'attendance_reminder': 'Yoklama hatırlatması', 'teacher_checkin_reminder': 'Öğretmen giriş hatırlatması', 'student_idle_teacher': 'Öğretmen uyarısı: dinletmede geride kalan öğrenci', 'student_idle': 'Dinletmede geride kalan öğrenciye hatırlatma', 'student_absences': 'Yönetici uyarısı: tekrarlanan devamsızlık', 'deletion_request': 'Veri silme talepleri', 'deletion_reviewed': 'Veri silme talebimin sonucu', 'gathering_submitted': 'Yeni toplantı gönderildi', 'external_submitted': 'Yeni dış dinletme', 'external_reviewed': 'Dış dinletme sonucu', 'assistant_assigned': 'Yardımcı öğretmen ataması', 'billing_reminder': 'Abonelik hatırlatması', 'billing_reviewed': 'Ödeme inceleme sonucu', 'capacity_warning': 'Plan kapasitesi', 'billing_downgraded': 'Ücretsiz plana geçiş', 'fee_payment': 'Ücret ödeme makbuzu', 'fee_overdue': 'Ödenmesi gereken ücret hatırlatması', 'recitation_submitted': 'İncelenecek yeni kayıtlı dinletme', 'recitation_reviewed': 'Kayıtlı dinletme incelendi', 'wird_reminder': 'Bugünün virdi hatırlatması'},
       types: 'Bildirim türleri',
       instantTitle: 'Bildirimleri anında alın',
       instantBody: 'Telefon, bu uygulamanın bildirimlerini geciktirerek pil tasarrufu yapıyor. Mesajların gönderildiği anda gelmesi için kısıtlamasız çalışmasına izin verin.',
@@ -6454,6 +6554,22 @@ class S {
       nextPlan: 'Gelecek hafta için',
       open: 'Haftalık rapor',
     ),
+    wird: SWird(
+      title: 'Bugünün virdi',
+      newPart: 'Yeni ezber',
+      reviewPart: 'Tekrar',
+      fromTeacher: 'Öğretmenin belirledi',
+      suggested: 'Önerilen',
+      done: 'Tamam',
+      sent: 'Öğretmene gönderildi',
+      todo: 'Henüz okunmadı',
+      recite: 'Şimdi dinlet',
+      open: 'Mushafta aç',
+      complete: 'Bugünün virdi tamam, Allah bereketli kılsın',
+      none: 'Henüz vird yok: kaydındaki ilk yeni ezberden sonra görünür.',
+      dayOff: 'Bugün merkezde çalışma günü değil; vird isteğe bağlı.',
+      pages: '{n} sayfa',
+    ),
   );
 
   static const fr = S(
@@ -7183,6 +7299,17 @@ class S {
       contactTitle: 'Contact',
       contactHint: 'De préférence avec l’indicatif du pays, ex. +962791234567',
     ),
+    mistakes: SMistakes(
+      title: 'Erreurs récurrentes',
+      hint: 'D’après les tests de l’enseignant et les vérifications automatiques des {days} derniers jours. Concentrez-vous dessus en révisant.',
+      summary: '{sessions} récitations · {mistakes} erreurs',
+      bySurah: 'Par sourate',
+      byAyah: 'Âyahs les plus difficiles',
+      byWord: 'Mots les plus difficiles',
+      times: '×{n}',
+      none: 'Aucune erreur enregistrée sur cette période.',
+      ayah: '{surah} : {ayah}',
+    ),
     mkt: SMkt(
       rateTitle: 'Taux de conversion des points',
       perPoints: 'Tous les (points)',
@@ -7249,7 +7376,7 @@ class S {
       noPermission: 'L’application n’a pas été autorisée à envoyer des notifications. Ouvrez Réglages du téléphone → Applications → Bustan Al-Quran → Notifications et activez-les.',
       paused: 'Le centre a suspendu les notifications pour le moment — la liste dans l’application fonctionne toujours.',
       quiet: 'Les notifications téléphone sont retenues entre {from} et {to} — elles arrivent le matin.',
-      events: {'announcement': 'Nouvelle annonce', 'calendar_entry': 'Nouvel événement au calendrier', 'center_closed': 'Congé ou fermeture', 'event_reminder': 'Rappels d’événements', 'waitlist_promoted': 'Inscription depuis la liste d’attente', 'serd_assigned': 'Un serd qui m’est assigné', 'serd_approved': 'Serd validé', 'serd_rejected': 'Serd non validé', 'market_fulfilled': 'Commande de la boutique remise', 'market_cancelled': 'Commande de la boutique annulée', 'badge_awarded': 'Badges', 'weekly_digest': 'Résumé hebdomadaire', 'attendance_reminder': 'Rappel d’appel', 'teacher_checkin_reminder': 'Rappel de pointage de l’enseignant', 'student_idle_teacher': 'Alerte enseignant : élève en retard de récitation', 'student_idle': 'Rappel à l’élève en retard de récitation', 'student_absences': 'Alerte administrateur : absences répétées', 'deletion_request': 'Demandes de suppression de données', 'deletion_reviewed': 'Résultat de ma demande de suppression', 'gathering_submitted': 'Nouveau rassemblement soumis', 'external_submitted': 'Nouvelle récitation externe', 'external_reviewed': 'Résultat de la récitation externe', 'assistant_assigned': 'Nomination d’enseignant assistant', 'billing_reminder': 'Rappel d’abonnement', 'billing_reviewed': 'Résultat de la vérification du paiement', 'capacity_warning': 'Capacité de la formule', 'billing_downgraded': 'Passage à la formule gratuite', 'fee_payment': 'Reçu de paiement des frais', 'fee_overdue': 'Rappel de frais dus', 'recitation_submitted': 'Nouvelle récitation enregistrée à examiner', 'recitation_reviewed': 'Récitation enregistrée examinée'},
+      events: {'announcement': 'Nouvelle annonce', 'calendar_entry': 'Nouvel événement au calendrier', 'center_closed': 'Congé ou fermeture', 'event_reminder': 'Rappels d’événements', 'waitlist_promoted': 'Inscription depuis la liste d’attente', 'serd_assigned': 'Un serd qui m’est assigné', 'serd_approved': 'Serd validé', 'serd_rejected': 'Serd non validé', 'market_fulfilled': 'Commande de la boutique remise', 'market_cancelled': 'Commande de la boutique annulée', 'badge_awarded': 'Badges', 'weekly_digest': 'Résumé hebdomadaire', 'attendance_reminder': 'Rappel d’appel', 'teacher_checkin_reminder': 'Rappel de pointage de l’enseignant', 'student_idle_teacher': 'Alerte enseignant : élève en retard de récitation', 'student_idle': 'Rappel à l’élève en retard de récitation', 'student_absences': 'Alerte administrateur : absences répétées', 'deletion_request': 'Demandes de suppression de données', 'deletion_reviewed': 'Résultat de ma demande de suppression', 'gathering_submitted': 'Nouveau rassemblement soumis', 'external_submitted': 'Nouvelle récitation externe', 'external_reviewed': 'Résultat de la récitation externe', 'assistant_assigned': 'Nomination d’enseignant assistant', 'billing_reminder': 'Rappel d’abonnement', 'billing_reviewed': 'Résultat de la vérification du paiement', 'capacity_warning': 'Capacité de la formule', 'billing_downgraded': 'Passage à la formule gratuite', 'fee_payment': 'Reçu de paiement des frais', 'fee_overdue': 'Rappel de frais dus', 'recitation_submitted': 'Nouvelle récitation enregistrée à examiner', 'recitation_reviewed': 'Récitation enregistrée examinée', 'wird_reminder': 'Rappel de la portion du jour'},
       types: 'Types de notifications',
       instantTitle: 'Recevoir les notifications instantanément',
       instantBody: 'Le téléphone économise la batterie en retardant les notifications de cette application. Laissez-la fonctionner sans restriction pour que les messages arrivent dès leur envoi.',
@@ -8026,6 +8153,22 @@ class S {
       noNote: 'Pas de remarque de l’enseignant cette semaine',
       nextPlan: 'Pour la semaine prochaine',
       open: 'Rapport hebdomadaire',
+    ),
+    wird: SWird(
+      title: 'La portion du jour',
+      newPart: 'Nouvelle mémorisation',
+      reviewPart: 'Révision',
+      fromTeacher: 'Fixée par l’enseignant',
+      suggested: 'Suggérée',
+      done: 'Fait',
+      sent: 'Envoyé à l’enseignant',
+      todo: 'Pas encore récité',
+      recite: 'Réciter maintenant',
+      open: 'Ouvrir dans le mushaf',
+      complete: 'La portion du jour est terminée, qu’Allah vous bénisse',
+      none: 'Pas encore de portion : elle apparaît après la première mémorisation dans votre dossier.',
+      dayOff: 'Aujourd’hui n’est pas un jour de cours ; la portion est facultative.',
+      pages: '{n} pages',
     ),
   );
 

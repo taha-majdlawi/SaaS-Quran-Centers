@@ -121,6 +121,7 @@ export function RecitePanel({
   surah,
   max,
   initial,
+  initialType,
   people,
   typeLabels,
   onHide,
@@ -132,6 +133,7 @@ export function RecitePanel({
   surah: number;
   max: number;
   initial: { from: number; to: number };
+  initialType?: string;
   people: People | null;
   typeLabels: Record<string, string>;
   onHide: (hidden: boolean) => void;
@@ -140,7 +142,7 @@ export function RecitePanel({
   L: ReciteLabels;
 }) {
   const [range, setRange] = useState(initial);
-  const [type, setType] = useState<string>('new_memorization');
+  const [type, setType] = useState<string>(initialType && (TYPES as readonly string[]).includes(initialType) ? initialType : 'new_memorization');
   const [studentId, setStudentId] = useState('');
   const [phase, setPhase] = useState<Phase>('setup');
   const [status, setStatus] = useState('');

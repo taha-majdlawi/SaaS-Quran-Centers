@@ -157,10 +157,12 @@ class RecitePanel extends StatefulWidget {
     required this.onHide,
     required this.onMarks,
     required this.onClose,
+    this.initialType,
   });
 
   final String orgId;
   final int surah, max, from, to;
+  final String? initialType;
   final ValueChanged<bool> onHide;
   final ValueChanged<WordMarks> onMarks;
   final VoidCallback onClose;
@@ -177,7 +179,7 @@ class _RecitePanelState extends State<RecitePanel> {
   RecitePeople? _people;
   String? _studentId;
   late int _from = widget.from, _to = widget.to;
-  String _type = 'new_memorization';
+  late String _type = _types.contains(widget.initialType) ? widget.initialType! : 'new_memorization';
   _Phase _phase = _Phase.setup;
   String _status = '';
   String? _error;

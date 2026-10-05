@@ -6,10 +6,10 @@ export default async function SurahPage({
   searchParams,
 }: {
   params: Promise<{ org: string; surah: string }>;
-  searchParams: Promise<{ ayah?: string }>;
+  searchParams: Promise<{ ayah?: string; to?: string; recite?: string }>;
 }) {
   const { org: slug, surah } = await params;
-  const { ayah } = await searchParams;
+  const { ayah, to, recite } = await searchParams;
   const org = await getOrgContext(slug);
-  return <QuranReaderView orgId={org.id} base="/quran" surah={Number(surah)} ayah={ayah ? Number(ayah) : undefined} />;
+  return <QuranReaderView orgId={org.id} base="/quran" surah={Number(surah)} ayah={ayah ? Number(ayah) : undefined} reciteTo={to ? Number(to) : undefined} reciteType={recite} />;
 }
