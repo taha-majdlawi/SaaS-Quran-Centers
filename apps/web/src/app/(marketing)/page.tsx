@@ -74,7 +74,24 @@ export default async function MarketingHomePage() {
   const plans = (data ?? []) as PublicPlan[];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#FBFAF6] text-gray-800">
+    <div className="relative isolate min-h-screen overflow-x-hidden text-gray-800">
+      {/* the photo stays put behind the whole page; the sections scroll over it */}
+      <div aria-hidden className="fixed inset-0 -z-10 bg-[#5a1414]">
+        <picture>
+          <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.webp" type="image/webp" />
+          <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.jpg" />
+          <source srcSet="/marketing/hero-phone.webp" type="image/webp" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/marketing/hero-phone.jpg"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full object-cover object-[50%_30%] lg:object-[15%_50%]"
+          />
+        </picture>
+      </div>
+      <span className="sr-only">{m.heroImageAlt}</span>
       {/* header */}
       <header className="sticky top-0 z-20 border-b border-black/5 bg-[#FBFAF6]/90 backdrop-blur">
         <div className={`${container} flex items-center justify-between gap-3 py-3`}>
@@ -104,31 +121,23 @@ export default async function MarketingHomePage() {
       <main>
         {/* hero: a teacher hearing his student, the photo filling the screen */}
         {/* phones: the photo, then the words on the page colour; wide screens: the words over the photo */}
-        <section className="relative isolate overflow-hidden bg-[#FBFAF6] lg:bg-[#5a1414]">
-          <div className="relative lg:absolute lg:inset-0 lg:-z-10">
-            <picture>
-              <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.webp" type="image/webp" />
-              <source media="(min-width: 1024px)" srcSet="/marketing/hero-wide.jpg" />
-              <source srcSet="/marketing/hero-phone.webp" type="image/webp" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/marketing/hero-phone.jpg"
-                alt={m.heroImageAlt}
-                fetchPriority="high"
-                decoding="async"
-                className="block h-[68svh] w-full object-cover object-[50%_40%] lg:h-full lg:object-[15%_50%]"
-              />
-            </picture>
-            {/* where the photo was taken - small, in the empty bottom corner */}
-            <p className="absolute bottom-3 right-3 max-w-[85%] rounded-full bg-black/55 px-3 py-1 text-[11px] text-white backdrop-blur-sm lg:bottom-5 lg:right-6 lg:text-xs">
+        <section className="relative">
+          {/* phones: the photo shows through this space, with where it was taken */}
+          <div className="relative h-[62svh] lg:hidden">
+            <p className="absolute bottom-3 right-3 max-w-[85%] rounded-full bg-black/55 px-3 py-1 text-[11px] text-white">
               <MapPin size={12} className="-mt-0.5 me-1 inline" aria-hidden />
               {m.heroImageCaption}
             </p>
           </div>
+          <p className="absolute bottom-5 right-6 z-10 hidden rounded-full bg-black/55 px-3 py-1 text-xs text-white lg:block">
+            <MapPin size={12} className="-mt-0.5 me-1 inline" aria-hidden />
+            {m.heroImageCaption}
+          </p>
           {/* shade only behind the words (right on wide screens); the two people on the left stay bright */}
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 hidden bg-[linear-gradient(to_left,rgba(28,10,26,0.82)_0%,rgba(28,10,26,0.62)_26%,rgba(28,10,26,0.22)_44%,transparent_56%)] lg:block" />
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-24 bg-gradient-to-t from-black/25 to-transparent lg:block" />
 
+          <div className="bg-[#FBFAF6] lg:bg-transparent">
           <div className={`${container} relative lg:flex lg:min-h-[calc(100svh-4rem)] lg:items-center`}>
             {/* the words keep to the right, over the carpet, so the two people stay clear on the left */}
             <div className="flex flex-col items-start gap-5 py-10 lg:ml-auto lg:max-w-[min(32rem,38vw)] lg:py-20 lg:text-white">
@@ -148,7 +157,11 @@ export default async function MarketingHomePage() {
               <p className="text-sm text-gray-500 lg:text-white/75">{m.heroNote}</p>
             </div>
           </div>
+          </div>
         </section>
+
+        {/* everything below passes over the photo: a light veil lets it show faintly through */}
+        <div className="bg-[#FBFAF6]/[0.86]">
 
         {/* the product, right under the photo */}
         <section className="relative">
@@ -187,7 +200,7 @@ export default async function MarketingHomePage() {
         </section>
 
         {/* roles */}
-        <section className="bg-white py-20">
+        <section className="bg-white/50 py-20">
           <div className={container}>
             <SectionHead title={m.rolesTitle} />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -218,7 +231,7 @@ export default async function MarketingHomePage() {
 
         {/* pricing */}
         {plans.length > 0 && (
-          <section id="pricing" className="scroll-mt-20 bg-gradient-to-b from-white to-brand/5 py-20">
+          <section id="pricing" className="scroll-mt-20 bg-gradient-to-b from-white/50 to-brand/5 py-20">
             <div className={container}>
               <SectionHead title={m.pricingTitle} body={m.pricingBody} />
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -293,7 +306,7 @@ export default async function MarketingHomePage() {
         </section>
 
         {/* faq */}
-        <section id="faq" className="scroll-mt-20 bg-white py-20">
+        <section id="faq" className="scroll-mt-20 bg-white/50 py-20">
           <div className="mx-auto max-w-3xl px-5 sm:px-8">
             <SectionHead title={m.faqTitle} />
             <div className="flex flex-col gap-3">
@@ -320,9 +333,10 @@ export default async function MarketingHomePage() {
             </a>
           </div>
         </section>
+        </div>
       </main>
 
-      <footer className="border-t border-black/5">
+      <footer className="border-t border-black/5 bg-[#FBFAF6]/[0.94]">
         <div className={`${container} flex flex-col items-center justify-between gap-3 py-8 text-sm text-gray-500 sm:flex-row`}>
           <span>{m.footer}</span>
           <div className="flex gap-4">
