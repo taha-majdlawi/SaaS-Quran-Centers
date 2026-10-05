@@ -616,6 +616,8 @@ export const tr: Dictionary = {
       legend: 'Eksik kelimeler kırmızı, farklı kelimeler turuncu gösterilir.',
       unavailable: 'Otomatik kontrol şu an yapılamıyor. Kaydı yine de öğretmeninize gönderebilirsiniz.',
       autoNote: 'Otomatik kontrol yaklaşıktır: eksik veya farklı kelimeleri bulur, tecvid ve harekeleri değerlendirmez. Esas olan öğretmenin kararıdır.',
+      waitingN: 'İncelemenizi bekleyen {n} kayıtlı dinletme',
+      recheck: 'Otomatik kontrolü yeniden çalıştır',
       testNote: 'Not (isteğe bağlı)',
       note: 'Öğretmene not (isteğe bağlı)',
       send: 'Öğretmene gönder',

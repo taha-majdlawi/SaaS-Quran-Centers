@@ -70,6 +70,8 @@ T = {
  'statusRejected': 'Geri gönderildi',
  'reviewedBy': '{name} inceledi',
  'ayahRange': '{surah} suresi {from}–{to}',
+ 'waitingN': 'İncelemenizi bekleyen {n} kayıtlı dinletme',
+ 'recheck': 'Otomatik kontrolü yeniden çalıştır',
  'testNote': 'Not (isteğe bağlı)',
  'micDeniedApp': 'Mikrofon izni verilmedi. Cihaz ayarlarından izin verip tekrar deneyin.',
  'play': 'Dinle',

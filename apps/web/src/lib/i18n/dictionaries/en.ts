@@ -616,6 +616,8 @@ export const en: Dictionary = {
       legend: 'Missing words are red and different words orange on the page.',
       unavailable: 'The automatic check is not available now. You can still send the recording to your teacher.',
       autoNote: 'The automatic check is approximate: it finds missing or different words, not tajweed or vowels. Your teacher’s judgement is what counts.',
+      waitingN: '{n} recorded recitations waiting for your review',
+      recheck: 'Run the automatic check again',
       testNote: 'Note (optional)',
       note: 'Note for the teacher (optional)',
       send: 'Send to the teacher',

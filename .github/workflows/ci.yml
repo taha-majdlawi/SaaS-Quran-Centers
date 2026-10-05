@@ -29,6 +29,8 @@ jobs:
       - name: i18n strings match their specs
         working-directory: apps/web
         run: python3 tool/i18n/gen.py && git diff --exit-code -- src/lib/i18n
+      - name: Unit tests
+        run: npm test --workspace apps/web
       - name: Build
         run: npm run build --workspace apps/web
         env:

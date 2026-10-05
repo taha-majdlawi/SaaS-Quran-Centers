@@ -276,6 +276,7 @@ class _RecitePanelState extends State<RecitePanel> {
     setState(() => _phase = _Phase.working);
     try {
       await _api.submit(saved.id, _note.text.trim().isEmpty ? null : _note.text.trim());
+      _saved = null; // sent: it is the teacher's now, never discarded from here
       if (mounted) setState(() => _phase = _Phase.sent);
     } catch (e) {
       if (mounted) {
@@ -305,6 +306,12 @@ class _RecitePanelState extends State<RecitePanel> {
     if (_phase == _Phase.recording) {
       _timer?.cancel();
       _recorder.cancel();
+    }
+    // a checked recording that was never sent is not kept
+    final saved = _saved;
+    if (_phase == _Phase.result && saved != null) {
+      _saved = null;
+      _api.discard(saved.id, saved.path).catchError((_) {});
     }
     widget.onHide(false);
     widget.onMarks(const {});

@@ -254,6 +254,15 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
                 icon: Icon(_playingId == r.id ? Icons.stop_circle_outlined : Icons.play_circle_outline_rounded),
                 label: Text(t.play),
               ),
+            if (!widget.family && r.kind == 'self' && r.status == 'submitted' && r.raw['auto_result'] == null)
+              TextButton.icon(
+                onPressed: () async {
+                  await _api.check(r.id);
+                  if (mounted) _reload();
+                },
+                icon: const Icon(Icons.refresh_rounded),
+                label: Text(t.recheck),
+              ),
             TextButton.icon(
               onPressed: () => context.push('/quran/${r.surah}?ayah=${r.from}'),
               icon: const Icon(Icons.auto_stories_outlined),

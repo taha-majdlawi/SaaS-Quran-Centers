@@ -15,6 +15,7 @@ import '../recitation/recitation_repository.dart';
 import '../teacher/teacher_home_screen.dart';
 import 'admin_insights_section.dart';
 import 'attention_section.dart';
+import 'recitations_waiting_card.dart';
 import '../../core/i18n/i18n.dart';
 import '../../core/offline/sync_service.dart';
 
@@ -128,6 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     GardenGrid(children: [
                       for (final a in quickActions) GardenTile(icon: a.icon, label: a.label, color: a.color, onTap: () => context.push(a.path)),
                     ]),
+                  if (org != null && (isAdmin || tenant.hasModule('students'))) RecitationsWaitingCard(orgId: org.id),
                   if (isAdmin && org != null) AttentionSection(orgId: org.id),
                   if (isAdmin && org != null) AdminInsightsSection(orgId: org.id),
                   if (_circlesFuture != null)

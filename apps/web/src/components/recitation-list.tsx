@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { RecitationWords } from '@/components/recitation-words';
+import { RecheckButton } from '@/components/recheck-button';
 import { reviewRecitation } from '@/lib/quran/recitation-actions';
 import { surahLabel } from '@/lib/quran/data';
 import { fmt } from '@/lib/i18n/config';
@@ -103,6 +104,7 @@ export function RecitationList({
               {r.reviewer && r.kind === 'self' && r.status !== 'submitted' && <span>{fmt(R.reviewedBy, { name: r.reviewer })}</span>}
             </p>
             {url && <audio controls preload="none" src={url} className="h-9 w-full" />}
+            {mode === 'staff' && r.kind === 'self' && r.status === 'submitted' && !r.auto_result && <RecheckButton id={r.id} label={R.recheck} />}
             {flagged.length > 0 && <RecitationWords surah={r.surah} items={flagged} missingLabel={r.kind === 'teacher_test' ? R.markedMistakes.replace('{list}', '') : R.missingWords} wrongLabel={R.heardAs} />}
             {r.student_note && <p className="text-sm text-gray-600">{fmt(R.studentNote, { note: r.student_note })}</p>}
             {r.teacher_note && <p className="rounded bg-gray-50 px-3 py-2 text-sm">{fmt(R.teacherNote, { note: r.teacher_note })}</p>}

@@ -20,6 +20,7 @@ import 'comms_repository.dart';
       'serd_reviewed' || 'serd_approved' => (icon: Icons.verified_rounded, color: const Color(0xFF2E7D32)),
       'serd_rejected' => (icon: Icons.report_problem_rounded, color: const Color(0xFFC62828)),
       'market_order' || 'market_fulfilled' || 'market_cancelled' => (icon: Icons.storefront_rounded, color: const Color(0xFFD84315)),
+      'recitation_submitted' || 'recitation_reviewed' => (icon: Icons.graphic_eq_rounded, color: const Color(0xFF1E6F5C)),
       'badge_awarded' => (icon: Icons.emoji_events_rounded, color: const Color(0xFFF9A825)),
       'weekly_digest' => (icon: Icons.insights_rounded, color: const Color(0xFF3949AB)),
       'attendance_reminder' => (icon: Icons.fact_check_rounded, color: const Color(0xFF00897B)),
@@ -114,6 +115,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return portal ? '/my/market' : '/market';
       case 'badge_awarded':
         return portal ? '/my/badges' : '/badges/${n.refId}';
+      case 'recitation_submitted':
+        return portal ? null : '/recitations';
+      case 'recitation_reviewed':
+        return portal ? '/my/recitations' : '/recitations';
     }
     return null;
   }

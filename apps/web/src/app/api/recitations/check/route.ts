@@ -41,12 +41,8 @@ async function surahText(surah: number, origin: string, env: Env): Promise<Surah
   }
 }
 
-function toBase64(buf: ArrayBuffer): string {
-  const bytes = new Uint8Array(buf);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(bin);
-}
+// native (nodejs_compat): a byte-by-byte loop costs real CPU time on a ~10 MB recording
+const toBase64 = (buf: ArrayBuffer) => Buffer.from(buf).toString('base64');
 
 export async function POST(request: Request) {
   let id: unknown;

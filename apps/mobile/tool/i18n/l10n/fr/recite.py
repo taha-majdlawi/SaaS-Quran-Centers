@@ -70,6 +70,8 @@ T = {
  'statusRejected': 'Renvoyée',
  'reviewedBy': 'Examinée par {name}',
  'ayahRange': 'Sourate {surah} {from}–{to}',
+ 'waitingN': '{n} récitations enregistrées attendent votre examen',
+ 'recheck': 'Relancer la vérification automatique',
  'testNote': 'Note (facultatif)',
  'micDeniedApp': 'L’accès au micro a été refusé. Autorisez-le dans les réglages de l’appareil et réessayez.',
  'play': 'Écouter',

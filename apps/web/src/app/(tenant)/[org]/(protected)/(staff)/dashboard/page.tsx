@@ -64,6 +64,9 @@ export default async function DashboardPage({ params, searchParams }: { params: 
     : [];
 
   const isAdmin = org.myRole === 'admin';
+  // recorded recitations waiting for this teacher (or any, for an admin)
+  const { data: recWaiting } = await supabase.rpc('recitation_inbox_count', { p_org: org.id });
+  const recitationsWaiting = (recWaiting as number | null) ?? 0;
   const [{ data: riskData }, { data: perfData }, { data: trendData }, { data: checkData }] = await Promise.all([
     isAdmin ? supabase.rpc('admin_dropout_risk', { p_org: org.id, p_limit: 8 }) : Promise.resolve({ data: null }),
     isAdmin ? supabase.rpc('admin_teacher_performance', { p_org: org.id, p_days: 7 }) : Promise.resolve({ data: null }),
@@ -91,6 +94,12 @@ export default async function DashboardPage({ params, searchParams }: { params: 
         <input name="q" placeholder={S.dash.searchPlaceholder} className="flex-1 rounded border bg-white px-3 py-2 text-sm" />
         <button className="rounded bg-brand px-4 py-2 text-sm text-white">{S.dash.search}</button>
       </form>
+      {recitationsWaiting > 0 && (
+        <a href="/recitations" className="mb-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm hover:bg-amber-100">
+          <span className="font-semibold text-amber-900">{fmt(T.quran.recite.waitingN, { n: recitationsWaiting })}</span>
+          <b className="rounded-full bg-amber-600 px-2.5 py-0.5 text-white">{recitationsWaiting}</b>
+        </a>
+      )}
       <div className="grid grid-cols-3 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-lg border bg-white p-6">

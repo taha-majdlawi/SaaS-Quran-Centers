@@ -1,3 +1,4 @@
+import { RecitationList, recitationAudio, type Recitation } from '@/components/recitation-list';
 import { notFound } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
@@ -66,6 +67,11 @@ export default async function StudentProfilePage({
     supabase.rpc('my_review_plan', { p_org: org.id, p_student: id }),
   ]);
   const goal = goalData as GoalProgress | null;
+  // recorded recitations and mushaf tests (only for whoever may review this student; others get none)
+  const { data: recData } = await supabase.rpc('student_recitations', { p_org: org.id, p_student: id, p_limit: 5 });
+  const recorded = (recData ?? []) as Recitation[];
+  const recordedAudio = await recitationAudio(recorded);
+  const { data: gradeRows } = await supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id).eq('is_active', true).order('sort_order');
   if (pError && /غير موجود|not found/i.test(pError.message)) notFound();
   const p = pData as StudentProfile | null;
   if (!p) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{pError?.message ?? P.notAllowed}</p>;
@@ -178,6 +184,26 @@ export default async function StudentProfilePage({
           </div>
         </Panel>
       </div>
+
+      {recorded.length > 0 && (
+        <section className="mb-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-bold">{T.quran.recite.inboxTitle}</h2>
+            <a href="/recitations" className="text-sm text-brand hover:underline">
+              {T.quran.recite.pending}
+            </a>
+          </div>
+          <RecitationList
+            items={recorded}
+            audio={recordedAudio}
+            mode="staff"
+            grades={(gradeRows ?? []) as { key: string; label: string }[]}
+            typeLabels={T.labels.recitationType}
+            locale={locale}
+            R={T.quran.recite}
+          />
+        </section>
+      )}
 
       <h2 className="mb-3 text-lg font-bold">{P.achievements}</h2>
       <RangeForm from={f} to={t} />
