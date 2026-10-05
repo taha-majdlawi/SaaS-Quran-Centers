@@ -70,6 +70,8 @@ SPEC = {'recite': ('Reciting to the system, the teacher\'s test in the mushaf, p
   ('statusRejected', 'مُعاد', 'Returned'),
   ('reviewedBy', 'راجعه {name}', 'Reviewed by {name}'),
   ('ayahRange', 'سورة {surah} {from}–{to}', 'Surah {surah} {from}–{to}'),
+  ('waitingN', '{n} تسميع مسجّل بانتظار مراجعتك', '{n} recorded recitations waiting for your review'),
+  ('recheck', 'أعد الفحص الآلي', 'Run the automatic check again'),
   ('testNote', 'ملاحظة (اختياري)', 'Note (optional)'),
   ('micDeniedApp', 'لم يُسمح باستخدام الميكروفون. اسمح به من إعدادات الجهاز ثم حاول مرة أخرى.', 'Microphone access was not allowed. Allow it in the device settings and try again.'),
   ('play', 'استمع', 'Listen'),

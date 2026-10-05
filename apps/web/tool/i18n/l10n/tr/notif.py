@@ -47,7 +47,9 @@ T = {'tabs': {'inbox': 'Gelen kutusu',
             'capacity_warning': 'Plan kapasitesi',
             'billing_downgraded': 'Ücretsiz plana geçiş',
             'fee_payment': 'Ücret ödeme makbuzu',
-            'fee_overdue': 'Ödenmesi gereken ücret hatırlatması'},
+            'fee_overdue': 'Ödenmesi gereken ücret hatırlatması',
+            'recitation_submitted': 'İncelenecek yeni kayıtlı dinletme',
+            'recitation_reviewed': 'Kayıtlı dinletme incelendi'},
  'templatesHint': 'Merkezinizin gönderdiği her türün metni: başlığı ve metni değişkenlerle düzenleyin, kime gideceğini seçin ve istemediklerinizi kapatın. '
                   'Düzenlediğiniz her tür yalnızca merkezinize uygulanır.',
  'dailyNote': 'Dinletmede geride kalan öğrencilere ve yoklama almaları için öğretmenlere yapılan hatırlatmalar her gün hesaplanır ve burada önceden '

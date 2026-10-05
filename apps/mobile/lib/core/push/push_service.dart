@@ -22,6 +22,8 @@ String routeForPush(Map<String, dynamic> data) {
   // the weekly report opens itself; the rest go to the inbox
   if (data['event_key'] == 'weekly_digest' && ref.isNotEmpty) return '/weekly/$ref';
   if ((data['event_key'] == 'fee_payment' || data['event_key'] == 'fee_overdue') && ref.isNotEmpty) return '/fees/$ref';
+  if (data['event_key'] == 'recitation_submitted') return '/recitations';
+  if (data['event_key'] == 'recitation_reviewed') return '/my/recitations';
   return '/notifications';
 }
 

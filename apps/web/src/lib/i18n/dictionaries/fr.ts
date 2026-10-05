@@ -616,6 +616,8 @@ export const fr: Dictionary = {
       legend: 'Les mots manquants sont en rouge, les mots différents en orange.',
       unavailable: 'La vérification automatique n’est pas disponible. Vous pouvez quand même envoyer l’enregistrement à votre enseignant.',
       autoNote: 'La vérification automatique est approximative : elle repère les mots manquants ou différents, pas le tajwid ni les voyelles. C’est l’avis de l’enseignant qui compte.',
+      waitingN: '{n} récitations enregistrées attendent votre examen',
+      recheck: 'Relancer la vérification automatique',
       testNote: 'Note (facultatif)',
       note: 'Note pour l’enseignant (facultatif)',
       send: 'Envoyer à l’enseignant',

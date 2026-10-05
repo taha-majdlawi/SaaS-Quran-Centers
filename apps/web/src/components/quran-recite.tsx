@@ -151,11 +151,19 @@ export function RecitePanel({
   const [note, setNote] = useState('');
   const rec = useRef<MediaRecorder | null>(null);
   const saved = useRef<{ id: string; path: string } | null>(null);
+  const cancelled = useRef(false);
 
   useEffect(() => {
     if (!studentId && people?.students[0]) setStudentId(people.students[0].id);
   }, [people, studentId]);
-  useEffect(() => () => rec.current?.stream.getTracks().forEach((t) => t.stop()), []);
+  useEffect(
+    () => () => {
+      // leaving the page while recording uploads nothing
+      cancelled.current = true;
+      rec.current?.stream.getTracks().forEach((t) => t.stop());
+    },
+    [],
+  );
   useEffect(() => {
     if (phase !== 'recording') return;
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
@@ -179,7 +187,8 @@ export function RecitePanel({
     r.ondataavailable = (e) => e.data.size && chunks.push(e.data);
     r.onstop = () => {
       stream.getTracks().forEach((t) => t.stop());
-      void finish(new Blob(chunks, { type: r.mimeType }));
+      // closed while recording: nothing is uploaded
+      if (!cancelled.current) void finish(new Blob(chunks, { type: r.mimeType }));
     };
     rec.current = r;
     r.start(1000);
@@ -235,7 +244,10 @@ export function RecitePanel({
     if (e) {
       setError(e.message || L.error);
       setPhase('result');
-    } else setPhase('sent');
+    } else {
+      saved.current = null; // sent: it is the teacher's now, never discarded from here
+      setPhase('sent');
+    }
   };
 
   const again = async () => {
@@ -253,7 +265,12 @@ export function RecitePanel({
   };
 
   const close = () => {
-    if (phase === 'recording') rec.current?.stop();
+    if (phase === 'recording') {
+      cancelled.current = true;
+      rec.current?.stop();
+    }
+    // a checked recording that was never sent is not kept
+    if (phase === 'result' && saved.current) void again();
     onHide(false);
     onMarks(new Map());
     onClose();
