@@ -92,6 +92,9 @@ export default async function MyPortalPage({
           <a href="/my/quran" className="rounded border px-4 py-2 text-sm text-brand">
             {p.nav.quran}
           </a>
+          <a href={`/my/recitations?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
+            {t.quran.recite.myTitle}
+          </a>
           {on('announcements') && (
             <a href="/my/announcements" className="rounded border px-4 py-2 text-sm text-brand">
               {p.nav.announcements}

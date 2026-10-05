@@ -120,7 +120,10 @@ export async function QuranReaderView({ orgId, base, surah, ayah }: { orgId: str
           reciters={reciters}
           bookmarked={bookmarked}
           startAyah={ayah}
+          role={base === '/quran' ? 'staff' : 'family'}
+          typeLabels={t.labels.recitationType}
           labels={Q.ui}
+          recite={Q.recite}
         />
         <p className="mt-6 text-center text-xs text-gray-400">{Q.credit}</p>
       </div>

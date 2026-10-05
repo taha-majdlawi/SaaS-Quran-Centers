@@ -37,6 +37,8 @@
 		<false/>
 		<key>NSCameraUsageDescription</key>
 		<string>لالتقاط صورة لرسالة أو لشعار المركز · To take a photo for a message or the center logo</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>لتسجيل التسميع من المصحف وإرساله للمعلم · To record a recitation in the mushaf and send it to the teacher</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>لاختيار صورة لرسالة أو لشعار المركز · To pick a photo for a message or the center logo</string>
 		<key>UIBackgroundModes</key>

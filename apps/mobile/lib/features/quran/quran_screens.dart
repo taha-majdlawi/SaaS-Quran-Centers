@@ -17,6 +17,8 @@ import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
 import 'mushaf_page_view.dart';
 import 'quran_data.dart';
+import 'recitation_api.dart';
+import 'recite_panels.dart';
 
 bool _isStaff(TenantController t) => t.active?.role == OrgRole.admin || t.active?.role == OrgRole.teacher;
 
@@ -179,6 +181,14 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
   final Set<int> _revealed = {};
   Set<int> _bookmarked = {};
 
+  // passage repeat, reciting (family), the teacher's test (staff)
+  PassageRepeat? _range;
+  int _loop = 1;
+  int _loopLen = 0;
+  String? _panel;
+  bool _hideAll = false;
+  WordMarks _marks = const {};
+
   final _subs = <StreamSubscription<dynamic>>[];
   Timer? _saveTimer;
 
@@ -195,6 +205,7 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
     }));
     _subs.add(_player.currentIndexStream.listen((i) {
       if (i == null || _mode == SyncMode.none || i >= _queue.length) return;
+      if (_range != null && _loopLen > 0 && mounted) setState(() => _loop = i ~/ _loopLen + 1);
       final n = _queue[i];
       if (n == _current) return;
       setState(() {
@@ -288,7 +299,61 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
 
   String _textOf(int n) => _detail?.ayahs.where((a) => a.number == n).firstOrNull?.text ?? '';
   bool _fits(int n) => _mode == SyncMode.word && timingsFit(_textOf(n), _timings?['$n']);
-  bool _isRevealed(int n) => !_testMode || _revealed.contains(n);
+  bool _isRevealed(int n) => !(_testMode || _hideAll) || _revealed.contains(n);
+
+  String _wordText(int n, int i) {
+    final t = _textOf(n);
+    final r = wordRanges(t);
+    return i < r.length ? t.substring(r[i].$1, r[i].$2) : '';
+  }
+
+  /// The teacher's test: a hidden ayah is uncovered first, then each tap marks / unmarks a word.
+  void _tapWord(int n, int i) => setState(() {
+        if (!_revealed.contains(n)) {
+          _revealed.add(n);
+          return;
+        }
+        final k = markKey(n, i);
+        _marks = Map.of(_marks);
+        _marks.containsKey(k) ? _marks.remove(k) : _marks[k] = 'mistake';
+      });
+
+  ({int from, int to}) get _pageRange {
+    final p = _pageList[_pageIdx];
+    return (from: p.ayahs.first.number, to: p.ayahs.last.number);
+  }
+
+  Future<void> _openPanel(String k) async {
+    if (_panel == k) return _closePanel();
+    _closePanel();
+    await _stop();
+    setState(() {
+      _panel = k;
+      if (k == 'test') {
+        _testMode = true;
+        _revealed.clear();
+      }
+    });
+  }
+
+  void _closePanel() => setState(() {
+        if (_panel == 'test') _testMode = false;
+        _panel = null;
+        _hideAll = false;
+        _marks = const {};
+      });
+
+  Future<void> _pickRange() async {
+    final pr = _pageRange;
+    final picked = await showRangeSheet(context, max: _detail!.ayahs.length, initial: _range ?? PassageRepeat(pr.from, pr.to, 3));
+    if (picked == null || !mounted) return;
+    await _stop();
+    setState(() {
+      _range = picked.times == 0 ? null : picked;
+      _loop = 1;
+    });
+    if (_range != null && _mode == SyncMode.none) await _setMode(SyncMode.ayah);
+  }
 
   /// Self-test: what the recitation has reached is uncovered (ayah by ayah, or word by word).
   void _uncover() {
@@ -331,11 +396,27 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
         // one file per ayah, each repeated as asked: the playlist index says which ayah is being recited
         final sources = <AudioSource>[];
         final queue = <int>[];
-        for (var n = ayah; n <= detail.ayahs.length; n++) {
-          for (var r = 0; r < _repeat; r++) {
-            sources.add(AudioSource.uri(Uri.parse(_reciter.ayahUrl(widget.surah, n))));
-            queue.add(n);
+        void add(int from, int to) {
+          for (var n = from; n <= to; n++) {
+            for (var r = 0; r < _repeat; r++) {
+              sources.add(AudioSource.uri(Uri.parse(_reciter.ayahUrl(widget.surah, n))));
+              queue.add(n);
+            }
           }
+        }
+
+        final range = _range;
+        if (range != null) {
+          // the passage, [times] times over: the playlist index says which round it is
+          if (ayah < range.from || ayah > range.to) ayah = range.from;
+          add(ayah, range.to);
+          _loopLen = (range.to - range.from + 1) * _repeat;
+          for (var k = 1; k < range.times; k++) {
+            add(range.from, range.to);
+          }
+          _loop = 1;
+        } else {
+          add(ayah, detail.ayahs.length);
         }
         _queue = queue;
         setState(() {
@@ -531,6 +612,29 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
               _revealed.clear();
             }),
           ),
+          IconButton(
+            tooltip: tr(context).recite.rangeTitle,
+            isSelected: _range != null,
+            icon: const Icon(Icons.repeat_rounded),
+            selectedIcon: const Icon(Icons.repeat_on_rounded),
+            onPressed: detail == null ? null : _pickRange,
+          ),
+          if (_isStaff(context.read<TenantController>()))
+            IconButton(
+              tooltip: tr(context).recite.testStudent,
+              isSelected: _panel == 'test',
+              icon: const Icon(Icons.fact_check_outlined),
+              selectedIcon: const Icon(Icons.fact_check_rounded),
+              onPressed: detail == null ? null : () => _openPanel('test'),
+            )
+          else
+            IconButton(
+              tooltip: tr(context).recite.recite,
+              isSelected: _panel == 'recite',
+              icon: const Icon(Icons.mic_none_rounded),
+              selectedIcon: const Icon(Icons.mic_rounded),
+              onPressed: detail == null ? null : () => _openPanel('recite'),
+            ),
           IconButton(tooltip: t.readingSettings, icon: const Icon(Icons.tune_rounded), onPressed: detail == null ? null : _settingsSheet),
         ],
       ),
@@ -546,7 +650,13 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                 })
               : Column(children: [
                   if (_mode == SyncMode.word && _timingsMissing) _notice(t.noTimings, Colors.amber.shade50, Colors.brown),
-                  if (_testMode) _notice(t.testHint, Theme.of(context).colorScheme.primary.withValues(alpha: 0.07), Theme.of(context).colorScheme.primary),
+                  if (_range != null)
+                    _notice(
+                      '${fmt(tr(context).recite.rangeHint, {'from': _range!.from, 'to': _range!.to, 'times': _range!.times})}${_playing ? '  ·  ${fmt(tr(context).recite.loop, {'n': _loop, 'total': _range!.times})}' : ''}',
+                      Colors.blueGrey.shade50,
+                      Colors.blueGrey.shade800,
+                    ),
+                  if (_testMode && _panel != 'test') _notice(t.testHint, Theme.of(context).colorScheme.primary.withValues(alpha: 0.07), Theme.of(context).colorScheme.primary),
                   Expanded(
                     // right-to-left whatever the app language: the next page is on the left, like paper
                     child: Directionality(
@@ -572,6 +682,8 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                               isRevealed: _isRevealed,
                               testMode: _testMode,
                               bookmarks: _bookmarked,
+                              wordMarks: _marks,
+                              onWordTap: _panel == 'test' ? _tapWord : null,
                               onAyahTap: (n) => _testMode ? setState(() => _revealed.contains(n) ? _revealed.remove(n) : _revealed.add(n)) : _ayahSheet(n),
                               onTogglePage: () => setState(() {
                                 final all = page.ayahs.every((a) => _revealed.contains(a.number));
@@ -585,7 +697,38 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
                       ),
                     ),
                   ),
-                  _playerBar(detail),
+                  if (_panel == 'recite')
+                    RecitePanel(
+                      orgId: _orgId,
+                      surah: widget.surah,
+                      max: detail.ayahs.length,
+                      from: _pageRange.from,
+                      to: _pageRange.to,
+                      onHide: (h) => setState(() {
+                        if (h) _player.stop();
+                        _revealed.clear();
+                        _hideAll = h;
+                      }),
+                      onMarks: (m) => setState(() => _marks = m),
+                      onClose: _closePanel,
+                    )
+                  else if (_panel == 'test')
+                    TestPanel(
+                      orgId: _orgId,
+                      surah: widget.surah,
+                      max: detail.ayahs.length,
+                      from: _pageRange.from,
+                      to: _pageRange.to,
+                      marks: _marks,
+                      wordText: _wordText,
+                      onReset: () => setState(() {
+                        _marks = const {};
+                        _revealed.clear();
+                      }),
+                      onClose: _closePanel,
+                    )
+                  else
+                    _playerBar(detail),
                 ]),
     );
   }

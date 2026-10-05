@@ -1148,6 +1148,85 @@ class SRec {
   final String wholeSurah;
 }
 
+/// Reciting to the system, the teacher's test in the mushaf, passage repeat, the recorded recitations.
+class SRecite {
+  const SRecite({required this.rangeTitle, required this.from, required this.to, required this.times, required this.rangeHint, required this.loop, required this.rangeOff, required this.recite, required this.reciteTitle, required this.reciteHint, required this.student, required this.type, required this.start, required this.stop, required this.recording, required this.micDenied, required this.micMissing, required this.tooLong, required this.uploading, required this.checking, required this.uploadFailed, required this.result, required this.score, required this.correct, required this.missing, required this.wrong, required this.extra, required this.legend, required this.unavailable, required this.autoNote, required this.note, required this.send, required this.sent, required this.again, required this.cancel, required this.testStudent, required this.testTitle, required this.testHint, required this.mistakes, required this.grade, required this.save, required this.saved, required this.chooseStudent, required this.noStudents, required this.badRange, required this.error, required this.myTitle, required this.inboxTitle, required this.inboxHint, required this.pending, required this.reviewed, required this.none, required this.approve, required this.reject, required this.rejectNote, required this.teacherNote, required this.studentNote, required this.autoScore, required this.noAuto, required this.heardAs, required this.missingWords, required this.openMushaf, required this.teacherTest, required this.markedMistakes, required this.statusDraft, required this.statusSubmitted, required this.statusApproved, required this.statusRejected, required this.reviewedBy, required this.ayahRange, required this.testNote, required this.micDeniedApp, required this.play, required this.apply});
+  final String rangeTitle;
+  final String from;
+  final String to;
+  final String times;
+  final String rangeHint;
+  final String loop;
+  final String rangeOff;
+  final String recite;
+  final String reciteTitle;
+  final String reciteHint;
+  final String student;
+  final String type;
+  final String start;
+  final String stop;
+  final String recording;
+  final String micDenied;
+  final String micMissing;
+  final String tooLong;
+  final String uploading;
+  final String checking;
+  final String uploadFailed;
+  final String result;
+  final String score;
+  final String correct;
+  final String missing;
+  final String wrong;
+  final String extra;
+  final String legend;
+  final String unavailable;
+  final String autoNote;
+  final String note;
+  final String send;
+  final String sent;
+  final String again;
+  final String cancel;
+  final String testStudent;
+  final String testTitle;
+  final String testHint;
+  final String mistakes;
+  final String grade;
+  final String save;
+  final String saved;
+  final String chooseStudent;
+  final String noStudents;
+  final String badRange;
+  final String error;
+  final String myTitle;
+  final String inboxTitle;
+  final String inboxHint;
+  final String pending;
+  final String reviewed;
+  final String none;
+  final String approve;
+  final String reject;
+  final String rejectNote;
+  final String teacherNote;
+  final String studentNote;
+  final String autoScore;
+  final String noAuto;
+  final String heardAs;
+  final String missingWords;
+  final String openMushaf;
+  final String teacherTest;
+  final String markedMistakes;
+  final String statusDraft;
+  final String statusSubmitted;
+  final String statusApproved;
+  final String statusRejected;
+  final String reviewedBy;
+  final String ayahRange;
+  final String testNote;
+  final String micDeniedApp;
+  final String play;
+  final String apply;
+}
+
 /// Reports (the student report is also the portal's).
 class SRep {
   const SRep({required this.from, required this.to, required this.title, required this.loadFailed, required this.activeStudents, required this.newStudents, required this.recitations, required this.recitingStudents, required this.points, required this.attendanceRate, required this.serdApproved, required this.certsIssued, required this.copied, required this.copySummary, required this.types, required this.attendance, required this.circles, required this.teachers, required this.top, required this.studentTitle, required this.student, required this.noStudent, required this.teacher, required this.periodRecitations, required this.periodPoints, required this.totalPoints, required this.progress, required this.savedParts, required this.serd, required this.badges, required this.certificates, required this.log, required this.none, required this.circleLine, required this.teacherLine, required this.sumTitle, required this.sumActive, required this.sumPoints, required this.sumAttendance, required this.sumSerd, required this.sumRecitations, required this.sumCircle});
@@ -1611,7 +1690,7 @@ class SWeekly {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.mem, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1645,6 +1724,7 @@ class S {
   final SProf prof;
   final SQuran quran;
   final SRec rec;
+  final SRecite recite;
   final SRep rep;
   final SRplan rplan;
   final SSerd serd;
@@ -2428,7 +2508,7 @@ class S {
       active: 'فعّال (يظهر للطلاب)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/review-plan': 'ورد المراجعة اليومي', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/fees': 'الرسوم', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
+      items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/review-plan': 'ورد المراجعة اليومي', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/recitations': 'التسميعات المسجّلة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/fees': 'الرسوم', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
       sections: {'teaching': 'التعليم', 'motivation': 'التحفيز', 'comms': 'التواصل', 'admin': 'إدارة المركز'},
       switchCenter: 'تبديل المركز',
       menu: 'القائمة',
@@ -2712,6 +2792,82 @@ class S {
       saveWithPoints: 'حفظ التسميع  •  {n}+ نقطة',
       change: 'تغيير',
       wholeSurah: 'السورة كاملة',
+    ),
+    recite: SRecite(
+      rangeTitle: 'تكرار مقطع',
+      from: 'من الآية',
+      to: 'إلى الآية',
+      times: 'مرات المقطع',
+      rangeHint: 'يُعاد المقطع من الآية {from} إلى الآية {to}، {times} مرات. تكرار كل آية يبقى كما اخترته.',
+      loop: 'المرة {n} من {total}',
+      rangeOff: 'إيقاف تكرار المقطع',
+      recite: 'سمّع',
+      reciteTitle: 'التسميع للنظام',
+      reciteHint: 'اختر المقطع، ثم اضغط «ابدأ التسجيل» واقرأ من حفظك. الآيات تُخفى أثناء التسجيل.',
+      student: 'الطالب',
+      type: 'نوع التسميع',
+      start: 'ابدأ التسجيل',
+      stop: 'إنهاء التسجيل',
+      recording: 'جارٍ التسجيل… اقرأ من حفظك',
+      micDenied: 'لم يُسمح باستخدام الميكروفون. اسمح به من إعدادات المتصفح ثم حاول مرة أخرى.',
+      micMissing: 'هذا المتصفح لا يدعم التسجيل.',
+      tooLong: 'الحد الأقصى للتسجيل {n} دقائق، فقسّم المقطع.',
+      uploading: 'جارٍ رفع التسجيل…',
+      checking: 'جارٍ فحص التسميع…',
+      uploadFailed: 'تعذّر رفع التسجيل، حاول مرة أخرى.',
+      result: 'نتيجة التسميع',
+      score: 'المطابقة {n}%',
+      correct: 'صحيحة',
+      missing: 'ناقصة',
+      wrong: 'مختلفة',
+      extra: 'زائدة',
+      legend: 'الكلمات الناقصة بالأحمر، والمختلفة بالبرتقالي على الصفحة.',
+      unavailable: 'تعذّر الفحص الآلي الآن. يمكنك إرسال التسجيل للمعلم وسيستمع إليه.',
+      autoNote: 'الفحص الآلي تقريبي: يكشف الكلمات الناقصة أو المختلفة، ولا يحكم على التجويد والتشكيل. حكم المعلم هو المعتمد.',
+      note: 'ملاحظة للمعلم (اختياري)',
+      send: 'أرسل للمعلم',
+      sent: 'أُرسل التسميع لمعلمك، وسيصلك إشعار بقراره.',
+      again: 'سجّل من جديد',
+      cancel: 'إلغاء',
+      testStudent: 'اختبار طالب',
+      testTitle: 'اختبار طالب في المصحف',
+      testHint: 'الآيات مخفية: اضغط على آية لكشفها، ثم اضغط على الكلمة التي أخطأ فيها الطالب لتعليمها، واضغط مرة أخرى لإزالة العلامة.',
+      mistakes: 'الأخطاء: {n}',
+      grade: 'التقدير',
+      save: 'احفظ في سجل الطالب',
+      saved: 'حُفظ الاختبار في سجل {name} (+{points} نقطة).',
+      chooseStudent: 'اختر الطالب',
+      noStudents: 'لا يوجد طلاب يمكنك اختبارهم.',
+      badRange: 'المقطع غير صالح.',
+      error: 'حدث خطأ، حاول مرة أخرى.',
+      myTitle: 'تسميعاتي المسجّلة',
+      inboxTitle: 'التسميعات المسجّلة',
+      inboxHint: 'تسميعات أرسلها طلاب حلقاتك من المصحف. استمع ثم اعتمد التسميع ليُسجَّل في سجل الطالب، أو أعده بملاحظة.',
+      pending: 'بانتظار المراجعة',
+      reviewed: 'تمت مراجعتها',
+      none: 'لا توجد تسميعات.',
+      approve: 'اعتماد',
+      reject: 'إعادة',
+      rejectNote: 'سبب الإعادة أو ملاحظة للطالب',
+      teacherNote: 'ملاحظة المعلم: {note}',
+      studentNote: 'ملاحظة الطالب: {note}',
+      autoScore: 'الفحص الآلي {n}%',
+      noAuto: 'بدون فحص آلي',
+      heardAs: 'الكلمات التي اختلفت:',
+      missingWords: 'الكلمات الناقصة:',
+      openMushaf: 'افتح في المصحف',
+      teacherTest: 'اختبار المعلم',
+      markedMistakes: 'الأخطاء المعلَّمة: {list}',
+      statusDraft: 'لم يُرسل',
+      statusSubmitted: 'بانتظار المعلم',
+      statusApproved: 'معتمد',
+      statusRejected: 'مُعاد',
+      reviewedBy: 'راجعه {name}',
+      ayahRange: 'سورة {surah} {from}–{to}',
+      testNote: 'ملاحظة (اختياري)',
+      micDeniedApp: 'لم يُسمح باستخدام الميكروفون. اسمح به من إعدادات الجهاز ثم حاول مرة أخرى.',
+      play: 'استمع',
+      apply: 'تطبيق',
     ),
     rep: SRep(
       from: 'من {date}',
@@ -3923,7 +4079,7 @@ class S {
       active: 'Active (shown to students)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/review-plan': 'Daily review portions', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/fees': 'Fees', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
+      items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/review-plan': 'Daily review portions', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/recitations': 'Recorded recitations', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/fees': 'Fees', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
       sections: {'teaching': 'Teaching', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Center management'},
       switchCenter: 'Switch center',
       menu: 'Menu',
@@ -4207,6 +4363,82 @@ class S {
       saveWithPoints: 'Save recitation  •  +{n} pts',
       change: 'Change',
       wholeSurah: 'Whole surah',
+    ),
+    recite: SRecite(
+      rangeTitle: 'Repeat a passage',
+      from: 'From ayah',
+      to: 'To ayah',
+      times: 'Times',
+      rangeHint: 'The passage from ayah {from} to ayah {to} plays {times} times. Each ayah’s own repeat stays as chosen.',
+      loop: 'Round {n} of {total}',
+      rangeOff: 'Stop repeating',
+      recite: 'Recite',
+      reciteTitle: 'Recite to the system',
+      reciteHint: 'Choose the passage, press “Start recording” and recite from memory. The ayahs are hidden while recording.',
+      student: 'Student',
+      type: 'Type',
+      start: 'Start recording',
+      stop: 'Stop recording',
+      recording: 'Recording… recite from memory',
+      micDenied: 'Microphone access was not allowed. Allow it in the browser settings and try again.',
+      micMissing: 'This browser can’t record.',
+      tooLong: 'Recordings are limited to {n} minutes; split the passage.',
+      uploading: 'Uploading the recording…',
+      checking: 'Checking the recitation…',
+      uploadFailed: 'The recording could not be uploaded. Try again.',
+      result: 'Result',
+      score: '{n}% match',
+      correct: 'correct',
+      missing: 'missing',
+      wrong: 'different',
+      extra: 'extra',
+      legend: 'Missing words are red and different words orange on the page.',
+      unavailable: 'The automatic check is not available now. You can still send the recording to your teacher.',
+      autoNote: 'The automatic check is approximate: it finds missing or different words, not tajweed or vowels. Your teacher’s judgement is what counts.',
+      note: 'Note for the teacher (optional)',
+      send: 'Send to the teacher',
+      sent: 'Sent to your teacher. You will be notified of the decision.',
+      again: 'Record again',
+      cancel: 'Cancel',
+      testStudent: 'Test a student',
+      testTitle: 'Testing a student in the mushaf',
+      testHint: 'The ayahs are hidden: tap an ayah to uncover it, then tap a word the student got wrong to mark it (tap again to unmark).',
+      mistakes: 'Mistakes: {n}',
+      grade: 'Grade',
+      save: 'Save to the student’s record',
+      saved: 'Saved to {name}’s record (+{points} points).',
+      chooseStudent: 'Choose the student',
+      noStudents: 'There are no students you can test.',
+      badRange: 'Invalid passage.',
+      error: 'Something went wrong. Try again.',
+      myTitle: 'My recorded recitations',
+      inboxTitle: 'Recorded recitations',
+      inboxHint: 'Recitations your students sent from the mushaf. Listen, then approve to add it to the student’s record, or return it with a note.',
+      pending: 'Waiting',
+      reviewed: 'Reviewed',
+      none: 'No recitations.',
+      approve: 'Approve',
+      reject: 'Return',
+      rejectNote: 'Reason or a note for the student',
+      teacherNote: 'Teacher’s note: {note}',
+      studentNote: 'Student’s note: {note}',
+      autoScore: 'Automatic check {n}%',
+      noAuto: 'No automatic check',
+      heardAs: 'Words that differed:',
+      missingWords: 'Missing words:',
+      openMushaf: 'Open in the mushaf',
+      teacherTest: 'Teacher’s test',
+      markedMistakes: 'Marked mistakes: {list}',
+      statusDraft: 'Not sent',
+      statusSubmitted: 'Waiting for the teacher',
+      statusApproved: 'Approved',
+      statusRejected: 'Returned',
+      reviewedBy: 'Reviewed by {name}',
+      ayahRange: 'Surah {surah} {from}–{to}',
+      testNote: 'Note (optional)',
+      micDeniedApp: 'Microphone access was not allowed. Allow it in the device settings and try again.',
+      play: 'Listen',
+      apply: 'Apply',
     ),
     rep: SRep(
       from: 'From {date}',
@@ -5418,7 +5650,7 @@ class S {
       active: 'Etkin (öğrencilere gösterilir)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Kontrol paneli', '/attention': 'İlgi bekleyen öğrenciler', '/review-plan': 'Günlük tekrar payları', '/sync': 'Eşitleme', '/students': 'Öğrenciler', '/circles': 'Halkalar', '/attendance': 'Yoklama', '/gatherings': 'Toplantılar ve etkinlikler', '/external-recitations': 'Dış dinletmeler', '/reviews': 'Önerilen tekrar', '/search': 'Ara', '/quran': 'Kur’an', '/serd': 'Kur’an serdi', '/stages': 'Aşamalar', '/points': 'Puanlar', '/badges': 'Rozetler', '/market': 'Puan marketi', '/circle-challenges': 'Halka yarışmaları', '/activities': 'Etkinlikler', '/announcements': 'Duyurular', '/calendar': 'Takvim', '/chat': 'Mesajlar', '/notifications': 'Bildirimler', '/reports': 'Raporlar', '/certificates': 'Sertifikalar', '/members': 'Üyeler ve roller', '/deletion-requests': 'Veri silme talepleri', '/audit': 'İşlem kaydı', '/site': 'Herkese açık sayfa', '/settings': 'Merkez ayarları', '/fees': 'Ücretler'},
+      items: {'/dashboard': 'Kontrol paneli', '/attention': 'İlgi bekleyen öğrenciler', '/review-plan': 'Günlük tekrar payları', '/sync': 'Eşitleme', '/students': 'Öğrenciler', '/circles': 'Halkalar', '/attendance': 'Yoklama', '/gatherings': 'Toplantılar ve etkinlikler', '/external-recitations': 'Dış dinletmeler', '/recitations': 'Kayıtlı dinletmeler', '/reviews': 'Önerilen tekrar', '/search': 'Ara', '/quran': 'Kur’an', '/serd': 'Kur’an serdi', '/stages': 'Aşamalar', '/points': 'Puanlar', '/badges': 'Rozetler', '/market': 'Puan marketi', '/circle-challenges': 'Halka yarışmaları', '/activities': 'Etkinlikler', '/announcements': 'Duyurular', '/calendar': 'Takvim', '/chat': 'Mesajlar', '/notifications': 'Bildirimler', '/reports': 'Raporlar', '/certificates': 'Sertifikalar', '/members': 'Üyeler ve roller', '/deletion-requests': 'Veri silme talepleri', '/audit': 'İşlem kaydı', '/site': 'Herkese açık sayfa', '/settings': 'Merkez ayarları', '/fees': 'Ücretler'},
       sections: {'teaching': 'Öğretim', 'motivation': 'Motivasyon', 'comms': 'İletişim', 'admin': 'Merkez yönetimi'},
       switchCenter: 'Merkez değiştir',
       menu: 'Menü',
@@ -5702,6 +5934,82 @@ class S {
       saveWithPoints: 'Dinletmeyi kaydet  •  +{n} puan',
       change: 'Değiştir',
       wholeSurah: 'Surenin tamamı',
+    ),
+    recite: SRecite(
+      rangeTitle: 'Bölüm tekrarı',
+      from: 'Ayetten',
+      to: 'Ayete',
+      times: 'Tekrar sayısı',
+      rangeHint: 'Ayet {from} ile {to} arası {times} kez okunur. Her ayetin kendi tekrarı seçtiğiniz gibi kalır.',
+      loop: '{total} turdan {n}.',
+      rangeOff: 'Tekrarı kapat',
+      recite: 'Dinlet',
+      reciteTitle: 'Sisteme dinlet',
+      reciteHint: 'Bölümü seçin, “Kaydı başlat”a basın ve ezberden okuyun. Kayıt sırasında ayetler gizlenir.',
+      student: 'Öğrenci',
+      type: 'Tür',
+      start: 'Kaydı başlat',
+      stop: 'Kaydı bitir',
+      recording: 'Kaydediliyor… ezberden okuyun',
+      micDenied: 'Mikrofon izni verilmedi. Tarayıcı ayarlarından izin verip tekrar deneyin.',
+      micMissing: 'Bu tarayıcı kayıt yapamıyor.',
+      tooLong: 'Kayıt en fazla {n} dakika olabilir; bölümü bölün.',
+      uploading: 'Kayıt yükleniyor…',
+      checking: 'Dinletme kontrol ediliyor…',
+      uploadFailed: 'Kayıt yüklenemedi. Tekrar deneyin.',
+      result: 'Sonuç',
+      score: '%{n} uyum',
+      correct: 'doğru',
+      missing: 'eksik',
+      wrong: 'farklı',
+      extra: 'fazla',
+      legend: 'Eksik kelimeler kırmızı, farklı kelimeler turuncu gösterilir.',
+      unavailable: 'Otomatik kontrol şu an yapılamıyor. Kaydı yine de öğretmeninize gönderebilirsiniz.',
+      autoNote: 'Otomatik kontrol yaklaşıktır: eksik veya farklı kelimeleri bulur, tecvid ve harekeleri değerlendirmez. Esas olan öğretmenin kararıdır.',
+      note: 'Öğretmene not (isteğe bağlı)',
+      send: 'Öğretmene gönder',
+      sent: 'Öğretmeninize gönderildi. Karar size bildirilecek.',
+      again: 'Yeniden kaydet',
+      cancel: 'İptal',
+      testStudent: 'Öğrenci sına',
+      testTitle: 'Mushafta öğrenci sınavı',
+      testHint: 'Ayetler gizli: açmak için ayete dokunun, sonra öğrencinin hata yaptığı kelimeye dokunarak işaretleyin (kaldırmak için tekrar dokunun).',
+      mistakes: 'Hatalar: {n}',
+      grade: 'Not',
+      save: 'Öğrencinin kaydına ekle',
+      saved: '{name} kaydına eklendi (+{points} puan).',
+      chooseStudent: 'Öğrenciyi seçin',
+      noStudents: 'Sınayabileceğiniz öğrenci yok.',
+      badRange: 'Geçersiz bölüm.',
+      error: 'Bir hata oluştu. Tekrar deneyin.',
+      myTitle: 'Kayıtlı dinletmelerim',
+      inboxTitle: 'Kayıtlı dinletmeler',
+      inboxHint: 'Öğrencilerinizin mushaftan gönderdiği dinletmeler. Dinleyin, sonra öğrencinin kaydına eklemek için onaylayın ya da notla geri gönderin.',
+      pending: 'Bekleyen',
+      reviewed: 'İncelenen',
+      none: 'Dinletme yok.',
+      approve: 'Onayla',
+      reject: 'Geri gönder',
+      rejectNote: 'Sebep ya da öğrenciye not',
+      teacherNote: 'Öğretmenin notu: {note}',
+      studentNote: 'Öğrencinin notu: {note}',
+      autoScore: 'Otomatik kontrol %{n}',
+      noAuto: 'Otomatik kontrol yok',
+      heardAs: 'Farklı okunan kelimeler:',
+      missingWords: 'Eksik kelimeler:',
+      openMushaf: 'Mushafta aç',
+      teacherTest: 'Öğretmen sınavı',
+      markedMistakes: 'İşaretlenen hatalar: {list}',
+      statusDraft: 'Gönderilmedi',
+      statusSubmitted: 'Öğretmen bekleniyor',
+      statusApproved: 'Onaylandı',
+      statusRejected: 'Geri gönderildi',
+      reviewedBy: '{name} inceledi',
+      ayahRange: '{surah} suresi {from}–{to}',
+      testNote: 'Not (isteğe bağlı)',
+      micDeniedApp: 'Mikrofon izni verilmedi. Cihaz ayarlarından izin verip tekrar deneyin.',
+      play: 'Dinle',
+      apply: 'Uygula',
     ),
     rep: SRep(
       from: 'Başlangıç {date}',
@@ -6913,7 +7221,7 @@ class S {
       active: 'Actif (visible par les élèves)',
     ),
     nav: SNav(
-      items: {'/dashboard': 'Tableau de bord', '/attention': 'Élèves à suivre de près', '/review-plan': 'Portions de révision quotidiennes', '/sync': 'Synchronisation', '/students': 'Élèves', '/circles': 'Cercles', '/attendance': 'Présences', '/gatherings': 'Rassemblements et activités', '/external-recitations': 'Récitations externes', '/reviews': 'Révision suggérée', '/search': 'Recherche', '/quran': 'Coran', '/serd': 'Serd du Coran', '/stages': 'Niveaux', '/points': 'Points', '/badges': 'Badges', '/market': 'Boutique de points', '/circle-challenges': 'Défis entre cercles', '/activities': 'Activités', '/announcements': 'Annonces', '/calendar': 'Calendrier', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Rapports', '/certificates': 'Certificats', '/members': 'Membres et rôles', '/deletion-requests': 'Demandes de suppression de données', '/audit': 'Journal d’activité', '/site': 'Page publique', '/settings': 'Réglages du centre', '/fees': 'Frais'},
+      items: {'/dashboard': 'Tableau de bord', '/attention': 'Élèves à suivre de près', '/review-plan': 'Portions de révision quotidiennes', '/sync': 'Synchronisation', '/students': 'Élèves', '/circles': 'Cercles', '/attendance': 'Présences', '/gatherings': 'Rassemblements et activités', '/external-recitations': 'Récitations externes', '/recitations': 'Récitations enregistrées', '/reviews': 'Révision suggérée', '/search': 'Recherche', '/quran': 'Coran', '/serd': 'Serd du Coran', '/stages': 'Niveaux', '/points': 'Points', '/badges': 'Badges', '/market': 'Boutique de points', '/circle-challenges': 'Défis entre cercles', '/activities': 'Activités', '/announcements': 'Annonces', '/calendar': 'Calendrier', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Rapports', '/certificates': 'Certificats', '/members': 'Membres et rôles', '/deletion-requests': 'Demandes de suppression de données', '/audit': 'Journal d’activité', '/site': 'Page publique', '/settings': 'Réglages du centre', '/fees': 'Frais'},
       sections: {'teaching': 'Enseignement', 'motivation': 'Motivation', 'comms': 'Communication', 'admin': 'Gestion du centre'},
       switchCenter: 'Changer de centre',
       menu: 'Menu',
@@ -7197,6 +7505,82 @@ class S {
       saveWithPoints: 'Enregistrer la récitation  •  +{n} pts',
       change: 'Changer',
       wholeSurah: 'Sourate entière',
+    ),
+    recite: SRecite(
+      rangeTitle: 'Répéter un passage',
+      from: 'De l’âyah',
+      to: 'À l’âyah',
+      times: 'Nombre de fois',
+      rangeHint: 'Le passage de l’âyah {from} à {to} est lu {times} fois. La répétition de chaque âyah reste celle choisie.',
+      loop: 'Passage {n} sur {total}',
+      rangeOff: 'Arrêter la répétition',
+      recite: 'Réciter',
+      reciteTitle: 'Réciter au système',
+      reciteHint: 'Choisissez le passage, appuyez sur « Commencer l’enregistrement » et récitez de mémoire. Les âyahs sont masquées pendant l’enregistrement.',
+      student: 'Élève',
+      type: 'Type',
+      start: 'Commencer l’enregistrement',
+      stop: 'Arrêter l’enregistrement',
+      recording: 'Enregistrement… récitez de mémoire',
+      micDenied: 'L’accès au micro a été refusé. Autorisez-le dans les réglages du navigateur et réessayez.',
+      micMissing: 'Ce navigateur ne peut pas enregistrer.',
+      tooLong: 'L’enregistrement est limité à {n} minutes ; divisez le passage.',
+      uploading: 'Envoi de l’enregistrement…',
+      checking: 'Vérification de la récitation…',
+      uploadFailed: 'L’enregistrement n’a pas pu être envoyé. Réessayez.',
+      result: 'Résultat',
+      score: '{n} % de concordance',
+      correct: 'correct',
+      missing: 'manquant',
+      wrong: 'différent',
+      extra: 'en trop',
+      legend: 'Les mots manquants sont en rouge, les mots différents en orange.',
+      unavailable: 'La vérification automatique n’est pas disponible. Vous pouvez quand même envoyer l’enregistrement à votre enseignant.',
+      autoNote: 'La vérification automatique est approximative : elle repère les mots manquants ou différents, pas le tajwid ni les voyelles. C’est l’avis de l’enseignant qui compte.',
+      note: 'Note pour l’enseignant (facultatif)',
+      send: 'Envoyer à l’enseignant',
+      sent: 'Envoyé à votre enseignant. Vous serez averti de sa décision.',
+      again: 'Enregistrer à nouveau',
+      cancel: 'Annuler',
+      testStudent: 'Tester un élève',
+      testTitle: 'Test d’un élève dans le mushaf',
+      testHint: 'Les âyahs sont masquées : touchez une âyah pour la dévoiler, puis le mot où l’élève s’est trompé pour le marquer (touchez à nouveau pour retirer).',
+      mistakes: 'Erreurs : {n}',
+      grade: 'Appréciation',
+      save: 'Enregistrer dans le dossier de l’élève',
+      saved: 'Enregistré dans le dossier de {name} (+{points} points).',
+      chooseStudent: 'Choisissez l’élève',
+      noStudents: 'Aucun élève à tester.',
+      badRange: 'Passage invalide.',
+      error: 'Une erreur s’est produite. Réessayez.',
+      myTitle: 'Mes récitations enregistrées',
+      inboxTitle: 'Récitations enregistrées',
+      inboxHint: 'Les récitations envoyées par vos élèves depuis le mushaf. Écoutez, puis validez pour l’ajouter au dossier de l’élève, ou renvoyez-la avec une note.',
+      pending: 'En attente',
+      reviewed: 'Examinées',
+      none: 'Aucune récitation.',
+      approve: 'Valider',
+      reject: 'Renvoyer',
+      rejectNote: 'Motif ou note pour l’élève',
+      teacherNote: 'Note de l’enseignant : {note}',
+      studentNote: 'Note de l’élève : {note}',
+      autoScore: 'Vérification automatique {n} %',
+      noAuto: 'Sans vérification automatique',
+      heardAs: 'Mots différents :',
+      missingWords: 'Mots manquants :',
+      openMushaf: 'Ouvrir dans le mushaf',
+      teacherTest: 'Test de l’enseignant',
+      markedMistakes: 'Erreurs marquées : {list}',
+      statusDraft: 'Non envoyée',
+      statusSubmitted: 'En attente de l’enseignant',
+      statusApproved: 'Validée',
+      statusRejected: 'Renvoyée',
+      reviewedBy: 'Examinée par {name}',
+      ayahRange: 'Sourate {surah} {from}–{to}',
+      testNote: 'Note (facultatif)',
+      micDeniedApp: 'L’accès au micro a été refusé. Autorisez-le dans les réglages de l’appareil et réessayez.',
+      play: 'Écouter',
+      apply: 'Appliquer',
     ),
     rep: SRep(
       from: 'Du {date}',
