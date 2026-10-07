@@ -44,6 +44,11 @@ class _WirdCardState extends State<WirdCard> {
     }
   }
 
+  /// the family recites it (live screen); the teacher opens it in the mushaf
+  String _path(int surah, int from, int to, String type) => widget.canRecite
+      ? '/my/recite?s=${widget.studentId}&surah=$surah&from=$from&to=$to&type=$type'
+      : '/quran/$surah?ayah=$from';
+
   Future<void> _open(String path) async {
     await context.push(path);
     if (mounted) setState(() => _load(force: true));
@@ -69,7 +74,7 @@ class _WirdCardState extends State<WirdCard> {
             '${surahName(s)} ${n['ayah_from']}–${n['ayah_to']}',
             null,
             n['state'] as String,
-            '/quran/$s?ayah=${n['ayah_from']}&to=${n['ayah_to']}&recite=new_memorization',
+            _path(s, n['ayah_from'] as int, n['ayah_to'] as int, 'new_memorization'),
           ));
         }
         if (r != null) {
@@ -81,7 +86,7 @@ class _WirdCardState extends State<WirdCard> {
             a == b ? '${surahName(a)} ${r['ayah_from']}–${r['ayah_to']}' : '${surahName(a)} ${r['ayah_from']} — ${surahName(b)} ${r['ayah_to']}',
             '${fmt(W.pages, {'n': r['pages']})} · ${r['approved'] == true ? W.fromTeacher : W.suggested}',
             r['state'] as String,
-            '/quran/$a?ayah=${r['ayah_from']}&to=$to&recite=recent_review',
+            _path(a, r['ayah_from'] as int, to, 'recent_review'),
           ));
         }
         return GardenCard(

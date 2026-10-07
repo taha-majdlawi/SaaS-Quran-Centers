@@ -112,6 +112,15 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
     final p = t.portal;
 
     return Scaffold(
+      // reciting has a screen of its own, followed live word by word
+      floatingActionButton: _studentId == null
+          ? null
+          : FloatingActionButton.extended(
+              heroTag: 'recite',
+              onPressed: () => context.push('/my/recite?s=$_studentId'),
+              icon: const Icon(Icons.mic_rounded),
+              label: Text(t.live.fab),
+            ),
       appBar: _tab == 0 ? null : AppBar(
         title: Row(children: [
           if (org != null) OrgAvatar(name: org.name, logoUrl: org.logoUrl, brandColor: org.primaryColor, size: 34),

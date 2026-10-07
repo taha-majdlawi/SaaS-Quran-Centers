@@ -135,6 +135,14 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
   Widget build(BuildContext context) {
     final t = tr(context).recite;
     return Scaffold(
+      floatingActionButton: widget.family
+          ? FloatingActionButton.extended(
+              heroTag: 'recite',
+              onPressed: () => context.push('/my/recite${_studentId == null ? '' : '?s=$_studentId'}'),
+              icon: const Icon(Icons.mic_rounded),
+              label: Text(tr(context).live.fab),
+            )
+          : null,
       appBar: AppBar(
         leading: widget.family ? null : DrawerLeading(),
         title: Text(widget.family ? t.myTitle : t.inboxTitle),

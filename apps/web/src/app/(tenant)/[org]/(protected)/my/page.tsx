@@ -1,3 +1,4 @@
+import { ReciteFab } from '@/components/recite-fab';
 import { GoalCard, type GoalProgress } from '@/components/goal-card';
 import { WirdCard, type Wird } from '@/components/wird-card';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
@@ -173,7 +174,7 @@ export default async function MyPortalPage({
           goalCard={
             <>
               {goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
-              <WirdCard wird={reviewRes.data as Wird | null} base="/my/quran" canRecite locale={locale} W={t.wird} />
+              <WirdCard wird={reviewRes.data as Wird | null} base="/my/quran" canRecite studentId={current.id} locale={locale} W={t.wird} />
               <a href={`/my/weekly?student=${current.id}` as never} className="block rounded-lg border bg-white p-3 text-center text-sm font-semibold text-brand hover:bg-gray-50">
                 📊 {t.staff.weekly.open}
               </a>
@@ -182,6 +183,7 @@ export default async function MyPortalPage({
           t={t}
         />
       )}
+      <ReciteFab href={`/my/recite?s=${current.id}`} label={t.live.fab} />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 export interface Recitation {
   id: string;
   kind: 'self' | 'teacher_test';
+  source?: 'recording' | 'live';
   type: string;
   surah: number;
   ayah_from: number;
@@ -88,6 +89,7 @@ export function RecitationList({
               </a>
               <span className="text-xs text-gray-500">{typeLabels[r.type] ?? r.type}</span>
               {r.kind === 'teacher_test' && <span className="rounded bg-brand/10 px-2 py-0.5 text-xs text-brand">{R.teacherTest}</span>}
+              {r.source === 'live' && <span className="rounded bg-sky-50 px-2 py-0.5 text-xs text-sky-700">{R.liveBadge}</span>}
               <span className={`ms-auto rounded px-2 py-0.5 text-xs ${STATUS_CLS[r.status]}`}>{statusLabel[r.status]}</span>
             </div>
             <p className="flex flex-wrap gap-x-4 text-xs text-gray-500">
