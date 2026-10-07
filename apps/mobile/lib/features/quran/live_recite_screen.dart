@@ -67,6 +67,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   final _heard = <String>[];
   Timer? _timer;
   bool? _speechReady;
+  String _localeId = 'ar_SA';
 
   @override
   void initState() {
@@ -95,7 +96,17 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   ({int from, int to}) get _range => _from <= _to ? (from: _from, to: _to) : (from: _to, to: _from);
 
   Future<bool> _initSpeech() async {
-    _speechReady ??= await _stt.initialize(onStatus: _onStatus, onError: _onError).catchError((_) => false);
+    if (_speechReady == null) {
+      _speechReady = await _stt.initialize(onStatus: _onStatus, onError: _onError).catchError((_) => false);
+      if (_speechReady!) {
+        // an Arabic language the phone's recogniser really has (Saudi first); a missing one would hear English
+        try {
+          final ids = [for (final l in await _stt.locales()) l.localeId];
+          final ar = ids.where((id) => id.toLowerCase().startsWith('ar')).toList();
+          _localeId = ar.firstWhere((id) => id.toLowerCase().replaceAll('-', '_') == 'ar_sa', orElse: () => ar.isNotEmpty ? ar.first : 'ar_SA');
+        } catch (_) {}
+      }
+    }
     return _speechReady!;
   }
 
@@ -108,6 +119,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   }
 
   void _onError(SpeechRecognitionError e) {
+    if (!mounted) return;
     final msg = e.errorMsg;
     if (msg.contains('permission')) {
       _pause();
@@ -129,7 +141,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         partialResults: true,
         listenMode: ListenMode.dictation,
         cancelOnError: false,
-        localeId: 'ar_SA',
+        localeId: _localeId,
         listenFor: const Duration(minutes: 5),
         pauseFor: const Duration(seconds: 20),
       ),
