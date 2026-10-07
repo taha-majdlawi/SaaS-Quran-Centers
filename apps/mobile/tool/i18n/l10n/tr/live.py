@@ -21,7 +21,7 @@ T = {
  'heard': 'Duyduğum: {w}',
  'resume': 'Devam',
  'forgot': 'Hatırlamıyorum',
- 'finish': 'Bitir',
+ 'finish': 'Bitir ve gönder',
  'result': 'Sonuç',
  'score': '%{n} doğru',
  'mistakeList': 'Hatalı kelimeler:',
