@@ -65,3 +65,12 @@ test('an unexpected word with nothing after it settles as wrong', () => {
   assert.equal(e?.kind === 'mistake' && e.type, 'wrong');
   assert.equal(m.words[5].heard, 'الكريم');
 });
+
+test('the cumulative results of Chrome on Android are not counted twice', () => {
+  const r = stableWords([
+    { transcript: 'قل', final: true },
+    { transcript: 'قل هو', final: true },
+    { transcript: 'قل هو الله أحد', final: false },
+  ]);
+  assert.deepEqual(r, ['قل', 'هو', 'الله']);
+});
