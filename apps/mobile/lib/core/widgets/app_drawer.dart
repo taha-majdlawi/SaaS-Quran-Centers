@@ -12,11 +12,14 @@ import '../../core/i18n/i18n.dart';
 
 /// One entry of the staff menu (the drawer and the More hub).
 class NavItem {
-  const NavItem(this.icon, this.path, {this.module, this.adminOnly = false, this.needsFees = false});
+  const NavItem(this.icon, this.path, {this.module, this.feature, this.adminOnly = false, this.needsFees = false});
 
   final IconData icon;
   final String path;
   final String? module;
+
+  /// A feature the center can switch off that is not a teacher permission (0088).
+  final String? feature;
   final bool adminOnly;
 
   /// Shown only where student fees are switched on (an optional feature).
@@ -47,11 +50,11 @@ const kNavSections = [
     NavItem(Icons.groups_rounded, '/circles', module: 'circles', adminOnly: true),
     NavItem(Icons.fact_check_rounded, '/attendance', module: 'attendance'),
     NavItem(Icons.groups_2_rounded, '/gatherings', module: 'attendance'),
-    NavItem(Icons.graphic_eq_rounded, '/recitations', module: 'students'),
+    NavItem(Icons.graphic_eq_rounded, '/recitations', module: 'students', feature: 'recitations'),
     NavItem(Icons.record_voice_over_rounded, '/external-recitations', module: 'students'),
     NavItem(Icons.replay_circle_filled_rounded, '/reviews'),
     NavItem(Icons.search_rounded, '/search'),
-    NavItem(Icons.auto_stories_rounded, '/quran'),
+    NavItem(Icons.auto_stories_rounded, '/quran', feature: 'quran'),
     NavItem(Icons.menu_book_rounded, '/serd', module: 'serd'),
     NavItem(Icons.stairs_rounded, '/stages', adminOnly: true),
   ]),
@@ -229,6 +232,7 @@ bool navItemVisible(NavItem item, TenantController tenant) {
   if (item.needsFees && !tenant.feesEnabled) return false;
   // switched off by the platform owner: hidden for everyone, admins included
   if (item.module != null && tenant.isDisabled(item.module!)) return false;
+  if (item.feature != null && tenant.isDisabled(item.feature!)) return false;
   if (item.adminOnly) return tenant.active?.role == OrgRole.admin;
   if (item.module != null) return tenant.hasModule(item.module!);
   return true;

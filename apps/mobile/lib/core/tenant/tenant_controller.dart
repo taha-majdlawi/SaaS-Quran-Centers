@@ -45,6 +45,12 @@ class TenantController extends ChangeNotifier {
   bool get feesEnabled => _feesEnabled;
   bool _feesEnabled = false;
 
+  /// After the admin changes the center's features (0088).
+  Future<void> refreshDisabled() async {
+    await _loadDisabled();
+    notifyListeners();
+  }
+
   Future<void> _loadDisabled() async {
     final id = _active?.organization.id;
     if (id == null) {

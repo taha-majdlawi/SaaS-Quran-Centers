@@ -90,6 +90,7 @@ export async function QuranReaderView({
   ayah,
   reciteTo,
   reciteType,
+  recitations = true,
 }: {
   orgId: string;
   base: string;
@@ -98,6 +99,8 @@ export async function QuranReaderView({
   /** from the daily portion: open the recite panel on ayah..reciteTo */
   reciteTo?: number;
   reciteType?: string;
+  /** the center uses recitations (0088): the recite / test button */
+  recitations?: boolean;
 }) {
   if (!Number.isInteger(surah) || surah < 1 || surah > 114) notFound();
   const [state, { t, locale }] = await Promise.all([readingState(orgId), getI18n()]);
@@ -137,6 +140,7 @@ export async function QuranReaderView({
           startAyah={ayah}
           autoRecite={ayah && reciteTo && reciteType ? { from: ayah, to: reciteTo, type: reciteType } : undefined}
           role={base === '/quran' ? 'staff' : 'family'}
+          canRecite={recitations}
           typeLabels={t.labels.recitationType}
           labels={Q.ui}
           recite={Q.recite}

@@ -1,12 +1,13 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { safeLogoUrl } from '@/lib/tenant/public-site';
 import { staffStrings } from '@/lib/i18n/server';
 import { LOCALES } from '@/lib/i18n/config';
 
-const TABS = ['identity', 'workdays', 'features', 'contact', 'quran', 'more'] as const;
+const TABS = ['identity', 'workdays', 'features', 'modules', 'contact', 'quran', 'more'] as const;
 
 /** Back to the tab the form was on, with ?saved=1 or ?error=… */
 function back(formData: FormData, result: { error?: string } = {}): string {
@@ -145,4 +146,16 @@ export async function saveCenterSettings(formData: FormData) {
     if (error) redirect(back(formData, { error: error.message }) as never);
   }
   redirect(back(formData) as never);
+}
+
+/** The features the center uses: every available one left unticked is switched off (set_center_features, 0088). */
+export async function saveCenterFeatures(formData: FormData) {
+  const orgId = formData.get('orgId') as string;
+  const available = String(formData.get('available') ?? '').split(',').filter(Boolean);
+  const off = available.filter((k) => formData.get(`f_${k}`) !== 'on');
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('set_center_features', { p_org: orgId, p_off: off });
+  if (error) redirect(`/settings?tab=modules&error=${encodeURIComponent(error.message)}` as never);
+  revalidatePath('/', 'layout');
+  redirect('/settings?tab=modules&saved=features' as never);
 }

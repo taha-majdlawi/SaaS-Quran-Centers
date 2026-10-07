@@ -476,6 +476,19 @@ class SCert {
   final String signerRoleHint;
 }
 
+/// The center admin's feature switches (center_features, 0088).
+class SCfeat {
+  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.off});
+  final Map<String, String> names;
+  final String tab;
+  final String title;
+  final String hint;
+  final String notInPlan;
+  final String save;
+  final String saved;
+  final String off;
+}
+
 /// Messages.
 class SChat {
   const SChat({required this.title, required this.newChat, required this.none, required this.noneHint, required this.deletedLast, required this.you, required this.searchName, required this.noContacts, required this.uploadFailed, required this.sendFailed, required this.stillFailing, required this.gallery, required this.camera, required this.imageSize, required this.editTitle, required this.deleteTitle, required this.deleteBody, required this.deleteFailed, required this.unmute, required this.start, required this.deleted, required this.notSent, required this.sending, required this.edited, required this.attach, required this.caption, required this.cantReply, required this.mute, required this.write});
@@ -1768,7 +1781,7 @@ class SWird {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1786,6 +1799,7 @@ class S {
   final SBadgesStaff badgesStaff;
   final SCal cal;
   final SCert cert;
+  final SCfeat cfeat;
   final SChat chat;
   final SDash dash;
   final SFees fees;
@@ -2249,6 +2263,16 @@ class S {
       pdfHint: 'للحصول على نسخة PDF مطبوعة افتح الشهادة من المتصفح واختر «طباعة / حفظ PDF».',
       titleHint: 'شهادة تفوّق',
       signerRoleHint: 'مدير المركز',
+    ),
+    cfeat: SCfeat(
+      names: {'students': 'الطلاب', 'circles': 'الحلقات', 'attendance': 'الحضور والمجالس', 'serd': 'السرد القرآني', 'points': 'النقاط', 'badges': 'الشارات', 'market': 'سوق النقاط', 'circle-challenges': 'منافسات الحلقات', 'activities': 'الأنشطة', 'calendar': 'التقويم', 'announcements': 'الإعلانات', 'chat': 'المحادثات', 'notifications': 'الإشعارات', 'reports': 'التقارير', 'certificates': 'الشهادات', 'fees': 'رسوم الطلاب', 'quran': 'المصحف', 'recitations': 'التسميع المسجّل والمباشر', 'wird': 'ورد اليوم وتذكيره', 'garden_tree': 'الشجرة المتحركة'},
+      tab: 'مميزات المركز',
+      title: 'المميزات التي يستخدمها المركز',
+      hint: 'أوقف ما لا يحتاجه مركزك فيختفي من القوائم عند الجميع، وأعده متى شئت. المتاح هنا هو ما تشمله خطتك.',
+      notInPlan: 'غير متاحة في خطتك',
+      save: 'حفظ المميزات',
+      saved: 'تم حفظ مميزات المركز',
+      off: 'هذه الميزة متوقفة في مركزك.',
     ),
     chat: SChat(
       title: 'المحادثات',
@@ -3890,6 +3914,16 @@ class S {
       titleHint: 'Certificate of excellence',
       signerRoleHint: 'Center director',
     ),
+    cfeat: SCfeat(
+      names: {'students': 'Students', 'circles': 'Circles', 'attendance': 'Attendance & gatherings', 'serd': 'Quran serd', 'points': 'Points', 'badges': 'Badges', 'market': 'Points market', 'circle-challenges': 'Circle challenges', 'activities': 'Activities', 'calendar': 'Calendar', 'announcements': 'Announcements', 'chat': 'Messages', 'notifications': 'Notifications', 'reports': 'Reports', 'certificates': 'Certificates', 'fees': 'Student fees', 'quran': 'Mushaf', 'recitations': 'Recorded and live recitation', 'wird': 'Daily portion and its reminder', 'garden_tree': 'The growing tree'},
+      tab: 'Center features',
+      title: 'Features the center uses',
+      hint: 'Switch off what your center does not need and it disappears from everyone’s menus; switch it back on any time. What is available here is what your plan includes.',
+      notInPlan: 'Not in your plan',
+      save: 'Save features',
+      saved: 'Center features saved',
+      off: 'This feature is switched off in your center.',
+    ),
     chat: SChat(
       title: 'Messages',
       newChat: 'New conversation',
@@ -5530,6 +5564,16 @@ class S {
       titleHint: 'Üstün başarı sertifikası',
       signerRoleHint: 'Merkez müdürü',
     ),
+    cfeat: SCfeat(
+      names: {'students': 'Öğrenciler', 'circles': 'Halkalar', 'attendance': 'Yoklama ve toplantılar', 'serd': 'Kur’an serdi', 'points': 'Puanlar', 'badges': 'Rozetler', 'market': 'Puan marketi', 'circle-challenges': 'Halka yarışmaları', 'activities': 'Etkinlikler', 'calendar': 'Takvim', 'announcements': 'Duyurular', 'chat': 'Mesajlar', 'notifications': 'Bildirimler', 'reports': 'Raporlar', 'certificates': 'Sertifikalar', 'fees': 'Öğrenci ücretleri', 'quran': 'Mushaf', 'recitations': 'Kayıtlı ve canlı dinletme', 'wird': 'Günlük vird ve hatırlatması', 'garden_tree': 'Büyüyen ağaç'},
+      tab: 'Merkez özellikleri',
+      title: 'Merkezin kullandığı özellikler',
+      hint: 'Merkezinizin ihtiyaç duymadığını kapatın, herkesin menüsünden kalkar; istediğiniz zaman geri açın. Burada açılabilenler planınızın kapsadıklarıdır.',
+      notInPlan: 'Planınızda yok',
+      save: 'Özellikleri kaydet',
+      saved: 'Merkez özellikleri kaydedildi',
+      off: 'Bu özellik merkezinizde kapalı.',
+    ),
     chat: SChat(
       title: 'Mesajlar',
       newChat: 'Yeni konuşma',
@@ -7169,6 +7213,16 @@ class S {
       pdfHint: 'Pour un PDF imprimable, ouvrez le certificat dans un navigateur et choisissez « Imprimer / enregistrer en PDF ».',
       titleHint: 'Certificat d’excellence',
       signerRoleHint: 'Directeur du centre',
+    ),
+    cfeat: SCfeat(
+      names: {'students': 'Élèves', 'circles': 'Cercles', 'attendance': 'Présences et rassemblements', 'serd': 'Serd coranique', 'points': 'Points', 'badges': 'Badges', 'market': 'Boutique de points', 'circle-challenges': 'Défis des cercles', 'activities': 'Activités', 'calendar': 'Calendrier', 'announcements': 'Annonces', 'chat': 'Messages', 'notifications': 'Notifications', 'reports': 'Rapports', 'certificates': 'Certificats', 'fees': 'Frais des élèves', 'quran': 'Mushaf', 'recitations': 'Récitation enregistrée et en direct', 'wird': 'Portion du jour et son rappel', 'garden_tree': 'L’arbre qui pousse'},
+      tab: 'Fonctionnalités du centre',
+      title: 'Fonctionnalités utilisées par le centre',
+      hint: 'Désactivez ce dont votre centre n’a pas besoin : cela disparaît des menus de tous. Réactivez quand vous voulez. Ce qui est disponible ici dépend de votre formule.',
+      notInPlan: 'Pas dans votre formule',
+      save: 'Enregistrer',
+      saved: 'Fonctionnalités enregistrées',
+      off: 'Cette fonctionnalité est désactivée dans votre centre.',
     ),
     chat: SChat(
       title: 'Messages',
