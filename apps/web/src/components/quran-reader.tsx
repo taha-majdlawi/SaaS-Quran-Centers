@@ -103,7 +103,7 @@ export function QuranReader({
   const [error, setError] = useState('');
 
   // passage repeat, reciting, the teacher's test
-  const [panel, setPanel] = useState<'range' | 'recite' | 'test' | null>(role === 'family' && autoRecite ? 'recite' : null);
+  const [panel, setPanel] = useState<'range' | 'recite' | 'test' | null>(null);
   const [range, setRange] = useState<{ from: number; to: number; times: number } | null>(null);
   const [loopNo, setLoopNo] = useState(1);
   const [hideAll, setHideAll] = useState(false);
@@ -591,12 +591,13 @@ export function QuranReader({
           </button>
           {range && playing && <span className="text-xs text-gray-500">{fmt(R.loop, { n: loopNo, total: range.times })}</span>}
           {role === 'family' ? (
-            <button
-              onClick={() => openPanel('recite')}
-              className={`ms-auto flex items-center gap-1 rounded-lg px-3 py-1.5 font-semibold ${panel === 'recite' ? 'bg-brand text-white' : 'border border-brand text-brand'}`}
+            // reciting has a screen of its own, followed live word by word (/my/recite)
+            <a
+              href={`/my/recite?surah=${surah}&from=${pageRange().from}&to=${pageRange().to}` as never}
+              className="ms-auto flex items-center gap-1 rounded-lg border border-brand px-3 py-1.5 font-semibold text-brand"
             >
               <Mic size={15} /> {R.recite}
-            </button>
+            </a>
           ) : (
             <button
               onClick={() => openPanel('test')}

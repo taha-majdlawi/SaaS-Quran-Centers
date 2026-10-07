@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../features/quran/live_recite_screen.dart';
 import 'package:go_router/go_router.dart';
 
 import '../auth/auth_controller.dart';
@@ -261,6 +262,19 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       GoRoute(path: '/gatherings/:id', builder: (context, state) => GatheringDetailScreen(gatheringId: state.pathParameters['id']!)),
       GoRoute(path: '/recitations', builder: (context, state) => const RecitationsScreen()),
       GoRoute(path: '/my/recitations', builder: (context, state) => const RecitationsScreen(family: true)),
+      GoRoute(
+        path: '/my/recite',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return LiveReciteScreen(
+            studentId: q['s'],
+            surah: int.tryParse(q['surah'] ?? ''),
+            from: int.tryParse(q['from'] ?? ''),
+            to: int.tryParse(q['to'] ?? ''),
+            type: q['type'],
+          );
+        },
+      ),
       GoRoute(path: '/external-recitations', builder: (context, state) => const ExternalRecitationsScreen()),
       GoRoute(path: '/reviews', builder: (context, state) => const ReviewsScreen()),
       GoRoute(path: '/search', builder: (context, state) => const GlobalSearchScreen()),

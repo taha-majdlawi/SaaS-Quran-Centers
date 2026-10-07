@@ -88,11 +88,12 @@ export async function POST(request: Request) {
   }
   if (!env.AI) {
     // the recording still goes to the teacher, just without the check
-    return NextResponse.json({ result: { unavailable: true } });
+    return NextResponse.json({ result: { unavailable: true, reason: 'no_ai' } });
   }
 
-  const { data: file } = await admin.storage.from('recitations').download(row.audio_path);
-  if (!file) return NextResponse.json({ error: 'لم يُعثر على التسجيل' }, { status: 404 });
+  // every failure says why (shown small under "the check is not available"), so it can be traced
+  const { data: file, error: dlError } = await admin.storage.from('recitations').download(row.audio_path);
+  if (!file) return NextResponse.json({ result: { unavailable: true, reason: `download: ${dlError?.message ?? 'missing'}`.slice(0, 120) } });
   if (file.size > MAX_BYTES) {
     const result = { unavailable: true, reason: 'too_long' };
     await save(result, null, null);
@@ -101,15 +102,15 @@ export async function POST(request: Request) {
 
   const detail = await surahText(row.surah, new URL(request.url).origin, env);
   const ayahs = detail?.ayahs.filter((a) => a.number >= row.ayah_from && a.number <= row.ayah_to) ?? [];
-  if (!ayahs.length) return NextResponse.json({ result: { unavailable: true } });
+  if (!ayahs.length) return NextResponse.json({ result: { unavailable: true, reason: 'no_text' } });
 
   let transcript = '';
   try {
     const out = await env.AI.run(MODEL, { audio: toBase64(await file.arrayBuffer()), language: 'ar', task: 'transcribe', vad_filter: true });
     transcript = (out.text ?? '').trim();
-  } catch {
+  } catch (e) {
     // not saved: the student can try the check again
-    return NextResponse.json({ result: { unavailable: true } });
+    return NextResponse.json({ result: { unavailable: true, reason: `ai: ${(e as Error)?.message ?? e}`.slice(0, 160) } });
   }
 
   const result = compareRecitation(ayahs, transcript);

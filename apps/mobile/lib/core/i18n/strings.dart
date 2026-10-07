@@ -754,6 +754,49 @@ class SIns {
   final String auditHint;
 }
 
+/// The live recite screen (/my/recite).
+class SLive {
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.sending, required this.sent, required this.again, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  final String title;
+  final String hint;
+  final String student;
+  final String surah;
+  final String type;
+  final String from;
+  final String to;
+  final String start;
+  final String unsupported;
+  final String micDenied;
+  final String network;
+  final String listening;
+  final String paused;
+  final String progress;
+  final String mistakesN;
+  final String stopMissing;
+  final String stopWrong;
+  final String correctIs;
+  final String heard;
+  final String resume;
+  final String forgot;
+  final String finish;
+  final String result;
+  final String score;
+  final String mistakeList;
+  final String resultNote;
+  final String note;
+  final String send;
+  final String sending;
+  final String sent;
+  final String again;
+  final String mine;
+  final String error;
+  final String fab;
+  final String liveBadge;
+  final String loading;
+  final String appNoAudio;
+  final String appUnsupported;
+}
+
 /// Members, teachers and permissions (admin).
 class SMem {
   const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
@@ -1725,7 +1768,7 @@ class SWird {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.mem, required this.mistakes, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1749,6 +1792,7 @@ class S {
   final SGarden garden;
   final SGather gather;
   final SIns ins;
+  final SLive live;
   final SMem mem;
   final SMistakes mistakes;
   final SMkt mkt;
@@ -2465,6 +2509,46 @@ class S {
       noChallenges: 'لا توجد منافسات',
       noAudit: 'لا يوجد عمليات مسجّلة بعد',
       auditHint: 'تظهر هنا عمليات الحذف والتعديل الحساسة',
+    ),
+    live: SLive(
+      title: 'التسميع',
+      hint: 'اختر السورة والمقطع ثم ابدأ: الآيات تكون مخفية، وتظهر كل كلمة عندما تقرؤها صحيحة. إذا نسيت كلمة أو أخطأت فيها يتوقف التسميع وينبّهك.',
+      student: 'الطالب',
+      surah: 'السورة',
+      type: 'نوع التسميع',
+      from: 'من الآية',
+      to: 'إلى الآية',
+      start: 'ابدأ التسميع',
+      unsupported: 'هذا المتصفح لا يدعم التسميع المباشر. استخدم Chrome أو Edge، أو تطبيق بستان القرآن.',
+      micDenied: 'لم يُسمح باستخدام الميكروفون. اسمح به من الإعدادات ثم حاول مرة أخرى.',
+      network: 'التعرّف على الكلام يحتاج اتصالًا بالإنترنت.',
+      listening: 'أستمع إليك… اقرأ من حفظك',
+      paused: 'متوقف',
+      progress: '{n} من {total} كلمة',
+      mistakesN: 'الأخطاء: {n}',
+      stopMissing: 'توقّف: نسيت كلمة',
+      stopWrong: 'توقّف: أخطأت في كلمة',
+      correctIs: 'الصحيح:',
+      heard: 'سمعتُ: {w}',
+      resume: 'تابع',
+      forgot: 'لا أتذكر',
+      finish: 'إنهاء',
+      result: 'نتيجة التسميع',
+      score: '{n}% صحيح',
+      mistakeList: 'الكلمات التي أخطأت فيها:',
+      resultNote: 'النتيجة من التعرّف على الكلام في جهازك، والمعلم هو من يعتمد التسميع.',
+      note: 'ملاحظة للمعلم (اختياري)',
+      send: 'أرسل للمعلم',
+      sending: 'جارٍ الإرسال…',
+      sent: 'أُرسل التسميع لمعلمك، وسيصلك إشعار بقراره.',
+      again: 'سمّع من جديد',
+      mine: 'تسميعاتي',
+      error: 'حدث خطأ، حاول مرة أخرى.',
+      fab: 'سمّع',
+      liveBadge: 'تسميع مباشر',
+      loading: 'جارٍ تحميل الآيات…',
+      appNoAudio: 'في التطبيق يُرسل التسميع بنتيجته دون تسجيل صوتي.',
+      appUnsupported: 'التعرّف على الكلام غير متاح على هذا الجهاز. ثبّت تطبيق Google أو فعّل خدمة التعرّف على الكلام من إعدادات الجهاز.',
     ),
     mem: SMem(
       modules: {'students': 'الطلاب', 'circles': 'الحلقات', 'attendance': 'الحضور', 'serd': 'السرد القرآني وطلبات التسميع', 'points': 'النقاط', 'badges': 'الشارات', 'market': 'سوق النقاط', 'circle-challenges': 'منافسات الحلقات', 'activities': 'الأنشطة', 'calendar': 'التقويم', 'announcements': 'الإعلانات', 'chat': 'المحادثات', 'notifications': 'الإشعارات', 'reports': 'التقارير', 'certificates': 'الشهادات'},
@@ -4066,6 +4150,46 @@ class S {
       noAudit: 'No actions recorded yet',
       auditHint: 'Sensitive deletions and edits show up here',
     ),
+    live: SLive(
+      title: 'Recite',
+      hint: 'Choose the surah and the passage, then start: the ayahs are hidden and each word appears when you say it right. If you forget or get a word wrong, it stops and tells you.',
+      student: 'Student',
+      surah: 'Surah',
+      type: 'Type',
+      from: 'From ayah',
+      to: 'To ayah',
+      start: 'Start',
+      unsupported: 'This browser can’t follow a recitation live. Use Chrome or Edge, or the Bustan Al-Quran app.',
+      micDenied: 'Microphone access was not allowed. Allow it in the settings and try again.',
+      network: 'Speech recognition needs an internet connection.',
+      listening: 'Listening… recite from memory',
+      paused: 'Paused',
+      progress: '{n} of {total} words',
+      mistakesN: 'Mistakes: {n}',
+      stopMissing: 'Stop: a word was forgotten',
+      stopWrong: 'Stop: a word was wrong',
+      correctIs: 'Correct:',
+      heard: 'I heard: {w}',
+      resume: 'Continue',
+      forgot: 'I don’t remember',
+      finish: 'Finish',
+      result: 'Result',
+      score: '{n}% correct',
+      mistakeList: 'Words with mistakes:',
+      resultNote: 'The result comes from your device’s speech recognition; your teacher approves the recitation.',
+      note: 'Note for the teacher (optional)',
+      send: 'Send to the teacher',
+      sending: 'Sending…',
+      sent: 'Sent to your teacher. You will be notified of the decision.',
+      again: 'Recite again',
+      mine: 'My recitations',
+      error: 'Something went wrong. Try again.',
+      fab: 'Recite',
+      liveBadge: 'Live recitation',
+      loading: 'Loading the ayahs…',
+      appNoAudio: 'In the app the recitation is sent with its result, without a recording.',
+      appUnsupported: 'Speech recognition is not available on this device. Install the Google app or turn on speech recognition in the device settings.',
+    ),
     mem: SMem(
       modules: {'students': 'Students', 'circles': 'Circles', 'attendance': 'Attendance', 'serd': 'Quran serd & recitation requests', 'points': 'Points', 'badges': 'Badges', 'market': 'Points market', 'circle-challenges': 'Circle challenges', 'activities': 'Activities', 'calendar': 'Calendar', 'announcements': 'Announcements', 'chat': 'Messages', 'notifications': 'Notifications', 'reports': 'Reports', 'certificates': 'Certificates'},
       status: {'active': 'Active', 'invited': 'Invited', 'suspended': 'Suspended'},
@@ -5666,6 +5790,46 @@ class S {
       noAudit: 'Henüz kaydedilmiş işlem yok',
       auditHint: 'Hassas silme ve düzenlemeler burada görünür',
     ),
+    live: SLive(
+      title: 'Dinlet',
+      hint: 'Sureyi ve bölümü seçip başlayın: ayetler gizlidir, her kelime doğru okuduğunuzda görünür. Bir kelimeyi unutur ya da yanlış okursanız durur ve sizi uyarır.',
+      student: 'Öğrenci',
+      surah: 'Sure',
+      type: 'Tür',
+      from: 'Ayetten',
+      to: 'Ayete',
+      start: 'Başla',
+      unsupported: 'Bu tarayıcı canlı dinletmeyi desteklemiyor. Chrome veya Edge ya da Bustan Al-Quran uygulamasını kullanın.',
+      micDenied: 'Mikrofon izni verilmedi. Ayarlardan izin verip tekrar deneyin.',
+      network: 'Konuşma tanıma internet bağlantısı gerektirir.',
+      listening: 'Dinliyorum… ezberden okuyun',
+      paused: 'Duraklatıldı',
+      progress: '{total} kelimeden {n}',
+      mistakesN: 'Hatalar: {n}',
+      stopMissing: 'Dur: bir kelime unutuldu',
+      stopWrong: 'Dur: bir kelime yanlış',
+      correctIs: 'Doğrusu:',
+      heard: 'Duyduğum: {w}',
+      resume: 'Devam',
+      forgot: 'Hatırlamıyorum',
+      finish: 'Bitir',
+      result: 'Sonuç',
+      score: '%{n} doğru',
+      mistakeList: 'Hatalı kelimeler:',
+      resultNote: 'Sonuç cihazınızın konuşma tanımasından gelir; dinletmeyi öğretmeniniz onaylar.',
+      note: 'Öğretmene not (isteğe bağlı)',
+      send: 'Öğretmene gönder',
+      sending: 'Gönderiliyor…',
+      sent: 'Öğretmeninize gönderildi. Karar size bildirilecek.',
+      again: 'Yeniden dinlet',
+      mine: 'Dinletmelerim',
+      error: 'Bir hata oluştu. Tekrar deneyin.',
+      fab: 'Dinlet',
+      liveBadge: 'Canlı dinletme',
+      loading: 'Ayetler yükleniyor…',
+      appNoAudio: 'Uygulamada dinletme ses kaydı olmadan sonucuyla gönderilir.',
+      appUnsupported: 'Bu cihazda konuşma tanıma yok. Google uygulamasını yükleyin veya cihaz ayarlarından konuşma tanımayı açın.',
+    ),
     mem: SMem(
       modules: {'students': 'Öğrenciler', 'circles': 'Halkalar', 'attendance': 'Yoklama', 'serd': 'Kur’an serdi ve dinletme talepleri', 'points': 'Puanlar', 'badges': 'Rozetler', 'market': 'Puan marketi', 'circle-challenges': 'Halka yarışmaları', 'activities': 'Etkinlikler', 'calendar': 'Takvim', 'announcements': 'Duyurular', 'chat': 'Mesajlar', 'notifications': 'Bildirimler', 'reports': 'Raporlar', 'certificates': 'Sertifikalar'},
       status: {'active': 'Aktif', 'invited': 'Davet edildi', 'suspended': 'Askıya alındı'},
@@ -7265,6 +7429,46 @@ class S {
       noChallenges: 'Aucun défi',
       noAudit: 'Aucune action enregistrée pour l’instant',
       auditHint: 'Les suppressions et modifications sensibles apparaissent ici',
+    ),
+    live: SLive(
+      title: 'Réciter',
+      hint: 'Choisissez la sourate et le passage, puis commencez : les âyahs sont masquées et chaque mot apparaît quand vous le dites correctement. Si vous oubliez ou vous trompez, la récitation s’arrête et vous prévient.',
+      student: 'Élève',
+      surah: 'Sourate',
+      type: 'Type',
+      from: 'De l’âyah',
+      to: 'À l’âyah',
+      start: 'Commencer',
+      unsupported: 'Ce navigateur ne peut pas suivre une récitation en direct. Utilisez Chrome ou Edge, ou l’application Bustan Al-Quran.',
+      micDenied: 'L’accès au micro a été refusé. Autorisez-le dans les réglages et réessayez.',
+      network: 'La reconnaissance vocale nécessite une connexion internet.',
+      listening: 'À l’écoute… récitez de mémoire',
+      paused: 'En pause',
+      progress: '{n} mots sur {total}',
+      mistakesN: 'Erreurs : {n}',
+      stopMissing: 'Stop : un mot oublié',
+      stopWrong: 'Stop : un mot erroné',
+      correctIs: 'Correct :',
+      heard: 'J’ai entendu : {w}',
+      resume: 'Continuer',
+      forgot: 'Je ne me souviens pas',
+      finish: 'Terminer',
+      result: 'Résultat',
+      score: '{n} % correct',
+      mistakeList: 'Mots avec erreur :',
+      resultNote: 'Le résultat vient de la reconnaissance vocale de votre appareil ; c’est votre enseignant qui valide.',
+      note: 'Note pour l’enseignant (facultatif)',
+      send: 'Envoyer à l’enseignant',
+      sending: 'Envoi…',
+      sent: 'Envoyé à votre enseignant. Vous serez averti de sa décision.',
+      again: 'Réciter à nouveau',
+      mine: 'Mes récitations',
+      error: 'Une erreur s’est produite. Réessayez.',
+      fab: 'Réciter',
+      liveBadge: 'Récitation en direct',
+      loading: 'Chargement des âyahs…',
+      appNoAudio: 'Dans l’application, la récitation est envoyée avec son résultat, sans enregistrement.',
+      appUnsupported: 'La reconnaissance vocale n’est pas disponible sur cet appareil. Installez l’application Google ou activez la reconnaissance vocale dans les réglages.',
     ),
     mem: SMem(
       modules: {'students': 'Élèves', 'circles': 'Cercles', 'attendance': 'Présences', 'serd': 'Serd du Coran et demandes de récitation', 'points': 'Points', 'badges': 'Badges', 'market': 'Boutique de points', 'circle-challenges': 'Défis entre cercles', 'activities': 'Activités', 'calendar': 'Calendrier', 'announcements': 'Annonces', 'chat': 'Messages', 'notifications': 'Notifications', 'reports': 'Rapports', 'certificates': 'Certificats'},

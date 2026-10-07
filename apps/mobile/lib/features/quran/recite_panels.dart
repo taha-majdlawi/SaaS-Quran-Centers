@@ -559,14 +559,13 @@ class _TestPanelState extends State<TestPanel> {
         onChanged: (v) => setState(() => _studentId = v),
       ),
       const SizedBox(height: 8),
-      Row(children: [
-        _RangeRow(from: _from, to: _to, max: widget.max, onChanged: (f, x) => setState(() {
-          _from = f;
-          _to = x;
-        })),
-        const SizedBox(width: 8),
-        Expanded(child: _typeDropdown(context, _type, (v) => setState(() => _type = v))),
-      ]),
+      // one field per line: side by side they did not fit a phone
+      _RangeRow(from: _from, to: _to, max: widget.max, onChanged: (f, x) => setState(() {
+        _from = f;
+        _to = x;
+      })),
+      const SizedBox(height: 8),
+      _typeDropdown(context, _type, (v) => setState(() => _type = v)),
       const SizedBox(height: 8),
       Row(children: [
         Expanded(
