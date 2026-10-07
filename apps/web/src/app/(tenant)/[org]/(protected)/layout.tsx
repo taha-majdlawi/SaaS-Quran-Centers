@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { GrowingTree } from '@/components/growing-tree';
 import { MonitoringOrg } from '@/components/error-reporter';
 import { notFound, redirect } from 'next/navigation';
@@ -51,6 +52,10 @@ export default async function TenantProtectedLayout({
   }
   const capacity = isStaff ? usageBanner(acc?.usage, t.staff.billing) : null;
   const billingLocked = isStaff && acc?.is_read_only === true && acc.reason === 'billing';
+  // the student pages of a feature the center switched off (0088): a note instead of the page
+  const path = ((await headers()).get('x-bustan-path') ?? '').split('/').filter(Boolean);
+  const portalFeature = path[0] !== 'my' ? null : path[1] === 'quran' ? 'quran' : path[1] === 'recite' || path[1] === 'recitations' ? 'recitations' : null;
+  const portalOff = !!portalFeature && org.disabledModules.includes(portalFeature);
   const notices = (noticeData ?? []) as { id: string; title: string; body: string | null; level: string }[];
 
   return (
@@ -125,8 +130,14 @@ export default async function TenantProtectedLayout({
             </form>
           </div>
         </header>
-        <main>{children}</main>
-        <GrowingTree corner />
+        <main>
+          {portalOff ? (
+            <p className="mx-auto mt-10 max-w-md rounded-lg border bg-white p-6 text-center text-sm text-gray-600">{t.staff.common.featureOff}</p>
+          ) : (
+            children
+          )}
+        </main>
+        {!org.disabledModules.includes('garden_tree') && <GrowingTree corner />}
       </div>
     </div>
   );

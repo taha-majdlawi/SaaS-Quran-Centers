@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:provider/provider.dart';
+
+import '../tenant/tenant_controller.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -61,6 +64,8 @@ class _GrowingTreeOverlayState extends State<GrowingTreeOverlay> with WidgetsBin
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     if (mq.viewInsets.bottom > 0) return const SizedBox.shrink(); // typing: out of the way
+    // the center switched the tree off (0088)
+    if (context.watch<TenantController>().isDisabled('garden_tree')) return const SizedBox.shrink();
     final still = mq.disableAnimations;
     if (still) _timer?.cancel();
     // the floating buttons sit at the end (left in Arabic): the tree takes the start corner

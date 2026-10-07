@@ -137,7 +137,7 @@ export default async function StudentProfilePage({
         <div className="mb-6">
           <GoalCard g={goal} orgId={org.id} studentId={p.id} back={`/students/${p.id}`} edit />
           <div className="mt-3">
-            <WirdCard wird={reviewData as Wird | null} base="/quran" canRecite={false} locale={locale} W={T.wird} />
+            {!org.disabledModules.includes('wird') && <WirdCard wird={reviewData as Wird | null} base="/quran" canRecite={false} locale={locale} W={T.wird} />}
           </div>
         </div>
       )}
@@ -189,11 +189,11 @@ export default async function StudentProfilePage({
         </Panel>
       </div>
 
-      <div className="mb-6">
+      <div className={org.disabledModules.includes('recitations') ? 'hidden' : 'mb-6'}>
         <MistakeStats data={statsData as MistakeStatsData | null} base="/quran" locale={locale} M={T.mistakeStats} />
       </div>
 
-      {recorded.length > 0 && (
+      {recorded.length > 0 && !org.disabledModules.includes('recitations') && (
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-bold">{T.quran.recite.inboxTitle}</h2>

@@ -622,7 +622,9 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
             selectedIcon: const Icon(Icons.repeat_on_rounded),
             onPressed: detail == null ? null : _pickRange,
           ),
-          if (_isStaff(context.read<TenantController>()))
+          if (context.watch<TenantController>().isDisabled('recitations'))
+            const SizedBox.shrink()
+          else if (_isStaff(context.read<TenantController>()))
             IconButton(
               tooltip: tr(context).recite.testStudent,
               isSelected: _panel == 'test',

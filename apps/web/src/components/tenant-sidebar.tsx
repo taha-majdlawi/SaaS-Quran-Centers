@@ -61,10 +61,15 @@ const SECTION_ORDER = [null, 'teaching', 'motivation', 'comms', 'admin'] as cons
  * every admin reaches (circles, notifications) - the feature of the same name.
  */
 export function featureOf(slug: string): string | null {
+  // a page that is a feature of its own (the mushaf, recitations) follows its own switch first
+  if ((PAGE_FEATURES as readonly string[]).includes(slug)) return slug;
   const m = TENANT_MODULES.find((x) => x.slug === slug);
   if (m && 'module' in m && m.module) return m.module;
-  return (ALL_MODULE_KEYS as string[]).includes(slug) ? slug : null;
+  return (ALL_MODULE_KEYS as string[]).includes(slug) || (PAGE_FEATURES as readonly string[]).includes(slug) ? slug : null;
 }
+
+/** Features that are pages of their own without being a teacher permission (the center admin switches them, 0088). */
+export const PAGE_FEATURES = ['quran', 'recitations'] as const;
 
 export async function TenantSidebar({
   role,

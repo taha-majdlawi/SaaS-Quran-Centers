@@ -90,12 +90,16 @@ export default async function MyPortalPage({
           <a href={`/my/record?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
             {p.nav.record}
           </a>
-          <a href="/my/quran" className="rounded border px-4 py-2 text-sm text-brand">
-            {p.nav.quran}
-          </a>
-          <a href={`/my/recitations?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
-            {t.quran.recite.myTitle}
-          </a>
+          {on('quran') && (
+            <a href="/my/quran" className="rounded border px-4 py-2 text-sm text-brand">
+              {p.nav.quran}
+            </a>
+          )}
+          {on('recitations') && (
+            <a href={`/my/recitations?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
+              {t.quran.recite.myTitle}
+            </a>
+          )}
           {on('announcements') && (
             <a href="/my/announcements" className="rounded border px-4 py-2 text-sm text-brand">
               {p.nav.announcements}
@@ -174,7 +178,9 @@ export default async function MyPortalPage({
           goalCard={
             <>
               {goal && <GoalCard g={goal} orgId={org.id} studentId={current.id} back="/my" />}
-              <WirdCard wird={reviewRes.data as Wird | null} base="/my/quran" canRecite studentId={current.id} locale={locale} W={t.wird} />
+              {on('wird') && (
+                <WirdCard wird={reviewRes.data as Wird | null} base="/my/quran" canRecite={on('recitations')} studentId={current.id} locale={locale} W={t.wird} />
+              )}
               <a href={`/my/weekly?student=${current.id}` as never} className="block rounded-lg border bg-white p-3 text-center text-sm font-semibold text-brand hover:bg-gray-50">
                 📊 {t.staff.weekly.open}
               </a>
@@ -183,7 +189,7 @@ export default async function MyPortalPage({
           t={t}
         />
       )}
-      <ReciteFab href={`/my/recite?s=${current.id}`} label={t.live.fab} />
+      {on('recitations') && <ReciteFab href={`/my/recite?s=${current.id}`} label={t.live.fab} />}
     </div>
   );
 }

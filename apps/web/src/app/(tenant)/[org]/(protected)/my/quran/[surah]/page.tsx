@@ -13,7 +13,7 @@ export default async function MySurahPage({
   const org = await getOrgContext(slug);
   return (
     <div className="mx-auto max-w-3xl p-6">
-      <QuranReaderView orgId={org.id} base="/my/quran" surah={Number(surah)} ayah={ayah ? Number(ayah) : undefined} reciteTo={to ? Number(to) : undefined} reciteType={recite} />
+      <QuranReaderView orgId={org.id} base="/my/quran" surah={Number(surah)} ayah={ayah ? Number(ayah) : undefined} reciteTo={to ? Number(to) : undefined} reciteType={recite} recitations={!org.disabledModules.includes('recitations')} />
     </div>
   );
 }

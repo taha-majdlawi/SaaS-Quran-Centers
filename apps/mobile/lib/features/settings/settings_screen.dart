@@ -1,4 +1,5 @@
 import 'digest_tile.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -330,6 +331,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // features
                 _tab([
+                  if (isAdmin)
+                    Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: const Icon(Icons.toggle_on_rounded),
+                        title: Text(tr(context).cfeat.tab),
+                        subtitle: Text(tr(context).cfeat.title),
+                        trailing: Icon(forwardChevron(context)),
+                        onTap: () => context.push('/settings/features'),
+                      ),
+                    ),
                   _field(t.backdate, _textSettings['backdate_days']!, isAdmin, type: TextInputType.number),
                   for (final f in [
                     ('flag_market_enabled', t.market),

@@ -55,6 +55,7 @@ export function QuranReader({
   bookmarked: initialBookmarks,
   startAyah,
   role,
+  canRecite = true,
   autoRecite,
   typeLabels,
   labels: L,
@@ -70,6 +71,8 @@ export function QuranReader({
   startAyah?: number;
   /** staff test students, the family recites */
   role: 'staff' | 'family';
+  /** off when the center switched recitations off */
+  canRecite?: boolean;
   /** opened from the daily portion: the recite panel ready on this passage */
   autoRecite?: { from: number; to: number; type: string };
   /** t.labels.recitationType */
@@ -590,7 +593,7 @@ export function QuranReader({
             <Repeat size={15} /> {range ? `${R.rangeTitle}: ${arabicNumber(range.from)}–${arabicNumber(range.to)} ×${range.times}` : R.rangeTitle}
           </button>
           {range && playing && <span className="text-xs text-gray-500">{fmt(R.loop, { n: loopNo, total: range.times })}</span>}
-          {role === 'family' ? (
+          {!canRecite ? null : role === 'family' ? (
             // reciting has a screen of its own, followed live word by word (/my/recite)
             <a
               href={`/my/recite?surah=${surah}&from=${pageRange().from}&to=${pageRange().to}` as never}
