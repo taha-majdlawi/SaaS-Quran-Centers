@@ -390,8 +390,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           ),
           const SizedBox(height: 14),
           GoalCard(studentId: widget.studentId, studentName: d.fullName),
-          WirdCard(studentId: widget.studentId),
-          MistakeStatsCard(studentId: widget.studentId),
+          if (!context.watch<TenantController>().isDisabled('wird')) WirdCard(studentId: widget.studentId),
+          if (!context.watch<TenantController>().isDisabled('recitations')) MistakeStatsCard(studentId: widget.studentId),
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../features/settings/center_features_screen.dart';
 import '../../features/quran/live_recite_screen.dart';
 import 'package:go_router/go_router.dart';
 
@@ -298,6 +299,7 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       ),
       GoRoute(path: '/audit', builder: (context, state) => const AuditScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(path: '/settings/features', builder: (context, state) => const CenterFeaturesScreen()),
       GoRoute(path: '/site', builder: (context, state) => const SiteScreen()),
     ],
   );

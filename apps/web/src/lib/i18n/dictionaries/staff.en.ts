@@ -354,6 +354,17 @@ export const staffEn: typeof staffAr = {
     verifyValid: '✓ Valid certificate',
     verifyIssued: 'Issued by {center} on {date}',
   },
+  /** The center admin's feature switches (center_features, 0088). */
+  cfeat: {
+    names: { "students": 'Students', "circles": 'Circles', "attendance": 'Attendance & gatherings', "serd": 'Quran serd', "points": 'Points', "badges": 'Badges', "market": 'Points market', "circle-challenges": 'Circle challenges', "activities": 'Activities', "calendar": 'Calendar', "announcements": 'Announcements', "chat": 'Messages', "notifications": 'Notifications', "reports": 'Reports', "certificates": 'Certificates', "fees": 'Student fees', "quran": 'Mushaf', "recitations": 'Recorded and live recitation', "wird": 'Daily portion and its reminder', "garden_tree": 'The growing tree' } as Record<string, string>,
+    tab: 'Center features',
+    title: 'Features the center uses',
+    hint: 'Switch off what your center does not need and it disappears from everyone’s menus; switch it back on any time. What is available here is what your plan includes.',
+    notInPlan: 'Not in your plan',
+    save: 'Save features',
+    saved: 'Center features saved',
+    off: 'This feature is switched off in your center.',
+  },
   /** Circle challenges. */
   challenges: {
     title: 'Title',

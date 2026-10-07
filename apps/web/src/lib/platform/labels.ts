@@ -18,6 +18,10 @@ export const FEATURES: [string, string][] = [
   ['reports', 'التقارير'],
   ['certificates', 'الشهادات'],
   ['fees', 'رسوم الطلاب'],
+  ['quran', 'المصحف'],
+  ['recitations', 'التسميع المسجّل والمباشر'],
+  ['wird', 'ورد اليوم وتذكيره'],
+  ['garden_tree', 'الشجرة المتحركة'],
 ];
 
 export const fmt = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString('ar', { dateStyle: 'medium', timeStyle: 'short' }) : '—');

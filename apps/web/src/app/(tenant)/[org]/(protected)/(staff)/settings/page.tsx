@@ -1,5 +1,6 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
+import { CenterFeaturesForm } from './center-features';
 import { SubmitButton } from '@/components/submit-button';
 import { LogoField } from '@/components/logo-field';
 import { AYAH_RECITERS, reciterLabel } from '@/lib/quran/mushaf';
@@ -10,7 +11,7 @@ import { LOCALES, LOCALE_NAMES } from '@/lib/i18n/config';
 const PRAYER_METHODS = ['umm_al_qura', 'muslim_world_league', 'egyptian', 'karachi', 'dubai', 'qatar', 'kuwait', 'moon_sighting_committee', 'singapore', 'turkey', 'tehran', 'north_america'];
 
 /** One tab per group of settings; each tab is its own form and saves only its own fields. */
-const TABS = ['identity', 'workdays', 'features', 'contact', 'quran', 'more'] as const;
+const TABS = ['identity', 'workdays', 'features', 'modules', 'contact', 'quran', 'more'] as const;
 type Tab = (typeof TABS)[number];
 
 const input = 'mt-1 w-full rounded border px-3 py-2 text-sm';
@@ -72,7 +73,7 @@ export default async function SettingsPage({
       </div>
 
       <nav className="-mx-1 flex gap-1 overflow-x-auto border-b px-1" aria-label={S.settings.heading}>
-        {TABS.filter((v) => v !== 'more' || isAdmin).map((v) => (
+        {TABS.filter((v) => (v !== 'more' && v !== 'modules') || isAdmin).map((v) => (
           <a
             key={v}
             href={`/settings?tab=${v}` as never}
@@ -81,13 +82,15 @@ export default async function SettingsPage({
               tab === v ? 'border-brand font-semibold text-brand' : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            {S.settings.tabs[v]}
+            {v === 'modules' ? S.cfeat.tab : S.settings.tabs[v]}
           </a>
         ))}
       </nav>
 
       {q.error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{q.error}</p>}
-      {q.saved && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{S.settings.saved}</p>}
+      {q.saved && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{q.saved === 'features' ? S.cfeat.saved : S.settings.saved}</p>}
+
+      {tab === 'modules' && isAdmin && <CenterFeaturesForm orgId={org.id} />}
 
       {tab === 'identity' && (
         <form action={updateOrgSettings} className={card}>

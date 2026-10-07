@@ -113,7 +113,7 @@ class _MyPortalScreenState extends State<MyPortalScreen> {
 
     return Scaffold(
       // reciting has a screen of its own, followed live word by word
-      floatingActionButton: _studentId == null
+      floatingActionButton: _studentId == null || tenant.isDisabled('recitations')
           ? null
           : FloatingActionButton.extended(
               heroTag: 'recite',
@@ -230,7 +230,8 @@ class _HomeTab extends StatelessWidget {
         AnnouncementsPreviewCard(announcements: data.announcements),
         const SizedBox(height: 12),
         GoalCard(key: ValueKey('goal$studentId'), studentId: studentId, studentName: data.fullName),
-        WirdCard(key: ValueKey('wird$studentId'), studentId: studentId, canRecite: true),
+        if (!context.watch<TenantController>().isDisabled('wird'))
+          WirdCard(key: ValueKey('wird$studentId'), studentId: studentId, canRecite: !context.watch<TenantController>().isDisabled('recitations')),
         FeesTile(studentId: studentId),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -355,8 +356,8 @@ class _HomeTab extends StatelessWidget {
               if (on('announcements')) GardenTile(icon: Icons.campaign_rounded, label: p.announcementsLink, color: const Color(0xFF6D4AA8), onTap: () => context.push('/announcements')),
               if (on('reports')) GardenTile(icon: Icons.insights_rounded, label: p.report, color: const Color(0xFF0E7C86), onTap: () => context.push('/my/report')),
               if (on('certificates')) GardenTile(icon: Icons.workspace_premium_rounded, label: p.certificates, color: const Color(0xFFB26A00), onTap: () => context.push('/my/certificates')),
-              GardenTile(icon: Icons.auto_stories_rounded, label: p.quran, color: const Color(0xFF16835A), onTap: () => context.push('/quran')),
-              GardenTile(icon: Icons.graphic_eq_rounded, label: t.recite.myTitle, color: const Color(0xFF1E6F5C), onTap: () => context.push('/my/recitations')),
+              if (on('quran')) GardenTile(icon: Icons.auto_stories_rounded, label: p.quran, color: const Color(0xFF16835A), onTap: () => context.push('/quran')),
+              if (on('recitations')) GardenTile(icon: Icons.graphic_eq_rounded, label: t.recite.myTitle, color: const Color(0xFF1E6F5C), onTap: () => context.push('/my/recitations')),
               if (on('badges')) GardenTile(icon: Icons.emoji_events_rounded, label: p.badges, color: const Color(0xFFD4A24C), onTap: () => context.push('/my/badges')),
               if (on('market')) GardenTile(icon: Icons.storefront_rounded, label: p.market, color: const Color(0xFF8E44AD), onTap: () => context.push('/my/market')),
               GardenTile(icon: Icons.privacy_tip_rounded, label: p.privacy, color: const Color(0xFF6B7470), onTap: () => context.push('/my/privacy')),

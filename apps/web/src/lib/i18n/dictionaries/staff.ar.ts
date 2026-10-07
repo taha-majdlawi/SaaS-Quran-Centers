@@ -352,6 +352,17 @@ export const staffAr = {
     verifyValid: '✓ شهادة صحيحة',
     verifyIssued: 'صادرة عن {center} بتاريخ {date}',
   },
+  /** The center admin's feature switches (center_features, 0088). */
+  cfeat: {
+    names: { "students": 'الطلاب', "circles": 'الحلقات', "attendance": 'الحضور والمجالس', "serd": 'السرد القرآني', "points": 'النقاط', "badges": 'الشارات', "market": 'سوق النقاط', "circle-challenges": 'منافسات الحلقات', "activities": 'الأنشطة', "calendar": 'التقويم', "announcements": 'الإعلانات', "chat": 'المحادثات', "notifications": 'الإشعارات', "reports": 'التقارير', "certificates": 'الشهادات', "fees": 'رسوم الطلاب', "quran": 'المصحف', "recitations": 'التسميع المسجّل والمباشر', "wird": 'ورد اليوم وتذكيره', "garden_tree": 'الشجرة المتحركة' } as Record<string, string>,
+    tab: 'مميزات المركز',
+    title: 'المميزات التي يستخدمها المركز',
+    hint: 'أوقف ما لا يحتاجه مركزك فيختفي من القوائم عند الجميع، وأعده متى شئت. المتاح هنا هو ما تشمله خطتك.',
+    notInPlan: 'غير متاحة في خطتك',
+    save: 'حفظ المميزات',
+    saved: 'تم حفظ مميزات المركز',
+    off: 'هذه الميزة متوقفة في مركزك.',
+  },
   /** Circle challenges. */
   challenges: {
     title: 'العنوان',
