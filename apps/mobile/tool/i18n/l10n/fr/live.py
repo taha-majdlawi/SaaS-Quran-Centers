@@ -21,7 +21,7 @@ T = {
  'heard': 'J’ai entendu : {w}',
  'resume': 'Continuer',
  'forgot': 'Je ne me souviens pas',
- 'finish': 'Terminer',
+ 'finish': 'Terminer et envoyer',
  'result': 'Résultat',
  'score': '{n} % correct',
  'mistakeList': 'Mots avec erreur :',

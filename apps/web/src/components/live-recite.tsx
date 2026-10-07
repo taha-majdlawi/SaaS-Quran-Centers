@@ -426,6 +426,8 @@ export function LiveRecite({
         ))}
       </article>
 
+      {/* the controls stay in sight at the bottom of the screen: the stop, finish-and-send, the result and its send button */}
+      <div className="sticky bottom-0 z-20 -mx-4 max-h-[65vh] space-y-3 overflow-y-auto border-t bg-white/95 px-4 py-3 shadow-[0_-6px_18px_rgba(0,0,0,0.08)] backdrop-blur sm:mx-0 sm:rounded-t-xl sm:border">
       {stop && (
         <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4" role="alert">
           <p className="font-bold text-red-800">{stop.type === 'missing' ? L.stopMissing : L.stopWrong}</p>
@@ -447,7 +449,7 @@ export function LiveRecite({
           <button onClick={forgot} className="rounded-md border px-4 py-2 text-sm">
             {L.forgot}
           </button>
-          <button onClick={finish} className="flex items-center gap-1.5 rounded-md border border-gray-300 px-4 py-2 text-sm">
+          <button onClick={finish} className="ms-auto flex items-center gap-1.5 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">
             <Square size={13} /> {L.finish}
           </button>
         </div>
@@ -502,6 +504,7 @@ export function LiveRecite({
       )}
 
       {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      </div>
     </div>
   );
 }

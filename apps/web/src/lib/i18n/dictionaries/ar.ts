@@ -725,7 +725,7 @@ export const ar = {
     heard: 'سمعتُ: {w}',
     continue: 'تابع',
     forgot: 'لا أتذكر',
-    finish: 'إنهاء',
+    finish: 'إنهاء وتسليم',
     result: 'نتيجة التسميع',
     score: '{n}% صحيح',
     mistakeList: 'الكلمات التي أخطأت فيها:',

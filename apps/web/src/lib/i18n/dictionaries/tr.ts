@@ -718,7 +718,7 @@ export const tr: Dictionary = {
     heard: 'Duyduğum: {w}',
     continue: 'Devam',
     forgot: 'Hatırlamıyorum',
-    finish: 'Bitir',
+    finish: 'Bitir ve gönder',
     result: 'Sonuç',
     score: '%{n} doğru',
     mistakeList: 'Hatalı kelimeler:',
