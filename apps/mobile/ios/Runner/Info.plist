@@ -39,6 +39,8 @@
 		<string>لالتقاط صورة لرسالة أو لشعار المركز · To take a photo for a message or the center logo</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>لتسجيل التسميع من المصحف وإرساله للمعلم · To record a recitation in the mushaf and send it to the teacher</string>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>لمتابعة التسميع كلمة كلمة وتنبيهك عند الخطأ · To follow your recitation word by word and tell you about mistakes</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>لاختيار صورة لرسالة أو لشعار المركز · To pick a photo for a message or the center logo</string>
 		<key>UIBackgroundModes</key>

@@ -1,3 +1,4 @@
+import { ReciteFab } from '@/components/recite-fab';
 import { MistakeStats, type MistakeStatsData } from '@/components/mistake-stats';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
@@ -61,6 +62,7 @@ export default async function MyRecitationsPage({ params, searchParams }: { para
         R={R}
       />
       <p className="mt-4 text-xs text-gray-400">{R.autoNote}</p>
+      <ReciteFab href={`/my/recite${current ? `?s=${current.id}` : ''}`} label={t.live.fab} />
     </div>
   );
 }

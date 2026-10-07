@@ -273,7 +273,6 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
         _bookmarked = {for (final b in state.bookmarks.where((b) => b.surah == widget.surah)) b.ayah};
         _loading = false;
         // from the daily portion: straight to reciting it (the family; staff only read)
-        if (widget.startAyah != null && widget.reciteTo != null && widget.reciteType != null && !_isStaff(context.read<TenantController>())) _panel = 'recite';
       });
       _loadTimings();
     } catch (e) {
@@ -637,7 +636,8 @@ class _SurahReaderScreenState extends State<SurahReaderScreen> {
               isSelected: _panel == 'recite',
               icon: const Icon(Icons.mic_none_rounded),
               selectedIcon: const Icon(Icons.mic_rounded),
-              onPressed: detail == null ? null : () => _openPanel('recite'),
+              // reciting has a screen of its own, followed live word by word
+              onPressed: detail == null ? null : () => context.push('/my/recite?surah=${widget.surah}&from=${_pageRange.from}&to=${_pageRange.to}'),
             ),
           IconButton(tooltip: t.readingSettings, icon: const Icon(Icons.tune_rounded), onPressed: detail == null ? null : _settingsSheet),
         ],

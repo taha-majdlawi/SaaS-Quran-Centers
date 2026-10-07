@@ -332,7 +332,10 @@ export function RecitePanel({
       {phase === 'result' && result && (
         <div className="mt-3 space-y-2">
           {result.unavailable || !result.words ? (
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-amber-800">{L.unavailable}</p>
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-amber-800">
+              {L.unavailable}
+              {(result as { reason?: string }).reason && <span className="block text-[11px] opacity-70" dir="ltr">{(result as { reason?: string }).reason}</span>}
+            </p>
           ) : (
             <>
               <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">

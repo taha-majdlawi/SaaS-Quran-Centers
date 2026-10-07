@@ -13,7 +13,23 @@ export interface Wird {
 }
 
 /** ورد اليوم: the new portion and the review portion, each with a "recite now" that opens the mushaf on it (student_wird, 0086). */
-export function WirdCard({ wird, base, canRecite, locale, W }: { wird: Wird | null; base: string; canRecite: boolean; locale: string; W: Dictionary['wird'] }) {
+export function WirdCard({
+  wird,
+  base,
+  canRecite,
+  studentId,
+  locale,
+  W,
+}: {
+  wird: Wird | null;
+  base: string;
+  canRecite: boolean;
+  studentId?: string;
+  locale: string;
+  W: Dictionary['wird'];
+}) {
+  const link = (surah: number, from: number, to: number, type: string) =>
+    canRecite ? `/my/recite?s=${studentId ?? ''}&surah=${surah}&from=${from}&to=${to}&type=${type}` : `${base}/${surah}?ayah=${from}`;
   if (!wird) return null;
   const parts: { key: string; title: string; label: string; note?: string; state: State; href: string }[] = [];
   if (wird.new) {
@@ -23,7 +39,7 @@ export function WirdCard({ wird, base, canRecite, locale, W }: { wird: Wird | nu
       title: W.newPart,
       label: `${surahLabel(n.surah, locale)} ${n.ayah_from}–${n.ayah_to}`,
       state: n.state,
-      href: `${base}/${n.surah}?ayah=${n.ayah_from}&to=${n.ayah_to}&recite=new_memorization`,
+      href: link(n.surah, n.ayah_from, n.ayah_to, 'new_memorization'),
     });
   }
   if (wird.review) {
@@ -38,7 +54,7 @@ export function WirdCard({ wird, base, canRecite, locale, W }: { wird: Wird | nu
         : `${surahLabel(r.surah_from, locale)} ${r.ayah_from} — ${surahLabel(r.surah_to, locale)} ${r.ayah_to}`,
       note: `${fmt(W.pages, { n: r.pages })} · ${r.approved ? W.fromTeacher : W.suggested}`,
       state: r.state,
-      href: `${base}/${r.surah_from}?ayah=${r.ayah_from}&to=${to}&recite=recent_review`,
+      href: link(r.surah_from, r.ayah_from, to, 'recent_review'),
     });
   }
 

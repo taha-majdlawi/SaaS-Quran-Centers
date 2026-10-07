@@ -148,6 +148,33 @@ class RecitationApi {
     }
   }
 
+  /// A live recitation (the device followed it word by word): result and heard text, straight to the teacher.
+  Future<String> submitLive({
+    required String orgId,
+    required String studentId,
+    required String type,
+    required int surah,
+    required int from,
+    required int to,
+    required Map<String, dynamic> result,
+    required String transcript,
+    String? note,
+  }) async {
+    final id = await _client.rpc('submit_live_recitation', params: {
+      'p_org': orgId,
+      'p_student': studentId,
+      'p_type': type,
+      'p_surah': surah,
+      'p_ayah_from': from,
+      'p_ayah_to': to,
+      'p_result': result,
+      'p_transcript': transcript,
+      'p_note': note,
+      'p_client_ref': _uuid.v4(),
+    });
+    return id as String;
+  }
+
   Future<void> submit(String id, String? note) => _client.rpc('submit_recitation', params: {'p_id': id, 'p_note': note});
 
   Future<void> discard(String id, String path) async {
