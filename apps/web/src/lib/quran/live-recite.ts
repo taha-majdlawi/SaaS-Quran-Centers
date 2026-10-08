@@ -153,6 +153,17 @@ export class LiveMatcher {
  * result, and the interim one except its last word (still being heard).
  */
 export function stableWords(results: { transcript: string; final: boolean }[]): string[] {
+  // Chrome on Android repeats the whole phrase in every result of a continuous
+  // session ("قل", "قل هو", "قل هو الله"...): a result that starts with the
+  // previous one replaces it instead of adding to it
+  const phrases: { transcript: string; final: boolean }[] = [];
+  for (const r of results) {
+    const t = r.transcript.trim();
+    const prev = phrases[phrases.length - 1];
+    if (prev && prev.transcript && t.startsWith(prev.transcript)) phrases[phrases.length - 1] = { transcript: t, final: r.final };
+    else phrases.push({ transcript: t, final: r.final });
+  }
+  results = phrases;
   const out: string[] = [];
   results.forEach((r, idx) => {
     const ws = r.transcript.split(/\s+/).filter(Boolean);

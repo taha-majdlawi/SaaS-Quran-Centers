@@ -63,11 +63,15 @@ export async function POST(request: Request) {
     : await createClient();
   const { data: row } = await supabase
     .from('recitation_submissions')
-    .select('id, surah, ayah_from, ayah_to, audio_path, status, auto_result')
+    .select('id, surah, ayah_from, ayah_to, audio_path, status, auto_result, checked_at')
     .eq('id', id)
     .maybeSingle();
   if (!row) return NextResponse.json({ error: 'غير مصرّح' }, { status: 403 });
   if (row.auto_result) return NextResponse.json({ result: row.auto_result });
+  // one attempt every two minutes: a failed check is not run again and again on the same recording
+  if (row.checked_at && Date.now() - new Date(row.checked_at as string).getTime() < 120_000) {
+    return NextResponse.json({ result: { unavailable: true, reason: 'retry_later' } });
+  }
   if (!row.audio_path || (row.status !== 'draft' && row.status !== 'submitted')) {
     return NextResponse.json({ error: 'لا يوجد تسجيل' }, { status: 400 });
   }
@@ -92,6 +96,7 @@ export async function POST(request: Request) {
   }
 
   // every failure says why (shown small under "the check is not available"), so it can be traced
+  await admin.from('recitation_submissions').update({ checked_at: new Date().toISOString() }).eq('id', id);
   const { data: file, error: dlError } = await admin.storage.from('recitations').download(row.audio_path);
   if (!file) return NextResponse.json({ result: { unavailable: true, reason: `download: ${dlError?.message ?? 'missing'}`.slice(0, 120) } });
   if (file.size > MAX_BYTES) {

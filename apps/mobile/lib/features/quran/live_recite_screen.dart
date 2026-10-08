@@ -67,6 +67,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   final _heard = <String>[];
   Timer? _timer;
   bool? _speechReady;
+  String _localeId = 'ar_SA';
 
   @override
   void initState() {
@@ -95,7 +96,17 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   ({int from, int to}) get _range => _from <= _to ? (from: _from, to: _to) : (from: _to, to: _from);
 
   Future<bool> _initSpeech() async {
-    _speechReady ??= await _stt.initialize(onStatus: _onStatus, onError: _onError).catchError((_) => false);
+    if (_speechReady == null) {
+      _speechReady = await _stt.initialize(onStatus: _onStatus, onError: _onError).catchError((_) => false);
+      if (_speechReady!) {
+        // an Arabic language the phone's recogniser really has (Saudi first); a missing one would hear English
+        try {
+          final ids = [for (final l in await _stt.locales()) l.localeId];
+          final ar = ids.where((id) => id.toLowerCase().startsWith('ar')).toList();
+          _localeId = ar.firstWhere((id) => id.toLowerCase().replaceAll('-', '_') == 'ar_sa', orElse: () => ar.isNotEmpty ? ar.first : 'ar_SA');
+        } catch (_) {}
+      }
+    }
     return _speechReady!;
   }
 
@@ -108,6 +119,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   }
 
   void _onError(SpeechRecognitionError e) {
+    if (!mounted) return;
     final msg = e.errorMsg;
     if (msg.contains('permission')) {
       _pause();
@@ -129,7 +141,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         partialResults: true,
         listenMode: ListenMode.dictation,
         cancelOnError: false,
-        localeId: 'ar_SA',
+        localeId: _localeId,
         listenFor: const Duration(minutes: 5),
         pauseFor: const Duration(seconds: 20),
       ),
@@ -276,9 +288,30 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
       body: SafeArea(
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 32), children: [
           if (_phase == _Phase.setup || _phase == _Phase.loading) ..._setup(context) else ..._session(context),
-          if (_error != null) Padding(padding: const EdgeInsets.only(top: 12), child: MessageBanner(message: _error!)),
+          if (_error != null && (_phase == _Phase.setup || _phase == _Phase.loading))
+            Padding(padding: const EdgeInsets.only(top: 12), child: MessageBanner(message: _error!)),
         ]),
       ),
+      // the controls never scroll out of sight (a long passage pushed them below the screen)
+      bottomNavigationBar: _phase == _Phase.setup || _phase == _Phase.loading
+          ? null
+          : Material(
+              elevation: 12,
+              color: Colors.white,
+              child: SafeArea(
+                top: false,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.6),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      ..._controls(context),
+                      if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: MessageBanner(message: _error!)),
+                    ]),
+                  ),
+                ),
+              ),
+            ),
     );
   }
 
@@ -388,9 +421,6 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
       spans.add(TextSpan(text: last ? ' ۝${arabicNumber(w.ayah)} ' : ' ', style: last ? TextStyle(color: scheme.primary) : null));
     }
 
-    final stopped = _stop == null ? '' : _stop!.at.map((i) => m.words[i].text).join(' ');
-    final res = m.result();
-
     return [
       Row(children: [
         Expanded(child: Text('${surahName(_surah)} ${r.from}–${r.to}', style: const TextStyle(fontWeight: FontWeight.w800))),
@@ -421,7 +451,17 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
           style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 26, height: 2.1, color: _ink),
         ),
       ),
-      const SizedBox(height: 12),
+    ];
+  }
+
+  /// Always in sight at the bottom of the screen: the stop, finish-and-send, the result and its send button.
+  List<Widget> _controls(BuildContext context) {
+    final t = tr(context).live;
+    final m = _m!;
+    final scheme = Theme.of(context).colorScheme;
+    final stopped = _stop == null ? '' : _stop!.at.map((i) => m.words[i].text).join(' ');
+    final res = m.result();
+    return [
       if (_stop != null)
         Container(
           padding: const EdgeInsets.all(14),
@@ -447,7 +487,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         Row(children: [
           Expanded(child: OutlinedButton(onPressed: () => _handle(_m?.forgot()), child: Text(t.forgot))),
           const SizedBox(width: 10),
-          Expanded(child: OutlinedButton.icon(onPressed: _finish, icon: const Icon(Icons.stop_rounded), label: Text(t.finish))),
+          Expanded(child: FilledButton.icon(onPressed: _finish, icon: const Icon(Icons.stop_rounded), label: Text(t.finish))),
         ]),
       if (_phase == _Phase.result || _phase == _Phase.sending) ...[
         Row(children: [

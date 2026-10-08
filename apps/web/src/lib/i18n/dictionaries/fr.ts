@@ -718,7 +718,7 @@ export const fr: Dictionary = {
     heard: 'J’ai entendu : {w}',
     continue: 'Continuer',
     forgot: 'Je ne me souviens pas',
-    finish: 'Terminer',
+    finish: 'Terminer et envoyer',
     result: 'Résultat',
     score: '{n} % correct',
     mistakeList: 'Mots avec erreur :',

@@ -21,7 +21,7 @@ SPEC = {'live': ('The live recite screen (/my/recite).', (
   ('heard', 'سمعتُ: {w}', 'I heard: {w}'),
   ('resume', 'تابع', 'Continue'),
   ('forgot', 'لا أتذكر', 'I don’t remember'),
-  ('finish', 'إنهاء', 'Finish'),
+  ('finish', 'إنهاء وتسليم', 'Finish and send'),
   ('result', 'نتيجة التسميع', 'Result'),
   ('score', '{n}% صحيح', '{n}% correct'),
   ('mistakeList', 'الكلمات التي أخطأت فيها:', 'Words with mistakes:'),
