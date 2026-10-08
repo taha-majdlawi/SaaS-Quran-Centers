@@ -769,7 +769,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -798,6 +798,10 @@ class SLive {
   final String resultNote;
   final String note;
   final String send;
+  final String confirmHint;
+  final String againAsk;
+  final String leaveAsk;
+  final String leave;
   final String sending;
   final String sent;
   final String again;
@@ -2562,13 +2566,17 @@ class S {
       heard: 'سمعتُ: {w}',
       resume: 'تابع',
       forgot: 'لا أتذكر',
-      finish: 'إنهاء وتسليم',
+      finish: 'إنهاء التسميع',
       result: 'نتيجة التسميع',
       score: '{n}% صحيح',
       mistakeList: 'الكلمات التي أخطأت فيها:',
       resultNote: 'النتيجة من التعرّف على الكلام في جهازك، والمعلم هو من يعتمد التسميع.',
       note: 'ملاحظة للمعلم (اختياري)',
-      send: 'أرسل للمعلم',
+      send: 'تأكيد وإرسال للمعلم',
+      confirmHint: 'راجع نتيجتك، ثم أكّد إرسال التسميع لمعلمك أو أعد التسميع.',
+      againAsk: 'لم يُرسل هذا التسميع. إذا أعدت التسميع سيُحذف ولن يصل للمعلم. هل تريد الإعادة؟',
+      leaveAsk: 'لم يُرسل التسميع لمعلمك بعد. هل تريد الخروج دون إرساله؟',
+      leave: 'خروج دون إرسال',
       sending: 'جارٍ الإرسال…',
       sent: 'أُرسل التسميع لمعلمك، وسيصلك إشعار بقراره.',
       again: 'سمّع من جديد',
@@ -4218,13 +4226,17 @@ class S {
       heard: 'I heard: {w}',
       resume: 'Continue',
       forgot: 'I don’t remember',
-      finish: 'Finish and send',
+      finish: 'Finish',
       result: 'Result',
       score: '{n}% correct',
       mistakeList: 'Words with mistakes:',
       resultNote: 'The result comes from your device’s speech recognition; your teacher approves the recitation.',
       note: 'Note for the teacher (optional)',
-      send: 'Send to the teacher',
+      send: 'Confirm and send to the teacher',
+      confirmHint: 'Check your result, then confirm sending the recitation to your teacher, or recite again.',
+      againAsk: 'This recitation was not sent. Reciting again deletes it and your teacher will not get it. Recite again?',
+      leaveAsk: 'The recitation was not sent to your teacher yet. Leave without sending it?',
+      leave: 'Leave without sending',
       sending: 'Sending…',
       sent: 'Sent to your teacher. You will be notified of the decision.',
       again: 'Recite again',
@@ -5874,13 +5886,17 @@ class S {
       heard: 'Duyduğum: {w}',
       resume: 'Devam',
       forgot: 'Hatırlamıyorum',
-      finish: 'Bitir ve gönder',
+      finish: 'Bitir',
       result: 'Sonuç',
       score: '%{n} doğru',
       mistakeList: 'Hatalı kelimeler:',
       resultNote: 'Sonuç cihazınızın konuşma tanımasından gelir; dinletmeyi öğretmeniniz onaylar.',
       note: 'Öğretmene not (isteğe bağlı)',
-      send: 'Öğretmene gönder',
+      send: 'Onayla ve öğretmene gönder',
+      confirmHint: 'Sonucunuzu kontrol edin, ardından dinletmeyi öğretmeninize göndermeyi onaylayın veya yeniden dinletin.',
+      againAsk: 'Bu dinletme gönderilmedi. Yeniden dinletirseniz silinir ve öğretmeninize ulaşmaz. Yeniden dinletilsin mi?',
+      leaveAsk: 'Dinletme henüz öğretmeninize gönderilmedi. Göndermeden çıkılsın mı?',
+      leave: 'Göndermeden çık',
       sending: 'Gönderiliyor…',
       sent: 'Öğretmeninize gönderildi. Karar size bildirilecek.',
       again: 'Yeniden dinlet',
@@ -7530,13 +7546,17 @@ class S {
       heard: 'J’ai entendu : {w}',
       resume: 'Continuer',
       forgot: 'Je ne me souviens pas',
-      finish: 'Terminer et envoyer',
+      finish: 'Terminer',
       result: 'Résultat',
       score: '{n} % correct',
       mistakeList: 'Mots avec erreur :',
       resultNote: 'Le résultat vient de la reconnaissance vocale de votre appareil ; c’est votre enseignant qui valide.',
       note: 'Note pour l’enseignant (facultatif)',
-      send: 'Envoyer à l’enseignant',
+      send: 'Confirmer et envoyer à l’enseignant',
+      confirmHint: 'Vérifiez votre résultat, puis confirmez l’envoi de la récitation à votre enseignant, ou récitez à nouveau.',
+      againAsk: 'Cette récitation n’a pas été envoyée. Réciter à nouveau la supprime et votre enseignant ne la recevra pas. Réciter à nouveau ?',
+      leaveAsk: 'La récitation n’a pas encore été envoyée à votre enseignant. Quitter sans l’envoyer ?',
+      leave: 'Quitter sans envoyer',
       sending: 'Envoi…',
       sent: 'Envoyé à votre enseignant. Vous serez averti de sa décision.',
       again: 'Réciter à nouveau',

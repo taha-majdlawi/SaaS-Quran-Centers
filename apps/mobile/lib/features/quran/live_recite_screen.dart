@@ -54,6 +54,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   ({File file, int seconds})? _audio; // the recording, once finished
   String? _audioPath; // ... once uploaded (a second try does not upload it again)
   bool _canRecord = false;
+  bool _stopping = false; // the recording is being closed (a second or so)
   final _beep = AudioPlayer();
   final _note = TextEditingController();
   late final _fromCtl = TextEditingController(text: '$_from');
@@ -326,8 +327,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     _listen();
   }
 
-  /// "Finish and send" does both: the recitation goes to the teacher right away
-  /// (a second "send" button after the result was easy to miss - nothing was ever sent).
+  /// Finishing shows the result; the student then confirms sending it, or recites again.
   Future<void> _finish() async {
     _pause();
     _timer?.cancel();
@@ -335,25 +335,52 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     if (!mounted) return;
     setState(() {
       _stop = null;
-      _phase = _Phase.sending;
+      _phase = _Phase.result;
+      // nothing heard at all (the microphone, the recognition service): nothing to send
+      _error = _heard.isEmpty ? currentStrings.live.nothingHeard : null;
+      _stopping = _nativeMode;
     });
     if (_nativeMode) {
       _nativeMode = false;
       _audio = await _native.stop(discard: _heard.isEmpty);
+      if (mounted) setState(() => _stopping = false);
     }
-    if (!mounted) return;
-    setState(() {
-      _phase = _Phase.result;
-      // nothing heard at all (the microphone, the recognition service): nothing to send
-      _error = _heard.isEmpty ? currentStrings.live.nothingHeard : null;
-    });
-    if (_heard.isNotEmpty) _send();
   }
 
-  void _again() => setState(() {
-        _phase = _Phase.setup;
-        _error = null;
-      });
+  /// A recitation heard and not sent yet: leaving or reciting again loses it.
+  bool get _unsent => _heard.isNotEmpty && (_phase == _Phase.live || _phase == _Phase.result || _phase == _Phase.sending);
+
+  Future<bool> _confirmDiscard(String question, String yes) async {
+    if (!_unsent) return true;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        content: Text(question),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(yes, style: TextStyle(color: Colors.red.shade700))),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  Future<void> _again() async {
+    final t = currentStrings.live;
+    if (!await _confirmDiscard(t.againAsk, t.again) || !mounted) return;
+    if (_nativeMode) {
+      _nativeMode = false;
+      await _native.stop(discard: true);
+    }
+    _pause();
+    _timer?.cancel();
+    setState(() {
+      _phase = _Phase.setup;
+      _error = null;
+      _stop = null;
+      _heard.clear();
+    });
+  }
 
   Future<void> _send() async {
     final m = _m;
@@ -401,7 +428,18 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   @override
   Widget build(BuildContext context) {
     final t = tr(context).live;
-    return Scaffold(
+    // leaving with a recitation not sent asks first
+    return PopScope(
+      canPop: !_unsent,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final nav = Navigator.of(context);
+        if (await _confirmDiscard(t.leaveAsk, t.leave)) {
+          setState(() => _heard.clear());
+          nav.pop();
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(t.title),
         actions: [TextButton(onPressed: () => context.push('/my/recitations${_studentId == null ? '' : '?s=$_studentId'}'), child: Text(t.mine))],
@@ -433,6 +471,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
                 ),
               ),
             ),
+      ),
     );
   }
 
@@ -653,14 +692,27 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
       ],
       if (_phase == _Phase.sending)
         LoadingButton(label: t.sending, icon: Icons.send_rounded, loading: true, onPressed: null),
-      if (_phase == _Phase.result)
-        Row(children: [
-          if (_heard.isNotEmpty) ...[
-            Expanded(child: LoadingButton(label: t.retry, icon: Icons.send_rounded, loading: false, onPressed: _send)),
-            const SizedBox(width: 10),
-          ],
-          OutlinedButton.icon(onPressed: _again, icon: const Icon(Icons.replay_rounded), label: Text(t.again)),
-        ]),
+      if (_phase == _Phase.result) ...[
+        if (_heard.isNotEmpty) ...[
+          Text(t.confirmHint, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+            onPressed: _stopping ? null : _send,
+            icon: _stopping
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.send_rounded),
+            label: Text(t.send, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(height: 8),
+        ],
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+          onPressed: _again,
+          icon: const Icon(Icons.replay_rounded),
+          label: Text(t.again),
+        ),
+      ],
       if (_phase == _Phase.sent) ...[
         Row(children: [
           Expanded(child: FilledButton(onPressed: _again, child: Text(t.again))),
