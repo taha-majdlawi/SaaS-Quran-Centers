@@ -113,6 +113,7 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
           actions: [
             TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t.cancel)),
             FilledButton(
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
               onPressed: (approve && grade == null) ? null : () => Navigator.pop(context, true),
               child: Text(approve ? t.approve : t.reject),
             ),
