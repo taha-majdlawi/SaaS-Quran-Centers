@@ -45,6 +45,7 @@ T = {
  'error': 'Bir hata oluştu. Tekrar deneyin.',
  'fab': 'Dinlet',
  'liveBadge': 'Canlı dinletme',
+ 'audioDeleted': 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
  'loading': 'Ayetler yükleniyor…',
  'appNoAudio': 'Uygulamada dinletme ses kaydı olmadan sonucuyla gönderilir.',
  'appUnsupported': 'Bu cihazda konuşma tanıma yok. Google uygulamasını yükleyin veya cihaz ayarlarından konuşma tanımayı açın.',

@@ -7,5 +7,11 @@ SPEC = {'cfeat': ('The center admin\'s feature switches (center_features, 0088).
   ('notInPlan', 'غير متاحة في خطتك', 'Not in your plan'),
   ('save', 'حفظ المميزات', 'Save features'),
   ('saved', 'تم حفظ مميزات المركز', 'Center features saved'),
+  ('audioTitle', 'مدة حفظ تسجيلات التسميع', 'How long recitation recordings are kept'),
+  ('audioHint', 'بعد أن يراجع المعلم التسميع (اعتماد أو إعادة) يُحذف تسجيله الصوتي بعد هذه المدة لتوفير المساحة. تبقى النتيجة والأخطاء في سجل الطالب.', 'Once the teacher has reviewed a recitation (approved or returned), its recording is deleted after this time to save space. The result and the mistakes stay in the student’s record.'),
+  ('audioDays', '{n} يومًا', '{n} days'),
+  ('audioNever', 'لا تحذف التسجيلات', 'Never delete them'),
+  ('audioSave', 'حفظ المدة', 'Save'),
+  ('audioSaved', 'تم حفظ مدة حفظ التسجيلات', 'Recording retention saved'),
   ('off', 'هذه الميزة متوقفة في مركزك.', 'This feature is switched off in your center.'),
 )),}

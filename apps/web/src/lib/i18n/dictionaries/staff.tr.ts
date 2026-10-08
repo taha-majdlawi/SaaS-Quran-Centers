@@ -363,6 +363,12 @@ export const staffTr: typeof staffAr = {
     notInPlan: 'Planınızda yok',
     save: 'Özellikleri kaydet',
     saved: 'Merkez özellikleri kaydedildi',
+    audioTitle: 'Dinletme kayıtlarının saklanma süresi',
+    audioHint: 'Öğretmen dinletmeyi değerlendirdikten (onay veya iade) sonra ses kaydı yer açmak için bu süre sonunda silinir. Sonuç ve hatalar öğrencinin kaydında kalır.',
+    audioDays: '{n} gün',
+    audioNever: 'Kayıtları silme',
+    audioSave: 'Kaydet',
+    audioSaved: 'Kayıt saklama süresi kaydedildi',
     off: 'Bu özellik merkezinizde kapalı.',
   },
   /** Circle challenges. */

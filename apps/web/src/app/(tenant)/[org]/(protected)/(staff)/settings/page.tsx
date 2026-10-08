@@ -1,6 +1,6 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
-import { CenterFeaturesForm } from './center-features';
+import { CenterFeaturesForm, RecitationAudioForm } from './center-features';
 import { SubmitButton } from '@/components/submit-button';
 import { LogoField } from '@/components/logo-field';
 import { AYAH_RECITERS, reciterLabel } from '@/lib/quran/mushaf';
@@ -88,9 +88,10 @@ export default async function SettingsPage({
       </nav>
 
       {q.error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{q.error}</p>}
-      {q.saved && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{q.saved === 'features' ? S.cfeat.saved : S.settings.saved}</p>}
+      {q.saved && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{q.saved === 'features' ? S.cfeat.saved : q.saved === 'audio' ? S.cfeat.audioSaved : S.settings.saved}</p>}
 
       {tab === 'modules' && isAdmin && <CenterFeaturesForm orgId={org.id} />}
+      {tab === 'modules' && isAdmin && <RecitationAudioForm orgId={org.id} />}
 
       {tab === 'identity' && (
         <form action={updateOrgSettings} className={card}>

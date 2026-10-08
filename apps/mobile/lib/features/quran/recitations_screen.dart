@@ -257,6 +257,11 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
               decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
               child: Text(fmt(t.teacherNote, {'note': r.teacherNote})),
             ),
+          if (r.audioPath == null && r.raw['audio_deleted_at'] != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(tr(context).live.audioDeleted, style: const TextStyle(fontSize: 12, color: Colors.black45)),
+            ),
           Wrap(spacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
             if (r.audioPath != null)
               TextButton.icon(

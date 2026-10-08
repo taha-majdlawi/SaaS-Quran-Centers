@@ -619,6 +619,7 @@ export const en: Dictionary = {
       waitingN: '{n} recorded recitations waiting for your review',
       recheck: 'Run the automatic check again',
       liveBadge: 'Live recitation',
+      audioDeleted: 'The recording was deleted after review to save space',
       testNote: 'Note (optional)',
       note: 'Note for the teacher (optional)',
       send: 'Send to the teacher',

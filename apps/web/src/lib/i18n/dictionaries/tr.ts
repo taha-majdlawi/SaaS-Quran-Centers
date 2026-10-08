@@ -619,6 +619,7 @@ export const tr: Dictionary = {
       waitingN: 'İncelemenizi bekleyen {n} kayıtlı dinletme',
       recheck: 'Otomatik kontrolü yeniden çalıştır',
       liveBadge: 'Canlı dinletme',
+      audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       testNote: 'Not (isteğe bağlı)',
       note: 'Öğretmene not (isteğe bağlı)',
       send: 'Öğretmene gönder',

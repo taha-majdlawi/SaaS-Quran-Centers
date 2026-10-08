@@ -159,3 +159,13 @@ export async function saveCenterFeatures(formData: FormData) {
   revalidatePath('/', 'layout');
   redirect('/settings?tab=modules&saved=features' as never);
 }
+
+export async function saveRecitationAudioDays(formData: FormData) {
+  const orgId = formData.get('orgId') as string;
+  const raw = String(formData.get('days') ?? '');
+  const days = raw === 'never' ? null : Number(raw);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('set_recitation_audio_days', { p_org: orgId, p_days: days });
+  if (error) redirect(`/settings?tab=modules&error=${encodeURIComponent(error.message)}` as never);
+  redirect('/settings?tab=modules&saved=audio' as never);
+}
