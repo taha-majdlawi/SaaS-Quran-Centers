@@ -683,8 +683,10 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
           Row(children: [
             Icon(Icons.mic_rounded, size: 16, color: scheme.primary),
             const SizedBox(width: 4),
-            Text(fmt(t.withAudio, {'t': '${_audio!.seconds ~/ 60}:${(_audio!.seconds % 60).toString().padLeft(2, '0')}'}), style: TextStyle(fontSize: 12, color: scheme.primary)),
+            Text(fmt(t.withAudio, {'t': _clock(_audio!.seconds)}), style: TextStyle(fontSize: 12, color: scheme.primary)),
           ]),
+          // listen before sending (the file is removed once it is sent)
+          if (_phase != _Phase.sent) _AudioPreview(key: ValueKey(_audio!.file.path), file: _audio!.file),
         ],
         const SizedBox(height: 6),
         Text(t.resultNote, style: const TextStyle(fontSize: 12, color: Colors.black45)),
@@ -721,5 +723,85 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         ]),
       ],
     ];
+  }
+}
+
+String _clock(int seconds) => '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
+/// The recitation's recording, to listen to before sending it: play / pause and a position bar.
+class _AudioPreview extends StatefulWidget {
+  const _AudioPreview({super.key, required this.file});
+
+  final File file;
+
+  @override
+  State<_AudioPreview> createState() => _AudioPreviewState();
+}
+
+class _AudioPreviewState extends State<_AudioPreview> {
+  final _player = AudioPlayer();
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _player.setFilePath(widget.file.path).then((_) {
+      if (mounted) setState(() => _ready = true);
+    }).catchError((_) => null);
+    // back to the start once it has played to the end
+    _player.processingStateStream.listen((s) {
+      if (s == ProcessingState.completed) {
+        _player.pause();
+        _player.seek(Duration.zero);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 0, 12, 0),
+      decoration: BoxDecoration(color: scheme.primary.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(28)),
+      child: StreamBuilder<PlayerState>(
+        stream: _player.playerStateStream,
+        builder: (context, snap) {
+          final playing = snap.data?.playing ?? false;
+          return Row(children: [
+            IconButton(
+              onPressed: !_ready ? null : (playing ? _player.pause : _player.play),
+              icon: Icon(playing ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded, size: 36, color: scheme.primary),
+            ),
+            Expanded(
+              child: StreamBuilder<Duration>(
+                stream: _player.positionStream,
+                builder: (context, pos) {
+                  final total = _player.duration ?? Duration.zero;
+                  final at = pos.data ?? Duration.zero;
+                  final max = total.inMilliseconds <= 0 ? 1.0 : total.inMilliseconds.toDouble();
+                  return Row(children: [
+                    Expanded(
+                      child: Slider(
+                        value: at.inMilliseconds.clamp(0, max).toDouble(),
+                        max: max,
+                        onChanged: !_ready ? null : (v) => _player.seek(Duration(milliseconds: v.round())),
+                      ),
+                    ),
+                    Text('${_clock(at.inSeconds)} / ${_clock(total.inSeconds)}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  ]);
+                },
+              ),
+            ),
+          ]);
+        },
+      ),
+    );
   }
 }

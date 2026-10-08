@@ -223,11 +223,11 @@ class _AppRouterHostState extends State<_AppRouterHost> {
                   // the garden's tree, small and see-through, growing while the app is open
                   child: Stack(fit: StackFit.expand, children: [
                     child!,
-                    // not over the mushaf's text
+                    // not over the mushaf's text, nor over the recite screen's buttons
                     ValueListenableBuilder(
                       valueListenable: _router.routeInformationProvider,
                       builder: (context, info, _) =>
-                          info.uri.path.startsWith('/quran/') ? const SizedBox.shrink() : const GrowingTreeOverlay(),
+                          info.uri.path.startsWith('/quran/') || info.uri.path.startsWith('/my/recite') ? const SizedBox.shrink() : const GrowingTreeOverlay(),
                     ),
                   ]),
                 ),
