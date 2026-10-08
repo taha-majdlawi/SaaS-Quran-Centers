@@ -28,6 +28,8 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // live reciting with a recording (LiveSpeech.kt)
+        LiveSpeech(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bustan/power").setMethodCallHandler { call, result ->
             when (call.method) {
                 "status" -> {

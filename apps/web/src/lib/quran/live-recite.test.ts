@@ -74,3 +74,28 @@ test('the cumulative results of Chrome on Android are not counted twice', () => 
   ]);
   assert.deepEqual(r, ['قل', 'هو', 'الله']);
 });
+
+test('al-Fatiha: الرحيم right after الرحمن is not taken for a repeat of it', () => {
+  const m = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 5));
+  feedAll(m, 'بسم الله الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين إياك نعبد وإياك نستعين');
+  assert.equal(m.mistakes, 0);
+  assert.ok(m.done);
+  // a real repeat is still no mistake
+  const r = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 3));
+  feedAll(r, 'بسم الله الرحمن الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم');
+  assert.equal(r.mistakes, 0);
+});
+
+test('the expected word is recognised early, and the last word of an ayah a little more loosely', () => {
+  const m = new LiveMatcher(surah(112).ayahs);
+  feedAll(m, 'قل هو الله');
+  assert.ok(m.expects('أحد'));
+  assert.ok(!m.expects('الصمد'));
+  // "احدن" (two letters off the short word) only passes as the ayah's last word, loosely
+  assert.ok(!m.expects('احدن'));
+  // the ayah's last word, نستعين, heard with its end swallowed at the stop
+  const f = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 5));
+  feedAll(f, 'بسم الله الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين إياك نعبد وإياك');
+  assert.ok(f.expects('تستعي', true));
+  assert.ok(!f.expects('تستعي'));
+});

@@ -148,6 +148,13 @@ class RecitationApi {
     }
   }
 
+  /// The recording of a live recitation (AAC, .m4a); returns its path in the bucket.
+  Future<String> uploadLiveAudio({required String orgId, required String studentId, required File file}) async {
+    final path = '$orgId/$studentId/${_uuid.v4()}.m4a';
+    await _client.storage.from('recitations').upload(path, file, fileOptions: const FileOptions(contentType: 'audio/mp4'));
+    return path;
+  }
+
   /// A live recitation (the device followed it word by word): result and heard text, straight to the teacher.
   Future<String> submitLive({
     required String orgId,
@@ -159,8 +166,12 @@ class RecitationApi {
     required Map<String, dynamic> result,
     required String transcript,
     String? note,
+    String? audioPath,
+    int? duration,
   }) async {
     final id = await _client.rpc('submit_live_recitation', params: {
+      'p_audio_path': audioPath,
+      'p_duration': duration,
       'p_org': orgId,
       'p_student': studentId,
       'p_type': type,
