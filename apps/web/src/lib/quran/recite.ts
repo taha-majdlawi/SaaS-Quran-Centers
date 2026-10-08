@@ -67,7 +67,8 @@ function distance(a: string, b: string): number {
 /** Same word, only the long vowels apart (written small or not at all in the mushaf). */
 export const exactWord = (a: string, b: string) => !!a && (a === b || skeleton(a) === skeleton(b));
 
-export function sameWord(expected: string, heard: string): boolean {
+/** slack: one more letter allowed (the last word of an ayah - see LiveMatcher.matches). */
+export function sameWord(expected: string, heard: string, slack = 0): boolean {
   if (!expected || !heard) return false;
   if (expected === heard) return true;
   const se = skeleton(expected);
@@ -76,7 +77,7 @@ export function sameWord(expected: string, heard: string): boolean {
   const long = Math.max(se.length, sh.length);
   if (long < 3) return false;
   // one letter off in a short word, about a quarter in a long one
-  return distance(se, sh) <= Math.max(1, Math.floor(long / 4));
+  return distance(se, sh) <= Math.max(1, Math.floor(long / 4)) + (long >= 5 ? slack : 0);
 }
 
 /** Transcript -> words (punctuation, digits and Latin letters dropped). */

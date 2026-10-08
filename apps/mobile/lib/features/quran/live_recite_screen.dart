@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -15,6 +17,7 @@ import '../../core/monitoring/error_reporter.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'live_matcher.dart';
+import 'live_speech.dart';
 import 'quran_data.dart' show QuranTextService, arabicNumber;
 import 'recitation_api.dart';
 
@@ -28,7 +31,8 @@ enum _Phase { setup, loading, live, result, sending, sent }
 /// Reciting from memory with the phone following along: the chosen ayahs are hidden,
 /// each word uncovers when it is said right, and a forgotten or wrong word stops the
 /// student with a red mark, a sound and a vibration. The result goes to the teacher.
-/// (Android cannot record while it recognises speech, so no recording goes with it here.)
+/// On Android 13+ the recitation is recorded from the start for the teacher (LiveSpeech: the app
+/// takes the microphone and hands the sound to the recogniser); elsewhere it goes without one.
 class LiveReciteScreen extends StatefulWidget {
   const LiveReciteScreen({super.key, this.studentId, this.surah, this.from, this.to, this.type});
 
@@ -43,6 +47,13 @@ class LiveReciteScreen extends StatefulWidget {
 class _LiveReciteScreenState extends State<LiveReciteScreen> {
   final _api = RecitationApi();
   final _stt = SpeechToText();
+  final _native = LiveSpeech();
+  bool _nativeMode = false; // recognition through LiveSpeech, with a recording
+  int _nativeSession = -1; // LiveSpeech's recognition session
+  List<String> _all = const []; // every word of the session so far, the unconfirmed last one too
+  ({File file, int seconds})? _audio; // the recording, once finished
+  String? _audioPath; // ... once uploaded (a second try does not upload it again)
+  bool _canRecord = false;
   final _beep = AudioPlayer();
   final _note = TextEditingController();
   late final _fromCtl = TextEditingController(text: '$_from');
@@ -73,6 +84,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   @override
   void initState() {
     super.initState();
+    LiveSpeech.supported().then((v) => mounted ? setState(() => _canRecord = v) : null);
     _api.people(_orgId).then((p) {
       if (!mounted) return;
       setState(() {
@@ -87,6 +99,8 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     _active = false;
     _timer?.cancel();
     _stt.cancel();
+    if (_nativeMode) _native.stop(discard: true);
+    _audio?.file.delete().catchError((_) => _audio!.file);
     _beep.dispose();
     _note.dispose();
     _fromCtl.dispose();
@@ -112,15 +126,17 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   }
 
   void _onStatus(String status) {
+    if (_nativeMode) return;
     // the recogniser ends a session after a pause: carry on while the recitation is on
     if ((status == 'done' || status == 'notListening') && mounted) {
+      _takeLast(loose: true);
       setState(() => _listening = false);
       if (_active) Future.delayed(const Duration(milliseconds: 250), () => _active && !_stt.isListening ? _listen() : null);
     }
   }
 
   void _onError(SpeechRecognitionError e) {
-    if (!mounted) return;
+    if (!mounted || _nativeMode) return;
     final msg = e.errorMsg;
     if (msg.contains('permission')) {
       _pause();
@@ -134,8 +150,15 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
 
   void _listen() {
     _processed = 0;
+    _all = const [];
     _active = true;
     _lastProgress = DateTime.now();
+    if (_nativeMode) {
+      _nativeSession = -1;
+      _native.resume();
+      if (mounted) setState(() => _listening = true);
+      return;
+    }
     _stt.listen(
       onResult: _onResult,
       listenOptions: SpeechListenOptions(
@@ -150,14 +173,65 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     if (mounted) setState(() => _listening = true);
   }
 
-  void _onResult(SpeechRecognitionResult r) {
-    if (!_active || _m == null) return;
-    final words = stableWords(r.recognizedWords, isFinal: r.finalResult);
-    for (; _processed < words.length && _active; _processed++) {
-      _heard.add(words[_processed]);
-      _lastHeard = DateTime.now();
-      _handle(_m!.feed(words[_processed]));
+  void _onResult(SpeechRecognitionResult r) => _onText(r.recognizedWords, r.finalResult);
+
+  /// LiveSpeech's events (see live_speech.dart).
+  void _onNative(Map<String, dynamic> e) {
+    if (!mounted || !_nativeMode) return;
+    switch (e['type']) {
+      case 'partial' || 'final':
+        final session = (e['session'] as num?)?.toInt() ?? 0;
+        if (session != _nativeSession) {
+          // a new session: the last word of the one before, if it was the word expected
+          _takeLast(loose: true);
+          _nativeSession = session;
+          _processed = 0;
+          _all = const [];
+        }
+        _onText(e['text'] as String? ?? '', e['type'] == 'final');
+      case 'listening':
+        if (_active) setState(() => _listening = e['on'] == true);
+      case 'error':
+        final code = (e['code'] as num?)?.toInt();
+        if (code == 9) {
+          _pause();
+          setState(() => _error = currentStrings.live.micDenied);
+        } else if (code == 1 || code == 2 || code == 4) {
+          _pause();
+          setState(() => _error = currentStrings.live.network);
+        }
+      case 'fallback':
+        // this phone's recogniser does not take the sound from the app: the usual recognition, no recording
+        ErrorReporter.instance.crumb('live recite: recording not supported, fallback');
+        _nativeMode = false;
+        _native.stop(discard: true);
+        setState(() => _canRecord = false);
+        if (_active) _listen();
     }
+  }
+
+  void _onText(String text, bool isFinal) {
+    if (!_active || _m == null) return;
+    final words = stableWords(text, isFinal: isFinal);
+    _all = stableWords(text, isFinal: true);
+    while (_processed < words.length && _active) {
+      _take(words[_processed]);
+    }
+    _takeLast();
+  }
+
+  void _take(String w) {
+    _heard.add(w);
+    _lastHeard = DateTime.now();
+    _processed++;
+    _handle(_m!.feed(w));
+  }
+
+  /// The last word, not confirmed yet, when it is the word expected - exactly, or loosely when
+  /// the session ended: after the last word of an ayah comes a pause, nothing confirms it, and
+  /// the session may end without it.
+  void _takeLast({bool loose = false}) {
+    if (_active && _m != null && _all.length == _processed + 1 && _m!.expects(_all.last, loose: loose)) _take(_all.last);
   }
 
   void _handle(LiveEvent? e) {
@@ -176,7 +250,11 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
 
   void _pause() {
     _active = false;
-    _stt.cancel();
+    if (_nativeMode) {
+      _native.pause(); // the recording carries on
+    } else {
+      _stt.cancel();
+    }
     if (mounted) setState(() => _listening = false);
   }
 
@@ -216,6 +294,16 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     }
     _heard.clear();
     _stop = null;
+    await _audio?.file.delete().catchError((_) => _audio!.file);
+    _audio = null;
+    _audioPath = null;
+    // recorded from the start, where the phone can (Android 13+)
+    _nativeMode = false;
+    if (_canRecord) {
+      final dir = await getTemporaryDirectory();
+      _nativeMode = await _native.start('${dir.path}/recite_${DateTime.now().millisecondsSinceEpoch}.m4a', _localeId.replaceAll('_', '-'), _onNative);
+    }
+    if (!mounted) return;
     setState(() => _phase = _Phase.live);
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -231,19 +319,30 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
 
   void _resume() {
     setState(() => _stop = null);
-    if (_m?.done ?? true) return _finish();
+    if (_m?.done ?? true) {
+      _finish();
+      return;
+    }
     _listen();
   }
 
   /// "Finish and send" does both: the recitation goes to the teacher right away
   /// (a second "send" button after the result was easy to miss - nothing was ever sent).
-  void _finish() {
+  Future<void> _finish() async {
     _pause();
     _timer?.cancel();
     _m?.finish();
     if (!mounted) return;
     setState(() {
       _stop = null;
+      _phase = _Phase.sending;
+    });
+    if (_nativeMode) {
+      _nativeMode = false;
+      _audio = await _native.stop(discard: _heard.isEmpty);
+    }
+    if (!mounted) return;
+    setState(() {
       _phase = _Phase.result;
       // nothing heard at all (the microphone, the recognition service): nothing to send
       _error = _heard.isEmpty ? currentStrings.live.nothingHeard : null;
@@ -265,7 +364,17 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     });
     try {
       final r = _range;
+      final audio = _audio;
+      if (audio != null && _audioPath == null) {
+        try {
+          _audioPath = await _api.uploadLiveAudio(orgId: _orgId, studentId: _studentId!, file: audio.file);
+        } catch (e, st) {
+          ErrorReporter.instance.report(e, st, context: 'live recite: upload'); // the result still goes
+        }
+      }
       await _api.submitLive(
+        audioPath: _audioPath,
+        duration: _audioPath == null ? null : audio?.seconds,
         orgId: _orgId,
         studentId: _studentId!,
         type: _type,
@@ -276,6 +385,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         transcript: _heard.join(' '),
         note: _note.text.trim().isEmpty ? null : _note.text.trim(),
       );
+      await audio?.file.delete().catchError((_) => audio.file);
       if (mounted) setState(() => _phase = _Phase.sent);
     } catch (e, st) {
       ErrorReporter.instance.report(e, st, context: 'live recite: send');
@@ -399,7 +509,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         label: Text(_phase == _Phase.loading ? t.loading : t.start),
       ),
       const SizedBox(height: 8),
-      Text(t.appNoAudio, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.black45)),
+      Text(_canRecord ? t.appAudio : t.appNoAudio, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.black45)),
     ];
   }
 
@@ -437,6 +547,15 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     return [
       Row(children: [
         Expanded(child: Text('${surahName(_surah)} ${r.from}–${r.to}', style: const TextStyle(fontWeight: FontWeight.w800))),
+        if (_phase == _Phase.live && _nativeMode)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 10),
+            child: Row(children: [
+              Icon(Icons.fiber_manual_record, size: 12, color: Colors.red.shade600),
+              const SizedBox(width: 2),
+              Text(t.recording, style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
+            ]),
+          ),
         if (_phase == _Phase.live)
           Row(children: [
             Icon(Icons.circle, size: 10, color: _listening ? Colors.green : Colors.grey),
@@ -518,6 +637,14 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
           Wrap(spacing: 10, children: [
             for (final w in m.words.where((w) => w.state == LiveState.missing || w.state == LiveState.wrong))
               Text(w.text, textDirection: TextDirection.rtl, style: TextStyle(fontFamily: 'AmiriQuran', fontSize: 20, color: Colors.red.shade700)),
+          ]),
+        ],
+        if (_audio != null) ...[
+          const SizedBox(height: 6),
+          Row(children: [
+            Icon(Icons.mic_rounded, size: 16, color: scheme.primary),
+            const SizedBox(width: 4),
+            Text(fmt(t.withAudio, {'t': '${_audio!.seconds ~/ 60}:${(_audio!.seconds % 60).toString().padLeft(2, '0')}'}), style: TextStyle(fontSize: 12, color: scheme.primary)),
           ]),
         ],
         const SizedBox(height: 6),

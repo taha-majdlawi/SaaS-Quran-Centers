@@ -22,6 +22,8 @@ export interface LiveWord {
   i: number;
   text: string;
   plain: string;
+  /** the ayah's last word */
+  end?: boolean;
   state: LiveState;
   heard?: string;
 }
@@ -45,6 +47,8 @@ export class LiveMatcher {
         const plain = plainWord(text);
         if (plain) this.words.push({ a: ayah.number, i, text, plain, state: 'hidden' });
       });
+      const last = this.words[this.words.length - 1];
+      if (last?.a === ayah.number) last.end = true;
     }
   }
 
@@ -59,8 +63,18 @@ export class LiveMatcher {
   private matches(k: number, w: string) {
     const exp = this.words[k]?.plain;
     if (!exp) return false;
+    // the ayah's last word, the one expected now: the voice drops at the stop (waqf) and the
+    // recogniser hears it less clearly - one more letter is allowed
+    const slack = k === this.pos && this.words[k].end ? 1 : 0;
     const last = this.unmatched[this.unmatched.length - 1];
-    return sameWord(exp, w) || (!!last && sameWord(exp, last + w));
+    return sameWord(exp, w, slack) || (!!last && sameWord(exp, last + w, slack));
+  }
+
+  /** Is this the word expected now? (exactly, or loosely) - taken at once from a partial result. */
+  expects(raw: string, loose = false) {
+    const w = plainWord(raw);
+    if (this.done || !w) return false;
+    return exactWord(this.words[this.pos].plain, w) || (loose && this.matches(this.pos, w));
   }
 
   private advanceTo(k: number): LiveEvent {
