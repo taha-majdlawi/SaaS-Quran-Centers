@@ -16,6 +16,8 @@ import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 const TYPES = ['new_memorization', 'recent_review', 'distant_review'] as const;
 const STALL_MS = 9000; // silence on one word = forgotten
 const SETTLE_MS = 2500; // an unexpected word nothing followed = said wrong
+// recordings kept as recorded (the 'recitations' bucket's types) -> file extension
+const UPLOAD_TYPES: Record<string, string> = { 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/wav': 'wav' };
 const field = 'mt-1 w-full rounded-md border bg-white px-3 py-2 text-sm';
 
 // the Web Speech API is not in the TypeScript DOM types everywhere
@@ -161,15 +163,25 @@ export function LiveRecite({
     r.interimResults = true;
     r.maxAlternatives = 1;
     processed.current = 0;
+    let all: string[] = []; // every word of the session so far, the unconfirmed last one too
+    const take = (w: string) => {
+      heard.current.push(w);
+      lastHeard.current = Date.now();
+      processed.current++;
+      handle(matcher.current!.feed(w));
+    };
+    // the last word, not confirmed yet, when it is the word expected (exactly; loosely at the end
+    // of a session): the end of an ayah is followed by a pause, so nothing confirms it for a while
+    const takeLast = (loose: boolean) => {
+      if (active.current && all.length === processed.current + 1 && matcher.current?.expects(all[all.length - 1], loose)) take(all[all.length - 1]);
+    };
     r.onresult = (e) => {
       if (!active.current) return;
       const list = Array.from(e.results).map((x) => ({ transcript: x[0].transcript, final: x.isFinal }));
       const words = stableWords(list);
-      for (; processed.current < words.length && active.current; processed.current++) {
-        heard.current.push(words[processed.current]);
-        lastHeard.current = Date.now();
-        handle(matcher.current!.feed(words[processed.current]));
-      }
+      all = stableWords(list.map((x) => ({ ...x, final: true })));
+      while (processed.current < words.length && active.current) take(words[processed.current]);
+      takeLast(false);
     };
     r.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -182,6 +194,7 @@ export function LiveRecite({
     };
     // the browser ends a session after a pause: carry on while the recitation is on
     r.onend = () => {
+      takeLast(true);
       if (active.current) setTimeout(() => active.current && listen(), 120);
     };
     rec.current = r;
@@ -241,7 +254,9 @@ export function LiveRecite({
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const chunks: Blob[] = [];
-        const recorder = new MediaRecorder(stream);
+        // compressed as it is recorded (Opus, ~240 KB a minute - a WAV is ~2 MB): what the teacher hears is a voice
+        const mimeType = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find((t) => MediaRecorder.isTypeSupported?.(t));
+        const recorder = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 32000 });
         recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
         recorder.start(1000);
         media.current = { recorder, chunks, started: Date.now() };
@@ -275,9 +290,12 @@ export function LiveRecite({
         m.recorder.onstop = async () => {
           m.recorder.stream.getTracks().forEach((t) => t.stop());
           try {
-            const { wav, seconds } = await toWav16k(new Blob(m.chunks, { type: m.recorder.mimeType }));
-            audio.current = { blob: wav, seconds };
-            setAudioUrl(URL.createObjectURL(wav));
+            const type = m.recorder.mimeType.split(';')[0];
+            const seconds = Math.round((Date.now() - m.started) / 1000);
+            // a format the bucket keeps as it is; anything else becomes a WAV
+            const blob = UPLOAD_TYPES[type] ? new Blob(m.chunks, { type }) : (await toWav16k(new Blob(m.chunks, { type: m.recorder.mimeType }))).wav;
+            audio.current = { blob, seconds };
+            setAudioUrl(URL.createObjectURL(blob));
           } catch {}
           done();
         };
@@ -306,8 +324,9 @@ export function LiveRecite({
       await Promise.race([audioReady.current, new Promise((done) => setTimeout(done, 8000))]);
       let path: string | null = null;
       if (audio.current) {
-        path = `${orgId}/${studentId}/${crypto.randomUUID()}.wav`;
-        const up = await supabase.storage.from('recitations').upload(path, audio.current.blob, { contentType: 'audio/wav' });
+        const type = audio.current.blob.type || 'audio/wav';
+        path = `${orgId}/${studentId}/${crypto.randomUUID()}.${UPLOAD_TYPES[type] ?? 'wav'}`;
+        const up = await supabase.storage.from('recitations').upload(path, audio.current.blob, { contentType: UPLOAD_TYPES[type] ? type : 'audio/wav' });
         if (up.error) path = null; // the result still goes
       }
       const { error: e } = await supabase.rpc('submit_live_recitation', {

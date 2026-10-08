@@ -64,4 +64,15 @@ void main() {
     feedAll(r, 'بسم الله الرحمن الرحمن الرحيم الحمد لله رب العالمين');
     expect(r.mistakes, 0);
   });
+
+  test('the expected word is recognised early, the last word of an ayah a little more loosely', () {
+    final m = LiveMatcher(ikhlas);
+    feedAll(m, 'قل هو الله');
+    expect(m.expects('أحد'), isTrue);
+    expect(m.expects('الصمد'), isFalse);
+    final f = LiveMatcher([(5, 'إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ')]);
+    feedAll(f, 'إياك نعبد وإياك');
+    expect(f.expects('تستعي', loose: true), isTrue); // the end swallowed at the stop
+    expect(f.expects('تستعي'), isFalse);
+  });
 }

@@ -44,14 +44,15 @@ int _distance(String a, String b) {
 bool exactWord(String a, String b) => a.isNotEmpty && (a == b || _skeleton(a) == _skeleton(b));
 
 /// Same word, allowing the spelling differences between the mushaf and speech recognition.
-bool sameWord(String expected, String heard) {
+/// [slack]: one more letter allowed (the last word of an ayah - see LiveMatcher._matches).
+bool sameWord(String expected, String heard, {int slack = 0}) {
   if (expected.isEmpty || heard.isEmpty) return false;
   if (expected == heard) return true;
   final se = _skeleton(expected), sh = _skeleton(heard);
   if (se == sh && se.isNotEmpty) return true;
   final long = se.length > sh.length ? se.length : sh.length;
   if (long < 3) return false;
-  final allowed = long ~/ 4 < 1 ? 1 : long ~/ 4;
+  final allowed = (long ~/ 4 < 1 ? 1 : long ~/ 4) + (long >= 5 ? slack : 0);
   return _distance(se, sh) <= allowed;
 }
 
@@ -61,6 +62,7 @@ class LiveWord {
   LiveWord(this.ayah, this.index, this.text) : plain = plainWord(text);
   final int ayah, index;
   final String text, plain;
+  bool last = false; // the ayah's last word
   LiveState state = LiveState.hidden;
   String? heard;
 }
@@ -89,6 +91,7 @@ class LiveMatcher {
         final w = LiveWord(n, i++, m.group(0)!);
         if (w.plain.isNotEmpty) words.add(w);
       }
+      if (words.isNotEmpty && words.last.ayah == n) words.last.last = true;
     }
   }
 
@@ -105,7 +108,18 @@ class LiveMatcher {
   bool _matches(int k, String w) {
     if (k >= words.length) return false;
     final exp = words[k].plain;
-    return sameWord(exp, w) || (_unmatched.isNotEmpty && sameWord(exp, _unmatched.last + w));
+    // the ayah's last word, the one expected now: the voice drops at the stop (waqf) and the
+    // recogniser hears it less clearly - one more letter is allowed
+    final slack = k == pos && words[k].last ? 1 : 0;
+    return sameWord(exp, w, slack: slack) || (_unmatched.isNotEmpty && sameWord(exp, _unmatched.last + w, slack: slack));
+  }
+
+  /// Is this the word expected now? (exactly, or [loose]ly). The screen uses it to take the
+  /// last word of a partial result at once instead of waiting for the recogniser to confirm it.
+  bool expects(String raw, {bool loose = false}) {
+    final w = plainWord(raw);
+    if (done || w.isEmpty) return false;
+    return exactWord(words[pos].plain, w) || (loose && _matches(pos, w));
   }
 
   LiveEvent _advanceTo(int k) {

@@ -769,7 +769,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.sending, required this.sent, required this.again, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -801,6 +801,9 @@ class SLive {
   final String sending;
   final String sent;
   final String again;
+  final String appAudio;
+  final String recording;
+  final String withAudio;
   final String retry;
   final String notSent;
   final String nothingHeard;
@@ -2569,6 +2572,9 @@ class S {
       sending: 'جارٍ الإرسال…',
       sent: 'أُرسل التسميع لمعلمك، وسيصلك إشعار بقراره.',
       again: 'سمّع من جديد',
+      appAudio: 'يُسجَّل صوتك من بداية التسميع ويُرسل مع النتيجة ليسمعه المعلم.',
+      recording: 'تسجيل',
+      withAudio: 'التسجيل الصوتي مرفق ({t})',
       retry: 'أعد الإرسال',
       notSent: 'لم يُرسل التسميع بعد. تأكد من الاتصال واضغط «أعد الإرسال».',
       nothingHeard: 'لم أسمع شيئًا من التلاوة، فلم يُرسل التسميع. تأكد من الميكروفون وسمّع من جديد.',
@@ -4222,6 +4228,9 @@ class S {
       sending: 'Sending…',
       sent: 'Sent to your teacher. You will be notified of the decision.',
       again: 'Recite again',
+      appAudio: 'Your voice is recorded from the start and sent with the result for your teacher to hear.',
+      recording: 'Recording',
+      withAudio: 'Recording attached ({t})',
       retry: 'Send again',
       notSent: 'The recitation was not sent yet. Check the connection and tap “Send again”.',
       nothingHeard: 'Nothing of the recitation was heard, so it was not sent. Check the microphone and recite again.',
@@ -5875,6 +5884,9 @@ class S {
       sending: 'Gönderiliyor…',
       sent: 'Öğretmeninize gönderildi. Karar size bildirilecek.',
       again: 'Yeniden dinlet',
+      appAudio: 'Sesiniz baştan kaydedilir ve öğretmeniniz dinlesin diye sonuçla birlikte gönderilir.',
+      recording: 'Kayıt',
+      withAudio: 'Ses kaydı ekli ({t})',
       retry: 'Tekrar gönder',
       notSent: 'Dinletme henüz gönderilmedi. Bağlantıyı kontrol edip “Tekrar gönder”e dokunun.',
       nothingHeard: 'Okumadan hiçbir şey duyulmadı, bu yüzden gönderilmedi. Mikrofonu kontrol edip yeniden dinletin.',
@@ -7528,6 +7540,9 @@ class S {
       sending: 'Envoi…',
       sent: 'Envoyé à votre enseignant. Vous serez averti de sa décision.',
       again: 'Réciter à nouveau',
+      appAudio: 'Votre voix est enregistrée dès le début et envoyée avec le résultat pour que votre enseignant l’écoute.',
+      recording: 'Enregistrement',
+      withAudio: 'Enregistrement joint ({t})',
       retry: 'Renvoyer',
       notSent: 'La récitation n’a pas encore été envoyée. Vérifiez la connexion puis touchez « Renvoyer ».',
       nothingHeard: 'Rien de la récitation n’a été entendu, elle n’a donc pas été envoyée. Vérifiez le micro et récitez à nouveau.',
