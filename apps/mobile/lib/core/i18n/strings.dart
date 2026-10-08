@@ -769,7 +769,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.sending, required this.sent, required this.again, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.sending, required this.sent, required this.again, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -801,6 +801,9 @@ class SLive {
   final String sending;
   final String sent;
   final String again;
+  final String retry;
+  final String notSent;
+  final String nothingHeard;
   final String mine;
   final String error;
   final String fab;
@@ -2566,6 +2569,9 @@ class S {
       sending: 'جارٍ الإرسال…',
       sent: 'أُرسل التسميع لمعلمك، وسيصلك إشعار بقراره.',
       again: 'سمّع من جديد',
+      retry: 'أعد الإرسال',
+      notSent: 'لم يُرسل التسميع بعد. تأكد من الاتصال واضغط «أعد الإرسال».',
+      nothingHeard: 'لم أسمع شيئًا من التلاوة، فلم يُرسل التسميع. تأكد من الميكروفون وسمّع من جديد.',
       mine: 'تسميعاتي',
       error: 'حدث خطأ، حاول مرة أخرى.',
       fab: 'سمّع',
@@ -4216,6 +4222,9 @@ class S {
       sending: 'Sending…',
       sent: 'Sent to your teacher. You will be notified of the decision.',
       again: 'Recite again',
+      retry: 'Send again',
+      notSent: 'The recitation was not sent yet. Check the connection and tap “Send again”.',
+      nothingHeard: 'Nothing of the recitation was heard, so it was not sent. Check the microphone and recite again.',
       mine: 'My recitations',
       error: 'Something went wrong. Try again.',
       fab: 'Recite',
@@ -5866,6 +5875,9 @@ class S {
       sending: 'Gönderiliyor…',
       sent: 'Öğretmeninize gönderildi. Karar size bildirilecek.',
       again: 'Yeniden dinlet',
+      retry: 'Tekrar gönder',
+      notSent: 'Dinletme henüz gönderilmedi. Bağlantıyı kontrol edip “Tekrar gönder”e dokunun.',
+      nothingHeard: 'Okumadan hiçbir şey duyulmadı, bu yüzden gönderilmedi. Mikrofonu kontrol edip yeniden dinletin.',
       mine: 'Dinletmelerim',
       error: 'Bir hata oluştu. Tekrar deneyin.',
       fab: 'Dinlet',
@@ -7516,6 +7528,9 @@ class S {
       sending: 'Envoi…',
       sent: 'Envoyé à votre enseignant. Vous serez averti de sa décision.',
       again: 'Réciter à nouveau',
+      retry: 'Renvoyer',
+      notSent: 'La récitation n’a pas encore été envoyée. Vérifiez la connexion puis touchez « Renvoyer ».',
+      nothingHeard: 'Rien de la récitation n’a été entendu, elle n’a donc pas été envoyée. Vérifiez le micro et récitez à nouveau.',
       mine: 'Mes récitations',
       error: 'Une erreur s’est produite. Réessayez.',
       fab: 'Réciter',
