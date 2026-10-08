@@ -478,7 +478,7 @@ class SCert {
 
 /// The center admin's feature switches (center_features, 0088).
 class SCfeat {
-  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.off});
+  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.audioTitle, required this.audioHint, required this.audioDays, required this.audioNever, required this.audioSave, required this.audioSaved, required this.off});
   final Map<String, String> names;
   final String tab;
   final String title;
@@ -486,6 +486,12 @@ class SCfeat {
   final String notInPlan;
   final String save;
   final String saved;
+  final String audioTitle;
+  final String audioHint;
+  final String audioDays;
+  final String audioNever;
+  final String audioSave;
+  final String audioSaved;
   final String off;
 }
 
@@ -769,7 +775,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -815,6 +821,7 @@ class SLive {
   final String error;
   final String fab;
   final String liveBadge;
+  final String audioDeleted;
   final String loading;
   final String appNoAudio;
   final String appUnsupported;
@@ -2282,6 +2289,12 @@ class S {
       notInPlan: 'غير متاحة في خطتك',
       save: 'حفظ المميزات',
       saved: 'تم حفظ مميزات المركز',
+      audioTitle: 'مدة حفظ تسجيلات التسميع',
+      audioHint: 'بعد أن يراجع المعلم التسميع (اعتماد أو إعادة) يُحذف تسجيله الصوتي بعد هذه المدة لتوفير المساحة. تبقى النتيجة والأخطاء في سجل الطالب.',
+      audioDays: '{n} يومًا',
+      audioNever: 'لا تحذف التسجيلات',
+      audioSave: 'حفظ المدة',
+      audioSaved: 'تم حفظ مدة حفظ التسجيلات',
       off: 'هذه الميزة متوقفة في مركزك.',
     ),
     chat: SChat(
@@ -2590,6 +2603,7 @@ class S {
       error: 'حدث خطأ، حاول مرة أخرى.',
       fab: 'سمّع',
       liveBadge: 'تسميع مباشر',
+      audioDeleted: 'حُذف التسجيل الصوتي بعد المراجعة لتوفير المساحة',
       loading: 'جارٍ تحميل الآيات…',
       appNoAudio: 'في التطبيق يُرسل التسميع بنتيجته دون تسجيل صوتي.',
       appUnsupported: 'التعرّف على الكلام غير متاح على هذا الجهاز. ثبّت تطبيق Google أو فعّل خدمة التعرّف على الكلام من إعدادات الجهاز.',
@@ -3942,6 +3956,12 @@ class S {
       notInPlan: 'Not in your plan',
       save: 'Save features',
       saved: 'Center features saved',
+      audioTitle: 'How long recitation recordings are kept',
+      audioHint: 'Once the teacher has reviewed a recitation (approved or returned), its recording is deleted after this time to save space. The result and the mistakes stay in the student’s record.',
+      audioDays: '{n} days',
+      audioNever: 'Never delete them',
+      audioSave: 'Save',
+      audioSaved: 'Recording retention saved',
       off: 'This feature is switched off in your center.',
     ),
     chat: SChat(
@@ -4250,6 +4270,7 @@ class S {
       error: 'Something went wrong. Try again.',
       fab: 'Recite',
       liveBadge: 'Live recitation',
+      audioDeleted: 'The recording was deleted after review to save space',
       loading: 'Loading the ayahs…',
       appNoAudio: 'In the app the recitation is sent with its result, without a recording.',
       appUnsupported: 'Speech recognition is not available on this device. Install the Google app or turn on speech recognition in the device settings.',
@@ -5602,6 +5623,12 @@ class S {
       notInPlan: 'Planınızda yok',
       save: 'Özellikleri kaydet',
       saved: 'Merkez özellikleri kaydedildi',
+      audioTitle: 'Dinletme kayıtlarının saklanma süresi',
+      audioHint: 'Öğretmen dinletmeyi değerlendirdikten (onay veya iade) sonra ses kaydı yer açmak için bu süre sonunda silinir. Sonuç ve hatalar öğrencinin kaydında kalır.',
+      audioDays: '{n} gün',
+      audioNever: 'Kayıtları silme',
+      audioSave: 'Kaydet',
+      audioSaved: 'Kayıt saklama süresi kaydedildi',
       off: 'Bu özellik merkezinizde kapalı.',
     ),
     chat: SChat(
@@ -5910,6 +5937,7 @@ class S {
       error: 'Bir hata oluştu. Tekrar deneyin.',
       fab: 'Dinlet',
       liveBadge: 'Canlı dinletme',
+      audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       loading: 'Ayetler yükleniyor…',
       appNoAudio: 'Uygulamada dinletme ses kaydı olmadan sonucuyla gönderilir.',
       appUnsupported: 'Bu cihazda konuşma tanıma yok. Google uygulamasını yükleyin veya cihaz ayarlarından konuşma tanımayı açın.',
@@ -7262,6 +7290,12 @@ class S {
       notInPlan: 'Pas dans votre formule',
       save: 'Enregistrer',
       saved: 'Fonctionnalités enregistrées',
+      audioTitle: 'Durée de conservation des enregistrements',
+      audioHint: 'Une fois la récitation examinée par l’enseignant (validée ou renvoyée), son enregistrement est supprimé après ce délai pour gagner de la place. Le résultat et les erreurs restent dans le dossier de l’élève.',
+      audioDays: '{n} jours',
+      audioNever: 'Ne jamais les supprimer',
+      audioSave: 'Enregistrer',
+      audioSaved: 'Durée de conservation enregistrée',
       off: 'Cette fonctionnalité est désactivée dans votre centre.',
     ),
     chat: SChat(
@@ -7570,6 +7604,7 @@ class S {
       error: 'Une erreur s’est produite. Réessayez.',
       fab: 'Réciter',
       liveBadge: 'Récitation en direct',
+      audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       loading: 'Chargement des âyahs…',
       appNoAudio: 'Dans l’application, la récitation est envoyée avec son résultat, sans enregistrement.',
       appUnsupported: 'La reconnaissance vocale n’est pas disponible sur cet appareil. Installez l’application Google ou activez la reconnaissance vocale dans les réglages.',

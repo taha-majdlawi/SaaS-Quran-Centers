@@ -8,4 +8,10 @@ T = {
  'save': 'Özellikleri kaydet',
  'saved': 'Merkez özellikleri kaydedildi',
  'off': 'Bu özellik merkezinizde kapalı.',
+ 'audioTitle': 'Dinletme kayıtlarının saklanma süresi',
+ 'audioHint': 'Öğretmen dinletmeyi değerlendirdikten (onay veya iade) sonra ses kaydı yer açmak için bu süre sonunda silinir. Sonuç ve hatalar öğrencinin kaydında kalır.',
+ 'audioDays': '{n} gün',
+ 'audioNever': 'Kayıtları silme',
+ 'audioSave': 'Kaydet',
+ 'audioSaved': 'Kayıt saklama süresi kaydedildi',
 }

@@ -16,6 +16,7 @@ export interface Recitation {
   ayah_from: number;
   ayah_to: number;
   audio_path: string | null;
+  audio_deleted_at?: string | null;
   status: 'draft' | 'submitted' | 'approved' | 'rejected';
   auto_score: number | null;
   auto_result: { words?: { a: number; i: number; s: string; h?: string }[]; ok?: number; missing?: number; wrong?: number; unavailable?: boolean } | null;
@@ -106,6 +107,7 @@ export function RecitationList({
               {r.reviewer && r.kind === 'self' && r.status !== 'submitted' && <span>{fmt(R.reviewedBy, { name: r.reviewer })}</span>}
             </p>
             {url && <audio controls preload="none" src={url} className="h-9 w-full" />}
+            {!r.audio_path && r.audio_deleted_at && <p className="text-xs text-gray-400">{R.audioDeleted}</p>}
             {mode === 'staff' && r.kind === 'self' && r.status === 'submitted' && !r.auto_result && <RecheckButton id={r.id} label={R.recheck} />}
             {flagged.length > 0 && <RecitationWords surah={r.surah} items={flagged} missingLabel={r.kind === 'teacher_test' ? R.markedMistakes.replace('{list}', '') : R.missingWords} wrongLabel={R.heardAs} />}
             {r.student_note && <p className="text-sm text-gray-600">{fmt(R.studentNote, { note: r.student_note })}</p>}

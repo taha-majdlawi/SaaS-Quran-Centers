@@ -619,6 +619,7 @@ export const fr: Dictionary = {
       waitingN: '{n} récitations enregistrées attendent votre examen',
       recheck: 'Relancer la vérification automatique',
       liveBadge: 'Récitation en direct',
+      audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       testNote: 'Note (facultatif)',
       note: 'Note pour l’enseignant (facultatif)',
       send: 'Envoyer à l’enseignant',
