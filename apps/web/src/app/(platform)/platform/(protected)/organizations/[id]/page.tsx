@@ -25,7 +25,12 @@ export default async function OrgDetailPage({
   const { id } = await params;
   const { ok, error, created, invite } = await searchParams;
   const supabase = await createClient();
-  const [{ data }, { data: overview }] = await Promise.all([supabase.rpc('platform_org_detail', { p_org: id }), supabase.rpc('platform_overview')]);
+  const [{ data }, { data: overview }, { data: st }] = await Promise.all([
+    supabase.rpc('platform_org_detail', { p_org: id }),
+    supabase.rpc('platform_overview'),
+    supabase.rpc('platform_org_storage', { p_org: id }),
+  ]);
+  const storage = st as { used_bytes: number; limit_mb: number | null; full: boolean; by_bucket: Record<string, number> } | null;
   const d = data as Detail | null;
   if (!d) notFound();
   const plans = ((overview as { plans: { id: string; name: string }[] } | null)?.plans ?? []);
@@ -124,6 +129,26 @@ export default async function OrgDetailPage({
           </SubmitButton>
         </div>
       </form>
+
+      {storage && (
+        <section className="mb-6 rounded-lg border bg-white p-4 text-sm">
+          <h2 className="mb-2 font-semibold">مساحة التخزين</h2>
+          <p className={storage.full ? 'font-semibold text-red-700' : ''}>
+            <span dir="ltr">
+              {mb(storage.used_bytes)} / {storage.limit_mb == null ? '∞' : `${storage.limit_mb} MB`}
+            </span>
+            {storage.full && ' — ممتلئة، لا يمكن للمركز رفع ملفات جديدة'}
+          </p>
+          <ul className="mt-2 flex flex-wrap gap-2 text-xs text-gray-600">
+            {Object.entries(storage.by_bucket).map(([b, n]) => (
+              <li key={b} className="rounded bg-gray-100 px-2 py-1">
+                {BUCKETS[b] ?? b}: <span dir="ltr">{mb(n)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-gray-500">الحد من خطة المركز (الخطط ← مساحة التخزين). لا تظهر في الموقع التسويقي.</p>
+        </section>
+      )}
 
       <h2 className="mb-2 font-semibold">الأعضاء ({d.members.length})</h2>
       <div className="mb-3 overflow-x-auto rounded-lg border bg-white">
@@ -276,3 +301,13 @@ export default async function OrgDetailPage({
     </div>
   );
 }
+
+const BUCKETS: Record<string, string> = {
+  recitations: 'تسجيلات التسميع',
+  'chat-images': 'صور المحادثات',
+  'org-logos': 'الشعار',
+  'market-images': 'صور السوق',
+  'event-images': 'صور التقويم',
+};
+
+const mb = (bytes: number) => `${Math.round((bytes / 1048576) * 10) / 10} MB`;

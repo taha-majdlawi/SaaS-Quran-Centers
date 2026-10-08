@@ -14,4 +14,6 @@ T = {
  'audioNever': 'Kayıtları silme',
  'audioSave': 'Kaydet',
  'audioSaved': 'Kayıt saklama süresi kaydedildi',
+ 'chatTitle': 'Sohbet resimlerinin saklanma süresi',
+ 'chatHint': 'Sohbetlerde gönderilen resimler yer açmak için gönderildikten bu süre sonra silinir; mesaj metinleri kalır.',
 }

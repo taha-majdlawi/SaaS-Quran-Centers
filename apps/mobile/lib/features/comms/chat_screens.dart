@@ -333,6 +333,7 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
         readAt: row['read_at'] as String?,
         imagePath: row['image_path'] as String?,
         deletedAt: row['deleted_at'] as String?,
+        imageDeletedAt: row['image_deleted_at'] as String?,
       );
 
   void _mergeRow(Map<String, dynamic> row) {
@@ -662,7 +663,12 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
                                     if (m.localImage != null)
                                       Padding(padding: const EdgeInsets.only(bottom: 6), child: ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.memory(m.localImage!, width: 220, fit: BoxFit.cover)))
                                     else if (m.imagePath != null)
-                                      _ChatImage(repository: _repository, path: m.imagePath!),
+                                      _ChatImage(repository: _repository, path: m.imagePath!)
+                                    else if (m.imageDeletedAt != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 4),
+                                        child: Text('📷 ${tr(context).chat.imageDeleted}', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: m.mine ? Colors.white70 : Colors.black45)),
+                                      ),
                                     if (m.body.isNotEmpty) Text(m.body, style: TextStyle(color: m.failed ? Colors.red.shade900 : (m.mine ? Colors.white : Colors.black87))),
                                   ],
                                   const SizedBox(height: 3),

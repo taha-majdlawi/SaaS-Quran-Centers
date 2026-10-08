@@ -75,4 +75,9 @@ T = {'method': {'bank_transfer': 'Virement bancaire', 'wallet': 'Portefeuille é
  'history': 'Historique des paiements',
  'activeTill': 'actif jusqu’au {date}',
  'unlimited': 'Pas de limite sur votre offre',
- 'gardenFull': 'Le jardin est plein — {cta}'}
+ 'gardenFull': 'Le jardin est plein — {cta}',
+ 'storageLabel': 'Espace de stockage',
+ 'storageFull': 'L’espace est plein : aucun nouveau fichier (enregistrements, images) ne peut être envoyé tant que d’anciens ne sont pas supprimés ou que l’offre n’est pas améliorée.',
+ 'storageHint': 'Les anciens enregistrements et images de conversation sont supprimés automatiquement selon les durées des réglages du centre.',
+ 'storageSpace': '{n} de stockage',
+}

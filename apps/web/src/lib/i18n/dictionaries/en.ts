@@ -523,6 +523,8 @@ export const en: Dictionary = {
       imageTypes: 'Allowed images: JPG, PNG or WebP',
       imageSize: 'Maximum image size is 5 MB',
       uploadFailed: 'Could not upload the image',
+      imageDeleted: 'The picture was deleted after the keeping time',
+      storageFull: 'The center’s storage is full, so pictures cannot be sent now. Tell the center’s admin.',
       sendFailed: 'Could not send',
       deleteConfirm: 'It will be deleted for you and the other person, and cannot be undone. Delete the message?',
       save: 'Save',

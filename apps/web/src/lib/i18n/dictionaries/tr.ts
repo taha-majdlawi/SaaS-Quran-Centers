@@ -523,6 +523,8 @@ export const tr: Dictionary = {
       imageTypes: 'İzin verilen görseller: JPG, PNG veya WebP',
       imageSize: 'En büyük görsel boyutu 5 MB',
       uploadFailed: 'Görsel yüklenemedi',
+      imageDeleted: 'Resim saklama süresinden sonra silindi',
+      storageFull: 'Merkezin depolama alanı dolu, şu an resim gönderilemiyor. Merkez yönetimine bildirin.',
       sendFailed: 'Gönderilemedi',
       deleteConfirm: 'Sizin ve karşı tarafın için silinecek ve geri alınamaz. Mesaj silinsin mi?',
       save: 'Kaydet',

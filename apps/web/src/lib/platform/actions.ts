@@ -133,6 +133,7 @@ export async function savePlan(formData: FormData) {
       p_currency: s(formData, 'currency') || 'USD',
       p_max_students: num(formData, 'maxStudents'),
       p_max_teachers: num(formData, 'maxTeachers'),
+      p_storage_mb: num(formData, 'storageMb'),
       p_features: features,
       p_active: formData.get('active') === 'on',
     },
