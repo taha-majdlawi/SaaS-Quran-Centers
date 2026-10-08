@@ -1,0 +1,17 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-audio]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -F ' | ' -c "set default_transaction_read_only = on" \
+            -c "select 'setting', key, length(coalesce(value::text,'')) > 2 from public.platform_settings where key in ('push_url','push_secret')" \
+            -c "select 'url_path', regexp_replace(value::text, '^\"?https?://[^/]+', '') from public.platform_settings where key = 'push_url'" \
+            -c "select 'trg', tgname from pg_trigger where tgrelid = 'storage.objects'::regclass and not tgisinternal" \
+            -c "select 'objs', bucket_id, count(*), pg_size_pretty(sum((metadata->>'size')::bigint)) from storage.objects group by 2" 2>&1
