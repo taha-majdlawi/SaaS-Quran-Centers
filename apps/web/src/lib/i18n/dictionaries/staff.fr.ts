@@ -363,6 +363,12 @@ export const staffFr: typeof staffAr = {
     notInPlan: 'Pas dans votre formule',
     save: 'Enregistrer',
     saved: 'Fonctionnalités enregistrées',
+    audioTitle: 'Durée de conservation des enregistrements',
+    audioHint: 'Une fois la récitation examinée par l’enseignant (validée ou renvoyée), son enregistrement est supprimé après ce délai pour gagner de la place. Le résultat et les erreurs restent dans le dossier de l’élève.',
+    audioDays: '{n} jours',
+    audioNever: 'Ne jamais les supprimer',
+    audioSave: 'Enregistrer',
+    audioSaved: 'Durée de conservation enregistrée',
     off: 'Cette fonctionnalité est désactivée dans votre centre.',
   },
   /** Circle challenges. */

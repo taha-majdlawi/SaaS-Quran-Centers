@@ -45,6 +45,7 @@ T = {
  'error': 'Une erreur s’est produite. Réessayez.',
  'fab': 'Réciter',
  'liveBadge': 'Récitation en direct',
+ 'audioDeleted': 'L’enregistrement a été supprimé après examen pour gagner de la place',
  'loading': 'Chargement des âyahs…',
  'appNoAudio': 'Dans l’application, la récitation est envoyée avec son résultat, sans enregistrement.',
  'appUnsupported': 'La reconnaissance vocale n’est pas disponible sur cet appareil. Installez l’application Google ou activez la reconnaissance vocale dans les réglages.',

@@ -363,6 +363,12 @@ export const staffEn: typeof staffAr = {
     notInPlan: 'Not in your plan',
     save: 'Save features',
     saved: 'Center features saved',
+    audioTitle: 'How long recitation recordings are kept',
+    audioHint: 'Once the teacher has reviewed a recitation (approved or returned), its recording is deleted after this time to save space. The result and the mistakes stay in the student’s record.',
+    audioDays: '{n} days',
+    audioNever: 'Never delete them',
+    audioSave: 'Save',
+    audioSaved: 'Recording retention saved',
     off: 'This feature is switched off in your center.',
   },
   /** Circle challenges. */
