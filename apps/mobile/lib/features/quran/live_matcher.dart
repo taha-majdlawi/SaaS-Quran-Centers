@@ -59,6 +59,44 @@ bool sameWord(String expected, String heard, {int slack = 0}) {
   return _distance(se, sh) <= allowed;
 }
 
+/// The passage's words as speech recognition writes them, to bias the recogniser towards them
+/// (Android 13+, RecognizerIntent.EXTRA_BIASING_STRINGS - see LiveSpeech.kt): the ayahs, then
+/// each word. The mushaf's script is turned into the usual spelling where it differs (a small
+/// alif written in full: ٱلۡعَٰلَمِينَ -> العالمين, except in the words that keep it small:
+/// الرحمن, هذا, ذلك...); both spellings are given when they differ.
+List<String> biasPhrases(List<(int, String)> ayahs, {int max = 400}) {
+  String plain(String w) => w.replaceAll(_marks, '').replaceAll('ٱ', 'ا');
+  String usual(String w) {
+    var u = w
+        .replaceAll(RegExp('ىٰ'), 'ى') // عَلَىٰ -> على
+        .replaceAll(RegExp('وٰ'), 'ا') // ٱلصَّلَوٰةَ -> الصلاة
+        .replaceAll('ٰ', 'ا');
+    u = plain(u);
+    const keep = {
+      'الرحمان': 'الرحمن', 'هاذا': 'هذا', 'هاذه': 'هذه', 'هاذان': 'هذان', 'ذالك': 'ذلك', 'ذالكم': 'ذلكم',
+      'لاكن': 'لكن', 'أولائك': 'أولئك', 'إلاه': 'إله', 'إلاها': 'إلها',
+    };
+    for (final e in keep.entries) {
+      u = u.replaceAll(e.key, e.value);
+    }
+    return u;
+  }
+
+  final out = <String>{};
+  for (final (_, text) in ayahs) {
+    final words = text.split(RegExp(r'\s+')).where((w) => plainWord(w).isNotEmpty).toList();
+    out.add(words.map(usual).join(' '));
+  }
+  for (final (_, text) in ayahs) {
+    for (final w in text.split(RegExp(r'\s+'))) {
+      if (plainWord(w).isEmpty) continue;
+      out.add(usual(w));
+      out.add(plain(w));
+    }
+  }
+  return out.where((e) => e.isNotEmpty).take(max).toList();
+}
+
 enum LiveState { hidden, ok, missing, wrong }
 
 class LiveWord {

@@ -36,7 +36,9 @@ import java.util.concurrent.TimeUnit
  * itself and does both with the same sound:
  *   - it is encoded to AAC as it comes (an .m4a, ~240 KB a minute - a WAV would be ~2 MB);
  *   - it is handed to the phone's speech recogniser (RecognizerIntent.EXTRA_AUDIO_SOURCE),
- *     one recognition session after another (each ends after a pause, the next starts at once).
+ *     one recognition session after another (each ends after a pause, the next starts at once),
+ *     biased towards the passage's words (RecognizerIntent.EXTRA_BIASING_STRINGS): a general
+ *     Arabic recogniser otherwise leans to everyday words.
  * A recogniser that does not take the sound this way never reads it: after a few seconds the
  * screen is told ("fallback") and goes back to the usual recognition, without a recording.
  *
@@ -81,6 +83,9 @@ class LiveSpeech(private val context: Context, messenger: BinaryMessenger) :
     @Volatile private var fellBack = false
     private var recognizer: SpeechRecognizer? = null
     private var language = "ar-SA"
+    private var bias = ArrayList<String>()
+    private var ready = false // the current session got as far as listening
+    private var failedStarts = 0 // sessions in a row that failed before listening
     private var session = 0
 
     init {
@@ -101,7 +106,8 @@ class LiveSpeech(private val context: Context, messenger: BinaryMessenger) :
                 Build.VERSION.SDK_INT >= 33 && SpeechRecognizer.isRecognitionAvailable(context)
             )
             "start" -> result.success(
-                start(call.argument<String>("path")!!, call.argument<String>("language") ?: "ar-SA")
+                start(call.argument<String>("path")!!, call.argument<String>("language") ?: "ar-SA",
+                    call.argument<List<String>>("bias") ?: emptyList())
             )
             "resume" -> { resume(); result.success(null) }
             "pause" -> { pause(); result.success(null) }
@@ -112,10 +118,12 @@ class LiveSpeech(private val context: Context, messenger: BinaryMessenger) :
 
     // ---------------------------------------------------------------- capture
 
-    private fun start(path: String, lang: String): Boolean {
+    private fun start(path: String, lang: String, phrases: List<String>): Boolean {
         if (Build.VERSION.SDK_INT < 33) return false
         stop(true)
         language = lang
+        bias = ArrayList(phrases)
+        failedStarts = 0
         fellBack = false
         val min = AudioRecord.getMinBufferSize(RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val rec = try {
@@ -281,7 +289,11 @@ class LiveSpeech(private val context: Context, messenger: BinaryMessenger) :
     }
 
     private val listener = object : RecognitionListener {
-        override fun onReadyForSpeech(params: Bundle?) = emit(mapOf("type" to "listening", "on" to true))
+        override fun onReadyForSpeech(params: Bundle?) {
+            ready = true
+            failedStarts = 0
+            emit(mapOf("type" to "listening", "on" to true))
+        }
         override fun onBeginningOfSpeech() {}
         override fun onRmsChanged(rmsdB: Float) {}
         override fun onBufferReceived(buffer: ByteArray?) {}
@@ -303,7 +315,12 @@ class LiveSpeech(private val context: Context, messenger: BinaryMessenger) :
                 // the sound could not be taken from us, or not in Arabic this way: the usual recognition
                 SpeechRecognizer.ERROR_AUDIO, SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED,
                 SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> fallback()
-                else -> next(300) // no match, silence, busy: the next session
+                else -> {
+                    // a recogniser that refuses the session itself (before listening) again and
+                    // again may not take the bias list: the next sessions go without it
+                    if (!ready && ++failedStarts >= 3 && bias.isNotEmpty()) bias = ArrayList()
+                    next(300) // no match, silence, busy: the next session
+                }
             }
         }
     }
@@ -337,8 +354,10 @@ class LiveSpeech(private val context: Context, messenger: BinaryMessenger) :
             putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
             putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
             putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, RATE)
+            if (bias.isNotEmpty()) putStringArrayListExtra(RecognizerIntent.EXTRA_BIASING_STRINGS, bias)
         }
         session++
+        ready = false
         pipe = p
         try {
             rec.startListening(intent)

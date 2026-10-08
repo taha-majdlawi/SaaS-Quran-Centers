@@ -25,12 +25,13 @@ class LiveSpeech {
     }
   }
 
-  /// Starts capturing and recording into [path] (recognition starts with [resume]).
-  Future<bool> start(String path, String language, void Function(Map<String, dynamic>) onEvent) async {
+  /// Starts capturing and recording into [path] (recognition starts with [resume]); the
+  /// recogniser is biased towards [bias] (the passage's words - biasPhrases).
+  Future<bool> start(String path, String language, List<String> bias, void Function(Map<String, dynamic>) onEvent) async {
     await _sub?.cancel();
     _sub = _events.receiveBroadcastStream().listen((e) => onEvent(Map<String, dynamic>.from(e as Map)));
     try {
-      final ok = await _channel.invokeMethod<bool>('start', {'path': path, 'language': language}) ?? false;
+      final ok = await _channel.invokeMethod<bool>('start', {'path': path, 'language': language, 'bias': bias}) ?? false;
       if (!ok) await _sub?.cancel();
       return ok;
     } catch (_) {
