@@ -478,7 +478,7 @@ class SCert {
 
 /// The center admin's feature switches (center_features, 0088).
 class SCfeat {
-  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.audioTitle, required this.audioHint, required this.audioDays, required this.audioNever, required this.audioSave, required this.audioSaved, required this.off});
+  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.audioTitle, required this.audioHint, required this.audioDays, required this.audioNever, required this.audioSave, required this.audioSaved, required this.chatTitle, required this.chatHint, required this.off});
   final Map<String, String> names;
   final String tab;
   final String title;
@@ -492,12 +492,14 @@ class SCfeat {
   final String audioNever;
   final String audioSave;
   final String audioSaved;
+  final String chatTitle;
+  final String chatHint;
   final String off;
 }
 
 /// Messages.
 class SChat {
-  const SChat({required this.title, required this.newChat, required this.none, required this.noneHint, required this.deletedLast, required this.you, required this.searchName, required this.noContacts, required this.uploadFailed, required this.sendFailed, required this.stillFailing, required this.gallery, required this.camera, required this.imageSize, required this.editTitle, required this.deleteTitle, required this.deleteBody, required this.deleteFailed, required this.unmute, required this.start, required this.deleted, required this.notSent, required this.sending, required this.edited, required this.attach, required this.caption, required this.cantReply, required this.mute, required this.write});
+  const SChat({required this.title, required this.newChat, required this.none, required this.noneHint, required this.deletedLast, required this.you, required this.searchName, required this.noContacts, required this.uploadFailed, required this.sendFailed, required this.stillFailing, required this.gallery, required this.camera, required this.imageSize, required this.editTitle, required this.deleteTitle, required this.deleteBody, required this.deleteFailed, required this.unmute, required this.start, required this.deleted, required this.imageDeleted, required this.storageFull, required this.notSent, required this.sending, required this.edited, required this.attach, required this.caption, required this.cantReply, required this.mute, required this.write});
   final String title;
   final String newChat;
   final String none;
@@ -519,6 +521,8 @@ class SChat {
   final String unmute;
   final String start;
   final String deleted;
+  final String imageDeleted;
+  final String storageFull;
   final String notSent;
   final String sending;
   final String edited;
@@ -2295,6 +2299,8 @@ class S {
       audioNever: 'لا تحذف التسجيلات',
       audioSave: 'حفظ المدة',
       audioSaved: 'تم حفظ مدة حفظ التسجيلات',
+      chatTitle: 'مدة حفظ صور المحادثات',
+      chatHint: 'الصور المرسلة في المحادثات تُحذف بعد هذه المدة من إرسالها لتوفير المساحة، وتبقى الرسائل مكتوبة.',
       off: 'هذه الميزة متوقفة في مركزك.',
     ),
     chat: SChat(
@@ -2319,6 +2325,8 @@ class S {
       unmute: 'تفعيل التنبيهات',
       start: 'ابدأ المحادثة',
       deleted: 'حُذفت هذه الرسالة',
+      imageDeleted: 'حُذفت الصورة بعد مدة الحفظ',
+      storageFull: 'امتلأت مساحة التخزين في المركز، فلا يمكن إرسال صور الآن. أخبر إدارة المركز.',
       notSent: 'لم يُرسل — اضغط لإعادة المحاولة',
       sending: 'جارٍ الإرسال...',
       edited: ' · عُدّلت',
@@ -3962,6 +3970,8 @@ class S {
       audioNever: 'Never delete them',
       audioSave: 'Save',
       audioSaved: 'Recording retention saved',
+      chatTitle: 'How long chat pictures are kept',
+      chatHint: 'Pictures sent in conversations are deleted this long after they were sent, to save space; the messages’ text stays.',
       off: 'This feature is switched off in your center.',
     ),
     chat: SChat(
@@ -3986,6 +3996,8 @@ class S {
       unmute: 'Unmute',
       start: 'Start the conversation',
       deleted: 'This message was deleted',
+      imageDeleted: 'The picture was deleted after the keeping time',
+      storageFull: 'The center’s storage is full, so pictures cannot be sent now. Tell the center’s admin.',
       notSent: 'Not sent — tap to retry',
       sending: 'Sending...',
       edited: ' · edited',
@@ -5629,6 +5641,8 @@ class S {
       audioNever: 'Kayıtları silme',
       audioSave: 'Kaydet',
       audioSaved: 'Kayıt saklama süresi kaydedildi',
+      chatTitle: 'Sohbet resimlerinin saklanma süresi',
+      chatHint: 'Sohbetlerde gönderilen resimler yer açmak için gönderildikten bu süre sonra silinir; mesaj metinleri kalır.',
       off: 'Bu özellik merkezinizde kapalı.',
     ),
     chat: SChat(
@@ -5653,6 +5667,8 @@ class S {
       unmute: 'Sesi aç',
       start: 'Konuşmayı başlatın',
       deleted: 'Bu mesaj silindi',
+      imageDeleted: 'Resim saklama süresinden sonra silindi',
+      storageFull: 'Merkezin depolama alanı dolu, şu an resim gönderilemiyor. Merkez yönetimine bildirin.',
       notSent: 'Gönderilmedi — yeniden denemek için dokunun',
       sending: 'Gönderiliyor...',
       edited: ' · düzenlendi',
@@ -7296,6 +7312,8 @@ class S {
       audioNever: 'Ne jamais les supprimer',
       audioSave: 'Enregistrer',
       audioSaved: 'Durée de conservation enregistrée',
+      chatTitle: 'Durée de conservation des images des conversations',
+      chatHint: 'Les images envoyées dans les conversations sont supprimées après ce délai pour gagner de la place ; le texte des messages reste.',
       off: 'Cette fonctionnalité est désactivée dans votre centre.',
     ),
     chat: SChat(
@@ -7320,6 +7338,8 @@ class S {
       unmute: 'Réactiver le son',
       start: 'Commencez la conversation',
       deleted: 'Ce message a été supprimé',
+      imageDeleted: 'L’image a été supprimée après la durée de conservation',
+      storageFull: 'L’espace de stockage du centre est plein : impossible d’envoyer des images pour l’instant. Prévenez l’administration du centre.',
       notSent: 'Non envoyé — appuyez pour réessayer',
       sending: 'Envoi...',
       edited: ' · modifié',

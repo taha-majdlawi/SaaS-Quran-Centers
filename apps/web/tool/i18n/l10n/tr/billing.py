@@ -73,4 +73,9 @@ T = {'method': {'bank_transfer': 'Banka havalesi', 'wallet': 'E-cüzdan', 'cash'
  'history': 'Ödeme geçmişi',
  'activeTill': '{date} tarihine kadar etkin',
  'unlimited': 'Planınızda sınır yok',
- 'gardenFull': 'Bahçe doldu — {cta}'}
+ 'gardenFull': 'Bahçe doldu — {cta}',
+ 'storageLabel': 'Depolama alanı',
+ 'storageFull': 'Depolama dolu: eski dosyalar silinene veya plan yükseltilene kadar yeni dosya (kayıt, resim) yüklenemez.',
+ 'storageHint': 'Eski dinletme kayıtları ve sohbet resimleri merkez ayarlarındaki sürelere göre otomatik silinir.',
+ 'storageSpace': '{n} depolama',
+}

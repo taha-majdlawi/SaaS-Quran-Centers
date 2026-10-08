@@ -41,29 +41,36 @@ export async function CenterFeaturesForm({ orgId }: { orgId: string }) {
   );
 }
 
-const AUDIO_DAYS = [7, 14, 30, 60, 90, 180, 365];
+const RETENTION_DAYS = [7, 14, 30, 60, 90, 180, 365];
 
-/** How long a reviewed recitation's recording is kept (recitation_audio_days, 0090). */
+/** How long reviewed recitations' recordings (0090) and chat pictures (0091) are kept. */
 export async function RecitationAudioForm({ orgId }: { orgId: string }) {
   const supabase = await createClient();
-  const [{ data: days, error }, S] = await Promise.all([supabase.rpc('recitation_audio_days', { p_org: orgId }), staffStrings()]);
-  if (error) return null;
+  const [{ data, error }, S] = await Promise.all([supabase.rpc('media_retention', { p_org: orgId }), staffStrings()]);
+  if (error || !data) return null;
   const C = S.cfeat;
-  const current = days === null ? 'never' : String(days);
-  const options = AUDIO_DAYS.includes(days as number) || days === null ? AUDIO_DAYS : [...AUDIO_DAYS, days as number].sort((a, b) => a - b);
+  const { audio_days, chat_days } = data as { audio_days: number | null; chat_days: number | null };
+  const select = (name: string, days: number | null) => (
+    <select name={name} defaultValue={days === null ? 'never' : String(days)} className="max-w-xs rounded-md border px-3 py-2 text-sm">
+      {[...new Set([...RETENTION_DAYS, ...(days === null ? [] : [days])])]
+        .sort((a, b) => a - b)
+        .map((n) => (
+          <option key={n} value={n}>
+            {C.audioDays.replace('{n}', String(n))}
+          </option>
+        ))}
+      <option value="never">{C.audioNever}</option>
+    </select>
+  );
   return (
     <form action={saveRecitationAudioDays} className="flex flex-col gap-3 rounded-lg border bg-white p-4">
       <input type="hidden" name="orgId" value={orgId} />
       <h2 className="font-semibold">{C.audioTitle}</h2>
       <p className="text-sm text-gray-500">{C.audioHint}</p>
-      <select name="days" defaultValue={current} className="max-w-xs rounded-md border px-3 py-2 text-sm">
-        {options.map((n) => (
-          <option key={n} value={n}>
-            {C.audioDays.replace('{n}', String(n))}
-          </option>
-        ))}
-        <option value="never">{C.audioNever}</option>
-      </select>
+      {select('days', audio_days)}
+      <h2 className="mt-2 font-semibold">{C.chatTitle}</h2>
+      <p className="text-sm text-gray-500">{C.chatHint}</p>
+      {select('chatDays', chat_days)}
       <SubmitButton className="self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white" pendingText={S.common.saving}>
         {C.audioSave}
       </SubmitButton>

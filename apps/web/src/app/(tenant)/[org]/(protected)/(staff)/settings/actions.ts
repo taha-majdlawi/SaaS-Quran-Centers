@@ -165,7 +165,13 @@ export async function saveRecitationAudioDays(formData: FormData) {
   const raw = String(formData.get('days') ?? '');
   const days = raw === 'never' ? null : Number(raw);
   const supabase = await createClient();
-  const { error } = await supabase.rpc('set_recitation_audio_days', { p_org: orgId, p_days: days });
+  const chatRaw = String(formData.get('chatDays') ?? '');
+  const chatDays = chatRaw === 'never' ? null : Number(chatRaw);
+  const [{ error: e1 }, { error: e2 }] = await Promise.all([
+    supabase.rpc('set_recitation_audio_days', { p_org: orgId, p_days: days }),
+    supabase.rpc('set_chat_image_days', { p_org: orgId, p_days: chatDays }),
+  ]);
+  const error = e1 ?? e2;
   if (error) redirect(`/settings?tab=modules&error=${encodeURIComponent(error.message)}` as never);
   redirect('/settings?tab=modules&saved=audio' as never);
 }

@@ -17,6 +17,8 @@ export interface ChatMsg {
   edited_at: string | null;
   read_at: string | null;
   deleted_at: string | null;
+  /** the picture was deleted after the center's keeping time (0091) */
+  image_deleted_at?: string | null;
   /** short-lived link to the picture (private bucket) */
   url?: string | null;
 }
@@ -107,7 +109,7 @@ export function ChatConversation({
     const channel = supabase
       .channel(`web-chat-${threadId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages', filter: `thread_id=eq.${threadId}` }, (payload) => {
-        const row = payload.new as { id?: string; sender_id?: string; body?: string; image_path?: string | null; created_at?: string; edited_at?: string | null; read_at?: string | null; deleted_at?: string | null };
+        const row = payload.new as { id?: string; sender_id?: string; body?: string; image_path?: string | null; created_at?: string; edited_at?: string | null; read_at?: string | null; deleted_at?: string | null; image_deleted_at?: string | null };
         if (!row?.id || !row.created_at) return;
         void merge([
           {
@@ -119,6 +121,7 @@ export function ChatConversation({
             edited_at: row.edited_at ?? null,
             read_at: row.read_at ?? null,
             deleted_at: row.deleted_at ?? null,
+            image_deleted_at: row.image_deleted_at ?? null,
           },
         ]);
       })
@@ -156,7 +159,11 @@ export function ChatConversation({
         if (file.size > 5 * 1024 * 1024) throw new Error(L.imageSize);
         imagePath = `${orgId}/${userId}/${crypto.randomUUID()}.${ext}`;
         const { error: upError } = await supabase.storage.from('chat-images').upload(imagePath, file, { contentType: file.type });
-        if (upError) throw new Error(L.uploadFailed);
+        if (upError) {
+          // refused because the center's storage is full (0091)? say so
+          const { data: st } = await supabase.rpc('org_storage', { p_org: orgId });
+          throw new Error((st as { full?: boolean } | null)?.full ? L.storageFull : L.uploadFailed);
+        }
       }
       const { data, error: rpcError } = await supabase.rpc('send_chat_message', {
         p_org: orgId,
@@ -243,6 +250,9 @@ export function ChatConversation({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={m.url} alt={L.image} className="mb-1 max-h-64 rounded" onLoad={() => stick.current && endRef.current?.scrollIntoView({ block: 'end' })} />
                     </a>
+                  )}
+                  {!m.image_path && m.image_deleted_at && (
+                    <p className={`text-xs italic ${m.mine ? 'text-white/70' : 'text-gray-400'}`}>📷 {L.imageDeleted}</p>
                   )}
                   {m.body && <p className="whitespace-pre-wrap">{m.body}</p>}
                 </>

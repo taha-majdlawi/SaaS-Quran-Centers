@@ -49,8 +49,12 @@ export default async function BillingPage({
   const stages = T.marketing.stages;
   const gardenStage = (i: number) => stages[Math.max(0, Math.min(i, stages.length - 1))];
   const supabase = await createClient();
-  const { data, error: loadError } = await supabase.rpc('billing_overview', { p_org: org.id });
+  const [{ data, error: loadError }, { data: st }] = await Promise.all([
+    supabase.rpc('billing_overview', { p_org: org.id }),
+    supabase.rpc('org_storage', { p_org: org.id }),
+  ]);
   const o = data as Overview | null;
+  const storage = st as { used_bytes: number; limit_mb: number | null; full: boolean } | null;
 
   if (!o) return <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-600">{loadError?.message ?? L.loadFailed}</p>;
   const b = o.billing;
@@ -99,6 +103,7 @@ export default async function BillingPage({
       <section className="grid gap-3 sm:grid-cols-2">
         <UsageMeter label={L.studentsLabel} used={o.usage.students} max={o.usage.max_students} left={o.usage.students_left} unit={L.students} L={L} warnAt={5} />
         <UsageMeter label={L.teachersLabel} used={o.usage.teachers} max={o.usage.max_teachers} left={o.usage.teachers_left} unit={L.teachers} L={L} warnAt={1} />
+        {storage && <StorageMeter used={storage.used_bytes} limitMb={storage.limit_mb} full={storage.full} L={L} />}
       </section>
 
       {pending && (
@@ -150,6 +155,7 @@ export default async function BillingPage({
                 <p className="mt-2 text-xs text-gray-500">
                   {p.limits?.max_students != null ? fmt(L.upToStudents, { n: p.limits.max_students }) : L.unlimitedStudents} ·{' '}
                   {p.limits?.max_teachers != null ? fmt(L.upToTeachers, { n: p.limits.max_teachers }) : L.unlimitedTeachers}
+                  {p.limits?.storage_mb != null && <> · {fmt(L.storageSpace, { n: formatSize(p.limits.storage_mb * 1048576) })}</>}
                 </p>
               </div>
             ))}
@@ -261,6 +267,36 @@ function UsageMeter({ label, used, max, left, unit, warnAt, L }: { label: string
       <p className={`mt-2 text-xs ${left === 0 ? 'font-semibold text-red-700' : left != null && left <= warnAt ? 'font-semibold text-amber-700' : 'text-gray-500'}`}>
         {max == null ? L.unlimited : left === 0 ? fmt(L.gardenFull, { cta: L.upgrade }) : fmt(L.leftToAdd, { n: plural(left ?? 0, unit) })}
       </p>
+    </div>
+  );
+}
+
+/** "750 MB", "1.5 GB" */
+function formatSize(bytes: number) {
+  const mb = bytes / 1048576;
+  if (mb >= 1024) return `${Math.round((mb / 1024) * 10) / 10} GB`;
+  return `${mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10} MB`;
+}
+
+/** The center's storage (0091): every file it keeps, against its plan's space. */
+function StorageMeter({ used, limitMb, full, L }: { used: number; limitMb: number | null; full: boolean; L: BillingLabels }) {
+  const max = limitMb == null ? null : limitMb * 1048576;
+  const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0;
+  const tone = full ? 'bg-red-500' : pct >= 85 ? 'bg-amber-500' : 'bg-brand';
+  return (
+    <div className="rounded-lg border bg-white p-4 text-sm sm:col-span-2">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-semibold">{L.storageLabel}</span>
+        <span dir="ltr" className="font-bold">
+          {formatSize(used)} / {max == null ? '∞' : formatSize(max)}
+        </span>
+      </div>
+      {max != null && (
+        <div className="h-2 overflow-hidden rounded bg-gray-100">
+          <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
+        </div>
+      )}
+      <p className={`mt-2 text-xs ${full ? 'font-semibold text-red-700' : 'text-gray-500'}`}>{full ? L.storageFull : L.storageHint}</p>
     </div>
   );
 }

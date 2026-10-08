@@ -14,4 +14,6 @@ T = {
  'audioNever': 'Ne jamais les supprimer',
  'audioSave': 'Enregistrer',
  'audioSaved': 'Durée de conservation enregistrée',
+ 'chatTitle': 'Durée de conservation des images des conversations',
+ 'chatHint': 'Les images envoyées dans les conversations sont supprimées après ce délai pour gagner de la place ; le texte des messages reste.',
 }
