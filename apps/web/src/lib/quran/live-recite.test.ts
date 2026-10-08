@@ -74,3 +74,14 @@ test('the cumulative results of Chrome on Android are not counted twice', () => 
   ]);
   assert.deepEqual(r, ['قل', 'هو', 'الله']);
 });
+
+test('al-Fatiha: الرحيم right after الرحمن is not taken for a repeat of it', () => {
+  const m = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 5));
+  feedAll(m, 'بسم الله الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين إياك نعبد وإياك نستعين');
+  assert.equal(m.mistakes, 0);
+  assert.ok(m.done);
+  // a real repeat is still no mistake
+  const r = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 3));
+  feedAll(r, 'بسم الله الرحمن الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم');
+  assert.equal(r.mistakes, 0);
+});

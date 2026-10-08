@@ -40,6 +40,9 @@ int _distance(String a, String b) {
   return prev[b.length];
 }
 
+/// Same word, only the long vowels apart (written small or not at all in the mushaf).
+bool exactWord(String a, String b) => a.isNotEmpty && (a == b || _skeleton(a) == _skeleton(b));
+
 /// Same word, allowing the spelling differences between the mushaf and speech recognition.
 bool sameWord(String expected, String heard) {
   if (expected.isEmpty || heard.isEmpty) return false;
@@ -126,8 +129,13 @@ class LiveMatcher {
   LiveEvent? feed(String raw) {
     final w = plainWord(raw);
     if (w.isEmpty || done) return null;
-    if (pos > 0 && _unmatched.isEmpty && sameWord(words[pos - 1].plain, w)) return null; // a repeat
+    // the word expected, said exactly; else repeating the word just said; then the looser match
+    // (الرحمن / الرحيم are one letter apart: the loose match alone took one for the other)
+    final repeat = pos > 0 && _unmatched.isEmpty;
+    if (pos < words.length && exactWord(words[pos].plain, w)) return _advanceTo(pos);
+    if (repeat && exactWord(words[pos - 1].plain, w)) return null;
     if (_matches(pos, w)) return _advanceTo(pos);
+    if (repeat && sameWord(words[pos - 1].plain, w)) return null;
     // (not before the first word: the basmala's words appear in the ayahs too)
     for (var k = 1; pos > 0 && k <= _lookAhead && pos + k < words.length; k++) {
       if (!_matches(pos + k, w)) continue;

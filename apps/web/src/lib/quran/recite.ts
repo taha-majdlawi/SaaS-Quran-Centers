@@ -64,6 +64,9 @@ function distance(a: string, b: string): number {
 }
 
 /** Same word, allowing the spelling differences between the mushaf and a transcript. */
+/** Same word, only the long vowels apart (written small or not at all in the mushaf). */
+export const exactWord = (a: string, b: string) => !!a && (a === b || skeleton(a) === skeleton(b));
+
 export function sameWord(expected: string, heard: string): boolean {
   if (!expected || !heard) return false;
   if (expected === heard) return true;

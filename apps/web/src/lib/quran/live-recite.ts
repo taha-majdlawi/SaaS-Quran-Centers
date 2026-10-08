@@ -13,7 +13,7 @@
 // apps/mobile/lib/features/quran/live_recite.dart is the same logic in Dart.
 
 import { wordRanges, type Ayah } from './mushaf';
-import { plainWord, sameWord } from './recite';
+import { exactWord, plainWord, sameWord } from './recite';
 
 export type LiveState = 'hidden' | 'ok' | 'missing' | 'wrong';
 
@@ -74,9 +74,14 @@ export class LiveMatcher {
   feed(raw: string): LiveEvent | null {
     const w = plainWord(raw);
     if (!w || this.done) return null;
-    // repeating the word just said (often right after being stopped)
-    if (this.pos > 0 && this.unmatched.length === 0 && sameWord(this.words[this.pos - 1].plain, w)) return null;
+    // the word expected, said exactly; else repeating the word just said (often right after
+    // being stopped); then the looser match (الرحمن / الرحيم are one letter apart: the loose
+    // match alone took one for the other)
+    const repeat = this.pos > 0 && this.unmatched.length === 0;
+    if (exactWord(this.words[this.pos].plain, w)) return this.advanceTo(this.pos);
+    if (repeat && exactWord(this.words[this.pos - 1].plain, w)) return null;
     if (this.matches(this.pos, w)) return this.advanceTo(this.pos);
+    if (repeat && sameWord(this.words[this.pos - 1].plain, w)) return null;
 
     // (not before the first word: the basmala's words appear in the ayahs too)
     for (let k = 1; this.pos > 0 && k <= LOOK_AHEAD && this.pos + k < this.words.length; k++) {
