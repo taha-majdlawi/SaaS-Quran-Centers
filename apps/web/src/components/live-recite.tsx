@@ -113,8 +113,6 @@ export function LiveRecite({
   const audio = useRef<{ blob: Blob; seconds: number } | null>(null);
   // the recording is ready (converted) - sending waits for it
   const audioReady = useRef<Promise<void>>(Promise.resolve());
-  // finish() may run from a callback made on the first render: it sends with the current send()
-  const sendRef = useRef<() => Promise<void>>(async () => {});
   const range = { from: Math.min(from, to), to: Math.max(from, to) };
 
   useEffect(() => {
@@ -276,8 +274,7 @@ export function LiveRecite({
 
   const forgot = () => handle(matcher.current?.forgot() ?? null);
 
-  // "Finish and send" does both: the recitation goes to the teacher right away
-  // (a second "send" button after the result was easy to miss - nothing was ever sent)
+  // finishing shows the result; the student then confirms sending it, or recites again
   function finish() {
     stopListening();
     setStop(null);
@@ -306,11 +303,7 @@ export function LiveRecite({
     }
     setPhase('result');
     // nothing heard at all (the microphone, the recognition service): nothing to send
-    if (!heard.current.length) {
-      setError(L.nothingHeard);
-      return;
-    }
-    void sendRef.current();
+    if (!heard.current.length) setError(L.nothingHeard);
   }
 
   const send = async () => {
@@ -351,9 +344,23 @@ export function LiveRecite({
       setPhase('result');
     }
   };
-  sendRef.current = send;
+
+  // a recitation heard and not sent yet: reciting again or leaving loses it, so it asks first
+  const unsent = heard.current.length > 0 && (phase === 'live' || phase === 'result' || phase === 'sending');
+  useEffect(() => {
+    if (!unsent) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [unsent]);
 
   const again = () => {
+    if (unsent && !window.confirm(L.againAsk)) return;
+    stopListening();
+    media.current?.recorder.stream.getTracks().forEach((t) => t.stop());
+    media.current = null;
+    heard.current = [];
+    setStop(null);
     setError('');
     setPhase('setup');
   };
@@ -529,14 +536,17 @@ export function LiveRecite({
           )}
           {audioUrl && <audio controls src={audioUrl} className="h-9 w-full" />}
           <p className="text-xs text-gray-500">{L.resultNote}</p>
-          <div className="flex flex-wrap gap-2">
-            {phase !== 'sent' && heard.current.length > 0 && (
-              <button onClick={send} disabled={phase === 'sending'} className="flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 font-semibold text-white disabled:opacity-50">
-                <Send size={15} className="rtl:-scale-x-100" /> {phase === 'sending' ? L.sending : L.retry}
+          {phase !== 'sent' && heard.current.length > 0 && (
+            <>
+              <p className="text-sm font-semibold text-gray-700">{L.confirmHint}</p>
+              <button onClick={send} disabled={phase === 'sending'} className="flex w-full items-center justify-center gap-2 rounded-md bg-brand px-5 py-3 text-base font-bold text-white disabled:opacity-50">
+                <Send size={17} className="rtl:-scale-x-100" /> {phase === 'sending' ? L.sending : L.send}
               </button>
-            )}
+            </>
+          )}
+          <div className="flex flex-wrap gap-2">
             {phase !== 'sending' && (
-              <button onClick={again} className={`flex items-center gap-1.5 rounded-md px-4 py-2.5 ${phase === 'sent' ? 'bg-brand font-semibold text-white' : 'border'}`}>
+              <button onClick={again} className={`flex items-center justify-center gap-1.5 rounded-md px-4 py-2.5 ${phase === 'sent' ? 'bg-brand font-semibold text-white' : 'w-full border'}`}>
                 <RotateCcw size={15} /> {L.again}
               </button>
             )}
