@@ -7,6 +7,9 @@
 //   * two unexpected words in a row, or one that nothing follows (settle) -> wrong;
 //   * repeating the word just said, the isti'adha / basmala before the first word,
 //     a word the recogniser split in two -> no mistake;
+//   * going back to read again - from the start of the ayah (or the one before), or a few
+//     words back, after a stop (waqf) or to correct a word -> followed quietly word by word
+//     until the student is back where they were; a word corrected this way is no mistake;
 //   * a long silence on a word (forgot) -> missing.
 
 final _marks = RegExp('[ؐ-ًؚ-ٰٟۖ-ۭـ]');
@@ -96,9 +99,15 @@ class LiveMatcher {
   }
 
   static const _lookAhead = 3;
+  static const _backWords = 8; // how far back a re-reading may start when not from the start of an ayah
   final words = <LiveWord>[];
   int pos = 0;
   final _unmatched = <String>[];
+  int? _rewind; // reading again: the next word of the re-reading (null = not re-reading)
+  final _replayed = <String>[]; // the words heard since the re-reading started
+
+  /// The word being read now: the expected one, or the one reached while reading again.
+  int get cursor => _rewind ?? pos;
 
   bool get done => pos >= words.length;
   int get mistakes => words.where((w) => w.state == LiveState.missing || w.state == LiveState.wrong).length;
@@ -119,13 +128,46 @@ class LiveMatcher {
   bool expects(String raw, {bool loose = false}) {
     final w = plainWord(raw);
     if (done || w.isEmpty) return false;
+    if (_rewind != null && exactWord(words[_rewind!].plain, w)) return true;
     return exactWord(words[pos].plain, w) || (loose && _matches(pos, w));
+  }
+
+  int _ayahStart(int k) {
+    var s = k;
+    while (s > 0 && words[s - 1].ayah == words[k].ayah) {
+      s--;
+    }
+    return s;
+  }
+
+  /// Where the student went back to, if this word is an earlier one: the start of the current
+  /// ayah or of the one before (the usual places to start again - waqf and ibtida'), or, exactly,
+  /// a word a little way back.
+  int? _backTo(String w, {required bool startsOnly}) {
+    if (pos < 2) return null;
+    final cur = _ayahStart(pos - 1);
+    final from = cur > 0 ? _ayahStart(cur - 1) : 0;
+    for (var j = pos - 2; j >= from; j--) {
+      final start = j == 0 || words[j - 1].ayah != words[j].ayah;
+      if (startsOnly ? start && sameWord(words[j].plain, w) : j >= pos - _backWords && exactWord(words[j].plain, w)) return j;
+    }
+    return null;
+  }
+
+  LiveEvent _startRewind(int j, String w) {
+    _unmatched.clear(); // a word said wrong and then corrected by reading again
+    _replayed
+      ..clear()
+      ..add(w);
+    _rewind = j + 1 < pos ? j + 1 : null;
+    return const LiveEvent.progress();
   }
 
   LiveEvent _advanceTo(int k) {
     words[k].state = LiveState.ok;
     pos = k + 1;
     _unmatched.clear();
+    _rewind = null;
     return done ? const LiveEvent.done() : const LiveEvent.progress();
   }
 
@@ -143,6 +185,23 @@ class LiveMatcher {
   LiveEvent? feed(String raw) {
     final w = plainWord(raw);
     if (w.isEmpty || done) return null;
+
+    // reading again: following it until the student is back where they were
+    final r = _rewind;
+    if (r != null) {
+      if (sameWord(words[r].plain, w)) {
+        _replayed.add(w);
+        _rewind = r + 1 < pos ? r + 1 : null;
+        return const LiveEvent.progress();
+      }
+      if (r > 0 && exactWord(words[r - 1].plain, w)) return null; // a repeat while reading again
+      // left the re-reading: one word only was not a re-reading after all, it is judged at the current word
+      final lone = _replayed.length == 1 ? _replayed.first : null;
+      _rewind = null;
+      _replayed.clear();
+      if (lone != null && !exactWord(words[pos].plain, w) && !_matches(pos, w)) _unmatched.add(lone);
+    }
+
     // the word expected, said exactly; else repeating the word just said; then the looser match
     // (الرحمن / الرحيم are one letter apart: the loose match alone took one for the other)
     final repeat = pos > 0 && _unmatched.isEmpty;
@@ -150,6 +209,9 @@ class LiveMatcher {
     if (repeat && exactWord(words[pos - 1].plain, w)) return null;
     if (_matches(pos, w)) return _advanceTo(pos);
     if (repeat && sameWord(words[pos - 1].plain, w)) return null;
+    // back to the start of the ayah (or the one before)
+    final start = _backTo(w, startsOnly: true);
+    if (start != null) return _startRewind(start, w);
     // (not before the first word: the basmala's words appear in the ayahs too)
     for (var k = 1; pos > 0 && k <= _lookAhead && pos + k < words.length; k++) {
       if (!_matches(pos + k, w)) continue;
@@ -163,6 +225,9 @@ class LiveMatcher {
       _advanceTo(pos + k);
       return LiveEvent.mistake(LiveMistake(wrong, at, heard));
     }
+    // a few words back
+    final back = _backTo(w, startsOnly: false);
+    if (back != null) return _startRewind(back, w);
     if (pos == 0) {
       // the isti'adha, the basmala, a cough... before the first word
       _unmatched
@@ -184,6 +249,7 @@ class LiveMatcher {
     words[pos].state = LiveState.missing;
     pos += 1;
     _unmatched.clear();
+    _rewind = null;
     return LiveEvent.mistake(LiveMistake(false, at, null));
   }
 
@@ -193,6 +259,7 @@ class LiveMatcher {
       if (w.state == LiveState.hidden) w.state = LiveState.missing;
     }
     pos = words.length;
+    _rewind = null;
   }
 
   /// What is sent with the recitation (submit_live_recitation, 0087).
