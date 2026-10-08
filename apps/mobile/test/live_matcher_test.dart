@@ -102,4 +102,16 @@ void main() {
     feedAll(w, 'قل هو الله أحد الله الصمد لم الصمد كفوا');
     expect(w.words[7].state, LiveState.wrong);
   });
+
+  test('the bias phrases: the ayahs and their words in the usual spelling too', () {
+    final b = biasPhrases([
+      (2, 'ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ'),
+      (3, 'ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'),
+      (43, 'وَأَقِيمُواْ ٱلصَّلَوٰةَ'),
+      (6, 'ذَٰلِكَ عَلَىٰ'),
+    ]);
+    expect(b.first, 'الحمد لله رب العالمين');
+    expect(b, containsAll(['الرحمن الرحيم', 'العالمين', 'العلمين', 'الصلاة', 'ذلك', 'على']));
+    expect(b.toSet().length, b.length);
+  });
 }
