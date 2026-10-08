@@ -469,7 +469,7 @@ export function LiveRecite({
                   : w.state === 'ok'
                     ? 'text-ink transition-colors'
                     : 'rounded bg-red-50 text-red-700 underline decoration-red-600 decoration-wavy underline-offset-8';
-              const isNext = phase === 'live' && words.indexOf(w) === m?.pos;
+              const isNext = phase === 'live' && words.indexOf(w) === m?.cursor; // while reading again: the word reached
               return (
                 <span key={k}>
                   <span className={`${cls} ${isNext ? 'rounded outline outline-1 outline-offset-4 outline-amber-300' : ''}`}>{w.text}</span>{' '}

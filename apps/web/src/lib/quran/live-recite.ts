@@ -8,6 +8,9 @@
 //   * two unexpected words in a row -> the current word was said wrong;
 //   * the student repeating the word just said, the isti'adha / basmala before
 //     the first word, a word the recogniser split in two -> no mistake;
+//   * going back to read again - from the start of the ayah (or the one before), or a few
+//     words back, after a stop (waqf) or to correct a word -> followed quietly word by word
+//     until the student is back where they were; a word corrected this way is no mistake;
 //   * a long silence on a word (forgot()) -> "missing".
 // Every mistake is returned as an event so the screen can stop the student.
 // apps/mobile/lib/features/quran/live_recite.dart is the same logic in Dart.
@@ -34,11 +37,17 @@ export type LiveEvent =
   | { kind: 'mistake'; type: 'missing' | 'wrong'; at: number[]; heard?: string };
 
 const LOOK_AHEAD = 3;
+/** how far back a re-reading may start when it is not from the start of an ayah */
+const BACK_WORDS = 8;
 
 export class LiveMatcher {
   readonly words: LiveWord[] = [];
   pos = 0;
   private unmatched: string[] = [];
+  /** reading again: the next word of the re-reading (null = not re-reading) */
+  private rewind: number | null = null;
+  /** the words heard since the re-reading started */
+  private replayed: string[] = [];
 
   constructor(ayahs: Pick<Ayah, 'number' | 'text'>[]) {
     for (const ayah of ayahs) {
@@ -74,13 +83,49 @@ export class LiveMatcher {
   expects(raw: string, loose = false) {
     const w = plainWord(raw);
     if (this.done || !w) return false;
+    if (this.rewind !== null && exactWord(this.words[this.rewind].plain, w)) return true;
     return exactWord(this.words[this.pos].plain, w) || (loose && this.matches(this.pos, w));
+  }
+
+  /** The word being read now: the expected one, or the one reached while reading again. */
+  get cursor() {
+    return this.rewind ?? this.pos;
+  }
+
+  private ayahStart(k: number) {
+    let s = k;
+    while (s > 0 && this.words[s - 1].a === this.words[k].a) s--;
+    return s;
+  }
+
+  /**
+   * Where the student went back to, if this word is an earlier one: the start of the current
+   * ayah or of the one before (the usual places to start again - waqf and ibtida'), or, exactly,
+   * a word a little way back.
+   */
+  private backTo(w: string, startsOnly: boolean): number | null {
+    if (this.pos < 2) return null;
+    const cur = this.ayahStart(this.pos - 1);
+    const from = cur > 0 ? this.ayahStart(cur - 1) : 0;
+    for (let j = this.pos - 2; j >= from; j--) {
+      const start = j === 0 || this.words[j - 1].a !== this.words[j].a;
+      if (startsOnly ? start && sameWord(this.words[j].plain, w) : j >= this.pos - BACK_WORDS && exactWord(this.words[j].plain, w)) return j;
+    }
+    return null;
+  }
+
+  private startRewind(j: number, w: string): LiveEvent {
+    this.unmatched = []; // a word said wrong and then corrected by reading again
+    this.replayed = [w];
+    this.rewind = j + 1 < this.pos ? j + 1 : null;
+    return { kind: 'progress' };
   }
 
   private advanceTo(k: number): LiveEvent {
     this.words[k].state = 'ok';
     this.pos = k + 1;
     this.unmatched = [];
+    this.rewind = null;
     return this.done ? { kind: 'done' } : { kind: 'progress' };
   }
 
@@ -88,6 +133,23 @@ export class LiveMatcher {
   feed(raw: string): LiveEvent | null {
     const w = plainWord(raw);
     if (!w || this.done) return null;
+
+    // reading again: following it until the student is back where they were
+    if (this.rewind !== null) {
+      const r = this.rewind;
+      if (sameWord(this.words[r].plain, w)) {
+        this.replayed.push(w);
+        this.rewind = r + 1 < this.pos ? r + 1 : null;
+        return { kind: 'progress' };
+      }
+      if (r > 0 && exactWord(this.words[r - 1].plain, w)) return null; // a repeat while reading again
+      // left the re-reading: one word only was not a re-reading after all, it is judged at the current word
+      const lone = this.replayed.length === 1 ? this.replayed[0] : null;
+      this.rewind = null;
+      this.replayed = [];
+      if (lone && !exactWord(this.words[this.pos].plain, w) && !this.matches(this.pos, w)) this.unmatched.push(lone);
+    }
+
     // the word expected, said exactly; else repeating the word just said (often right after
     // being stopped); then the looser match (الرحمن / الرحيم are one letter apart: the loose
     // match alone took one for the other)
@@ -96,6 +158,9 @@ export class LiveMatcher {
     if (repeat && exactWord(this.words[this.pos - 1].plain, w)) return null;
     if (this.matches(this.pos, w)) return this.advanceTo(this.pos);
     if (repeat && sameWord(this.words[this.pos - 1].plain, w)) return null;
+    // back to the start of the ayah (or the one before)
+    const start = this.backTo(w, true);
+    if (start !== null) return this.startRewind(start, w);
 
     // (not before the first word: the basmala's words appear in the ayahs too)
     for (let k = 1; this.pos > 0 && k <= LOOK_AHEAD && this.pos + k < this.words.length; k++) {
@@ -110,6 +175,9 @@ export class LiveMatcher {
       this.advanceTo(this.pos + k);
       return { kind: 'mistake', type, at, heard };
     }
+    // a few words back
+    const back = this.backTo(w, false);
+    if (back !== null) return this.startRewind(back, w);
 
     // before the first word: the isti'adha, the basmala, a cough...
     if (this.pos === 0) {
@@ -150,6 +218,7 @@ export class LiveMatcher {
     this.words[this.pos].state = 'missing';
     this.pos += 1;
     this.unmatched = [];
+    this.rewind = null;
     return { kind: 'mistake', type: 'missing', at };
   }
 
@@ -157,6 +226,7 @@ export class LiveMatcher {
   finish() {
     for (const w of this.words) if (w.state === 'hidden') w.state = 'missing';
     this.pos = this.words.length;
+    this.rewind = null;
   }
 
   /** What is sent with the recitation (submit_live_recitation, 0087). */

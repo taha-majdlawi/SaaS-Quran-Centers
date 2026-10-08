@@ -75,4 +75,31 @@ void main() {
     expect(f.expects('تستعي', loose: true), isTrue); // the end swallowed at the stop
     expect(f.expects('تستعي'), isFalse);
   });
+
+  test('going back to the start of the ayah (waqf and ibtida), or to correct a word, is no mistake', () {
+    const fatiha = [
+      (1, 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'),
+      (2, 'ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ'),
+      (3, 'ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'),
+    ];
+    final m = LiveMatcher(fatiha);
+    feedAll(m, 'بسم الله الرحمن الرحيم الحمد لله الحمد لله رب العالمين الرحمن الرحيم');
+    expect(m.mistakes, 0);
+    expect(m.done, isTrue);
+    final c = LiveMatcher(ikhlas);
+    feedAll(c, 'قل هو الله الكريم قل هو الله أحد الله الصمد');
+    expect(c.mistakes, 0);
+    expect(c.pos, 6);
+    // stopped on a mistake, then the passage again from the start: no new mistake
+    final s = LiveMatcher(ikhlas);
+    feedAll(s, 'قل هو الله الكريم الله');
+    expect(s.mistakes, 1);
+    feedAll(s, 'قل هو الله أحد الله الصمد لم يلد');
+    expect(s.mistakes, 1);
+    expect(s.pos, 8);
+    // a word that only looks like going back is still judged
+    final w = LiveMatcher(ikhlas);
+    feedAll(w, 'قل هو الله أحد الله الصمد لم الصمد كفوا');
+    expect(w.words[7].state, LiveState.wrong);
+  });
 }
