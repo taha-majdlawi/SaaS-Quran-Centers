@@ -11,6 +11,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 import '../../core/data/quran_data.dart';
 import '../../core/i18n/i18n.dart';
+import '../../core/monitoring/error_reporter.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/ui.dart';
 import 'live_matcher.dart';
@@ -234,17 +235,26 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     _listen();
   }
 
+  /// "Finish and send" does both: the recitation goes to the teacher right away
+  /// (a second "send" button after the result was easy to miss - nothing was ever sent).
   void _finish() {
     _pause();
     _timer?.cancel();
     _m?.finish();
-    if (mounted) {
-      setState(() {
-        _stop = null;
-        _phase = _Phase.result;
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _stop = null;
+      _phase = _Phase.result;
+      // nothing heard at all (the microphone, the recognition service): nothing to send
+      _error = _heard.isEmpty ? currentStrings.live.nothingHeard : null;
+    });
+    if (_heard.isNotEmpty) _send();
   }
+
+  void _again() => setState(() {
+        _phase = _Phase.setup;
+        _error = null;
+      });
 
   Future<void> _send() async {
     final m = _m;
@@ -267,10 +277,11 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         note: _note.text.trim().isEmpty ? null : _note.text.trim(),
       );
       if (mounted) setState(() => _phase = _Phase.sent);
-    } catch (e) {
+    } catch (e, st) {
+      ErrorReporter.instance.report(e, st, context: 'live recite: send');
       if (mounted) {
         setState(() {
-          _error = friendlyError(e, currentStrings.live.error);
+          _error = '${currentStrings.live.notSent}\n${friendlyError(e, currentStrings.live.error)}';
           _phase = _Phase.result;
         });
       }
@@ -376,6 +387,8 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         padding: const EdgeInsets.only(top: 6),
         child: Text('${surahName(_surah)} · ${fmt(tr(context).quran.ayahs, {'n': count})}', style: const TextStyle(fontSize: 12, color: Colors.black54)),
       ),
+      const SizedBox(height: 12),
+      TextField(controller: _note, maxLength: 300, decoration: InputDecoration(labelText: t.note, counterText: '')),
       const SizedBox(height: 18),
       FilledButton.icon(
         style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
@@ -489,7 +502,11 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
           const SizedBox(width: 10),
           Expanded(child: FilledButton.icon(onPressed: _finish, icon: const Icon(Icons.stop_rounded), label: Text(t.finish))),
         ]),
-      if (_phase == _Phase.result || _phase == _Phase.sending) ...[
+      if (_phase == _Phase.sent) ...[
+        MessageBanner(message: t.sent, isError: false),
+        const SizedBox(height: 8),
+      ],
+      if (_phase == _Phase.result || _phase == _Phase.sending || _phase == _Phase.sent) ...[
         Row(children: [
           Text(t.result, style: const TextStyle(fontWeight: FontWeight.w800)),
           const SizedBox(width: 10),
@@ -505,19 +522,21 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         ],
         const SizedBox(height: 6),
         Text(t.resultNote, style: const TextStyle(fontSize: 12, color: Colors.black45)),
-        const SizedBox(height: 8),
-        TextField(controller: _note, maxLength: 300, decoration: InputDecoration(hintText: t.note, counterText: '')),
         const SizedBox(height: 10),
-        Row(children: [
-          Expanded(child: LoadingButton(label: _phase == _Phase.sending ? t.sending : t.send, icon: Icons.send_rounded, loading: _phase == _Phase.sending, onPressed: _send)),
-          const SizedBox(width: 10),
-          OutlinedButton.icon(onPressed: () => setState(() => _phase = _Phase.setup), icon: const Icon(Icons.replay_rounded), label: Text(t.again)),
-        ]),
       ],
-      if (_phase == _Phase.sent) ...[
-        MessageBanner(message: t.sent, isError: false),
+      if (_phase == _Phase.sending)
+        LoadingButton(label: t.sending, icon: Icons.send_rounded, loading: true, onPressed: null),
+      if (_phase == _Phase.result)
         Row(children: [
-          Expanded(child: FilledButton(onPressed: () => setState(() => _phase = _Phase.setup), child: Text(t.again))),
+          if (_heard.isNotEmpty) ...[
+            Expanded(child: LoadingButton(label: t.retry, icon: Icons.send_rounded, loading: false, onPressed: _send)),
+            const SizedBox(width: 10),
+          ],
+          OutlinedButton.icon(onPressed: _again, icon: const Icon(Icons.replay_rounded), label: Text(t.again)),
+        ]),
+      if (_phase == _Phase.sent) ...[
+        Row(children: [
+          Expanded(child: FilledButton(onPressed: _again, child: Text(t.again))),
           const SizedBox(width: 10),
           Expanded(child: OutlinedButton(onPressed: () => context.push('/my/recitations${_studentId == null ? '' : '?s=$_studentId'}'), child: Text(t.mine))),
         ]),
