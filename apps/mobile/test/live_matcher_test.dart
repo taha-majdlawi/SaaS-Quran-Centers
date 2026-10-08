@@ -48,4 +48,20 @@ void main() {
     expect(m.mistakes, 0);
     expect(stableWords('قل هو الله أح', isFinal: false), ['قل', 'هو', 'الله']);
   });
+
+  test('al-Fatiha: الرحيم right after الرحمن is not taken for a repeat of it', () {
+    const fatiha = [
+      (1, 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'),
+      (2, 'ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ'),
+      (3, 'ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'),
+      (4, 'مَٰلِكِ يَوۡمِ ٱلدِّينِ'),
+    ];
+    final m = LiveMatcher(fatiha);
+    feedAll(m, 'بسم الله الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين');
+    expect(m.mistakes, 0);
+    expect(m.done, isTrue);
+    final r = LiveMatcher(fatiha);
+    feedAll(r, 'بسم الله الرحمن الرحمن الرحيم الحمد لله رب العالمين');
+    expect(r.mistakes, 0);
+  });
 }
