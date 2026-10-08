@@ -9,6 +9,7 @@ import { AYAH_COUNTS, SURAH_NAMES, surahLabel } from '@/lib/quran/data';
 import { arabicNumber } from '@/lib/quran/reader';
 import { LiveMatcher, stableWords, type LiveEvent } from '@/lib/quran/live-recite';
 import { toWav16k } from '@/lib/quran/wav';
+import { reportError } from '@/lib/monitoring/client';
 import { fmt } from '@/lib/i18n/config';
 import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
@@ -108,6 +109,10 @@ export function LiveRecite({
   const heard = useRef<string[]>([]);
   const media = useRef<{ recorder: MediaRecorder; chunks: Blob[]; started: number } | null>(null);
   const audio = useRef<{ blob: Blob; seconds: number } | null>(null);
+  // the recording is ready (converted) - sending waits for it
+  const audioReady = useRef<Promise<void>>(Promise.resolve());
+  // finish() may run from a callback made on the first render: it sends with the current send()
+  const sendRef = useRef<() => Promise<void>>(async () => {});
   const range = { from: Math.min(from, to), to: Math.max(from, to) };
 
   useEffect(() => {
@@ -256,24 +261,38 @@ export function LiveRecite({
 
   const forgot = () => handle(matcher.current?.forgot() ?? null);
 
+  // "Finish and send" does both: the recitation goes to the teacher right away
+  // (a second "send" button after the result was easy to miss - nothing was ever sent)
   function finish() {
     stopListening();
     setStop(null);
     matcher.current?.finish();
     const m = media.current;
     media.current = null;
+    audio.current = null;
     if (m && m.recorder.state !== 'inactive') {
-      m.recorder.onstop = async () => {
-        m.recorder.stream.getTracks().forEach((t) => t.stop());
-        try {
-          const { wav, seconds } = await toWav16k(new Blob(m.chunks, { type: m.recorder.mimeType }));
-          audio.current = { blob: wav, seconds };
-          setAudioUrl(URL.createObjectURL(wav));
-        } catch {}
-      };
+      audioReady.current = new Promise<void>((done) => {
+        m.recorder.onstop = async () => {
+          m.recorder.stream.getTracks().forEach((t) => t.stop());
+          try {
+            const { wav, seconds } = await toWav16k(new Blob(m.chunks, { type: m.recorder.mimeType }));
+            audio.current = { blob: wav, seconds };
+            setAudioUrl(URL.createObjectURL(wav));
+          } catch {}
+          done();
+        };
+      });
       m.recorder.stop();
+    } else {
+      audioReady.current = Promise.resolve();
     }
     setPhase('result');
+    // nothing heard at all (the microphone, the recognition service): nothing to send
+    if (!heard.current.length) {
+      setError(L.nothingHeard);
+      return;
+    }
+    void sendRef.current();
   }
 
   const send = async () => {
@@ -283,6 +302,8 @@ export function LiveRecite({
     setError('');
     const supabase = createClient();
     try {
+      // the recording is optional: not waiting more than a few seconds for it
+      await Promise.race([audioReady.current, new Promise((done) => setTimeout(done, 8000))]);
       let path: string | null = null;
       if (audio.current) {
         path = `${orgId}/${studentId}/${crypto.randomUUID()}.wav`;
@@ -306,9 +327,16 @@ export function LiveRecite({
       if (e) throw e;
       setPhase('sent');
     } catch (e) {
-      setError((e as { message?: string })?.message || L.error);
+      reportError(e, { context: 'live recite: send' });
+      setError(`${L.notSent} ${(e as { message?: string })?.message || L.error}`);
       setPhase('result');
     }
+  };
+  sendRef.current = send;
+
+  const again = () => {
+    setError('');
+    setPhase('setup');
   };
 
   const m = matcher.current;
@@ -362,6 +390,7 @@ export function LiveRecite({
             <input type="number" min={1} max={count} value={to} onChange={(e) => setTo(Math.min(count, Math.max(1, Number(e.target.value) || 1)))} className={field} />
           </label>
         </div>
+        <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder={L.note} className={field} />
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input type="checkbox" checked={withAudio} onChange={(e) => setWithAudio(e.target.checked)} /> {L.attachAudio}
         </label>
@@ -455,7 +484,13 @@ export function LiveRecite({
         </div>
       )}
 
-      {(phase === 'result' || phase === 'sending') && res && (
+      {phase === 'sent' && (
+        <p className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 font-semibold text-green-800">
+          <CheckCircle2 size={18} /> {L.sent}
+        </p>
+      )}
+
+      {(phase === 'result' || phase === 'sending' || phase === 'sent') && res && (
         <div className="space-y-3 rounded-xl border bg-white p-4">
           <p className="flex items-baseline gap-3">
             <span className="font-bold">{L.result}</span>
@@ -475,30 +510,22 @@ export function LiveRecite({
           )}
           {audioUrl && <audio controls src={audioUrl} className="h-9 w-full" />}
           <p className="text-xs text-gray-500">{L.resultNote}</p>
-          <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder={L.note} className={field} />
           <div className="flex flex-wrap gap-2">
-            <button onClick={send} disabled={phase === 'sending'} className="flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 font-semibold text-white disabled:opacity-50">
-              <Send size={15} className="rtl:-scale-x-100" /> {phase === 'sending' ? L.sending : L.send}
-            </button>
-            <button onClick={() => setPhase('setup')} className="flex items-center gap-1.5 rounded-md border px-4 py-2.5">
-              <RotateCcw size={15} /> {L.again}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {phase === 'sent' && (
-        <div className="space-y-3 rounded-xl border border-green-200 bg-green-50 p-4">
-          <p className="flex items-center gap-2 font-semibold text-green-800">
-            <CheckCircle2 size={18} /> {L.sent}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setPhase('setup')} className="rounded-md bg-brand px-4 py-2 font-semibold text-white">
-              {L.again}
-            </button>
-            <a href={`/my/recitations?s=${studentId}` as never} className="rounded-md border bg-white px-4 py-2">
-              {L.mine}
-            </a>
+            {phase !== 'sent' && heard.current.length > 0 && (
+              <button onClick={send} disabled={phase === 'sending'} className="flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 font-semibold text-white disabled:opacity-50">
+                <Send size={15} className="rtl:-scale-x-100" /> {phase === 'sending' ? L.sending : L.retry}
+              </button>
+            )}
+            {phase !== 'sending' && (
+              <button onClick={again} className={`flex items-center gap-1.5 rounded-md px-4 py-2.5 ${phase === 'sent' ? 'bg-brand font-semibold text-white' : 'border'}`}>
+                <RotateCcw size={15} /> {L.again}
+              </button>
+            )}
+            {phase === 'sent' && (
+              <a href={`/my/recitations?s=${studentId}` as never} className="rounded-md border bg-white px-4 py-2.5">
+                {L.mine}
+              </a>
+            )}
           </div>
         </div>
       )}
