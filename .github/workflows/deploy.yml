@@ -37,7 +37,9 @@ jobs:
           if [ -z "$SUPABASE_DB_URL" ]; then echo "::error::SUPABASE_DB_URL secret is missing (see docs/DEPLOY.md)"; exit 1; fi
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # a fixed version: "latest" asks GitHub's API for the newest release, and that lookup
+          # is rate-limited (a deploy failed on it); move it forward on purpose when needed
+          version: 2.119.0
       - name: Push migrations
         run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
         env:
