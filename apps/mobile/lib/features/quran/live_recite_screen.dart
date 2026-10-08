@@ -54,6 +54,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   ({File file, int seconds})? _audio; // the recording, once finished
   String? _audioPath; // ... once uploaded (a second try does not upload it again)
   bool _canRecord = false;
+  List<String> _bias = const []; // the passage's words, to bias the recogniser towards them
   bool _stopping = false; // the recording is being closed (a second or so)
   final _beep = AudioPlayer();
   final _note = TextEditingController();
@@ -286,6 +287,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
       final ayahs = [for (final a in detail.ayahs) if (a.number >= r.from && a.number <= r.to) (a.number, a.text)];
       if (ayahs.isEmpty) throw StateError(t.error);
       _m = LiveMatcher(ayahs);
+      _bias = biasPhrases(ayahs);
     } catch (e) {
       setState(() {
         _phase = _Phase.setup;
@@ -302,7 +304,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     _nativeMode = false;
     if (_canRecord) {
       final dir = await getTemporaryDirectory();
-      _nativeMode = await _native.start('${dir.path}/recite_${DateTime.now().millisecondsSinceEpoch}.m4a', _localeId.replaceAll('_', '-'), _onNative);
+      _nativeMode = await _native.start('${dir.path}/recite_${DateTime.now().millisecondsSinceEpoch}.m4a', _localeId.replaceAll('_', '-'), _bias, _onNative);
     }
     if (!mounted) return;
     setState(() => _phase = _Phase.live);
