@@ -99,3 +99,45 @@ test('the expected word is recognised early, and the last word of an ayah a litt
   assert.ok(f.expects('تستعي', true));
   assert.ok(!f.expects('تستعي'));
 });
+
+test('going back to the start of the ayah after a stop (waqf and ibtida) is no mistake', () => {
+  const m = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 4));
+  feedAll(m, 'بسم الله الرحمن الرحيم الحمد لله');
+  // a stop after لله, then the ayah again from its start
+  feedAll(m, 'الحمد لله رب العالمين الرحمن الرحيم مالك يوم الدين');
+  assert.equal(m.mistakes, 0);
+  assert.ok(m.done);
+  // or from the ayah before
+  const b = new LiveMatcher(surah(1).ayahs.filter((a) => a.number <= 3));
+  feedAll(b, 'بسم الله الرحمن الرحيم الحمد لله رب العالمين بسم الله الرحمن الرحيم الحمد لله رب العالمين الرحمن الرحيم');
+  assert.equal(b.mistakes, 0);
+  assert.ok(b.done);
+});
+
+test('a word corrected by reading the ayah again is no mistake; after a stop the ayah may be read again', () => {
+  const m = new LiveMatcher(surah(112).ayahs);
+  // a wrong word, then the ayah from its start, right this time
+  feedAll(m, 'قل هو الله الكريم قل هو الله أحد الله الصمد');
+  assert.equal(m.mistakes, 0);
+  assert.equal(m.pos, 6);
+  // stopped on a mistake (أحد marked wrong), then the passage again from the start: no new mistake
+  const s = new LiveMatcher(surah(112).ayahs);
+  feedAll(s, 'قل هو الله الكريم الله');
+  assert.equal(s.mistakes, 1);
+  feedAll(s, 'قل هو الله أحد الله الصمد لم يلد');
+  assert.equal(s.mistakes, 1);
+  assert.equal(s.pos, 8);
+});
+
+test('a word that only looks like going back is still judged', () => {
+  const m = new LiveMatcher(surah(112).ayahs);
+  feedAll(m, 'قل هو الله أحد الله الصمد لم');
+  // "الصمد" again, then a word that is neither the re-reading nor the word expected: wrong
+  feedAll(m, 'الصمد كفوا');
+  assert.equal(m.words[7].state, 'wrong');
+  // a stray earlier word followed by the word expected: no mistake
+  const n = new LiveMatcher(surah(112).ayahs);
+  feedAll(n, 'قل هو الله أحد الله الصمد لم الصمد يلد');
+  assert.equal(n.mistakes, 0);
+  assert.equal(n.pos, 8);
+});

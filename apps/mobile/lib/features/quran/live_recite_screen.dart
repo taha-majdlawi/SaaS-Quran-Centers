@@ -571,7 +571,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     final spans = <InlineSpan>[];
     for (var k = 0; k < m.words.length; k++) {
       final w = m.words[k];
-      final isNext = _phase == _Phase.live && k == m.pos;
+      final isNext = _phase == _Phase.live && k == m.cursor; // while reading again: the word reached
       var style = switch (w.state) {
         LiveState.hidden => hidden,
         LiveState.ok => const TextStyle(color: _ink),
