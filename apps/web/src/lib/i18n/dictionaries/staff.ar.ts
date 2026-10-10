@@ -710,7 +710,7 @@ export const staffAr = {
     sinceStartV: 'حفظ {actual} من {expected} صفحة متوقعة',
     forecast: 'الختمة المتوقعة بسرعته الحالية',
     forecastGoal: 'بسرعة الهدف',
-    noPace: 'لا حفظ جديد في آخر 4 أسابيع',
+    noPace: 'الحفظ الحديث لا يكفي للتوقّع بعد (يحتاج ٣ أيام حفظ في آخر ٤ أسابيع)',
     done: 'أتمّ الهدف 🎉',
     noGoal: 'لم يُحدَّد هدف بعد.',
     status: { "ahead": 'متقدّم على الخطة', "on_track": 'على الخطة', "behind": 'متأخر عن الخطة', "done": 'أتمّ الهدف' } as Record<string, string>,

@@ -41,7 +41,7 @@ SPEC = {'prof': ('Teacher / circle profiles and the memorization goal.', (
   ('sinceStart', 'منذ بدء الهدف: {actual} من {expected} صفحة', 'Since the goal started: {actual} of {expected} pages'),
   ('forecast', 'الختمة المتوقعة', 'Expected finish'),
   ('forecastGoal', 'بسرعة الهدف', 'At the goal pace'),
-  ('noPace', 'لا حفظ جديد مؤخرًا', 'No new memorisation lately'),
+  ('noPace', 'الحفظ الحديث لا يكفي للتوقّع بعد (يحتاج ٣ أيام حفظ في آخر ٤ أسابيع)', 'Not enough recent memorisation to forecast yet (3 days in the last 4 weeks)'),
   ('noGoal', 'لم يُحدَّد هدف بعد', 'No goal set yet'),
   ('goalStatus', {'ahead': 'متقدّم', 'on_track': 'على الخطة', 'behind': 'متأخر', 'done': 'أتمّ الهدف'},
                  {'ahead': 'Ahead', 'on_track': 'On track', 'behind': 'Behind', 'done': 'Done'}),

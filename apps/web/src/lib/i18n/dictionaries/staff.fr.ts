@@ -712,7 +712,7 @@ export const staffFr: typeof staffAr = {
     sinceStartV: '{actual} pages sur {expected} attendues',
     forecast: 'Fin prévue au rythme actuel',
     forecastGoal: 'Au rythme de l’objectif',
-    noPace: 'Aucune nouvelle mémorisation ces 4 dernières semaines',
+    noPace: 'Pas assez de mémorisation récente pour une prévision (3 jours sur les 4 dernières semaines)',
     done: 'Objectif atteint 🎉',
     noGoal: 'Aucun objectif défini pour l’instant.',
     status: { "ahead": 'En avance sur le plan', "on_track": 'Dans les temps', "behind": 'En retard sur le plan', "done": 'Objectif atteint' } as Record<string, string>,

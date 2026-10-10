@@ -738,6 +738,7 @@ export const en: Dictionary = {
     retry: 'Send again',
     notSent: 'The recitation was not sent yet. Check the connection and tap “Send again”.',
     nothingHeard: 'Nothing of the recitation was heard, so it was not sent. Check the microphone and recite again.',
+    noRoom: 'The recitation was sent without the recording: the center’s storage is full.',
     mine: 'My recitations',
     error: 'Something went wrong. Try again.',
     fab: 'Recite',
