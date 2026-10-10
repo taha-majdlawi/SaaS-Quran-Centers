@@ -358,5 +358,22 @@ begin
              and cmd in ('INSERT', 'UPDATE', 'ALL') and coalesce(with_check, qual) ilike '%is_org_admin%') then
     v_fail := v_fail || text 'center admin can write feature_flags'; end if;
 
+  -- ===== 0094: an owner with a verified second factor is the owner only past it (aal2): a stolen
+  --       password alone opens nothing. Tried on the teacher made an owner, then undone.
+  begin
+    insert into public.platform_owners (user_id) values (v_tch) on conflict do nothing;
+    insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at)
+      values (gen_random_uuid(), v_tch, 'invariants-' || gen_random_uuid(), 'totp', 'verified', now(), now());
+    perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated', 'aal', 'aal1')::text, true);
+    if public.is_platform_owner() then v_fail := v_fail || text 'owner passes without the second factor (aal1)'; end if;
+    perform set_config('request.jwt.claims', json_build_object('sub', v_tch, 'role', 'authenticated', 'aal', 'aal2')::text, true);
+    if not public.is_platform_owner() then v_fail := v_fail || text 'owner refused after the second factor (aal2)'; end if;
+    perform set_config('request.jwt.claims', json_build_object('sub', v_stu, 'role', 'authenticated', 'aal', 'aal2')::text, true);
+    if public.is_platform_owner() then v_fail := v_fail || text 'aal2 alone makes an owner'; end if;
+    raise exception 'mfa-check-undo';
+  exception when others then
+    if sqlerrm <> 'mfa-check-undo' then v_fail := v_fail || ('owner mfa check could not run: ' || sqlerrm); end if;
+  end;
+
   raise exception 'RESULT: %', case when array_length(v_fail, 1) is null then 'OK' else 'FAILED - ' || array_to_string(v_fail, '; ') end;
 end $$;

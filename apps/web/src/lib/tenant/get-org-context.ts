@@ -74,8 +74,9 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext> => 
 
     if (!myRole) {
       // not a member: the platform owner may still open any center as its admin
-      const { data: owner } = await supabase.from('platform_owners').select('user_id').eq('user_id', user.id).maybeSingle();
-      if (owner) {
+      // (past the second factor, 0094)
+      const { data: owner } = await supabase.rpc('is_platform_owner');
+      if (owner === true) {
         isPlatformOwner = true;
         myRole = 'admin';
         myPermissions = ALL_MODULE_KEYS;
