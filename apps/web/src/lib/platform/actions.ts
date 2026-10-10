@@ -1,6 +1,6 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { redirect } from '@/lib/platform/redirect';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { withParam } from '@/lib/calendar/actions-shared';
@@ -16,8 +16,8 @@ const num = (f: FormData, k: string) => {
 async function run(fn: string, args: Record<string, unknown>, back: string, ok: string): Promise<never> {
   const supabase = await createClient();
   const { error } = await supabase.rpc(fn, args);
-  if (error) redirect(withParam(back, 'error', error.message) as never);
-  redirect(withParam(back, 'ok', ok) as never);
+  if (error) return redirect(withParam(back, 'error', error.message) as never);
+  return redirect(withParam(back, 'ok', ok) as never);
 }
 
 /** Service-role actions must be gated by hand: the caller has to be in platform_owners. */
@@ -26,9 +26,9 @@ async function requireOwner(): Promise<string> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect('/login' as never);
+  if (!user) return redirect('/login' as never);
   const { data } = await supabase.from('platform_owners').select('user_id').eq('user_id', user.id).maybeSingle();
-  if (!data) redirect('/login' as never);
+  if (!data) return redirect('/login' as never);
   return user.id;
 }
 
@@ -47,10 +47,10 @@ export async function createOrg(formData: FormData) {
     p_plan: orNull(formData, 'planId'),
     p_admin_email: s(formData, 'adminEmail') || null,
   });
-  if (error) redirect(withParam('/organizations', 'error', error.message) as never);
+  if (error) return redirect(withParam('/organizations', 'error', error.message) as never);
   const r = data as { id: string; invite_token: string | null };
   // the invitation link is shown once on the new center's page
-  redirect(`/organizations/${r.id}?created=1${r.invite_token ? `&invite=${r.invite_token}` : ''}` as never);
+  return redirect(`/organizations/${r.id}?created=1${r.invite_token ? `&invite=${r.invite_token}` : ''}` as never);
 }
 
 export async function updateOrg(formData: FormData) {
@@ -77,8 +77,8 @@ export async function deleteOrg(formData: FormData) {
   const id = s(formData, 'id');
   const supabase = await createClient();
   const { error } = await supabase.rpc('platform_delete_org', { p_org: id, p_slug: s(formData, 'confirmSlug') });
-  if (error) redirect(withParam(`/organizations/${id}`, 'error', error.message) as never);
-  redirect('/organizations?ok=deleted' as never);
+  if (error) return redirect(withParam(`/organizations/${id}`, 'error', error.message) as never);
+  return redirect('/organizations?ok=deleted' as never);
 }
 
 export async function setMember(formData: FormData) {
@@ -90,9 +90,9 @@ export async function addMember(formData: FormData) {
   const org = s(formData, 'orgId');
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('platform_add_member', { p_org: org, p_email: s(formData, 'email'), p_role: s(formData, 'role') });
-  if (error) redirect(withParam(`/organizations/${org}`, 'error', error.message) as never);
+  if (error) return redirect(withParam(`/organizations/${org}`, 'error', error.message) as never);
   const r = data as { added: boolean; invite_token: string | null };
-  redirect(`/organizations/${org}?ok=${r.added ? 'member' : 'invited'}${r.invite_token ? `&invite=${r.invite_token}` : ''}` as never);
+  return redirect(`/organizations/${org}?ok=${r.added ? 'member' : 'invited'}${r.invite_token ? `&invite=${r.invite_token}` : ''}` as never);
 }
 
 export async function setOrgSetting(formData: FormData) {
@@ -109,9 +109,9 @@ export async function saveFeatures(formData: FormData) {
     if (!name.startsWith('f_')) continue;
     const enabled = value === 'on' ? true : value === 'off' ? false : null;
     const { error } = await supabase.rpc('platform_set_feature', { p_org: org, p_key: name.slice(2), p_enabled: enabled });
-    if (error) redirect(withParam(org ? `/organizations/${org}` : '/feature-flags', 'error', error.message) as never);
+    if (error) return redirect(withParam(org ? `/organizations/${org}` : '/feature-flags', 'error', error.message) as never);
   }
-  redirect(withParam(org ? `/organizations/${org}` : '/feature-flags', 'ok', 'features') as never);
+  return redirect(withParam(org ? `/organizations/${org}` : '/feature-flags', 'ok', 'features') as never);
 }
 
 // ---- plans / settings / notices -----------------------------------------------------
@@ -182,35 +182,35 @@ export async function setBan(formData: FormData) {
   const me = await requireOwner();
   const id = s(formData, 'userId');
   const ban = formData.get('ban') === '1';
-  if (id === me) redirect(withParam('/users', 'error', 'لا يمكنك إيقاف حسابك') as never);
+  if (id === me) return redirect(withParam('/users', 'error', 'لا يمكنك إيقاف حسابك') as never);
   const { error } = await createAdminClient().auth.admin.updateUserById(id, { ban_duration: ban ? '876000h' : 'none' });
-  if (error) redirect(withParam('/users', 'error', error.message) as never);
+  if (error) return redirect(withParam('/users', 'error', error.message) as never);
   await logEvent(ban ? 'ban_user' : 'unban_user', id, {});
-  redirect(withParam('/users', 'ok', ban ? 'banned' : 'unbanned') as never);
+  return redirect(withParam('/users', 'ok', ban ? 'banned' : 'unbanned') as never);
 }
 
 export async function setUserPassword(formData: FormData) {
   await requireOwner();
   const id = s(formData, 'userId');
   const password = (formData.get('password') as string) ?? '';
-  if (password.length < 12) redirect(withParam('/users', 'error', 'كلمة السر 12 حرفًا على الأقل') as never);
+  if (password.length < 12) return redirect(withParam('/users', 'error', 'كلمة السر 12 حرفًا على الأقل') as never);
   const { error } = await createAdminClient().auth.admin.updateUserById(id, { password });
-  if (error) redirect(withParam('/users', 'error', error.message) as never);
+  if (error) return redirect(withParam('/users', 'error', error.message) as never);
   await logEvent('set_user_password', id, {});
-  redirect(withParam('/users', 'ok', 'password') as never);
+  return redirect(withParam('/users', 'ok', 'password') as never);
 }
 
 export async function deleteUser(formData: FormData) {
   const me = await requireOwner();
   const id = s(formData, 'userId');
   const email = s(formData, 'email').toLowerCase();
-  if (id === me) redirect(withParam('/users', 'error', 'لا يمكنك حذف حسابك') as never);
-  if (s(formData, 'confirmEmail').toLowerCase() !== email) redirect(withParam('/users', 'error', 'اكتب البريد بالضبط لتأكيد الحذف') as never);
+  if (id === me) return redirect(withParam('/users', 'error', 'لا يمكنك حذف حسابك') as never);
+  if (s(formData, 'confirmEmail').toLowerCase() !== email) return redirect(withParam('/users', 'error', 'اكتب البريد بالضبط لتأكيد الحذف') as never);
   const supabase = await createClient();
   const { data: owner } = await supabase.from('platform_owners').select('user_id').eq('user_id', id).maybeSingle();
-  if (owner) redirect(withParam('/users', 'error', 'لا يمكن حذف مالك منصة') as never);
+  if (owner) return redirect(withParam('/users', 'error', 'لا يمكن حذف مالك منصة') as never);
   const { error } = await createAdminClient().auth.admin.deleteUser(id);
-  if (error) redirect(withParam('/users', 'error', error.message) as never);
+  if (error) return redirect(withParam('/users', 'error', error.message) as never);
   await logEvent('delete_user', id, { email });
-  redirect(withParam('/users', 'ok', 'deleted') as never);
+  return redirect(withParam('/users', 'ok', 'deleted') as never);
 }

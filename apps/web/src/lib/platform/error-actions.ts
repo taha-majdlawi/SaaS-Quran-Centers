@@ -1,6 +1,6 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { redirect } from '@/lib/platform/redirect';
 import { createClient } from '@/lib/supabase/server';
 
 export async function resolveError(formData: FormData) {
@@ -8,7 +8,7 @@ export async function resolveError(formData: FormData) {
   const resolved = formData.get('resolved') !== '0';
   const supabase = await createClient();
   await supabase.rpc('platform_resolve_error', { p_fingerprint: fp, p_resolved: resolved });
-  redirect(`/errors?fp=${fp}` as never);
+  return redirect(`/errors?fp=${fp}` as never);
 }
 
 /**
@@ -24,5 +24,5 @@ export async function sendTestError() {
     p_screen: '/errors',
     p_extra: { kind: 'test' },
   });
-  redirect(`/errors?status=open${error ? `&test_error=${encodeURIComponent(error.message)}` : '&tested=1'}` as never);
+  return redirect(`/errors?status=open${error ? `&test_error=${encodeURIComponent(error.message)}` : '&tested=1'}` as never);
 }
