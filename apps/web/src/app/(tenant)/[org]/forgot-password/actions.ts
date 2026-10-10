@@ -19,11 +19,16 @@ export async function requestPasswordReset(
   _prev: ForgotPasswordState,
   formData: FormData,
 ): Promise<ForgotPasswordState> {
-  const orgSlug = formData.get('orgSlug') as string;
+  const orgSlug = ((formData.get('orgSlug') as string) ?? '').trim().toLowerCase();
   const identifier = ((formData.get('identifier') as string) ?? '').trim();
   const { t } = await getI18n();
 
   if (!identifier) {
+    return { error: t.forgot.errorEmpty };
+  }
+  // the center's address goes into the link mailed out: a made-up value ("evil.com#") would send
+  // the reset link - and its token - elsewhere. Only a center slug is accepted.
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(orgSlug)) {
     return { error: t.forgot.errorEmpty };
   }
 
@@ -38,7 +43,7 @@ export async function requestPasswordReset(
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://${orgSlug.trim().toLowerCase()}.bustan-alquran.com/reset-password`,
+    redirectTo: `https://${orgSlug}.bustan-alquran.com/reset-password`,
   });
 
   // Same message whether or not the address is registered, so this can't be

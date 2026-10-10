@@ -347,5 +347,16 @@ begin
       and p.proname not in ('get_invitation', 'get_public_site', 'verify_certificate', 'public_plans', 'report_client_error');
   if v_n > 0 then v_fail := v_fail || ('anon can execute ' || v_n || ' extra functions'); end if;
 
+  -- ===== October 2026 audit (0093): no account can be added to a center by a direct write (an admin
+  --       added someone else's account, then reset its password), a membership row cannot be moved to
+  --       another account, and only the owner's functions switch a center's features beyond its plan
+  if has_table_privilege('authenticated', 'public.organization_members', 'insert') then v_fail := v_fail || text 'organization_members insertable directly'; end if;
+  if has_column_privilege('authenticated', 'public.organization_members', 'user_id', 'update')
+     or has_column_privilege('authenticated', 'public.organization_members', 'organization_id', 'update') then
+    v_fail := v_fail || text 'membership movable to another account'; end if;
+  if exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'feature_flags'
+             and cmd in ('INSERT', 'UPDATE', 'ALL') and coalesce(with_check, qual) ilike '%is_org_admin%') then
+    v_fail := v_fail || text 'center admin can write feature_flags'; end if;
+
   raise exception 'RESULT: %', case when array_length(v_fail, 1) is null then 'OK' else 'FAILED - ' || array_to_string(v_fail, '; ') end;
 end $$;

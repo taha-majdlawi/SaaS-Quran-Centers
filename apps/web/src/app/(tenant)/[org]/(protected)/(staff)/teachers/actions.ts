@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { onlyHere } from '@/lib/accounts/provision';
 import { logAudit } from '@/lib/audit/log';
 import { ALL_MODULE_KEYS } from '@/lib/permissions/modules';
 import { staffStrings } from '@/lib/i18n/server';
@@ -64,6 +65,10 @@ export async function updateTeacherAccount(formData: FormData) {
   if (password) authUpdate.password = password;
 
   if (Object.keys(authUpdate).length > 0) {
+    // never an account that is also elsewhere (another center, the owner) - 0093
+    if (!(await onlyHere(admin, orgId, userId))) {
+      redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent((await staffStrings()).accounts.sharedAccount)}` as never);
+    }
     const { error: authError } = await admin.auth.admin.updateUserById(userId, authUpdate);
     if (authError) {
       redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(authError.message)}` as never);
