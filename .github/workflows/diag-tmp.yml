@@ -1,0 +1,17 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-owner]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -F ' | ' -c "set default_transaction_read_only = on" \
+            -c "select 'owners', count(*) from public.platform_owners" \
+            -c "select 'owner_memberships', m.role, count(*) from public.platform_owners p join public.organization_members m on m.user_id = p.user_id group by m.role" \
+            -c "select 'owner_devices', count(*) from public.device_tokens d join public.platform_owners p on p.user_id = d.user_id" \
+            -c "select 'test_errors', count(*), max(last_seen) from public.app_error_groups where source = 'server'" 2>&1
