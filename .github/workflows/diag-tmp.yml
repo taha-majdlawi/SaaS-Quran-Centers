@@ -1,0 +1,19 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-verify]
+jobs:
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -F ' | ' -c "set default_transaction_read_only = on" \
+            -c "select 'mig', max(version) from supabase_migrations.schema_migrations" \
+            -c "select 'members_insert', has_table_privilege('authenticated', 'public.organization_members', 'insert')" \
+            -c "select 'members_move_user', has_column_privilege('authenticated', 'public.organization_members', 'user_id', 'update')" \
+            -c "select 'members_update_role', has_column_privilege('authenticated', 'public.organization_members', 'role', 'update')" \
+            -c "select 'ff_admin_policy', count(*) from pg_policies where tablename='feature_flags' and policyname='feature_flags_write_org_admin'" \
+            -c "select 'only_here_fn', count(*) from pg_proc where proname='_account_only_here'" 2>&1
