@@ -738,6 +738,7 @@ export const tr: Dictionary = {
     retry: 'Tekrar gönder',
     notSent: 'Dinletme henüz gönderilmedi. Bağlantıyı kontrol edip “Tekrar gönder”e dokunun.',
     nothingHeard: 'Okumadan hiçbir şey duyulmadı, bu yüzden gönderilmedi. Mikrofonu kontrol edip yeniden dinletin.',
+    noRoom: 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
     mine: 'Dinletmelerim',
     error: 'Bir hata oluştu. Tekrar deneyin.',
     fab: 'Dinlet',

@@ -4,10 +4,11 @@
 
 /// Shared words and the generic states.
 class SCommon {
-  const SCommon({required this.appName, required this.signOut, required this.loadFailed, required this.checkConnection, required this.retry, required this.noPermission, required this.linkedData, required this.offline, required this.cancel, required this.save, required this.delete, required this.edit, required this.send, required this.close, required this.confirm, required this.language, required this.goodMorning, required this.goodEvening, required this.listSep});
+  const SCommon({required this.appName, required this.signOut, required this.loadFailed, required this.partFailed, required this.checkConnection, required this.retry, required this.noPermission, required this.linkedData, required this.offline, required this.cancel, required this.save, required this.delete, required this.edit, required this.send, required this.close, required this.confirm, required this.language, required this.goodMorning, required this.goodEvening, required this.listSep});
   final String appName;
   final String signOut;
   final String loadFailed;
+  final String partFailed;
   final String checkConnection;
   final String retry;
   final String noPermission;
@@ -779,7 +780,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.noRoom, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -825,6 +826,7 @@ class SLive {
   final String error;
   final String fab;
   final String liveBadge;
+  final String noRoom;
   final String audioDeleted;
   final String loading;
   final String appNoAudio;
@@ -1857,6 +1859,7 @@ class S {
       appName: 'بستان القرآن',
       signOut: 'تسجيل خروج',
       loadFailed: 'تعذّر تحميل البيانات',
+      partFailed: 'تعذّر عرض هذا الجزء',
       checkConnection: 'تأكد من الاتصال بالإنترنت وحاول مرة أخرى',
       retry: 'إعادة المحاولة',
       noPermission: 'لا تملك صلاحية تنفيذ هذه العملية',
@@ -2611,6 +2614,7 @@ class S {
       error: 'حدث خطأ، حاول مرة أخرى.',
       fab: 'سمّع',
       liveBadge: 'تسميع مباشر',
+      noRoom: 'أُرسل التسميع بدون التسجيل الصوتي: امتلأت مساحة التخزين في المركز.',
       audioDeleted: 'حُذف التسجيل الصوتي بعد المراجعة لتوفير المساحة',
       loading: 'جارٍ تحميل الآيات…',
       appNoAudio: 'في التطبيق يُرسل التسميع بنتيجته دون تسجيل صوتي.',
@@ -2886,7 +2890,7 @@ class S {
       sinceStart: 'منذ بدء الهدف: {actual} من {expected} صفحة',
       forecast: 'الختمة المتوقعة',
       forecastGoal: 'بسرعة الهدف',
-      noPace: 'لا حفظ جديد مؤخرًا',
+      noPace: 'الحفظ الحديث لا يكفي للتوقّع بعد (يحتاج ٣ أيام حفظ في آخر ٤ أسابيع)',
       noGoal: 'لم يُحدَّد هدف بعد',
       goalStatus: {'ahead': 'متقدّم', 'on_track': 'على الخطة', 'behind': 'متأخر', 'done': 'أتمّ الهدف'},
       setGoal: 'تحديد الهدف',
@@ -3528,6 +3532,7 @@ class S {
       appName: 'Bustan Al-Quran',
       signOut: 'Sign out',
       loadFailed: 'Could not load the data',
+      partFailed: 'This part could not be shown',
       checkConnection: 'Check your internet connection and try again',
       retry: 'Try again',
       noPermission: 'You don’t have permission to do this',
@@ -4282,6 +4287,7 @@ class S {
       error: 'Something went wrong. Try again.',
       fab: 'Recite',
       liveBadge: 'Live recitation',
+      noRoom: 'The recitation was sent without the recording: the center’s storage is full.',
       audioDeleted: 'The recording was deleted after review to save space',
       loading: 'Loading the ayahs…',
       appNoAudio: 'In the app the recitation is sent with its result, without a recording.',
@@ -4557,7 +4563,7 @@ class S {
       sinceStart: 'Since the goal started: {actual} of {expected} pages',
       forecast: 'Expected finish',
       forecastGoal: 'At the goal pace',
-      noPace: 'No new memorisation lately',
+      noPace: 'Not enough recent memorisation to forecast yet (3 days in the last 4 weeks)',
       noGoal: 'No goal set yet',
       goalStatus: {'ahead': 'Ahead', 'on_track': 'On track', 'behind': 'Behind', 'done': 'Done'},
       setGoal: 'Set goal',
@@ -5199,6 +5205,7 @@ class S {
       appName: 'Bustan Al-Quran',
       signOut: 'Çıkış yap',
       loadFailed: 'Veriler yüklenemedi',
+      partFailed: 'Bu bölüm gösterilemedi',
       checkConnection: 'İnternet bağlantınızı kontrol edip tekrar deneyin',
       retry: 'Tekrar dene',
       noPermission: 'Bunu yapma izniniz yok',
@@ -5953,6 +5960,7 @@ class S {
       error: 'Bir hata oluştu. Tekrar deneyin.',
       fab: 'Dinlet',
       liveBadge: 'Canlı dinletme',
+      noRoom: 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
       audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       loading: 'Ayetler yükleniyor…',
       appNoAudio: 'Uygulamada dinletme ses kaydı olmadan sonucuyla gönderilir.',
@@ -6228,7 +6236,7 @@ class S {
       sinceStart: 'Hedef başladığından beri: {expected} sayfadan {actual}',
       forecast: 'Beklenen bitiş',
       forecastGoal: 'Hedef temposunda',
-      noPace: 'Son zamanlarda yeni ezber yok',
+      noPace: 'Tahmin için yakın zamanda yeterli ezber yok (son 4 haftada 3 gün gerekir)',
       noGoal: 'Henüz hedef belirlenmedi',
       goalStatus: {'ahead': 'Önde', 'on_track': 'Planda', 'behind': 'Geride', 'done': 'Tamamlandı'},
       setGoal: 'Hedef belirle',
@@ -6870,6 +6878,7 @@ class S {
       appName: 'Bustan Al-Quran',
       signOut: 'Se déconnecter',
       loadFailed: 'Impossible de charger les données',
+      partFailed: 'Cette partie n’a pas pu être affichée',
       checkConnection: 'Vérifiez votre connexion internet et réessayez',
       retry: 'Réessayer',
       noPermission: 'Vous n’avez pas l’autorisation de faire cela',
@@ -7624,6 +7633,7 @@ class S {
       error: 'Une erreur s’est produite. Réessayez.',
       fab: 'Réciter',
       liveBadge: 'Récitation en direct',
+      noRoom: 'La récitation a été envoyée sans l’enregistrement : l’espace de stockage du centre est plein.',
       audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       loading: 'Chargement des âyahs…',
       appNoAudio: 'Dans l’application, la récitation est envoyée avec son résultat, sans enregistrement.',
@@ -7899,7 +7909,7 @@ class S {
       sinceStart: 'Depuis le début de l’objectif : {actual} pages sur {expected}',
       forecast: 'Fin prévue',
       forecastGoal: 'Au rythme de l’objectif',
-      noPace: 'Pas de nouvelle mémorisation récemment',
+      noPace: 'Pas assez de mémorisation récente pour une prévision (3 jours sur les 4 dernières semaines)',
       noGoal: 'Aucun objectif défini',
       goalStatus: {'ahead': 'En avance', 'on_track': 'Dans les temps', 'behind': 'En retard', 'done': 'Atteint'},
       setGoal: 'Définir l’objectif',

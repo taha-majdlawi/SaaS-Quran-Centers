@@ -101,6 +101,7 @@ export function LiveRecite({
   const [listening, setListening] = useState(false);
   const [note, setNote] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
+  const [noRoom, setNoRoom] = useState(false);
 
   const matcher = useRef<LiveMatcher | null>(null);
   const rec = useRef<Recognition | null>(null);
@@ -320,7 +321,11 @@ export function LiveRecite({
         const type = audio.current.blob.type || 'audio/wav';
         path = `${orgId}/${studentId}/${crypto.randomUUID()}.${UPLOAD_TYPES[type] ?? 'wav'}`;
         const up = await supabase.storage.from('recitations').upload(path, audio.current.blob, { contentType: UPLOAD_TYPES[type] ? type : 'audio/wav' });
-        if (up.error) path = null; // the result still goes
+        if (up.error) {
+          path = null; // the result still goes; a full storage (0091) is said
+          const { data: st } = await supabase.rpc('org_storage', { p_org: orgId });
+          setNoRoom(!!(st as { full?: boolean } | null)?.full);
+        }
       }
       const { error: e } = await supabase.rpc('submit_live_recitation', {
         p_org: orgId,
@@ -362,6 +367,7 @@ export function LiveRecite({
     heard.current = [];
     setStop(null);
     setError('');
+    setNoRoom(false);
     setPhase('setup');
   };
 
@@ -515,6 +521,7 @@ export function LiveRecite({
           <CheckCircle2 size={18} /> {L.sent}
         </p>
       )}
+      {phase === 'sent' && noRoom && <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">{L.noRoom}</p>}
 
       {(phase === 'result' || phase === 'sending' || phase === 'sent') && res && (
         <div className="space-y-3 rounded-xl border bg-white p-4">

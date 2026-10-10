@@ -45,6 +45,7 @@ T = {
  'error': 'Bir hata oluştu. Tekrar deneyin.',
  'fab': 'Dinlet',
  'liveBadge': 'Canlı dinletme',
+ 'noRoom': 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
  'audioDeleted': 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
  'loading': 'Ayetler yükleniyor…',
  'appNoAudio': 'Uygulamada dinletme ses kaydı olmadan sonucuyla gönderilir.',

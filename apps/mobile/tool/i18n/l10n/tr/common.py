@@ -2,6 +2,7 @@
 T = {'appName': 'Bustan Al-Quran',
  'signOut': 'Çıkış yap',
  'loadFailed': 'Veriler yüklenemedi',
+ 'partFailed': 'Bu bölüm gösterilemedi',
  'checkConnection': 'İnternet bağlantınızı kontrol edip tekrar deneyin',
  'retry': 'Tekrar dene',
  'noPermission': 'Bunu yapma izniniz yok',

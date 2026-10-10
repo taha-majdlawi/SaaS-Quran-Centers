@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../i18n/i18n.dart';
 
 /// Sends every crash the app sees to the error log (DB 0076
 /// `report_client_error`) with the screen, the device, the app version and
@@ -42,6 +45,17 @@ class ErrorReporter {
       if (details.silent) return;
       report(details.exception, details.stack, kind: 'flutter', context: details.context?.toDescription());
     };
+    // a part of a screen that fails to build: a small note in its place, not a tall blank box (release)
+    if (!kDebugMode) {
+      ErrorWidget.builder = (details) => Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.error_outline_rounded, size: 18, color: Color(0xFF9A6B00)),
+              const SizedBox(width: 6),
+              Flexible(child: Text(currentStrings.common.partFailed, style: const TextStyle(fontSize: 13, color: Color(0xFF6B6B6B)))),
+            ]),
+          );
+    }
     PlatformDispatcher.instance.onError = (error, stack) {
       report(error, stack, kind: 'platform');
       return true;

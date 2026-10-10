@@ -148,6 +148,16 @@ class RecitationApi {
     }
   }
 
+  /// Is the center's storage full (0091)? (asked after an upload was refused)
+  Future<bool> storageFull(String orgId) async {
+    try {
+      final st = await _client.rpc('org_storage', params: {'p_org': orgId});
+      return st is Map && st['full'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// The recording of a live recitation (AAC, .m4a); returns its path in the bucket.
   Future<String> uploadLiveAudio({required String orgId, required String studentId, required File file}) async {
     final path = '$orgId/$studentId/${_uuid.v4()}.m4a';

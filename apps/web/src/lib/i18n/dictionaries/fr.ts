@@ -738,6 +738,7 @@ export const fr: Dictionary = {
     retry: 'Renvoyer',
     notSent: 'La récitation n’a pas encore été envoyée. Vérifiez la connexion puis touchez « Renvoyer ».',
     nothingHeard: 'Rien de la récitation n’a été entendu, elle n’a donc pas été envoyée. Vérifiez le micro et récitez à nouveau.',
+    noRoom: 'La récitation a été envoyée sans l’enregistrement : l’espace de stockage du centre est plein.',
     mine: 'Mes récitations',
     error: 'Une erreur s’est produite. Réessayez.',
     fab: 'Réciter',
