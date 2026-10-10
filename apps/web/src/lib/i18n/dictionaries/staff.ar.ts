@@ -31,6 +31,7 @@ export const staffAr = {
     relinkFailed: 'تعذّر تحديث الربط',
     noMember: 'العضو غير موجود في هذا المركز',
     passwordFailed: 'تعذّر تغيير كلمة السر',
+    sharedAccount: 'هذا الحساب مرتبط بمركز آخر أو بإدارة المنصة، فلا تُغيَّر كلمة سرّه أو بريده من هنا. يغيّرها صاحبه من حسابه.',
   },
   /** Activities. */
   activities: {

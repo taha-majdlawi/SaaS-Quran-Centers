@@ -33,6 +33,7 @@ export const staffEn: typeof staffAr = {
     relinkFailed: 'Could not update the link',
     noMember: 'This member isn’t in this center',
     passwordFailed: 'Could not change the password',
+    sharedAccount: 'This account also belongs to another center or to the platform, so its password or email cannot be changed here. Its owner can change it from their account.',
   },
   /** Activities. */
   activities: {

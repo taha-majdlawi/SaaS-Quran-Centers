@@ -24,6 +24,12 @@ async function membershipOf(admin: SupabaseClient, userId: string, orgId: string
   return (data as CallerMembership | null) ?? null;
 }
 
+/** The account belongs to this center alone and is not the owner's (0093 _account_only_here). */
+export async function onlyHere(admin: SupabaseClient, orgId: string, userId: string): Promise<boolean> {
+  const { data, error } = await admin.rpc('_account_only_here', { p_org: orgId, p_user: userId });
+  return !error && data === true;
+}
+
 function friendlyAuthError(message: string, A: AccountStrings): string {
   if (/already|registered|exists/i.test(message)) return A.idTaken;
   if (/password/i.test(message)) return A.passwordInvalid;
@@ -314,6 +320,9 @@ export async function resetMemberPassword(
     .eq('organization_id', input.orgId)
     .maybeSingle();
   if (!member) throw new AccountError(A.noMember);
+  // never an account that is also elsewhere (another center, the owner): being a member here
+  // is not owning the account (0093)
+  if (!(await onlyHere(admin, input.orgId, member.user_id))) throw new AccountError(A.sharedAccount);
 
   const { error } = await admin.auth.admin.updateUserById(member.user_id, { password });
   if (error) throw new AccountError(A.passwordFailed);

@@ -33,6 +33,7 @@ export const staffFr: typeof staffAr = {
     relinkFailed: 'Impossible de mettre à jour le lien',
     noMember: 'Ce membre n’appartient pas à ce centre',
     passwordFailed: 'Impossible de changer le mot de passe',
+    sharedAccount: 'Ce compte appartient aussi à un autre centre ou à la plateforme : son mot de passe ou son e-mail ne peut pas être changé ici. Son titulaire peut le faire depuis son compte.',
   },
   /** Activities. */
   activities: {

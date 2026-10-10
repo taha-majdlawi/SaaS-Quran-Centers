@@ -33,6 +33,7 @@ export const staffTr: typeof staffAr = {
     relinkFailed: 'Bağlantı güncellenemedi',
     noMember: 'Bu üye bu merkezde değil',
     passwordFailed: 'Şifre değiştirilemedi',
+    sharedAccount: 'Bu hesap başka bir merkeze veya platform yönetimine de bağlı; şifresi ya da e-postası buradan değiştirilemez. Sahibi kendi hesabından değiştirebilir.',
   },
   /** Activities. */
   activities: {
