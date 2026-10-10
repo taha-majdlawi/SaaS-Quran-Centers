@@ -45,6 +45,7 @@ SPEC = {'live': ('The live recite screen (/my/recite).', (
   ('error', 'حدث خطأ، حاول مرة أخرى.', 'Something went wrong. Try again.'),
   ('fab', 'سمّع', 'Recite'),
   ('liveBadge', 'تسميع مباشر', 'Live recitation'),
+  ('liveDeviceNote', 'التعرّف على الكلمات في التسميع المباشر يتم على جهاز الطالب، فالنسبة استرشادية والقرار لك.', "In a live recitation the words are recognised on the student's device, so the score is only a guide: the decision is yours."),
   ('noRoom', 'أُرسل التسميع بدون التسجيل الصوتي: امتلأت مساحة التخزين في المركز.', 'The recitation was sent without the recording: the center’s storage is full.'),
   ('audioDeleted', 'حُذف التسجيل الصوتي بعد المراجعة لتوفير المساحة', 'The recording was deleted after review to save space'),
   ('loading', 'جارٍ تحميل الآيات…', 'Loading the ayahs…'),

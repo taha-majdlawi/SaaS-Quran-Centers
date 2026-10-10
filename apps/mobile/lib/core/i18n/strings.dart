@@ -780,7 +780,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.noRoom, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.liveDeviceNote, required this.noRoom, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -826,6 +826,7 @@ class SLive {
   final String error;
   final String fab;
   final String liveBadge;
+  final String liveDeviceNote;
   final String noRoom;
   final String audioDeleted;
   final String loading;
@@ -2614,6 +2615,7 @@ class S {
       error: 'حدث خطأ، حاول مرة أخرى.',
       fab: 'سمّع',
       liveBadge: 'تسميع مباشر',
+      liveDeviceNote: 'التعرّف على الكلمات في التسميع المباشر يتم على جهاز الطالب، فالنسبة استرشادية والقرار لك.',
       noRoom: 'أُرسل التسميع بدون التسجيل الصوتي: امتلأت مساحة التخزين في المركز.',
       audioDeleted: 'حُذف التسجيل الصوتي بعد المراجعة لتوفير المساحة',
       loading: 'جارٍ تحميل الآيات…',
@@ -4287,6 +4289,7 @@ class S {
       error: 'Something went wrong. Try again.',
       fab: 'Recite',
       liveBadge: 'Live recitation',
+      liveDeviceNote: 'In a live recitation the words are recognised on the student\'s device, so the score is only a guide: the decision is yours.',
       noRoom: 'The recitation was sent without the recording: the center’s storage is full.',
       audioDeleted: 'The recording was deleted after review to save space',
       loading: 'Loading the ayahs…',
@@ -5960,6 +5963,7 @@ class S {
       error: 'Bir hata oluştu. Tekrar deneyin.',
       fab: 'Dinlet',
       liveBadge: 'Canlı dinletme',
+      liveDeviceNote: 'Canlı dinletmede kelimeler öğrencinin cihazında tanınır; puan yalnızca yol göstericidir, karar sizindir.',
       noRoom: 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
       audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       loading: 'Ayetler yükleniyor…',
@@ -7633,6 +7637,7 @@ class S {
       error: 'Une erreur s’est produite. Réessayez.',
       fab: 'Réciter',
       liveBadge: 'Récitation en direct',
+      liveDeviceNote: 'Dans une récitation en direct, les mots sont reconnus sur l’appareil de l’élève : le score n’est qu’indicatif, la décision vous revient.',
       noRoom: 'La récitation a été envoyée sans l’enregistrement : l’espace de stockage du centre est plein.',
       audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       loading: 'Chargement des âyahs…',
