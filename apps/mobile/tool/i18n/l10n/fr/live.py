@@ -45,6 +45,7 @@ T = {
  'error': 'Une erreur s’est produite. Réessayez.',
  'fab': 'Réciter',
  'liveBadge': 'Récitation en direct',
+ 'liveDeviceNote': 'Dans une récitation en direct, les mots sont reconnus sur l’appareil de l’élève : le score n’est qu’indicatif, la décision vous revient.',
  'noRoom': 'La récitation a été envoyée sans l’enregistrement : l’espace de stockage du centre est plein.',
  'audioDeleted': 'L’enregistrement a été supprimé après examen pour gagner de la place',
  'loading': 'Chargement des âyahs…',

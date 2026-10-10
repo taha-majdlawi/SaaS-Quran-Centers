@@ -77,7 +77,9 @@ workflows:
           LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
           BUILD_NUMBER=$(( ${LATEST:-0} + 1 ))
           echo "build number $BUILD_NUMBER"
+          # obfuscated (harder to reverse); the symbols to read its crash stacks are kept as an artifact
           flutter build ipa --release \
+            --obfuscate --split-debug-info=build/symbols \
             --dart-define-from-file=env.json $(cat /tmp/push_defines) \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
@@ -85,6 +87,7 @@ workflows:
       - apps/mobile/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - apps/mobile/build/ios/archive/Runner.xcarchive/dSYMs/*.dSYM.zip
+      - apps/mobile/build/symbols/*.symbols
     publishing:
       app_store_connect:
         auth: integration

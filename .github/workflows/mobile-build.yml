@@ -93,6 +93,7 @@ jobs:
       - name: Build APK
         run: >
           flutter build apk --release
+          --obfuscate --split-debug-info=build/symbols
           --dart-define-from-file=env.json
           --build-number=${{ github.run_number }}
 
@@ -108,6 +109,12 @@ jobs:
         with:
           name: ${{ steps.out.outputs.name }}
           path: apps/mobile/${{ steps.out.outputs.name }}
+
+      # to read the crash stacks of this obfuscated build (flutter symbolize)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.out.outputs.name }}-symbols
+          path: apps/mobile/build/symbols
           retention-days: 30
           if-no-files-found: error
 

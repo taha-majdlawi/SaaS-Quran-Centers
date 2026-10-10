@@ -1,8 +1,7 @@
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 
-// Baseline response headers for every route. No CSP yet on purpose: Next's
-// inline bootstrap scripts need a nonce setup first, and a wrong CSP breaks
-// the whole app.
+// Baseline response headers for every route. The pages' Content-Security-Policy
+// needs a new nonce per request, so the middleware sets it (src/lib/csp.ts).
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },

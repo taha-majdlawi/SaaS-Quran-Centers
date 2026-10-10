@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'encrypted_store.dart';
 import 'outbox.dart';
 import 'sync_service.dart';
 
@@ -9,7 +10,8 @@ import 'sync_service.dart';
 /// after a half-received answer never duplicates anything.
 SyncService createSyncService(SupabaseClient client) {
   final sync = SyncService(
-    SqliteOfflineStore(),
+    // the copies and queued writes on the phone are encrypted (key in the keystore)
+    EncryptedOfflineStore(SqliteOfflineStore(), CacheCipher.secureStorage()),
     currentUser: () => client.auth.currentUser?.id,
     // the cheapest call anyone may make: it answers only if the server is really there
     probe: () => client.rpc('public_plans'),

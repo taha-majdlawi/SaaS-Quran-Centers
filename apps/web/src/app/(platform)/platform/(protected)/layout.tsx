@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getPlatformContext } from '@/lib/platform/get-platform-context';
+import { MFA_UNAVAILABLE_COOKIE } from '@/lib/platform/mfa';
 import { SubmitButton } from '@/components/submit-button';
 import { signOut } from '@/lib/auth/actions';
 import { createClient } from '@/lib/supabase/server';
@@ -14,6 +16,11 @@ export default async function PlatformProtectedLayout({ children }: { children: 
   // would block every cross-tenant query anyway, so send them to sign in
   // rather than show an empty shell.
   if (!platform.isOwner) redirect('/login');
+
+  // the second factor (0094): enter the code, or set one up first. Only when Supabase
+  // itself refused to set one up (MFA off for the project) does the console open without it.
+  const mfaUnavailable = platform.mfa === 'enroll' && (await cookies()).get(MFA_UNAVAILABLE_COOKIE)?.value === '1';
+  if (platform.mfa !== 'ok' && !mfaUnavailable) redirect('/mfa');
 
   // centers needing attention (0067) - the count shows next to the menu entry
   const supabase = await createClient();
@@ -72,7 +79,15 @@ export default async function PlatformProtectedLayout({ children }: { children: 
           </SubmitButton>
         </form>
       </aside>
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 p-8">
+        {mfaUnavailable && (
+          <p className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            التحقق بخطوتين غير مفعّل بعد: Supabase رفض إعداده. فعّل TOTP من لوحة Supabase (Authentication ← Multi-Factor)، ثم{' '}
+            <a href="/mfa" className="font-semibold underline">أعد المحاولة</a>.
+          </p>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

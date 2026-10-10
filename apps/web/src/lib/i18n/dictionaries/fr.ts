@@ -621,6 +621,7 @@ export const fr: Dictionary = {
       waitingN: '{n} récitations enregistrées attendent votre examen',
       recheck: 'Relancer la vérification automatique',
       liveBadge: 'Récitation en direct',
+      liveDeviceNote: "Dans une récitation en direct, les mots sont reconnus sur l'appareil de l'élève : le score n'est qu'indicatif, la décision vous revient.",
       audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       testNote: 'Note (facultatif)',
       note: 'Note pour l’enseignant (facultatif)',

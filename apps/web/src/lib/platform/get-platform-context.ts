@@ -1,7 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
+import { ownerMfaState, type MfaState } from './mfa';
 
 export interface PlatformContext {
+  /** In platform_owners (the password is enough to know this). */
   isOwner: boolean;
+  /** Where the owner stands with the second factor (lib/platform/mfa.ts). */
+  mfa: MfaState;
   email: string | null;
 }
 
@@ -14,7 +18,7 @@ export async function getPlatformContext(): Promise<PlatformContext> {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { isOwner: false, email: null };
+  if (!user) return { isOwner: false, mfa: 'enroll', email: null };
 
   const { data: owner } = await supabase
     .from('platform_owners')
@@ -22,5 +26,6 @@ export async function getPlatformContext(): Promise<PlatformContext> {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  return { isOwner: Boolean(owner), email: user.email ?? null };
+  const mfa = owner ? await ownerMfaState(supabase, user) : 'enroll';
+  return { isOwner: Boolean(owner), mfa, email: user.email ?? null };
 }

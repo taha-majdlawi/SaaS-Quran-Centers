@@ -20,15 +20,15 @@ async function run(fn: string, args: Record<string, unknown>, back: string, ok: 
   return redirect(withParam(back, 'ok', ok) as never);
 }
 
-/** Service-role actions must be gated by hand: the caller has to be in platform_owners. */
+/** Service-role actions must be gated by hand: the caller has to be the owner, past the second factor (0094). */
 async function requireOwner(): Promise<string> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return redirect('/login' as never);
-  const { data } = await supabase.from('platform_owners').select('user_id').eq('user_id', user.id).maybeSingle();
-  if (!data) return redirect('/login' as never);
+  const { data: isOwner } = await supabase.rpc('is_platform_owner');
+  if (isOwner !== true) return redirect('/login' as never);
   return user.id;
 }
 

@@ -621,6 +621,7 @@ export const en: Dictionary = {
       waitingN: '{n} recorded recitations waiting for your review',
       recheck: 'Run the automatic check again',
       liveBadge: 'Live recitation',
+      liveDeviceNote: "In a live recitation the words are recognised on the student's device, so the score is only a guide: the decision is yours.",
       audioDeleted: 'The recording was deleted after review to save space',
       testNote: 'Note (optional)',
       note: 'Note for the teacher (optional)',
