@@ -1,0 +1,30 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-audit]
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          curl -sSL -o osv https://github.com/google/osv-scanner/releases/download/v2.2.2/osv-scanner_linux_amd64 && chmod +x osv
+          ./osv scan source --lockfile=apps/mobile/pubspec.lock --format=table 2>&1 | tail -40 || true
+  db:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -F ' | ' -c "set default_transaction_read_only = on" \
+            -c "select 'no_rls', c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p') and not c.relrowsecurity" \
+            -c "select 'definer_no_path', p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prosecdef and not exists (select 1 from unnest(coalesce(p.proconfig,'{}')) c where c like 'search_path=%')" \
+            -c "select 'anon_fn', p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and has_function_privilege('anon', p.oid, 'execute') and p.prorettype <> 'trigger'::regtype order by 2" \
+            -c "select 'anon_tables', table_name, privilege_type from information_schema.role_table_grants where grantee='anon' and table_schema='public'" \
+            -c "select 'bucket', id, public, file_size_limit from storage.buckets order by 2" \
+            -c "select 'members_insert_grant', has_table_privilege('authenticated', 'public.organization_members', 'insert')" \
+            -c "select 'multi_center_accounts', count(*) from (select user_id from public.organization_members group by user_id having count(distinct organization_id) > 1) x" \
+            -c "select 'org_feature_flags', count(*) from public.feature_flags where organization_id is not null" \
+            -c "select 'mig', max(version) from supabase_migrations.schema_migrations" \
+            -c "select 'extensions', extname, extversion from pg_extension order by 2" 2>&1
