@@ -1,0 +1,20 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-errors]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -F ' | ' -c "set default_transaction_read_only = on" \
+            -c "select 'groups', source, count(*), max(last_seen) from public.app_error_groups group by source" \
+            -c "select 'errors', count(*), max(created_at) from public.app_errors" \
+            -c "select 'fn_md5', md5(pg_get_functiondef('public.report_client_error(text,text,text,text,text,uuid,text,text,text,text,jsonb,jsonb)'::regprocedure))" \
+            -c "select 'grant', has_function_privilege('anon', 'public.report_client_error(text,text,text,text,text,uuid,text,text,text,text,jsonb,jsonb)', 'execute'), has_function_privilege('authenticated', 'public.report_client_error(text,text,text,text,text,uuid,text,text,text,text,jsonb,jsonb)', 'execute')" \
+            -c "select 'overloads', count(*) from pg_proc where proname = 'report_client_error'" \
+            -c "select 'trg_errors', tgname from pg_trigger where tgrelid in ('public.app_errors'::regclass, 'public.app_error_groups'::regclass) and not tgisinternal" \
+            -c "select 'signin_recent', count(*) from auth.users where last_sign_in_at > now() - interval '3 days'" 2>&1
