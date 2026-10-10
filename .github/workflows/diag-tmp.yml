@@ -1,0 +1,26 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-mfa]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - name: database (read only, counts only)
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -F ' | ' -c "set default_transaction_read_only = on" \
+            -c "select 'mig', max(version) from supabase_migrations.schema_migrations" \
+            -c "select 'owner_fn', l.lanname, position('aal2' in p.prosrc) > 0 from pg_proc p join pg_language l on l.oid = p.prolang where p.proname = 'is_platform_owner'" \
+            -c "select 'fn_owner_reads_factors', has_table_privilege(p.proowner, 'auth.mfa_factors', 'select') from pg_proc p where p.proname = 'is_platform_owner'" \
+            -c "select 'owners', count(*), count(*) filter (where exists (select 1 from auth.mfa_factors f where f.user_id = o.user_id and f.status::text = 'verified')) from public.platform_owners o" \
+            -c "do \$\$ declare r record; a1 int := 0; a2 int := 0; begin for r in select user_id from public.platform_owners loop perform set_config('request.jwt.claims', json_build_object('sub', r.user_id, 'role', 'authenticated', 'aal', 'aal1')::text, true); if public.is_platform_owner() then a1 := a1 + 1; end if; perform set_config('request.jwt.claims', json_build_object('sub', r.user_id, 'role', 'authenticated', 'aal', 'aal2')::text, true); if public.is_platform_owner() then a2 := a2 + 1; end if; end loop; raise notice 'owner_check aal1=% aal2=%', a1, a2; end \$\$" 2>&1
+      - name: live headers (public)
+        run: |
+          for u in https://bustan-alquran.com/ https://admin.bustan-alquran.com/login https://admin.bustan-alquran.com/mfa; do
+            echo "== $u"; curl -sI "$u" | grep -iE '^HTTP|^location|content-security|strict-transport|x-frame'
+          done
+          echo "== nonced scripts on the sign-in page"
+          curl -s https://admin.bustan-alquran.com/login | grep -o '<script[^>]*>' | awk '{ if ($0 ~ /nonce=/) n++; else m++ } END { print "nonced", n+0, "without", m+0 }'
