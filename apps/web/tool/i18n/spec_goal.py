@@ -13,7 +13,7 @@ SPEC = {'goal': ('Memorization goal and khatm forecast (staff profile and family
   ('sinceStartV', 'حفظ {actual} من {expected} صفحة متوقعة', '{actual} of {expected} expected pages'),
   ('forecast', 'الختمة المتوقعة بسرعته الحالية', 'Expected finish at the current pace'),
   ('forecastGoal', 'بسرعة الهدف', 'At the goal pace'),
-  ('noPace', 'لا حفظ جديد في آخر 4 أسابيع', 'No new memorisation in the last 4 weeks'),
+  ('noPace', 'الحفظ الحديث لا يكفي للتوقّع بعد (يحتاج ٣ أيام حفظ في آخر ٤ أسابيع)', 'Not enough recent memorisation to forecast yet (3 days in the last 4 weeks)'),
   ('done', 'أتمّ الهدف 🎉', 'Goal reached 🎉'),
   ('noGoal', 'لم يُحدَّد هدف بعد.', 'No goal set yet.'),
   ('status', {'ahead': 'متقدّم على الخطة', 'on_track': 'على الخطة', 'behind': 'متأخر عن الخطة', 'done': 'أتمّ الهدف'},

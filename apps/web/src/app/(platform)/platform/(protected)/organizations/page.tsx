@@ -12,8 +12,10 @@ interface Overview {
 export default async function PlatformOrganizationsPage({ searchParams }: { searchParams: Promise<{ error?: string; ok?: string; q?: string }> }) {
   const { error, ok, q } = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase.rpc('platform_overview');
+  const [{ data }, { data: st }] = await Promise.all([supabase.rpc('platform_overview'), supabase.rpc('platform_org_storage')]);
   const o = data as Overview | null;
+  // used storage per center against its plan (0091)
+  const storage = (st ?? {}) as Record<string, { used_bytes: number; limit_mb: number | null; full: boolean }>;
   const query = (q ?? '').trim().toLowerCase();
   const orgs = (o?.orgs ?? []).filter((c) => !query || c.name.toLowerCase().includes(query) || c.slug.includes(query));
 
@@ -31,7 +33,7 @@ export default async function PlatformOrganizationsPage({ searchParams }: { sear
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-right">
             <tr>
-              {['المركز', 'الحالة', 'الخطة', 'الطلاب', 'المعلمون', 'نشاط 7 أيام', 'آخر نشاط'].map((h) => (
+              {['المركز', 'الحالة', 'الخطة', 'الطلاب', 'المعلمون', 'نشاط 7 أيام', 'التخزين', 'آخر نشاط'].map((h) => (
                 <th key={h} className="px-3 py-2">
                   {h}
                 </th>
@@ -52,12 +54,25 @@ export default async function PlatformOrganizationsPage({ searchParams }: { sear
                 <td className="px-3 py-2">{c.students}</td>
                 <td className="px-3 py-2">{c.teachers}</td>
                 <td className="px-3 py-2">{c.recitations_7d}</td>
+                <td className="px-3 py-2 text-xs" dir="ltr">
+                  {(() => {
+                    const x = storage[c.id];
+                    if (!x) return '—';
+                    const mb = Math.round((x.used_bytes / 1048576) * 10) / 10;
+                    const near = x.limit_mb != null && x.used_bytes >= x.limit_mb * 1048576 * 0.85;
+                    return (
+                      <span className={x.full ? 'font-semibold text-red-700' : near ? 'font-semibold text-amber-700' : 'text-gray-600'}>
+                        {mb} / {x.limit_mb ?? '∞'} MB
+                      </span>
+                    );
+                  })()}
+                </td>
                 <td className="px-3 py-2 text-xs text-gray-500">{fmt(c.last_activity)}</td>
               </tr>
             ))}
             {!orgs.length && (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-gray-400">
+                <td colSpan={8} className="px-3 py-6 text-center text-gray-400">
                   لا مراكز
                 </td>
               </tr>

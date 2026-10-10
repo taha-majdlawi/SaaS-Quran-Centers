@@ -2,6 +2,7 @@
 T = {'appName': 'Bustan Al-Quran',
  'signOut': 'Se déconnecter',
  'loadFailed': 'Impossible de charger les données',
+ 'partFailed': 'Cette partie n’a pas pu être affichée',
  'checkConnection': 'Vérifiez votre connexion internet et réessayez',
  'retry': 'Réessayer',
  'noPermission': 'Vous n’avez pas l’autorisation de faire cela',

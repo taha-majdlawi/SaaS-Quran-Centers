@@ -4,10 +4,11 @@
 
 /// Shared words and the generic states.
 class SCommon {
-  const SCommon({required this.appName, required this.signOut, required this.loadFailed, required this.checkConnection, required this.retry, required this.noPermission, required this.linkedData, required this.offline, required this.cancel, required this.save, required this.delete, required this.edit, required this.send, required this.close, required this.confirm, required this.language, required this.goodMorning, required this.goodEvening, required this.listSep});
+  const SCommon({required this.appName, required this.signOut, required this.loadFailed, required this.partFailed, required this.checkConnection, required this.retry, required this.noPermission, required this.linkedData, required this.offline, required this.cancel, required this.save, required this.delete, required this.edit, required this.send, required this.close, required this.confirm, required this.language, required this.goodMorning, required this.goodEvening, required this.listSep});
   final String appName;
   final String signOut;
   final String loadFailed;
+  final String partFailed;
   final String checkConnection;
   final String retry;
   final String noPermission;
@@ -478,7 +479,7 @@ class SCert {
 
 /// The center admin's feature switches (center_features, 0088).
 class SCfeat {
-  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.audioTitle, required this.audioHint, required this.audioDays, required this.audioNever, required this.audioSave, required this.audioSaved, required this.off});
+  const SCfeat({required this.names, required this.tab, required this.title, required this.hint, required this.notInPlan, required this.save, required this.saved, required this.audioTitle, required this.audioHint, required this.audioDays, required this.audioNever, required this.audioSave, required this.audioSaved, required this.chatTitle, required this.chatHint, required this.off});
   final Map<String, String> names;
   final String tab;
   final String title;
@@ -492,12 +493,14 @@ class SCfeat {
   final String audioNever;
   final String audioSave;
   final String audioSaved;
+  final String chatTitle;
+  final String chatHint;
   final String off;
 }
 
 /// Messages.
 class SChat {
-  const SChat({required this.title, required this.newChat, required this.none, required this.noneHint, required this.deletedLast, required this.you, required this.searchName, required this.noContacts, required this.uploadFailed, required this.sendFailed, required this.stillFailing, required this.gallery, required this.camera, required this.imageSize, required this.editTitle, required this.deleteTitle, required this.deleteBody, required this.deleteFailed, required this.unmute, required this.start, required this.deleted, required this.notSent, required this.sending, required this.edited, required this.attach, required this.caption, required this.cantReply, required this.mute, required this.write});
+  const SChat({required this.title, required this.newChat, required this.none, required this.noneHint, required this.deletedLast, required this.you, required this.searchName, required this.noContacts, required this.uploadFailed, required this.sendFailed, required this.stillFailing, required this.gallery, required this.camera, required this.imageSize, required this.editTitle, required this.deleteTitle, required this.deleteBody, required this.deleteFailed, required this.unmute, required this.start, required this.deleted, required this.imageDeleted, required this.storageFull, required this.notSent, required this.sending, required this.edited, required this.attach, required this.caption, required this.cantReply, required this.mute, required this.write});
   final String title;
   final String newChat;
   final String none;
@@ -519,6 +522,8 @@ class SChat {
   final String unmute;
   final String start;
   final String deleted;
+  final String imageDeleted;
+  final String storageFull;
   final String notSent;
   final String sending;
   final String edited;
@@ -775,7 +780,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.noRoom, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -821,6 +826,7 @@ class SLive {
   final String error;
   final String fab;
   final String liveBadge;
+  final String noRoom;
   final String audioDeleted;
   final String loading;
   final String appNoAudio;
@@ -1853,6 +1859,7 @@ class S {
       appName: 'بستان القرآن',
       signOut: 'تسجيل خروج',
       loadFailed: 'تعذّر تحميل البيانات',
+      partFailed: 'تعذّر عرض هذا الجزء',
       checkConnection: 'تأكد من الاتصال بالإنترنت وحاول مرة أخرى',
       retry: 'إعادة المحاولة',
       noPermission: 'لا تملك صلاحية تنفيذ هذه العملية',
@@ -2295,6 +2302,8 @@ class S {
       audioNever: 'لا تحذف التسجيلات',
       audioSave: 'حفظ المدة',
       audioSaved: 'تم حفظ مدة حفظ التسجيلات',
+      chatTitle: 'مدة حفظ صور المحادثات',
+      chatHint: 'الصور المرسلة في المحادثات تُحذف بعد هذه المدة من إرسالها لتوفير المساحة، وتبقى الرسائل مكتوبة.',
       off: 'هذه الميزة متوقفة في مركزك.',
     ),
     chat: SChat(
@@ -2319,6 +2328,8 @@ class S {
       unmute: 'تفعيل التنبيهات',
       start: 'ابدأ المحادثة',
       deleted: 'حُذفت هذه الرسالة',
+      imageDeleted: 'حُذفت الصورة بعد مدة الحفظ',
+      storageFull: 'امتلأت مساحة التخزين في المركز، فلا يمكن إرسال صور الآن. أخبر إدارة المركز.',
       notSent: 'لم يُرسل — اضغط لإعادة المحاولة',
       sending: 'جارٍ الإرسال...',
       edited: ' · عُدّلت',
@@ -2603,6 +2614,7 @@ class S {
       error: 'حدث خطأ، حاول مرة أخرى.',
       fab: 'سمّع',
       liveBadge: 'تسميع مباشر',
+      noRoom: 'أُرسل التسميع بدون التسجيل الصوتي: امتلأت مساحة التخزين في المركز.',
       audioDeleted: 'حُذف التسجيل الصوتي بعد المراجعة لتوفير المساحة',
       loading: 'جارٍ تحميل الآيات…',
       appNoAudio: 'في التطبيق يُرسل التسميع بنتيجته دون تسجيل صوتي.',
@@ -2878,7 +2890,7 @@ class S {
       sinceStart: 'منذ بدء الهدف: {actual} من {expected} صفحة',
       forecast: 'الختمة المتوقعة',
       forecastGoal: 'بسرعة الهدف',
-      noPace: 'لا حفظ جديد مؤخرًا',
+      noPace: 'الحفظ الحديث لا يكفي للتوقّع بعد (يحتاج ٣ أيام حفظ في آخر ٤ أسابيع)',
       noGoal: 'لم يُحدَّد هدف بعد',
       goalStatus: {'ahead': 'متقدّم', 'on_track': 'على الخطة', 'behind': 'متأخر', 'done': 'أتمّ الهدف'},
       setGoal: 'تحديد الهدف',
@@ -3520,6 +3532,7 @@ class S {
       appName: 'Bustan Al-Quran',
       signOut: 'Sign out',
       loadFailed: 'Could not load the data',
+      partFailed: 'This part could not be shown',
       checkConnection: 'Check your internet connection and try again',
       retry: 'Try again',
       noPermission: 'You don’t have permission to do this',
@@ -3962,6 +3975,8 @@ class S {
       audioNever: 'Never delete them',
       audioSave: 'Save',
       audioSaved: 'Recording retention saved',
+      chatTitle: 'How long chat pictures are kept',
+      chatHint: 'Pictures sent in conversations are deleted this long after they were sent, to save space; the messages’ text stays.',
       off: 'This feature is switched off in your center.',
     ),
     chat: SChat(
@@ -3986,6 +4001,8 @@ class S {
       unmute: 'Unmute',
       start: 'Start the conversation',
       deleted: 'This message was deleted',
+      imageDeleted: 'The picture was deleted after the keeping time',
+      storageFull: 'The center’s storage is full, so pictures cannot be sent now. Tell the center’s admin.',
       notSent: 'Not sent — tap to retry',
       sending: 'Sending...',
       edited: ' · edited',
@@ -4270,6 +4287,7 @@ class S {
       error: 'Something went wrong. Try again.',
       fab: 'Recite',
       liveBadge: 'Live recitation',
+      noRoom: 'The recitation was sent without the recording: the center’s storage is full.',
       audioDeleted: 'The recording was deleted after review to save space',
       loading: 'Loading the ayahs…',
       appNoAudio: 'In the app the recitation is sent with its result, without a recording.',
@@ -4545,7 +4563,7 @@ class S {
       sinceStart: 'Since the goal started: {actual} of {expected} pages',
       forecast: 'Expected finish',
       forecastGoal: 'At the goal pace',
-      noPace: 'No new memorisation lately',
+      noPace: 'Not enough recent memorisation to forecast yet (3 days in the last 4 weeks)',
       noGoal: 'No goal set yet',
       goalStatus: {'ahead': 'Ahead', 'on_track': 'On track', 'behind': 'Behind', 'done': 'Done'},
       setGoal: 'Set goal',
@@ -5187,6 +5205,7 @@ class S {
       appName: 'Bustan Al-Quran',
       signOut: 'Çıkış yap',
       loadFailed: 'Veriler yüklenemedi',
+      partFailed: 'Bu bölüm gösterilemedi',
       checkConnection: 'İnternet bağlantınızı kontrol edip tekrar deneyin',
       retry: 'Tekrar dene',
       noPermission: 'Bunu yapma izniniz yok',
@@ -5629,6 +5648,8 @@ class S {
       audioNever: 'Kayıtları silme',
       audioSave: 'Kaydet',
       audioSaved: 'Kayıt saklama süresi kaydedildi',
+      chatTitle: 'Sohbet resimlerinin saklanma süresi',
+      chatHint: 'Sohbetlerde gönderilen resimler yer açmak için gönderildikten bu süre sonra silinir; mesaj metinleri kalır.',
       off: 'Bu özellik merkezinizde kapalı.',
     ),
     chat: SChat(
@@ -5653,6 +5674,8 @@ class S {
       unmute: 'Sesi aç',
       start: 'Konuşmayı başlatın',
       deleted: 'Bu mesaj silindi',
+      imageDeleted: 'Resim saklama süresinden sonra silindi',
+      storageFull: 'Merkezin depolama alanı dolu, şu an resim gönderilemiyor. Merkez yönetimine bildirin.',
       notSent: 'Gönderilmedi — yeniden denemek için dokunun',
       sending: 'Gönderiliyor...',
       edited: ' · düzenlendi',
@@ -5937,6 +5960,7 @@ class S {
       error: 'Bir hata oluştu. Tekrar deneyin.',
       fab: 'Dinlet',
       liveBadge: 'Canlı dinletme',
+      noRoom: 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
       audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       loading: 'Ayetler yükleniyor…',
       appNoAudio: 'Uygulamada dinletme ses kaydı olmadan sonucuyla gönderilir.',
@@ -6212,7 +6236,7 @@ class S {
       sinceStart: 'Hedef başladığından beri: {expected} sayfadan {actual}',
       forecast: 'Beklenen bitiş',
       forecastGoal: 'Hedef temposunda',
-      noPace: 'Son zamanlarda yeni ezber yok',
+      noPace: 'Tahmin için yakın zamanda yeterli ezber yok (son 4 haftada 3 gün gerekir)',
       noGoal: 'Henüz hedef belirlenmedi',
       goalStatus: {'ahead': 'Önde', 'on_track': 'Planda', 'behind': 'Geride', 'done': 'Tamamlandı'},
       setGoal: 'Hedef belirle',
@@ -6854,6 +6878,7 @@ class S {
       appName: 'Bustan Al-Quran',
       signOut: 'Se déconnecter',
       loadFailed: 'Impossible de charger les données',
+      partFailed: 'Cette partie n’a pas pu être affichée',
       checkConnection: 'Vérifiez votre connexion internet et réessayez',
       retry: 'Réessayer',
       noPermission: 'Vous n’avez pas l’autorisation de faire cela',
@@ -7296,6 +7321,8 @@ class S {
       audioNever: 'Ne jamais les supprimer',
       audioSave: 'Enregistrer',
       audioSaved: 'Durée de conservation enregistrée',
+      chatTitle: 'Durée de conservation des images des conversations',
+      chatHint: 'Les images envoyées dans les conversations sont supprimées après ce délai pour gagner de la place ; le texte des messages reste.',
       off: 'Cette fonctionnalité est désactivée dans votre centre.',
     ),
     chat: SChat(
@@ -7320,6 +7347,8 @@ class S {
       unmute: 'Réactiver le son',
       start: 'Commencez la conversation',
       deleted: 'Ce message a été supprimé',
+      imageDeleted: 'L’image a été supprimée après la durée de conservation',
+      storageFull: 'L’espace de stockage du centre est plein : impossible d’envoyer des images pour l’instant. Prévenez l’administration du centre.',
       notSent: 'Non envoyé — appuyez pour réessayer',
       sending: 'Envoi...',
       edited: ' · modifié',
@@ -7604,6 +7633,7 @@ class S {
       error: 'Une erreur s’est produite. Réessayez.',
       fab: 'Réciter',
       liveBadge: 'Récitation en direct',
+      noRoom: 'La récitation a été envoyée sans l’enregistrement : l’espace de stockage du centre est plein.',
       audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       loading: 'Chargement des âyahs…',
       appNoAudio: 'Dans l’application, la récitation est envoyée avec son résultat, sans enregistrement.',
@@ -7879,7 +7909,7 @@ class S {
       sinceStart: 'Depuis le début de l’objectif : {actual} pages sur {expected}',
       forecast: 'Fin prévue',
       forecastGoal: 'Au rythme de l’objectif',
-      noPace: 'Pas de nouvelle mémorisation récemment',
+      noPace: 'Pas assez de mémorisation récente pour une prévision (3 jours sur les 4 dernières semaines)',
       noGoal: 'Aucun objectif défini',
       goalStatus: {'ahead': 'En avance', 'on_track': 'Dans les temps', 'behind': 'En retard', 'done': 'Atteint'},
       setGoal: 'Définir l’objectif',

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
-import { resolveError } from '@/lib/platform/error-actions';
+import { resolveError, sendTestError } from '@/lib/platform/error-actions';
 
 interface Group {
   fingerprint: string;
@@ -44,8 +44,8 @@ const SOURCE: Record<string, { label: string; cls: string }> = {
 const when = (iso: string) => new Date(iso).toLocaleString('ar', { dateStyle: 'short', timeStyle: 'short' });
 
 // Crashes from the website, the app and the server (0076), one row per bug.
-export default async function PlatformErrorsPage({ searchParams }: { searchParams: Promise<{ status?: string; fp?: string }> }) {
-  const { status = 'open', fp } = await searchParams;
+export default async function PlatformErrorsPage({ searchParams }: { searchParams: Promise<{ status?: string; fp?: string; tested?: string; test_error?: string }> }) {
+  const { status = 'open', fp, tested, test_error } = await searchParams;
   const supabase = await createClient();
   const [{ data, error }, { data: detail }] = await Promise.all([
     supabase.rpc('platform_error_groups', { p_status: status, p_days: 30 }),
@@ -60,6 +60,14 @@ export default async function PlatformErrorsPage({ searchParams }: { searchParam
       <p className="mb-4 text-sm text-gray-500">
         كل خطأ يحدث عند أي مستخدم في الموقع أو التطبيق أو الخادم، مجمّعًا حسب نوعه. يصلك إشعار على هاتفك عند ظهور خطأ جديد، أو عند عودة خطأ علّمته «مُصلَح».
       </p>
+      <form action={sendTestError} className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+        <SubmitButton className="rounded border bg-white px-3 py-1.5 hover:bg-gray-50" pendingText="جارٍ الإرسال...">
+          إرسال خطأ تجريبي
+        </SubmitButton>
+        <span className="text-xs text-gray-500">للتأكد أن المراقبة تعمل: يظهر في القائمة ويصلك إشعاره على هاتفك.</span>
+        {tested && <span className="text-xs font-semibold text-green-700">أُرسل — تجده أعلى القائمة.</span>}
+        {test_error && <span className="text-xs font-semibold text-red-700">لم يُرسل: {test_error}</span>}
+      </form>
       <div className="mb-4 flex gap-2 text-sm">
         {[
           ['open', 'مفتوحة'],

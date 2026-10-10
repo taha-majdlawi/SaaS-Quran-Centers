@@ -13,5 +13,7 @@ SPEC = {'cfeat': ('The center admin\'s feature switches (center_features, 0088).
   ('audioNever', 'لا تحذف التسجيلات', 'Never delete them'),
   ('audioSave', 'حفظ المدة', 'Save'),
   ('audioSaved', 'تم حفظ مدة حفظ التسجيلات', 'Recording retention saved'),
+  ('chatTitle', 'مدة حفظ صور المحادثات', 'How long chat pictures are kept'),
+  ('chatHint', 'الصور المرسلة في المحادثات تُحذف بعد هذه المدة من إرسالها لتوفير المساحة، وتبقى الرسائل مكتوبة.', 'Pictures sent in conversations are deleted this long after they were sent, to save space; the messages’ text stays.'),
   ('off', 'هذه الميزة متوقفة في مركزك.', 'This feature is switched off in your center.'),
 )),}

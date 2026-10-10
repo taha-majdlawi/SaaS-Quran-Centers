@@ -69,6 +69,7 @@ class ChatMessage {
     this.readAt,
     this.imagePath,
     this.deletedAt,
+    this.imageDeletedAt,
     this.localImage,
     this.sending = false,
     this.failed = false,
@@ -81,6 +82,8 @@ class ChatMessage {
   final String? readAt;
   final String? imagePath;
   final String? deletedAt;
+  /// The picture was deleted after the center's keeping time (0091); the message stays.
+  final String? imageDeletedAt;
   /// Set only on the optimistic local echo, before the server confirms it (an in-memory picture preview).
   final Uint8List? localImage;
   /// True for the brief window between tapping send and the server confirming it.
@@ -101,6 +104,7 @@ class ChatMessage {
         readAt: readAt ?? this.readAt,
         imagePath: imagePath ?? this.imagePath,
         deletedAt: deletedAt,
+        imageDeletedAt: imageDeletedAt,
         // kept while sending OR failed (the retry bubble still needs its preview); dropped only once fully confirmed
         localImage: ((sending ?? this.sending) || (failed ?? this.failed)) ? localImage : null,
         sending: sending ?? this.sending,
@@ -116,6 +120,7 @@ class ChatMessage {
         readAt: j['read_at'] as String?,
         imagePath: j['image_path'] as String?,
         deletedAt: j['deleted_at'] as String?,
+        imageDeletedAt: j['image_deleted_at'] as String?,
       );
 }
 
@@ -259,7 +264,14 @@ class CommsRepository {
     final ext = const {'jpg', 'jpeg', 'png', 'webp'}.contains(extension.toLowerCase()) ? extension.toLowerCase() : 'jpg';
     final path = '$orgId/$me/${_uuid.v4()}.${ext == 'jpeg' ? 'jpg' : ext}';
     final mime = ext == 'png' ? 'image/png' : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
-    await _client.storage.from('chat-images').uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
+    try {
+      await _client.storage.from('chat-images').uploadBinary(path, bytes, fileOptions: FileOptions(contentType: mime));
+    } on StorageException {
+      // refused because the center's storage is full (0091)? say so
+      final st = await _client.rpc('org_storage', params: {'p_org': orgId}).catchError((_) => null);
+      if (st is Map && st['full'] == true) throw StateError(currentStrings.chat.storageFull);
+      rethrow;
+    }
     return Map<String, dynamic>.from(await _client.rpc('send_chat_message', params: {
       'p_org': orgId,
       'p_other': otherId,

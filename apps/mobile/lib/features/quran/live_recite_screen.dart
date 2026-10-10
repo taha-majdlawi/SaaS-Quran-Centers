@@ -53,6 +53,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
   List<String> _all = const []; // every word of the session so far, the unconfirmed last one too
   ({File file, int seconds})? _audio; // the recording, once finished
   String? _audioPath; // ... once uploaded (a second try does not upload it again)
+  bool _noRoom = false; // the recording could not go: the center's storage is full (0091)
   bool _canRecord = false;
   List<String> _bias = const []; // the passage's words, to bias the recogniser towards them
   bool _stopping = false; // the recording is being closed (a second or so)
@@ -300,6 +301,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
     await _audio?.file.delete().catchError((_) => _audio!.file);
     _audio = null;
     _audioPath = null;
+    _noRoom = false;
     // recorded from the start, where the phone can (Android 13+)
     _nativeMode = false;
     if (_canRecord) {
@@ -398,7 +400,13 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         try {
           _audioPath = await _api.uploadLiveAudio(orgId: _orgId, studentId: _studentId!, file: audio.file);
         } catch (e, st) {
-          ErrorReporter.instance.report(e, st, context: 'live recite: upload'); // the result still goes
+          // the result still goes; a full storage is said, anything else reported
+          final room = await _api.storageFull(_orgId);
+          if (room) {
+            _noRoom = true;
+          } else {
+            ErrorReporter.instance.report(e, st, context: 'live recite: upload');
+          }
         }
       }
       await _api.submitLive(
@@ -664,6 +672,7 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         ]),
       if (_phase == _Phase.sent) ...[
         MessageBanner(message: t.sent, isError: false),
+        if (_noRoom) Padding(padding: const EdgeInsets.only(top: 6), child: MessageBanner(message: t.noRoom)),
         const SizedBox(height: 8),
       ],
       if (_phase == _Phase.result || _phase == _Phase.sending || _phase == _Phase.sent) ...[

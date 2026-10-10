@@ -107,7 +107,11 @@ Future<PassageRepeat?> showRangeSheet(BuildContext context, {required int max, r
               Row(children: [
                 Expanded(child: FilledButton.icon(onPressed: () => Navigator.pop(context, PassageRepeat(from < to ? from : to, from < to ? to : from, times)), icon: const Icon(Icons.repeat_rounded), label: Text(t.apply))),
                 const SizedBox(width: 8),
-                OutlinedButton(onPressed: () => Navigator.pop(context, const PassageRepeat(0, 0, 0)), child: Text(t.rangeOff)),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52)), // in a row: not the theme's full width
+                  onPressed: () => Navigator.pop(context, const PassageRepeat(0, 0, 0)),
+                  child: Text(t.rangeOff),
+                ),
               ]),
             ]),
           ),
@@ -355,7 +359,7 @@ class _RecitePanelState extends State<RecitePanel> {
       if (_phase == _Phase.recording)
         Row(children: [
           FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700, minimumSize: const Size(0, 52)), // in a row
             onPressed: _stop,
             icon: const Icon(Icons.stop_rounded),
             label: Text(t.stop),
@@ -404,7 +408,7 @@ class _RecitePanelState extends State<RecitePanel> {
         Row(children: [
           Expanded(child: FilledButton.icon(onPressed: _send, icon: const Icon(Icons.send_rounded), label: Text(t.send))),
           const SizedBox(width: 8),
-          OutlinedButton.icon(onPressed: _again, icon: const Icon(Icons.replay_rounded), label: Text(t.again)),
+          OutlinedButton.icon(style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52)), onPressed: _again, icon: const Icon(Icons.replay_rounded), label: Text(t.again)),
         ]),
       ],
       if (_phase == _Phase.sent) ...[

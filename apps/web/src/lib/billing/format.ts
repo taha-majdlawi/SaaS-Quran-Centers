@@ -36,7 +36,7 @@ export interface BillingPlan {
   price_cents: number;
   yearly_price_cents: number | null;
   currency: string;
-  limits: { max_students?: number | null; max_teachers?: number | null };
+  limits: { max_students?: number | null; max_teachers?: number | null; storage_mb?: number | null };
   is_free?: boolean;
 }
 

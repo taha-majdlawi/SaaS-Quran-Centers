@@ -21,6 +21,8 @@ SPEC = {'chat': ('Messages.', (
   ('unmute', 'تفعيل التنبيهات', 'Unmute'),
   ('start', 'ابدأ المحادثة', 'Start the conversation'),
   ('deleted', 'حُذفت هذه الرسالة', 'This message was deleted'),
+  ('imageDeleted', 'حُذفت الصورة بعد مدة الحفظ', 'The picture was deleted after the keeping time'),
+  ('storageFull', 'امتلأت مساحة التخزين في المركز، فلا يمكن إرسال صور الآن. أخبر إدارة المركز.', 'The center’s storage is full, so pictures cannot be sent now. Tell the center’s admin.'),
   ('notSent', 'لم يُرسل — اضغط لإعادة المحاولة', 'Not sent — tap to retry'),
   ('sending', 'جارٍ الإرسال...', 'Sending...'),
   ('edited', ' · عُدّلت', ' · edited'),

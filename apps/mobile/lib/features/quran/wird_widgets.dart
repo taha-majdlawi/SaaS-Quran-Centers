@@ -128,7 +128,8 @@ class _WirdCardState extends State<WirdCard> {
           chip
         else
           FilledButton.icon(
-            style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+            // the theme's full-width minimum has no width to fill in a row: the whole card failed to lay out (blank)
+            style: FilledButton.styleFrom(visualDensity: VisualDensity.compact, minimumSize: const Size(0, 40)),
             onPressed: () => _open(path),
             icon: Icon(widget.canRecite ? Icons.mic_rounded : Icons.auto_stories_rounded, size: 16),
             label: Text(widget.canRecite ? W.recite : W.open),

@@ -12,7 +12,7 @@ interface Plan {
   price_cents: number;
   yearly_price_cents: number | null;
   currency: string;
-  limits: { max_students?: number | null; max_teachers?: number | null };
+  limits: { max_students?: number | null; max_teachers?: number | null; storage_mb?: number | null };
   features: Record<string, boolean>;
   is_active: boolean;
 }
@@ -48,6 +48,10 @@ function PlanForm({ plan }: { plan?: Plan }) {
       <label className="text-sm">
         أقصى معلمين (فارغ = بلا حد)
         <input name="maxTeachers" type="number" min="0" defaultValue={plan?.limits?.max_teachers ?? ''} className={field} />
+      </label>
+      <label className="text-sm">
+        مساحة التخزين بالميغابايت (فارغ = بلا حد، لا تظهر في الموقع التسويقي)
+        <input name="storageMb" type="number" min="0" defaultValue={plan?.limits?.storage_mb ?? ''} className={field} />
       </label>
       <label className="flex items-center gap-2 self-end text-sm">
         <input type="checkbox" name="active" defaultChecked={plan?.is_active ?? true} /> فعّالة
