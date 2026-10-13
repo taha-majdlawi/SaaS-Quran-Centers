@@ -7,7 +7,7 @@ export default async function ConfirmPage() {
   const { t } = await getI18n();
   return (
     <AuthCard title={t.confirmEmail.title}>
-      <ConfirmEmail t={t.confirmEmail} signUp={t.signup} />
+      <ConfirmEmail t={t.confirmEmail} signUp={t.signup} common={t.common} />
     </AuthCard>
   );
 }
