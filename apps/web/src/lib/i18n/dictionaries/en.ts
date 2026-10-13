@@ -233,6 +233,10 @@ export const en: Dictionary = {
     slugTaken: 'The center link “{slug}” has been taken. Choose another link to finish creating your center.',
     finish: 'Finish creating the center',
     signIn: 'Sign in',
+    finishSignIn: 'If your email is already confirmed (mail services sometimes open the link before you), sign in here to finish creating your center or joining:',
+    signInFinish: 'Sign in and finish',
+    notConfirmed: 'Your email is not confirmed yet: open the latest confirmation email, or sign up again for a new link.',
+    wrongLogin: 'Wrong email or password.',
   },
 
   consent: {

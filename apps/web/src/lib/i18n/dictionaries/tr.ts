@@ -233,6 +233,10 @@ export const tr: Dictionary = {
     slugTaken: '“{slug}” merkez bağlantısı artık kullanımda. Merkezinizi oluşturmayı tamamlamak için başka bir bağlantı seçin.',
     finish: 'Merkezi oluşturmayı tamamla',
     signIn: 'Giriş yap',
+    finishSignIn: 'E-postanız zaten onaylandıysa (e-posta hizmetleri bazen bağlantıyı sizden önce açar), merkezinizi oluşturmayı veya katılmayı tamamlamak için buradan giriş yapın:',
+    signInFinish: 'Giriş yap ve tamamla',
+    notConfirmed: 'E-postanız henüz onaylanmadı: gelen son onay e-postasını açın veya yeni bağlantı için tekrar kaydolun.',
+    wrongLogin: 'E-posta veya şifre hatalı.',
   },
 
   consent: {

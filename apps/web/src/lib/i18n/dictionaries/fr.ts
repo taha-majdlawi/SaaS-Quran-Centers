@@ -233,6 +233,10 @@ export const fr: Dictionary = {
     slugTaken: 'Le lien de centre « {slug} » est déjà pris. Choisissez-en un autre pour terminer la création de votre centre.',
     finish: 'Terminer la création du centre',
     signIn: 'Se connecter',
+    finishSignIn: 'Si votre e-mail est déjà confirmé (les services de messagerie ouvrent parfois le lien avant vous), connectez-vous ici pour terminer la création de votre centre ou votre inscription :',
+    signInFinish: 'Se connecter et terminer',
+    notConfirmed: "Votre e-mail n'est pas encore confirmé : ouvrez le dernier e-mail de confirmation, ou réinscrivez-vous pour un nouveau lien.",
+    wrongLogin: 'E-mail ou mot de passe incorrect.',
   },
 
   consent: {
