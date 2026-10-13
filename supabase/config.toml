@@ -24,3 +24,17 @@ enable_signup = true
 
 [realtime]
 enabled = true
+
+# Arabic emails with the product's look (docs/EMAIL.md). On the hosted project the same
+# subjects and files are pasted in Authentication -> Emails -> Templates.
+[auth.email.template.confirmation]
+subject = "تأكيد بريدك في بستان القرآن"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "إعادة تعيين كلمة السر - بستان القرآن"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "تأكيد بريدك الجديد - بستان القرآن"
+content_path = "./supabase/templates/email_change.html"

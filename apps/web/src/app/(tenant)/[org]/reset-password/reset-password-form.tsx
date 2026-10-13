@@ -9,9 +9,9 @@ import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 type Status = 'checking' | 'ready' | 'invalid';
 
 /**
- * The recovery link lands here with the session encoded in the URL hash -
- * the browser client parses it on init and fires PASSWORD_RECOVERY, there is
- * nothing to read server-side (see forgot-password/actions.ts for why).
+ * The recovery link lands here with ?token_hash= (our template, any device) or with
+ * the session in the URL (the default template) - the browser client parses that on
+ * init and fires PASSWORD_RECOVERY; there is nothing to read server-side.
  */
 export function ResetPasswordForm({ t }: { t: Dictionary['reset'] }) {
   const [status, setStatus] = useState<Status>('checking');
@@ -34,6 +34,18 @@ export function ResetPasswordForm({ t }: { t: Dictionary['reset'] }) {
         setStatus('ready');
       }
     });
+
+    // The link from our email template (supabase/templates/recovery.html) carries a
+    // one-time token_hash: verified here, so it works on any device - the older link
+    // (?code=) only worked in the browser that asked for it.
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash');
+    if (tokenHash && params.get('type') === 'recovery') {
+      settled = true;
+      // drop the token from the address bar and history once read
+      window.history.replaceState(null, '', window.location.pathname);
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' }).then(({ error }) => setStatus(error ? 'invalid' : 'ready'));
+    }
 
     const timeout = setTimeout(() => {
       if (!settled) setStatus('invalid');

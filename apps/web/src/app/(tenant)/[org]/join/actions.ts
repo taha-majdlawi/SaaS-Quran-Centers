@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getI18n } from '@/lib/i18n/server';
+import { confirmUrl, type PendingSignup } from '@/lib/auth/signup';
 
 /** Invitee has no account yet - create one, then accept in the same request. */
 export async function signUpAndAcceptInvitation(formData: FormData) {
@@ -12,23 +13,27 @@ export async function signUpAndAcceptInvitation(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  // with "Confirm email" on, /confirm accepts the invitation from what waits here
+  const pending: PendingSignup = { pending_invite: token };
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: pending, emailRedirectTo: confirmUrl() },
+  });
   if (signUpError) {
     redirect(`/join?token=${token}&error=${encodeURIComponent(signUpError.message)}`);
   }
 
   if (!signUpData.session) {
-    // "Confirm email" is on for this project - no session yet, so
-    // accept_invitation (which requires auth.uid()) would fail silently.
-    redirect(
-      `/join?token=${token}&error=${encodeURIComponent((await getI18n()).t.join.errorConfirmEmail)}`,
-    );
+    // "Confirm email" is on: the link in the email accepts the invitation (/confirm)
+    redirect(`/join?token=${token}&sent=${encodeURIComponent(email)}`);
   }
 
   const { error: acceptError } = await supabase.rpc('accept_invitation', { invite_token: token });
   if (acceptError) {
     redirect(`/join?token=${token}&error=${encodeURIComponent(acceptError.message)}`);
   }
+  await supabase.auth.updateUser({ data: { pending_invite: null } satisfies PendingSignup });
 
   redirect('/dashboard');
 }

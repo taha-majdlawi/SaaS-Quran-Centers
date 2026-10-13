@@ -11,10 +11,10 @@ export default async function JoinPage({
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ token?: string; error?: string }>;
+  searchParams: Promise<{ token?: string; error?: string; sent?: string }>;
 }) {
   const { org } = await params;
-  const { token, error } = await searchParams;
+  const { token, error, sent } = await searchParams;
   const { t } = await getI18n();
 
   if (!token) {
@@ -43,6 +43,15 @@ export default async function JoinPage({
 
   const roleLabel = t.join.roles[invitation.role] ?? invitation.role;
   const title = fmt(t.join.inviteFrom, { org: invitation.organization_name });
+
+  if (sent && !user) {
+    // "Confirm email" is on: the link in the email finishes joining
+    return (
+      <AuthCard title={title} subtitle={fmt(t.join.asRole, { role: roleLabel })}>
+        <p className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">{fmt(t.join.checkEmail, { email: sent })}</p>
+      </AuthCard>
+    );
+  }
 
   if (user) {
     return (

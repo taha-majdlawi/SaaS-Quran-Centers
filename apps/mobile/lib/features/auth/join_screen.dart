@@ -64,7 +64,13 @@ class _JoinScreenState extends State<JoinScreen> {
         if (_haveAccount) {
           await client.auth.signInWithPassword(email: email, password: password);
         } else {
-          final res = await client.auth.signUp(email: email, password: password);
+          // with "Confirm email" on, the link in the email accepts the invitation (web /confirm)
+          final res = await client.auth.signUp(
+            email: email,
+            password: password,
+            data: {'pending_invite': widget.token},
+            emailRedirectTo: 'https://bustan-alquran.com/confirm',
+          );
           if (res.session == null) {
             throw StateError(currentStrings.auth.confirmEmail);
           }
