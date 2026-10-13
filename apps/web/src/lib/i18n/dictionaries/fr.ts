@@ -181,7 +181,7 @@ export const fr: Dictionary = {
     sending: 'Envoi...',
     submit: 'Envoyer le lien de réinitialisation',
     errorEmpty: 'Saisissez votre identifiant ou votre e-mail',
-    errorNoEmail: 'Ce compte n’a pas d’adresse e-mail pour récupérer le mot de passe - demandez à l’administrateur du centre de le réinitialiser depuis la page des membres',
+    errorNoEmail: 'Votre compte se connecte avec un numéro, pas un e-mail : aucun lien ne peut être envoyé. Pour changer votre mot de passe, contactez votre enseignant ou le responsable du centre.',
   },
 
   reset: {
@@ -225,6 +225,7 @@ export const fr: Dictionary = {
   },
 
   confirmEmail: {
+    changed: 'Votre nouvel e-mail est confirmé. Si un lien est aussi arrivé sur votre autre e-mail, ouvrez-le pour terminer le changement, puis connectez-vous avec le nouvel e-mail.',
     title: 'Confirmez votre e-mail',
     checking: 'Confirmation de votre e-mail…',
     finishing: 'Confirmé. Préparation de votre compte…',
@@ -274,6 +275,7 @@ export const fr: Dictionary = {
 
   shell: {
     roles: { admin: 'Administrateur', teacher: 'Enseignant', guardian: 'Parent', student: 'Élève' },
+    myAccount: 'Mon compte',
     signOut: 'Se déconnecter',
     signingOut: 'Déconnexion...',
     platformOwner: 'Mode propriétaire de la plateforme — vous parcourez ce centre en superviseur, pas en membre',

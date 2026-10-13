@@ -12,6 +12,11 @@ export function isEmail(value: string): boolean {
   return value.includes('@');
 }
 
+/** An account that signs in with a number has a made-up address that receives no mail. */
+export function hasRealEmail(email: string | null | undefined): boolean {
+  return !!email && !email.toLowerCase().endsWith(`.${LOGIN_DOMAIN}`);
+}
+
 /** The auth email behind a number-style identifier in a given center. */
 export function toLoginEmail(centerSlug: string, identifier: string): string {
   const id = identifier.trim().toLowerCase();

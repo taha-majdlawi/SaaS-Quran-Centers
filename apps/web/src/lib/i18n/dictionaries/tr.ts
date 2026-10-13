@@ -181,7 +181,7 @@ export const tr: Dictionary = {
     sending: 'Gönderiliyor...',
     submit: 'Sıfırlama bağlantısı gönder',
     errorEmpty: 'Kimliğinizi veya e-postanızı girin',
-    errorNoEmail: 'Bu hesabın şifre kurtarmak için bir e-posta adresi yok - merkez yöneticisinden üyeler sayfasından sıfırlamasını isteyin',
+    errorNoEmail: 'Hesabınız e-postayla değil numarayla giriş yapıyor, bu yüzden bağlantı gönderilemez. Şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
   },
 
   reset: {
@@ -225,6 +225,7 @@ export const tr: Dictionary = {
   },
 
   confirmEmail: {
+    changed: 'Yeni e-postanız onaylandı. Diğer e-postanıza da bir bağlantı geldiyse değişikliği tamamlamak için onu da açın, sonra yeni e-postayla giriş yapın.',
     title: 'E-postanızı onaylayın',
     checking: 'E-postanız onaylanıyor…',
     finishing: 'Onaylandı. Hesabınız hazırlanıyor…',
@@ -274,6 +275,7 @@ export const tr: Dictionary = {
 
   shell: {
     roles: { admin: 'Yönetici', teacher: 'Öğretmen', guardian: 'Veli', student: 'Öğrenci' },
+    myAccount: 'Hesabım',
     signOut: 'Çıkış yap',
     signingOut: 'Çıkış yapılıyor...',
     platformOwner: 'Platform sahibi modu — bu merkeze üye olarak değil, denetçi olarak göz atıyorsunuz',

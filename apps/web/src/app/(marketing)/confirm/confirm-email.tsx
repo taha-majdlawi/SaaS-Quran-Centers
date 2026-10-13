@@ -8,7 +8,7 @@ import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 import { fmt } from '@/lib/i18n/config';
 import { finishSignup, type FinishResult } from './actions';
 
-type Status = 'checking' | 'finishing' | 'invalid' | 'error' | 'slugTaken';
+type Status = 'checking' | 'finishing' | 'invalid' | 'error' | 'slugTaken' | 'changed';
 
 /**
  * The link in a confirmation email lands here. Our templates (supabase/templates) send a
@@ -66,6 +66,8 @@ export function ConfirmEmail({ t, signUp, common }: { t: Dictionary['confirmEmai
         setReason(error.message);
         return setStatus('invalid');
       }
+      // a new email for an existing account (/account): nothing else to finish
+      if (type === 'email_change' || hash.get('type') === 'email_change') return setStatus('changed');
       setStatus('finishing');
       follow(await finishSignup());
     })().catch((e: unknown) => {
@@ -105,6 +107,17 @@ export function ConfirmEmail({ t, signUp, common }: { t: Dictionary['confirmEmai
 
   if (status === 'checking' || status === 'finishing') {
     return <p className="py-6 text-center text-sm text-gray-500">{status === 'checking' ? t.checking : t.finishing}</p>;
+  }
+
+  if (status === 'changed') {
+    return (
+      <div className="flex flex-col gap-3 text-center">
+        <p className="rounded-lg bg-green-50 px-3 py-3 text-sm text-green-700">{t.changed}</p>
+        <a href="/login" className="text-sm font-semibold text-brand">
+          {t.signIn}
+        </a>
+      </div>
+    );
   }
 
   if (status === 'slugTaken' && taken) {
