@@ -148,6 +148,7 @@ export const fr: Dictionary = {
     errorRequired: 'Tous les champs sont obligatoires',
     errorSlug: 'Lien invalide - lettres anglaises minuscules, chiffres et tirets uniquement, sans mots réservés',
     errorConfirmEmail: 'Vérifiez d’abord votre e-mail pour confirmer votre compte - puis revenez terminer la création du centre',
+    checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer la création de votre centre (vérifiez vos spams s'il n'est pas arrivé).",
     errorSlugTaken: 'Ce lien est déjà pris, essayez-en un autre',
     errorEmailTaken: 'Cet e-mail est déjà inscrit - connectez-vous plutôt',
     errorWeakPassword: 'Mot de passe trop faible - utilisez au moins 8 caractères',
@@ -213,7 +214,19 @@ export const fr: Dictionary = {
     creating: 'Création et adhésion...',
     create: 'Créer le compte et rejoindre',
     errorConfirmEmail: 'Vérifiez d’abord votre e-mail pour confirmer votre compte, puis rouvrez le lien d’invitation pour terminer',
+    checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer votre inscription (vérifiez vos spams s'il n'est pas arrivé).",
     roles: { admin: 'administrateur', teacher: 'enseignant', guardian: 'parent', student: 'élève' },
+  },
+
+  confirmEmail: {
+    title: 'Confirmez votre e-mail',
+    checking: 'Confirmation de votre e-mail…',
+    finishing: 'Confirmé. Préparation de votre compte…',
+    invalid: 'Ce lien est invalide, déjà utilisé ou expiré. Si vous avez déjà confirmé votre e-mail, connectez-vous.',
+    error: "Votre e-mail est confirmé, mais la dernière étape n'a pas pu être terminée. Connectez-vous ou contactez-nous.",
+    slugTaken: 'Le lien de centre « {slug} » est déjà pris. Choisissez-en un autre pour terminer la création de votre centre.',
+    finish: 'Terminer la création du centre',
+    signIn: 'Se connecter',
   },
 
   consent: {

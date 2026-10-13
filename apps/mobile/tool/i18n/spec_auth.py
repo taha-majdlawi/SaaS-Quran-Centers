@@ -22,7 +22,7 @@ SPEC = {'auth': ('Sign in, join, onboarding and the center picker.', (
   ('signInTo', 'دخول إلى {name}', 'Sign in to {name}'),
   ('signIn', 'دخول', 'Sign in'),
   ('whoHint', 'الدخول للمعلمين والإدارة وأولياء الأمور والطلاب، كلٌّ حسب صلاحياته في المركز.', 'Sign-in for teachers, admins, guardians and students, each with their access in the center.'),
-  ('confirmEmail', 'تحقق من بريدك لتأكيد الحساب أولًا، ثم افتح رابط الدعوة من جديد لإكمال الانضمام', 'Check your email to confirm the account first, then open the invitation link again to finish joining'),
+  ('confirmEmail', 'أرسلنا رابط تأكيد إلى بريدك: افتحه لإكمال الانضمام، ثم سجّل دخولك هنا (تفقّد الرسائل غير المرغوبة إن لم يصل)', 'We sent a confirmation link to your email: open it to finish joining, then sign in here (check spam if it isn’t there)'),
   ('joinFailed', 'تعذّر إكمال الانضمام، تأكد من الإنترنت وحاول مرة أخرى', 'Couldn’t finish joining; check the internet and try again'),
   ('joinTitle', 'الانضمام إلى مركز', 'Join a center'),
   ('invalidInvite', 'الدعوة غير صالحة', 'Invalid invitation'),

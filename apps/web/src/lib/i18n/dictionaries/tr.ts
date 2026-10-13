@@ -148,6 +148,7 @@ export const tr: Dictionary = {
     errorRequired: 'Tüm alanlar zorunludur',
     errorSlug: 'Geçersiz bağlantı - yalnızca küçük İngilizce harfler, rakamlar ve tire; ayrılmış kelimeler olmadan',
     errorConfirmEmail: 'Önce hesabınızı onaylamak için e-postanızı kontrol edin - sonra merkezi oluşturmayı bitirmek için geri dönün',
+    checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Merkezinizi oluşturmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     errorSlugTaken: 'Bu bağlantı zaten alınmış, başka birini deneyin',
     errorEmailTaken: 'Bu e-posta zaten kayıtlı - bunun yerine giriş yapın',
     errorWeakPassword: 'Şifre çok zayıf - en az 8 karakter kullanın',
@@ -213,7 +214,19 @@ export const tr: Dictionary = {
     creating: 'Oluşturuluyor ve katılınıyor...',
     create: 'Hesap oluştur ve katıl',
     errorConfirmEmail: 'Önce hesabınızı onaylamak için e-postanızı kontrol edin, sonra katılımı tamamlamak için davet bağlantısını yeniden açın',
+    checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Katılmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     roles: { admin: 'yönetici', teacher: 'öğretmen', guardian: 'veli', student: 'öğrenci' },
+  },
+
+  confirmEmail: {
+    title: 'E-postanızı onaylayın',
+    checking: 'E-postanız onaylanıyor…',
+    finishing: 'Onaylandı. Hesabınız hazırlanıyor…',
+    invalid: 'Bu bağlantı geçersiz, kullanılmış veya süresi dolmuş. E-postanızı zaten onayladıysanız giriş yapın.',
+    error: 'E-postanız onaylandı ancak son adım tamamlanamadı. Giriş yapın veya bize ulaşın.',
+    slugTaken: '“{slug}” merkez bağlantısı artık kullanımda. Merkezinizi oluşturmayı tamamlamak için başka bir bağlantı seçin.',
+    finish: 'Merkezi oluşturmayı tamamla',
+    signIn: 'Giriş yap',
   },
 
   consent: {

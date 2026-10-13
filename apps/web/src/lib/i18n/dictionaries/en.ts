@@ -148,6 +148,7 @@ export const en: Dictionary = {
     errorRequired: 'All fields are required',
     errorSlug: 'Invalid link - lowercase English letters, numbers and dashes only, no reserved words',
     errorConfirmEmail: 'Check your email to confirm your account first - then come back to finish creating the center',
+    checkEmail: "We sent a confirmation link to {email}. Open it to finish creating your center (check your spam folder if it isn't there).",
     errorSlugTaken: 'This link is already taken, try another one',
     errorEmailTaken: 'This email is already registered - sign in instead',
     errorWeakPassword: 'Password too weak - use at least 8 characters',
@@ -213,7 +214,19 @@ export const en: Dictionary = {
     creating: 'Creating and joining...',
     create: 'Create account and join',
     errorConfirmEmail: 'Check your email to confirm your account first, then open the invitation link again to finish joining',
+    checkEmail: "We sent a confirmation link to {email}. Open it to finish joining (check your spam folder if it isn't there).",
     roles: { admin: 'admin', teacher: 'teacher', guardian: 'guardian', student: 'student' },
+  },
+
+  confirmEmail: {
+    title: 'Confirm your email',
+    checking: 'Confirming your email…',
+    finishing: 'Confirmed. Setting up your account…',
+    invalid: 'This link is invalid, already used or expired. If you have already confirmed your email, sign in.',
+    error: 'Your email is confirmed, but the last step could not be finished. Sign in or contact us.',
+    slugTaken: 'The center link “{slug}” has been taken. Choose another link to finish creating your center.',
+    finish: 'Finish creating the center',
+    signIn: 'Sign in',
   },
 
   consent: {
