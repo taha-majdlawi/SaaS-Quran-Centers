@@ -50,4 +50,5 @@ T = {'thisCenter': 'bu merkez',
  'registerCenter': 'Web sitesinde yeni bir merkez kaydedin ↗',
  'pickCenter': 'Merkezi seçin',
  'noCenters': 'Hesabınız henüz hiçbir merkeze bağlı değil',
+ 'numberReset': 'Hesabınız e-postayla değil numarayla giriş yapıyor: şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
  'noCentersHint': 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın'}

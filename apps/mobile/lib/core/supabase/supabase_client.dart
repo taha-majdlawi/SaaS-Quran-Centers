@@ -9,10 +9,16 @@ import 'secure_local_storage.dart';
 class AppSupabase {
   AppSupabase._();
 
+  /// The project address and public key (a second, session-less client checks a password).
+  static String url = '';
+  static String publishableKey = '';
+
   static Future<void> initialize({
     required String url,
     required String publishableKey,
   }) {
+    AppSupabase.url = url;
+    AppSupabase.publishableKey = publishableKey;
     // Same key format supabase_flutter's own default storage would use
     // (sb-<project-ref>-auth-token) - only the storage backend changes, from
     // plain SharedPreferences to the OS keychain/keystore, so a signed-in

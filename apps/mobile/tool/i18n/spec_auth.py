@@ -51,5 +51,6 @@ SPEC = {'auth': ('Sign in, join, onboarding and the center picker.', (
   ('registerCenter', 'تسجيل مركز جديد على الموقع ↗', 'Register a new center on the website ↗'),
   ('pickCenter', 'اختر المركز', 'Choose the center'),
   ('noCenters', 'حسابك غير مرتبط بأي مركز بعد', 'Your account isn’t linked to any center yet'),
+  ('numberReset', 'حسابك يدخل برقم وليس ببريد إلكتروني: لتغيير كلمة السر تواصل مع معلمك أو مشرف المركز.', 'Your account signs in with a number, not an email: to change your password, contact your teacher or the center supervisor.'),
   ('noCentersHint', 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر', 'Ask the center admin to invite you, or sign in with another account'),
 ))}

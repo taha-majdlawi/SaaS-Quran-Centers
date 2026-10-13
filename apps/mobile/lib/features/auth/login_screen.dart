@@ -131,6 +131,18 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).auth.codeFirst)));
       return;
     }
+    // a number login has no inbox: the center changes its password
+    final id = _emailController.text.trim();
+    if (id.isNotEmpty && !id.contains('@')) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(tr(context).auth.numberReset),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(MaterialLocalizations.of(context).okButtonLabel))],
+        ),
+      );
+      return;
+    }
     final uri = Uri.parse('https://$slug.bustan-alquran.com/forgot-password');
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {

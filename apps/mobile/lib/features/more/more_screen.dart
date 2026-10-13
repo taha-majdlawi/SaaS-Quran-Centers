@@ -100,6 +100,15 @@ class MoreScreen extends StatelessWidget {
               child: GardenCard(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Column(children: [
+                  // the teacher's / admin's own email and password (students' accounts are the center's)
+                  if (membership?.role == OrgRole.teacher || membership?.role == OrgRole.admin)
+                    ListTile(
+                      leading: const IconBubble(Icons.manage_accounts_rounded, size: 36, color: Color(0xFF1E7A54)),
+                      title: Text(t.myAccount.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: Text(t.myAccount.subtitle),
+                      trailing: Icon(forwardChevron(context), color: kInkMuted),
+                      onTap: () => context.push('/account'),
+                    ),
                   ListTile(
                     leading: const IconBubble(Icons.translate_rounded, size: 36),
                     title: Text(t.common.language, style: const TextStyle(fontWeight: FontWeight.w700)),
