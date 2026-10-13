@@ -36,5 +36,5 @@ subject = "إعادة تعيين كلمة السر - بستان القرآن"
 content_path = "./supabase/templates/recovery.html"
 
 [auth.email.template.email_change]
-subject = "تأكيد بريدك الجديد - بستان القرآن"
+subject = "تأكيد تغيير بريدك الإلكتروني - بستان القرآن"
 content_path = "./supabase/templates/email_change.html"

@@ -43,7 +43,7 @@
    |---|---|---|
    | Confirm signup | تأكيد بريدك في بستان القرآن | `supabase/templates/confirmation.html` |
    | Reset Password | إعادة تعيين كلمة السر - بستان القرآن | `supabase/templates/recovery.html` |
-   | Change Email Address | تأكيد بريدك الجديد - بستان القرآن | `supabase/templates/email_change.html` |
+   | Change Email Address | تأكيد تغيير بريدك الإلكتروني - بستان القرآن | `supabase/templates/email_change.html` |
 
 5. **جرّب إعادة كلمة السر** من صفحة دخول أي مركز («نسيت كلمة السر»)، وافتح الرابط من جوال ثاني.
 6. **بعد ما تنجح الخطوة 5:** روح على Authentication ← Sign In / Providers ← Email، وفعّل **Confirm email**، وجرّب تسجيل مركز جديد ببريد حقيقي.
