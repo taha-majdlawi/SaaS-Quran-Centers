@@ -198,6 +198,12 @@ export const en: Dictionary = {
     errorShort: 'Password must be at least 8 characters',
     errorMismatch: 'The passwords do not match',
     errorFailed: 'Could not update the password, try requesting a new link',
+    errorSame: 'The new password is the same as the old one: choose a different password',
+    errorWeak: "The password doesn't meet the security rules: use at least 8 characters mixing upper and lower case letters, digits and symbols",
+    errorNeedCode: 'Your account uses two-step sign-in: enter the code from your authenticator app, then save',
+    errorCode: 'The code is not correct: enter the current code from the app',
+    errorUnknown: 'Could not update the password',
+    code: 'Two-step sign-in code',
   },
 
   join: {

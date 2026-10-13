@@ -198,6 +198,12 @@ export const tr: Dictionary = {
     errorShort: 'Şifre en az 8 karakter olmalıdır',
     errorMismatch: 'Şifreler eşleşmiyor',
     errorFailed: 'Şifre güncellenemedi, yeni bir bağlantı istemeyi deneyin',
+    errorSame: 'Yeni şifre eskisiyle aynı: farklı bir şifre seçin',
+    errorWeak: 'Şifre güvenlik kurallarını karşılamıyor: büyük ve küçük harf, rakam ve sembol içeren en az 8 karakter kullanın',
+    errorNeedCode: 'Hesabınızda iki adımlı giriş açık: doğrulama uygulamasındaki kodu girip kaydedin',
+    errorCode: 'Kod hatalı: uygulamadaki güncel kodu girin',
+    errorUnknown: 'Şifre güncellenemedi',
+    code: 'İki adımlı giriş kodu',
   },
 
   join: {

@@ -198,6 +198,12 @@ export const fr: Dictionary = {
     errorShort: 'Le mot de passe doit contenir au moins 8 caractères',
     errorMismatch: 'Les mots de passe ne correspondent pas',
     errorFailed: 'Impossible de mettre à jour le mot de passe, essayez de demander un nouveau lien',
+    errorSame: "Le nouveau mot de passe est identique à l'ancien : choisissez-en un autre",
+    errorWeak: 'Le mot de passe ne respecte pas les règles de sécurité : au moins 8 caractères mêlant majuscules, minuscules, chiffres et symboles',
+    errorNeedCode: "Votre compte utilise la connexion en deux étapes : saisissez le code de votre application d'authentification, puis enregistrez",
+    errorCode: "Le code est incorrect : saisissez le code actuel de l'application",
+    errorUnknown: 'Impossible de mettre à jour le mot de passe',
+    code: 'Code de connexion en deux étapes',
   },
 
   join: {

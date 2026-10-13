@@ -20,6 +20,9 @@ export function ResetPasswordForm({ t }: { t: Dictionary['reset'] }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  // an account with two-step sign-in (the owner): Supabase changes its password only past the code
+  const [needCode, setNeedCode] = useState(false);
+  const [code, setCode] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -70,10 +73,31 @@ export function ResetPasswordForm({ t }: { t: Dictionary['reset'] }) {
     }
     setSubmitting(true);
     const supabase = createClient();
+    if (needCode) {
+      // the second factor first (aal2), then the same change again
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const factor = factors?.totp[0];
+      const { error: codeError } = factor
+        ? await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code: code.replace(/\s/g, '') })
+        : { error: new Error('no factor') };
+      if (codeError) {
+        setSubmitting(false);
+        setError(t.errorCode);
+        return;
+      }
+    }
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setSubmitting(false);
     if (updateError) {
-      setError(t.errorFailed);
+      // say why: Supabase answers with a code (and in English); the link itself was fine
+      const why = (updateError as { code?: string }).code;
+      if (why === 'insufficient_aal') {
+        setNeedCode(true);
+        setError(t.errorNeedCode);
+      } else if (why === 'same_password') setError(t.errorSame);
+      else if (why === 'weak_password') setError(t.errorWeak);
+      else if (why === 'session_not_found' || why === 'session_expired' || why === 'bad_jwt') setError(t.errorFailed);
+      else setError(`${t.errorUnknown} (${updateError.message})`);
       return;
     }
     await supabase.auth.signOut();
@@ -131,6 +155,21 @@ export function ResetPasswordForm({ t }: { t: Dictionary['reset'] }) {
           className={`mt-1 ${authInputClass}`}
         />
       </label>
+      {needCode && (
+        <label className={authLabelClass}>
+          {t.code}
+          <input
+            required
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={7}
+            dir="ltr"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className={`mt-1 text-center tracking-[0.4em] ${authInputClass}`}
+          />
+        </label>
+      )}
       <button type="submit" disabled={submitting} className={`mt-2 ${authButtonClass}`}>
         {submitting ? t.saving : t.submit}
       </button>
