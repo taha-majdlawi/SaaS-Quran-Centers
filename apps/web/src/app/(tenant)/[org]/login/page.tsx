@@ -3,6 +3,9 @@ import { authInputClass, authLabelClass, authButtonClass } from '@/components/au
 import { SubmitButton } from '@/components/submit-button';
 import { getPublicSite } from '@/lib/tenant/public-site';
 import { signInToTenant } from './actions';
+import { signInWithGoogle } from '@/lib/auth/google';
+import { GoogleButton, OrLine } from '@/components/google-button';
+import { googleEnabled } from '@/lib/auth/google-enabled';
 import { getI18n } from '@/lib/i18n/server';
 
 // Replaces wep-eqraa-center/admin/login - now scoped to one organization by
@@ -19,6 +22,7 @@ export default async function TenantLoginPage({
   const { error } = await searchParams;
   const site = await getPublicSite(org);
   const { t } = await getI18n();
+  const google = await googleEnabled();
 
   return (
     <AuthCard
@@ -60,6 +64,15 @@ export default async function TenantLoginPage({
           {t.login.forgotPassword}
         </a>
       </form>
+      {/* teachers and admins with an email: their Google account is the same account */}
+      {google && (
+        <form action={signInWithGoogle} className="mt-3 flex flex-col gap-2">
+          <input type="hidden" name="orgSlug" value={org} />
+          <OrLine text={t.login.or} />
+          <GoogleButton label={t.login.google} pendingText={t.login.signingIn} />
+          <p className="text-center text-xs text-gray-400">{t.login.googleHint}</p>
+        </form>
+      )}
     </AuthCard>
   );
 }

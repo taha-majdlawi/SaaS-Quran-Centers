@@ -122,7 +122,15 @@ export default async function TenantProtectedLayout({
           </a>
           <div className="flex shrink-0 items-center gap-3 text-sm text-gray-500 sm:gap-4">
             {translated && <LanguageSwitcher />}
-            <span className="hidden rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 sm:inline">{t.shell.roles[org.myRole] ?? org.myRole}</span>
+            {isStaff && !org.isPlatformOwner ? (
+              // the teacher's / admin's own sign-in details (students' accounts are the center's to change)
+              <a href="/account" className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-brand/10 hover:text-brand">
+                <span className="hidden sm:inline">{t.shell.roles[org.myRole] ?? org.myRole} · </span>
+                {t.shell.myAccount}
+              </a>
+            ) : (
+              <span className="hidden rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 sm:inline">{t.shell.roles[org.myRole] ?? org.myRole}</span>
+            )}
             <form action={signOut} data-allow-locked>
               <SubmitButton className="hover:text-red-600" pendingText={t.shell.signingOut}>
                 {t.shell.signOut}

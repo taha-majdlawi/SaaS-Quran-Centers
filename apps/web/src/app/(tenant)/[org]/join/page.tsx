@@ -3,6 +3,9 @@ import { authInputClass, authLabelClass, authButtonClass } from '@/components/au
 import { SubmitButton } from '@/components/submit-button';
 import { createClient } from '@/lib/supabase/server';
 import { signUpAndAcceptInvitation, acceptInvitationForCurrentUser } from './actions';
+import { signInWithGoogle } from '@/lib/auth/google';
+import { GoogleButton, OrLine } from '@/components/google-button';
+import { googleEnabled } from '@/lib/auth/google-enabled';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 
@@ -16,6 +19,7 @@ export default async function JoinPage({
   const { org } = await params;
   const { token, error, sent } = await searchParams;
   const { t } = await getI18n();
+  const google = await googleEnabled();
 
   if (!token) {
     return (
@@ -94,6 +98,14 @@ export default async function JoinPage({
           {t.join.create}
         </SubmitButton>
       </form>
+      {google && (invitation.role === 'teacher' || invitation.role === 'admin') && (
+        <form action={signInWithGoogle} className="mt-3 flex flex-col gap-2">
+          <input type="hidden" name="orgSlug" value={org} />
+          <input type="hidden" name="invite" value={token} />
+          <OrLine text={t.login.or} />
+          <GoogleButton label={t.join.google} pendingText={t.join.creating} />
+        </form>
+      )}
     </AuthCard>
   );
 }

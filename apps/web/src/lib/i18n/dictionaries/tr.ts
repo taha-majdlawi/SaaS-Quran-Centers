@@ -133,6 +133,8 @@ export const tr: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: 'Önce merkez adını ve bağlantısını yazın, sonra Google ile kaydol’u seçin',
+    google: 'Google ile kaydol',
     subtitle: 'Kur’an bahçesine ağacınızı dikin — bir dakika ve merkeziniz için eksiksiz bir yönetim paneliyle hemen başlarsınız',
     haveCenter: 'Zaten bir merkez kaydettiniz mi?',
     signIn: 'Giriş yap',
@@ -162,6 +164,11 @@ export const tr: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: 'Bu Google hesabı ({email}) bu merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
+    errorGoogle: 'Google ile giriş yapılamadı. Tekrar deneyin.',
+    googleHint: 'Öğretmenler ve yöneticiler için',
+    or: 'veya',
+    google: 'Google ile devam et',
     subtitle: 'Öğretmenler, personel, öğrenciler ve veliler için',
     forgotCenter: 'Merkezinizin bağlantısını mı unuttunuz?',
     findIt: 'Buradan bulun',
@@ -181,7 +188,7 @@ export const tr: Dictionary = {
     sending: 'Gönderiliyor...',
     submit: 'Sıfırlama bağlantısı gönder',
     errorEmpty: 'Kimliğinizi veya e-postanızı girin',
-    errorNoEmail: 'Bu hesabın şifre kurtarmak için bir e-posta adresi yok - merkez yöneticisinden üyeler sayfasından sıfırlamasını isteyin',
+    errorNoEmail: 'Hesabınız e-postayla değil numarayla giriş yapıyor, bu yüzden bağlantı gönderilemez. Şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
   },
 
   reset: {
@@ -207,6 +214,7 @@ export const tr: Dictionary = {
   },
 
   join: {
+    google: 'Google ile katıl',
     incompleteTitle: 'Eksik davet bağlantısı',
     incompleteBody: 'Sizi davet eden kişiden gelen bağlantının tamamını kullandığınızdan emin olun.',
     invalidTitle: 'Geçersiz davet',
@@ -225,6 +233,7 @@ export const tr: Dictionary = {
   },
 
   confirmEmail: {
+    changed: 'Yeni e-postanız onaylandı. Diğer e-postanıza da bir bağlantı geldiyse değişikliği tamamlamak için onu da açın, sonra yeni e-postayla giriş yapın.',
     title: 'E-postanızı onaylayın',
     checking: 'E-postanız onaylanıyor…',
     finishing: 'Onaylandı. Hesabınız hazırlanıyor…',
@@ -274,6 +283,7 @@ export const tr: Dictionary = {
 
   shell: {
     roles: { admin: 'Yönetici', teacher: 'Öğretmen', guardian: 'Veli', student: 'Öğrenci' },
+    myAccount: 'Hesabım',
     signOut: 'Çıkış yap',
     signingOut: 'Çıkış yapılıyor...',
     platformOwner: 'Platform sahibi modu — bu merkeze üye olarak değil, denetçi olarak göz atıyorsunuz',

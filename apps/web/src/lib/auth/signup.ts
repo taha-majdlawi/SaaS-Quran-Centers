@@ -26,3 +26,6 @@ export function productUrl(path: string, subdomain?: string): string {
 
 /** Where the confirmation email's link lands (the template builds it from the Site URL too). */
 export const confirmUrl = () => productUrl('/confirm');
+
+/** The cookie that carries a new center's name and link across the Google round-trip (lib/auth/google.ts). */
+export const PENDING_ORG_COOKIE = 'bustan-pending-org';

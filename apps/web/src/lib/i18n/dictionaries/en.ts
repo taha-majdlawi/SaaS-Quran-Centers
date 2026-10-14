@@ -133,6 +133,8 @@ export const en: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: 'Enter the center name and link first, then choose Sign up with Google',
+    google: 'Sign up with Google',
     subtitle: 'Plant your tree in the Quran orchard — one minute, and you start right away with a full admin dashboard for your center',
     haveCenter: 'Already registered a center?',
     signIn: 'Sign in',
@@ -162,6 +164,11 @@ export const en: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: 'This Google account ({email}) is not a teacher or admin of this center. Ask the center admin to add your email, or sign in with your number and password.',
+    errorGoogle: 'Could not sign in with Google. Try again.',
+    googleHint: 'For teachers and staff',
+    or: 'or',
+    google: 'Continue with Google',
     subtitle: 'For teachers, staff, students and guardians',
     forgotCenter: 'Forgot your center’s link?',
     findIt: 'Find it here',
@@ -181,7 +188,7 @@ export const en: Dictionary = {
     sending: 'Sending...',
     submit: 'Send reset link',
     errorEmpty: 'Enter your ID or email',
-    errorNoEmail: 'This account has no email address to recover the password - ask the center’s admin to reset it from the members page',
+    errorNoEmail: 'Your account signs in with a number, not an email, so no link can be sent. To change your password, contact your teacher or the center supervisor.',
   },
 
   reset: {
@@ -207,6 +214,7 @@ export const en: Dictionary = {
   },
 
   join: {
+    google: 'Join with Google',
     incompleteTitle: 'Incomplete invitation link',
     incompleteBody: 'Make sure you used the full link from the person who invited you.',
     invalidTitle: 'Invalid invitation',
@@ -225,6 +233,7 @@ export const en: Dictionary = {
   },
 
   confirmEmail: {
+    changed: 'Your new email is confirmed. If a link also reached your other email, open it too to finish the change, then sign in with the new email.',
     title: 'Confirm your email',
     checking: 'Confirming your email…',
     finishing: 'Confirmed. Setting up your account…',
@@ -274,6 +283,7 @@ export const en: Dictionary = {
 
   shell: {
     roles: { admin: 'Admin', teacher: 'Teacher', guardian: 'Guardian', student: 'Student' },
+    myAccount: 'My account',
     signOut: 'Sign out',
     signingOut: 'Signing out...',
     platformOwner: 'Platform owner mode — you are browsing this center as a supervisor, not as a member',
