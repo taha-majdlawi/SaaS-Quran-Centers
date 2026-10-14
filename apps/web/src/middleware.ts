@@ -100,6 +100,17 @@ export async function middleware(req: NextRequest) {
   const isRootDomain =
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
 
+  // The console lives on admin.{ROOT_DOMAIN} only. /platform/... typed on the root domain used to
+  // render its login there, and after signing in the owner landed on the marketing page; typed on
+  // admin it became /platform/platform/... (404). Both now go to the console's own address.
+  const platformPath = req.nextUrl.pathname.match(/^\/platform(\/.*)?$/);
+  const onAdmin = bareHost === `admin.${bareRoot}` || (bareRoot === 'localhost' && bareHost === 'admin.localhost');
+  if (platformPath && (isRootDomain || onAdmin)) {
+    const target = new URL(`${req.nextUrl.protocol}//admin.${ROOT_DOMAIN}${platformPath[1] ?? '/'}`);
+    target.search = req.nextUrl.search;
+    return NextResponse.redirect(target);
+  }
+
   let response: NextResponse;
   let scope: 'platform' | 'tenant' | null = null;
 
