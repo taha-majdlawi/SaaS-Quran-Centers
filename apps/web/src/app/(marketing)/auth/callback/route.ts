@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { PENDING_ORG_COOKIE, productUrl, validSlug } from '@/lib/auth/signup';
+import { PENDING_ORG_COOKIE, productUrl } from '@/lib/auth/signup';
+import { finishGoogleSignUp, readPendingOrg } from '@/lib/auth/google-finish';
 import { getI18n } from '@/lib/i18n/server';
 
 /**
- * Back from Google after "Sign up with Google" (lib/auth/google.ts): the new center's name and
- * link waited in a cookie; the center is created with the Google account as its admin.
+ * Back from Google through Supabase after "Sign up with Google" (the redirect flow): the new
+ * center's name and link waited in a cookie; the center is created with the Google account as admin.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -20,17 +21,8 @@ export async function GET(req: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) return back(t.login.errorGoogle);
 
-  let pending: { orgName?: string; slug?: string } = {};
-  try {
-    pending = JSON.parse(jar.get(PENDING_ORG_COOKIE)?.value ?? '{}');
-  } catch {
-    // no center waiting
-  }
+  const pending = readPendingOrg(jar.get(PENDING_ORG_COOKIE)?.value);
   jar.delete(PENDING_ORG_COOKIE);
-  const slug = (pending.slug ?? '').toLowerCase();
-  if (!pending.orgName || !validSlug(slug)) return back(t.signup.googleNeedsCenter);
-
-  const { error: orgError } = await supabase.rpc('create_organization_with_owner', { org_name: pending.orgName, org_slug: slug });
-  if (orgError) return back(orgError.code === '23505' ? t.signup.errorSlugTaken : orgError.message);
-  return NextResponse.redirect(productUrl('/dashboard', slug));
+  const result = await finishGoogleSignUp(supabase, pending);
+  return 'to' in result ? NextResponse.redirect(result.to) : back(result.error);
 }

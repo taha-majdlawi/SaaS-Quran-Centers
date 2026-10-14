@@ -16,14 +16,16 @@ test('scripts run only with the nonce, never inline or eval in production', () =
 
 test('Supabase over https and wss, forms only to the product', () => {
   const d = parse(contentSecurityPolicy('n', 'https://x.supabase.co', 'bustan-alquran.com'));
-  assert.deepEqual(d['connect-src'], ["'self'", 'https://x.supabase.co', 'wss://x.supabase.co']);
+  assert.deepEqual(d['connect-src'], ["'self'", 'https://x.supabase.co', 'wss://x.supabase.co', 'https://accounts.google.com/gsi/']);
+  // Google sign-in's frames only, nothing else framed
+  assert.deepEqual(d['frame-src'], ['https://accounts.google.com/gsi/']);
   assert.deepEqual(d['form-action'], ["'self'", 'https://bustan-alquran.com', 'https://*.bustan-alquran.com']);
   assert.ok('upgrade-insecure-requests' in d);
 });
 
 test('local development: http/ws and eval for the dev server', () => {
   const d = parse(contentSecurityPolicy('n', 'http://127.0.0.1:54321', 'localhost:3000', true));
-  assert.deepEqual(d['connect-src'], ["'self'", 'http://127.0.0.1:54321', 'ws://127.0.0.1:54321']);
+  assert.deepEqual(d['connect-src'], ["'self'", 'http://127.0.0.1:54321', 'ws://127.0.0.1:54321', 'https://accounts.google.com/gsi/']);
   assert.ok(d['script-src'].includes("'unsafe-eval'"));
   // the recordings come from Storage, over http locally
   assert.ok(d['media-src'].includes('http://127.0.0.1:54321') && d['img-src'].includes('http://127.0.0.1:54321'));
@@ -34,7 +36,7 @@ test('local development: http/ws and eval for the dev server', () => {
 });
 
 test('a bad Supabase URL leaves only the app itself', () => {
-  assert.deepEqual(parse(contentSecurityPolicy('n', '', 'a.com'))['connect-src'], ["'self'"]);
+  assert.deepEqual(parse(contentSecurityPolicy('n', '', 'a.com'))['connect-src'], ["'self'", 'https://accounts.google.com/gsi/']);
 });
 
 test('every nonce is new and 128 bits', () => {

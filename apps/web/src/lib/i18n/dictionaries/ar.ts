@@ -233,6 +233,16 @@ export const ar = {
     roles: { admin: 'مدير', teacher: 'معلم', guardian: 'ولي أمر', student: 'طالب' } as Record<string, string>,
   },
 
+  googlePage: {
+    title: 'الدخول بحساب Google',
+    toCenter: 'إلى {center}',
+    newCenter: 'إنشاء مركز «{name}»',
+    working: 'جارٍ الدخول…',
+    back: 'رجوع',
+    failed: 'تعذّر الدخول بحساب Google، حاول مرة أخرى.',
+    unavailable: 'تعذّر تحميل زر Google. تأكد من الاتصال، أو ادخل برقمك وكلمة السر.',
+  },
+
   confirmEmail: {
     changed: 'تم تأكيد بريدك الجديد. إذا وصلك رابط على بريدك الآخر فافتحه أيضًا لإكمال التغيير، ثم ادخل بالبريد الجديد.',
     title: 'تأكيد البريد الإلكتروني',

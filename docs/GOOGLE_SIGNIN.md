@@ -8,8 +8,12 @@
 - **تسجيل مركز جديد:** بتكتب اسم المركز ورابطه، وبتضغط «التسجيل بحساب Google»، فبينعمل المركز وحساب Google بيكون مديره.
 - **الدعوة:** المعلم أو المدير المدعو بيقدر يضغط «الانضمام بحساب Google».
 - **الأزرار بتظهر لحالها بس لما Google يكون مفعّل بـSupabase.** قبل التفعيل ما بيظهر شي (الفحص بيتجدد كل 5 دقائق).
+- **زر Google الرسمي على `bustan-alquran.com/google`** (Google Identity Services): صفحة دخول المركز، والدعوة، والتسجيل بيبعتوا الزائر لهالصفحة. نافذة Google بتكتب «المتابعة إلى bustan-alquran.com» بدل عنوان Supabase، وبعدها الدخول بيكمل بـSupabase (`signInWithIdToken` مع nonce). Google بيطلب كل دومين فيه زره يكون مسجّل عنده، وهيك كل المراكز بتمرّ من صفحة وحدة.
+  - بيشتغل إذا `GOOGLE_CLIENT_ID` (`lib/auth/google-config.ts`) معبّى. إذا فاضي، منرجع للطريقة القديمة (التحويل عن طريق Supabase).
 - **الكود:**
   - `lib/auth/google.ts`
+  - `lib/auth/google-finish.ts`
+  - `app/(marketing)/google`
   - `app/(tenant)/[org]/auth/callback`
   - `app/(marketing)/auth/callback`
   - `lib/auth/google-enabled.ts`
@@ -44,5 +48,6 @@
 - **حساب Google غريب:** لازم تطلع رسالة «غير مسجّل في هذا المركز».
 
 ## ملاحظات
-- شاشة Google بتكتب «للمتابعة إلى `<project>.supabase.co`». إذا بدك تظهر `bustan-alquran.com` بدالها، هاد بيحتاج «Custom Domain» بـSupabase، وهي ميزة مدفوعة.
+- بالطريقة القديمة (بدون Client ID بالكود)، Google بيكتب «للمتابعة إلى `<project>.supabase.co`». مع زر Google الرسمي بيكتب `bustan-alquran.com`، وبعد التحقق من العلامة (Branding ← Verify branding) بيكتب «بستان القرآن».
+- بريد الدعم بشاشة Google لازم يكون حساب Google أو مجموعة Google انت بتديرها. عشان يصير `support@bustan-alquran.com`: اعمل حساب Google بنفس البريد (من «استخدام عنوان بريدك الإلكتروني الحالي»)، وأضفه للمشروع بـIAM كـOwner، فبيظهر بقائمة «User support email».
 - إذا المعلم بريده مش Gmail (مثلًا Outlook)، بيضل يدخل بالبريد وكلمة السر.

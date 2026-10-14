@@ -232,6 +232,16 @@ export const en: Dictionary = {
     roles: { admin: 'admin', teacher: 'teacher', guardian: 'guardian', student: 'student' },
   },
 
+  googlePage: {
+    title: 'Continue with Google',
+    toCenter: 'to {center}',
+    newCenter: 'New center “{name}”',
+    working: 'Signing in…',
+    back: 'Back',
+    failed: 'Could not sign in with Google. Try again.',
+    unavailable: "Google's button could not load. Check the connection, or sign in with your number and password.",
+  },
+
   confirmEmail: {
     changed: 'Your new email is confirmed. If a link also reached your other email, open it too to finish the change, then sign in with the new email.',
     title: 'Confirm your email',
