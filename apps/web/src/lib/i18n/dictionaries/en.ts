@@ -133,6 +133,8 @@ export const en: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: 'Enter the center name and link first, then choose Sign up with Google',
+    google: 'Sign up with Google',
     subtitle: 'Plant your tree in the Quran orchard — one minute, and you start right away with a full admin dashboard for your center',
     haveCenter: 'Already registered a center?',
     signIn: 'Sign in',
@@ -148,6 +150,7 @@ export const en: Dictionary = {
     errorRequired: 'All fields are required',
     errorSlug: 'Invalid link - lowercase English letters, numbers and dashes only, no reserved words',
     errorConfirmEmail: 'Check your email to confirm your account first - then come back to finish creating the center',
+    checkEmail: "We sent a confirmation link to {email}. Open it to finish creating your center (check your spam folder if it isn't there).",
     errorSlugTaken: 'This link is already taken, try another one',
     errorEmailTaken: 'This email is already registered - sign in instead',
     errorWeakPassword: 'Password too weak - use at least 8 characters',
@@ -161,6 +164,11 @@ export const en: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: 'This Google account ({email}) is not a teacher or admin of this center. Ask the center admin to add your email, or sign in with your number and password.',
+    errorGoogle: 'Could not sign in with Google. Try again.',
+    googleHint: 'For teachers and staff',
+    or: 'or',
+    google: 'Continue with Google',
     subtitle: 'For teachers, staff, students and guardians',
     forgotCenter: 'Forgot your center’s link?',
     findIt: 'Find it here',
@@ -180,7 +188,7 @@ export const en: Dictionary = {
     sending: 'Sending...',
     submit: 'Send reset link',
     errorEmpty: 'Enter your ID or email',
-    errorNoEmail: 'This account has no email address to recover the password - ask the center’s admin to reset it from the members page',
+    errorNoEmail: 'Your account signs in with a number, not an email, so no link can be sent. To change your password, contact your teacher or the center supervisor.',
   },
 
   reset: {
@@ -197,9 +205,16 @@ export const en: Dictionary = {
     errorShort: 'Password must be at least 8 characters',
     errorMismatch: 'The passwords do not match',
     errorFailed: 'Could not update the password, try requesting a new link',
+    errorSame: 'The new password is the same as the old one: choose a different password',
+    errorWeak: "The password doesn't meet the security rules: use at least 8 characters mixing upper and lower case letters, digits and symbols",
+    errorNeedCode: 'Your account uses two-step sign-in: enter the code from your authenticator app, then save',
+    errorCode: 'The code is not correct: enter the current code from the app',
+    errorUnknown: 'Could not update the password',
+    code: 'Two-step sign-in code',
   },
 
   join: {
+    google: 'Join with Google',
     incompleteTitle: 'Incomplete invitation link',
     incompleteBody: 'Make sure you used the full link from the person who invited you.',
     invalidTitle: 'Invalid invitation',
@@ -213,7 +228,34 @@ export const en: Dictionary = {
     creating: 'Creating and joining...',
     create: 'Create account and join',
     errorConfirmEmail: 'Check your email to confirm your account first, then open the invitation link again to finish joining',
+    checkEmail: "We sent a confirmation link to {email}. Open it to finish joining (check your spam folder if it isn't there).",
     roles: { admin: 'admin', teacher: 'teacher', guardian: 'guardian', student: 'student' },
+  },
+
+  googlePage: {
+    title: 'Continue with Google',
+    toCenter: 'to {center}',
+    newCenter: 'New center “{name}”',
+    working: 'Signing in…',
+    back: 'Back',
+    failed: 'Could not sign in with Google. Try again.',
+    unavailable: "Google's button could not load. Check the connection, or sign in with your number and password.",
+  },
+
+  confirmEmail: {
+    changed: 'Your new email is confirmed. If a link also reached your other email, open it too to finish the change, then sign in with the new email.',
+    title: 'Confirm your email',
+    checking: 'Confirming your email…',
+    finishing: 'Confirmed. Setting up your account…',
+    invalid: 'This link is invalid, already used or expired. If you have already confirmed your email, sign in.',
+    error: 'Your email is confirmed, but the last step could not be finished. Sign in or contact us.',
+    slugTaken: 'The center link “{slug}” has been taken. Choose another link to finish creating your center.',
+    finish: 'Finish creating the center',
+    signIn: 'Sign in',
+    finishSignIn: 'If your email is already confirmed (mail services sometimes open the link before you), sign in here to finish creating your center or joining:',
+    signInFinish: 'Sign in and finish',
+    notConfirmed: 'Your email is not confirmed yet: open the latest confirmation email, or sign up again for a new link.',
+    wrongLogin: 'Wrong email or password.',
   },
 
   consent: {
@@ -251,6 +293,7 @@ export const en: Dictionary = {
 
   shell: {
     roles: { admin: 'Admin', teacher: 'Teacher', guardian: 'Guardian', student: 'Student' },
+    myAccount: 'My account',
     signOut: 'Sign out',
     signingOut: 'Signing out...',
     platformOwner: 'Platform owner mode — you are browsing this center as a supervisor, not as a member',
@@ -621,6 +664,7 @@ export const en: Dictionary = {
       waitingN: '{n} recorded recitations waiting for your review',
       recheck: 'Run the automatic check again',
       liveBadge: 'Live recitation',
+      liveDeviceNote: "In a live recitation the words are recognised on the student's device, so the score is only a guide: the decision is yours.",
       audioDeleted: 'The recording was deleted after review to save space',
       testNote: 'Note (optional)',
       note: 'Note for the teacher (optional)',

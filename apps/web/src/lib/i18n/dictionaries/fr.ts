@@ -133,6 +133,8 @@ export const fr: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: "Saisissez d'abord le nom et le lien du centre, puis choisissez S'inscrire avec Google",
+    google: "S'inscrire avec Google",
     subtitle: 'Plantez votre arbre dans le jardin du Coran — une minute, et vous démarrez avec un tableau de bord complet pour votre centre',
     haveCenter: 'Vous avez déjà inscrit un centre ?',
     signIn: 'Se connecter',
@@ -148,6 +150,7 @@ export const fr: Dictionary = {
     errorRequired: 'Tous les champs sont obligatoires',
     errorSlug: 'Lien invalide - lettres anglaises minuscules, chiffres et tirets uniquement, sans mots réservés',
     errorConfirmEmail: 'Vérifiez d’abord votre e-mail pour confirmer votre compte - puis revenez terminer la création du centre',
+    checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer la création de votre centre (vérifiez vos spams s'il n'est pas arrivé).",
     errorSlugTaken: 'Ce lien est déjà pris, essayez-en un autre',
     errorEmailTaken: 'Cet e-mail est déjà inscrit - connectez-vous plutôt',
     errorWeakPassword: 'Mot de passe trop faible - utilisez au moins 8 caractères',
@@ -161,6 +164,11 @@ export const fr: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: "Ce compte Google ({email}) n'est pas enseignant ni administrateur de ce centre. Demandez à l'administrateur d'ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.",
+    errorGoogle: 'Connexion avec Google impossible. Réessayez.',
+    googleHint: 'Pour les enseignants et l’équipe',
+    or: 'ou',
+    google: 'Continuer avec Google',
     subtitle: 'Pour les enseignants, le personnel, les élèves et les parents',
     forgotCenter: 'Vous avez oublié le lien de votre centre ?',
     findIt: 'Retrouvez-le ici',
@@ -180,7 +188,7 @@ export const fr: Dictionary = {
     sending: 'Envoi...',
     submit: 'Envoyer le lien de réinitialisation',
     errorEmpty: 'Saisissez votre identifiant ou votre e-mail',
-    errorNoEmail: 'Ce compte n’a pas d’adresse e-mail pour récupérer le mot de passe - demandez à l’administrateur du centre de le réinitialiser depuis la page des membres',
+    errorNoEmail: 'Votre compte se connecte avec un numéro, pas un e-mail : aucun lien ne peut être envoyé. Pour changer votre mot de passe, contactez votre enseignant ou le responsable du centre.',
   },
 
   reset: {
@@ -197,9 +205,16 @@ export const fr: Dictionary = {
     errorShort: 'Le mot de passe doit contenir au moins 8 caractères',
     errorMismatch: 'Les mots de passe ne correspondent pas',
     errorFailed: 'Impossible de mettre à jour le mot de passe, essayez de demander un nouveau lien',
+    errorSame: "Le nouveau mot de passe est identique à l'ancien : choisissez-en un autre",
+    errorWeak: 'Le mot de passe ne respecte pas les règles de sécurité : au moins 8 caractères mêlant majuscules, minuscules, chiffres et symboles',
+    errorNeedCode: "Votre compte utilise la connexion en deux étapes : saisissez le code de votre application d'authentification, puis enregistrez",
+    errorCode: "Le code est incorrect : saisissez le code actuel de l'application",
+    errorUnknown: 'Impossible de mettre à jour le mot de passe',
+    code: 'Code de connexion en deux étapes',
   },
 
   join: {
+    google: 'Rejoindre avec Google',
     incompleteTitle: 'Lien d’invitation incomplet',
     incompleteBody: 'Assurez-vous d’utiliser le lien complet reçu de la personne qui vous a invité.',
     invalidTitle: 'Invitation invalide',
@@ -213,7 +228,34 @@ export const fr: Dictionary = {
     creating: 'Création et adhésion...',
     create: 'Créer le compte et rejoindre',
     errorConfirmEmail: 'Vérifiez d’abord votre e-mail pour confirmer votre compte, puis rouvrez le lien d’invitation pour terminer',
+    checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer votre inscription (vérifiez vos spams s'il n'est pas arrivé).",
     roles: { admin: 'administrateur', teacher: 'enseignant', guardian: 'parent', student: 'élève' },
+  },
+
+  googlePage: {
+    title: 'Continuer avec Google',
+    toCenter: 'vers {center}',
+    newCenter: 'Nouveau centre « {name} »',
+    working: 'Connexion…',
+    back: 'Retour',
+    failed: 'Connexion avec Google impossible. Réessayez.',
+    unavailable: "Le bouton Google n'a pas pu se charger. Vérifiez la connexion, ou connectez-vous avec votre numéro et votre mot de passe.",
+  },
+
+  confirmEmail: {
+    changed: 'Votre nouvel e-mail est confirmé. Si un lien est aussi arrivé sur votre autre e-mail, ouvrez-le pour terminer le changement, puis connectez-vous avec le nouvel e-mail.',
+    title: 'Confirmez votre e-mail',
+    checking: 'Confirmation de votre e-mail…',
+    finishing: 'Confirmé. Préparation de votre compte…',
+    invalid: 'Ce lien est invalide, déjà utilisé ou expiré. Si vous avez déjà confirmé votre e-mail, connectez-vous.',
+    error: "Votre e-mail est confirmé, mais la dernière étape n'a pas pu être terminée. Connectez-vous ou contactez-nous.",
+    slugTaken: 'Le lien de centre « {slug} » est déjà pris. Choisissez-en un autre pour terminer la création de votre centre.',
+    finish: 'Terminer la création du centre',
+    signIn: 'Se connecter',
+    finishSignIn: 'Si votre e-mail est déjà confirmé (les services de messagerie ouvrent parfois le lien avant vous), connectez-vous ici pour terminer la création de votre centre ou votre inscription :',
+    signInFinish: 'Se connecter et terminer',
+    notConfirmed: "Votre e-mail n'est pas encore confirmé : ouvrez le dernier e-mail de confirmation, ou réinscrivez-vous pour un nouveau lien.",
+    wrongLogin: 'E-mail ou mot de passe incorrect.',
   },
 
   consent: {
@@ -251,6 +293,7 @@ export const fr: Dictionary = {
 
   shell: {
     roles: { admin: 'Administrateur', teacher: 'Enseignant', guardian: 'Parent', student: 'Élève' },
+    myAccount: 'Mon compte',
     signOut: 'Se déconnecter',
     signingOut: 'Déconnexion...',
     platformOwner: 'Mode propriétaire de la plateforme — vous parcourez ce centre en superviseur, pas en membre',
@@ -621,6 +664,7 @@ export const fr: Dictionary = {
       waitingN: '{n} récitations enregistrées attendent votre examen',
       recheck: 'Relancer la vérification automatique',
       liveBadge: 'Récitation en direct',
+      liveDeviceNote: "Dans une récitation en direct, les mots sont reconnus sur l'appareil de l'élève : le score n'est qu'indicatif, la décision vous revient.",
       audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       testNote: 'Note (facultatif)',
       note: 'Note pour l’enseignant (facultatif)',

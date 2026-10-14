@@ -240,6 +240,7 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
             [
               tr(context).labels.recitationType[r.type] ?? r.type,
               if (r.kind == 'teacher_test') t.teacherTest,
+              if (r.live) tr(context).live.liveBadge,
               if (at != null) '${at.year}/${at.month}/${at.day} ${at.hour}:${at.minute.toString().padLeft(2, '0')}',
               if (!widget.family && r.circle != null) r.circle!,
               if (r.kind == 'self') r.autoScore != null ? '${fmt(t.autoScore, {'n': r.autoScore})} · ${check.missing} ${t.missing} · ${check.wrong} ${t.wrong}' : t.noAuto,
@@ -249,6 +250,11 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
             ].join('  ·  '),
             style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
           ),
+          if (!widget.family && r.live && r.kind == 'self' && r.autoScore != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(tr(context).live.liveDeviceNote, style: TextStyle(fontSize: 12, color: Colors.blue.shade800)),
+            ),
           if (flagged.isNotEmpty) _Words(surah: r.surah, items: flagged, teacherTest: r.kind == 'teacher_test'),
           if (r.studentNote != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(fmt(t.studentNote, {'note': r.studentNote}))),
           if (r.teacherNote != null)

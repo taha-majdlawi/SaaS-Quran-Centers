@@ -350,6 +350,8 @@ export default async function MarketingHomePage() {
           <div className="flex gap-4">
             <a href="/login" className="hover:text-brand">{t.common.login}</a>
             <a href="/signup" className="hover:text-brand">{t.common.registerCenter}</a>
+            <a href="/privacy" className="hover:text-brand">{locale === 'ar' ? 'الخصوصية' : 'Privacy'}</a>
+            <a href="/terms" className="hover:text-brand">{locale === 'ar' ? 'الشروط' : 'Terms'}</a>
           </div>
         </div>
       </footer>

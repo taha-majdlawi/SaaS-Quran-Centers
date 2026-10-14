@@ -2,10 +2,9 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getI18n } from '@/lib/i18n/server';
-
-const RESERVED_SLUGS = new Set(['www', 'admin', 'api', 'app', 'platform']);
-const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+import { confirmUrl, productUrl, validSlug, type PendingSignup } from '@/lib/auth/signup';
 
 export async function signUpAndCreateOrganization(formData: FormData) {
   const orgName = (formData.get('orgName') as string)?.trim();
@@ -17,7 +16,7 @@ export async function signUpAndCreateOrganization(formData: FormData) {
   if (!orgName || !slug || !email || !password) {
     redirect(`/signup?error=${encodeURIComponent(t.signup.errorRequired)}`);
   }
-  if (!SLUG_PATTERN.test(slug) || RESERVED_SLUGS.has(slug)) {
+  if (!validSlug(slug)) {
     redirect(
       `/signup?error=${encodeURIComponent(t.signup.errorSlug)}`,
     );
@@ -25,7 +24,18 @@ export async function signUpAndCreateOrganization(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+  // taken already: say so now, not after the email round-trip (a visitor cannot read
+  // organizations, so the server looks - only whether this one link exists)
+  const { data: taken } = await createAdminClient().from('organizations').select('id').eq('slug', slug).maybeSingle();
+  if (taken) redirect(`/signup?error=${encodeURIComponent(t.signup.errorSlugTaken)}`);
+
+  // with "Confirm email" on, the center is created by /confirm from what waits here
+  const pending: PendingSignup = { pending_org_name: orgName, pending_org_slug: slug };
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: pending, emailRedirectTo: confirmUrl() },
+  });
 
   if (signUpError) {
     // Supabase answers in English; the two common cases get the viewer's language
@@ -38,11 +48,8 @@ export async function signUpAndCreateOrganization(formData: FormData) {
   }
 
   if (!signUpData.session) {
-    // "Confirm email" is on for this project - org creation resumes after
-    // the visitor confirms and logs in (not wired yet in this skeleton).
-    redirect(
-      `/signup?error=${encodeURIComponent(t.signup.errorConfirmEmail)}`,
-    );
+    // "Confirm email" is on: the link in the email finishes the center (/confirm)
+    redirect(`/signup?sent=${encodeURIComponent(email)}`);
   }
 
   const { error: orgError } = await supabase.rpc('create_organization_with_owner', {
@@ -55,5 +62,6 @@ export async function signUpAndCreateOrganization(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
 
-  redirect(`https://${slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/dashboard`);
+  await supabase.auth.updateUser({ data: { pending_org_name: null, pending_org_slug: null } satisfies PendingSignup });
+  redirect(productUrl('/dashboard', slug) as never);
 }

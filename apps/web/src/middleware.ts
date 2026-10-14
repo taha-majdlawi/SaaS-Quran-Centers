@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { authCookieDomain } from './lib/supabase/cookie-options';
+import { contentSecurityPolicy, newNonce } from './lib/csp';
 import { I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE, ORG_SLUG_HEADER, isI18nReady, isLocale } from './lib/i18n/config';
 
 const ROOT_DOMAIN = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase();
@@ -21,6 +22,8 @@ const PUBLIC_TENANT_PATHS = new Set([
   '/delete-account',
   '/forgot-password',
   '/reset-password',
+  // back from Google (the session is made there)
+  '/auth/callback',
 ]);
 // /verify/<serial> lets anyone check a printed certificate is genuine
 const isPublicTenantPath = (p: string) => PUBLIC_TENANT_PATHS.has(p) || /^\/verify\/[A-Za-z0-9-]{1,40}$/.test(p);
@@ -61,6 +64,13 @@ export async function middleware(req: NextRequest) {
       ? carriedHost
       : requestHost;
   const url = req.nextUrl.clone();
+  // a new nonce per page: Next reads it from the request's CSP and puts it on its scripts
+  const csp = contentSecurityPolicy(
+    newNonce(),
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+    ROOT_DOMAIN,
+    process.env.NODE_ENV === 'development',
+  );
 
   const bareHost = hostname.split(':')[0];
   // ?lang=en in a link: this request renders in it, and it is remembered (cookie set below)
@@ -81,6 +91,7 @@ export async function middleware(req: NextRequest) {
     if (forcedLang) headers.set(LANG_OVERRIDE_HEADER, forcedLang);
     // the path as visited (before the rewrite to /[org]/...), for the staff layout's feature gate
     headers.set('x-bustan-path', req.nextUrl.pathname);
+    headers.set('content-security-policy', csp);
     return headers;
   };
   const rewriteTo = (target: URL, scopeName: 'tenant' | 'platform', orgSlug?: string) =>
@@ -157,6 +168,7 @@ export async function middleware(req: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  response.headers.set('Content-Security-Policy', csp);
 
   return response;
 }

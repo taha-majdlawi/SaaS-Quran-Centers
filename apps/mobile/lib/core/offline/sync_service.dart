@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'encrypted_store.dart';
 import 'outbox.dart';
 import '../monitoring/error_reporter.dart';
 import '../../core/i18n/i18n.dart';
@@ -226,6 +227,8 @@ class SyncService extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> retry(OutboxItem item) async {
+    // nothing left to send: it can only be discarded
+    if (item.error == EncryptedOfflineStore.unreadable && item.payload.isEmpty) return;
     item.status = 'pending';
     item.error = null;
     await _store.update(item);

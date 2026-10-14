@@ -234,7 +234,7 @@ class SAttn {
 
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
-  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.noCentersHint});
+  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
   final String thisCenter;
   final String noCenter;
   final String badLogin;
@@ -286,6 +286,11 @@ class SAuth {
   final String registerCenter;
   final String pickCenter;
   final String noCenters;
+  final String numberReset;
+  final String google;
+  final String googleHint;
+  final String googleNotStaff;
+  final String googleFailed;
   final String noCentersHint;
 }
 
@@ -780,7 +785,7 @@ class SIns {
 
 /// The live recite screen (/my/recite).
 class SLive {
-  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.noRoom, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
+  const SLive({required this.title, required this.hint, required this.student, required this.surah, required this.type, required this.from, required this.to, required this.start, required this.unsupported, required this.micDenied, required this.network, required this.listening, required this.paused, required this.progress, required this.mistakesN, required this.stopMissing, required this.stopWrong, required this.correctIs, required this.heard, required this.resume, required this.forgot, required this.finish, required this.result, required this.score, required this.mistakeList, required this.resultNote, required this.note, required this.send, required this.confirmHint, required this.againAsk, required this.leaveAsk, required this.leave, required this.sending, required this.sent, required this.again, required this.appAudio, required this.recording, required this.withAudio, required this.retry, required this.notSent, required this.nothingHeard, required this.mine, required this.error, required this.fab, required this.liveBadge, required this.liveDeviceNote, required this.noRoom, required this.audioDeleted, required this.loading, required this.appNoAudio, required this.appUnsupported});
   final String title;
   final String hint;
   final String student;
@@ -826,6 +831,7 @@ class SLive {
   final String error;
   final String fab;
   final String liveBadge;
+  final String liveDeviceNote;
   final String noRoom;
   final String audioDeleted;
   final String loading;
@@ -929,6 +935,41 @@ class SMkt {
   final String priceIn;
   final String stock;
   final String active;
+}
+
+/// The teacher’s / admin’s own account screen: email and password.
+class SMyAccount {
+  const SMyAccount({required this.title, required this.subtitle, required this.emailSection, required this.currentEmail, required this.newEmail, required this.sendLink, required this.sending, required this.emailSent, required this.emailTaken, required this.emailSame, required this.emailInvalid, required this.noEmail, required this.passwordSection, required this.currentPassword, required this.newPassword, required this.confirmPassword, required this.savePassword, required this.saving, required this.passwordChanged, required this.wrongCurrent, required this.short, required this.mismatch, required this.same, required this.weak, required this.needCode, required this.tooMany, required this.failed, required this.google, required this.googleLinked, required this.googleHint});
+  final String title;
+  final String subtitle;
+  final String emailSection;
+  final String currentEmail;
+  final String newEmail;
+  final String sendLink;
+  final String sending;
+  final String emailSent;
+  final String emailTaken;
+  final String emailSame;
+  final String emailInvalid;
+  final String noEmail;
+  final String passwordSection;
+  final String currentPassword;
+  final String newPassword;
+  final String confirmPassword;
+  final String savePassword;
+  final String saving;
+  final String passwordChanged;
+  final String wrongCurrent;
+  final String short;
+  final String mismatch;
+  final String same;
+  final String weak;
+  final String needCode;
+  final String tooMany;
+  final String failed;
+  final String google;
+  final String googleLinked;
+  final String googleHint;
 }
 
 /// The staff drawer (items keyed by route).
@@ -1804,7 +1845,7 @@ class SWird {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.myAccount, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1833,6 +1874,7 @@ class S {
   final SMem mem;
   final SMistakes mistakes;
   final SMkt mkt;
+  final SMyAccount myAccount;
   final SNav nav;
   final SNotif notif;
   final SOrg org;
@@ -2078,7 +2120,7 @@ class S {
       signInTo: 'دخول إلى {name}',
       signIn: 'دخول',
       whoHint: 'الدخول للمعلمين والإدارة وأولياء الأمور والطلاب، كلٌّ حسب صلاحياته في المركز.',
-      confirmEmail: 'تحقق من بريدك لتأكيد الحساب أولًا، ثم افتح رابط الدعوة من جديد لإكمال الانضمام',
+      confirmEmail: 'أرسلنا رابط تأكيد إلى بريدك: افتحه لإكمال الانضمام، ثم سجّل دخولك هنا (تفقّد الرسائل غير المرغوبة إن لم يصل)',
       joinFailed: 'تعذّر إكمال الانضمام، تأكد من الإنترنت وحاول مرة أخرى',
       joinTitle: 'الانضمام إلى مركز',
       invalidInvite: 'الدعوة غير صالحة',
@@ -2107,6 +2149,11 @@ class S {
       registerCenter: 'تسجيل مركز جديد على الموقع ↗',
       pickCenter: 'اختر المركز',
       noCenters: 'حسابك غير مرتبط بأي مركز بعد',
+      numberReset: 'حسابك يدخل برقم وليس ببريد إلكتروني: لتغيير كلمة السر تواصل مع معلمك أو مشرف المركز.',
+      google: 'الدخول بحساب Google',
+      googleHint: 'للمعلمين والإدارة',
+      googleNotStaff: 'حساب Google هذا ({email}) غير مسجّل كمعلم أو مدير في أي مركز. اطلب من مدير المركز إضافة بريدك، أو ادخل برقمك وكلمة السر.',
+      googleFailed: 'تعذّر الدخول بحساب Google، حاول مرة أخرى.',
       noCentersHint: 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر',
     ),
     badgesStaff: SBadgesStaff(
@@ -2614,6 +2661,7 @@ class S {
       error: 'حدث خطأ، حاول مرة أخرى.',
       fab: 'سمّع',
       liveBadge: 'تسميع مباشر',
+      liveDeviceNote: 'التعرّف على الكلمات في التسميع المباشر يتم على جهاز الطالب، فالنسبة استرشادية والقرار لك.',
       noRoom: 'أُرسل التسميع بدون التسجيل الصوتي: امتلأت مساحة التخزين في المركز.',
       audioDeleted: 'حُذف التسجيل الصوتي بعد المراجعة لتوفير المساحة',
       loading: 'جارٍ تحميل الآيات…',
@@ -2708,6 +2756,38 @@ class S {
       priceIn: 'السعر ({symbol})',
       stock: 'المخزون (فارغ = بلا حد)',
       active: 'فعّال (يظهر للطلاب)',
+    ),
+    myAccount: SMyAccount(
+      title: 'حسابي',
+      subtitle: 'بيانات دخولك إلى المنصة',
+      emailSection: 'البريد الإلكتروني',
+      currentEmail: 'بريدك الحالي: {email}',
+      newEmail: 'البريد الجديد',
+      sendLink: 'أرسل رابط التأكيد',
+      sending: 'جارٍ الإرسال...',
+      emailSent: 'أرسلنا رابط تأكيد إلى {email}. لن يتغيّر بريدك حتى تفتحه، وإذا وصلك رابط على بريدك الحالي أيضًا فافتحه كذلك.',
+      emailTaken: 'هذا البريد مستخدم لحساب آخر',
+      emailSame: 'هذا هو بريدك الحالي',
+      emailInvalid: 'اكتب بريدًا إلكترونيًا صحيحًا',
+      noEmail: 'حسابك يدخل برقم وليس ببريد إلكتروني. لتغيير بيانات دخولك تواصل مع مشرف المركز.',
+      passwordSection: 'كلمة السر',
+      currentPassword: 'كلمة السر الحالية',
+      newPassword: 'كلمة السر الجديدة',
+      confirmPassword: 'تأكيد كلمة السر الجديدة',
+      savePassword: 'تغيير كلمة السر',
+      saving: 'جارٍ الحفظ...',
+      passwordChanged: 'تم تغيير كلمة السر',
+      wrongCurrent: 'كلمة السر الحالية غير صحيحة',
+      short: 'كلمة السر يجب ألا تقل عن 8 خانات',
+      mismatch: 'كلمتا السر غير متطابقتين',
+      same: 'كلمة السر الجديدة هي نفس القديمة',
+      weak: 'كلمة السر لا تحقق شروط الأمان: استخدم 8 خانات على الأقل تجمع حروفًا كبيرة وصغيرة وأرقامًا ورموزًا',
+      needCode: 'حسابك مفعّل عليه التحقق بخطوتين: سجّل الدخول من جديد مع الرمز، ثم أعد المحاولة',
+      tooMany: 'محاولات كثيرة، انتظر قليلًا ثم أعد المحاولة',
+      failed: 'تعذّر الحفظ: {error}',
+      google: 'حساب Google',
+      googleLinked: 'مربوط بحساب Google: يمكنك الدخول بزر «الدخول بحساب Google»',
+      googleHint: 'إذا كان بريدك هو بريد Google نفسه، فزر «الدخول بحساب Google» في صفحة الدخول يعمل لحسابك مباشرة.',
     ),
     nav: SNav(
       items: {'/dashboard': 'لوحة التحكم', '/sync': 'المزامنة', '/attention': 'طلاب يحتاجون اهتمام', '/review-plan': 'ورد المراجعة اليومي', '/students': 'الطلاب', '/circles': 'الحلقات', '/attendance': 'الحضور', '/gatherings': 'المجالس والأنشطة', '/recitations': 'التسميعات المسجّلة', '/external-recitations': 'التسميع الخارجي', '/reviews': 'المراجعة المقترحة', '/search': 'بحث شامل', '/quran': 'المصحف', '/serd': 'السرد القرآني', '/stages': 'المراحل', '/points': 'النقاط', '/badges': 'الشارات', '/market': 'سوق النقاط', '/circle-challenges': 'منافسات الحلقات', '/activities': 'الأنشطة', '/announcements': 'الإعلانات', '/calendar': 'التقويم', '/chat': 'المحادثات', '/notifications': 'الإشعارات', '/reports': 'التقارير', '/certificates': 'الشهادات', '/fees': 'الرسوم', '/members': 'الأعضاء والأدوار', '/deletion-requests': 'طلبات حذف البيانات', '/audit': 'سجل العمليات', '/site': 'الموقع العام', '/settings': 'إعدادات المركز'},
@@ -3751,7 +3831,7 @@ class S {
       signInTo: 'Sign in to {name}',
       signIn: 'Sign in',
       whoHint: 'Sign-in for teachers, admins, guardians and students, each with their access in the center.',
-      confirmEmail: 'Check your email to confirm the account first, then open the invitation link again to finish joining',
+      confirmEmail: 'We sent a confirmation link to your email: open it to finish joining, then sign in here (check spam if it isn’t there)',
       joinFailed: 'Couldn’t finish joining; check the internet and try again',
       joinTitle: 'Join a center',
       invalidInvite: 'Invalid invitation',
@@ -3780,6 +3860,11 @@ class S {
       registerCenter: 'Register a new center on the website ↗',
       pickCenter: 'Choose the center',
       noCenters: 'Your account isn’t linked to any center yet',
+      numberReset: 'Your account signs in with a number, not an email: to change your password, contact your teacher or the center supervisor.',
+      google: 'Continue with Google',
+      googleHint: 'For teachers and staff',
+      googleNotStaff: 'This Google account ({email}) is not a teacher or admin of any center. Ask the center admin to add your email, or sign in with your number and password.',
+      googleFailed: 'Could not sign in with Google. Try again.',
       noCentersHint: 'Ask the center admin to invite you, or sign in with another account',
     ),
     badgesStaff: SBadgesStaff(
@@ -4287,6 +4372,7 @@ class S {
       error: 'Something went wrong. Try again.',
       fab: 'Recite',
       liveBadge: 'Live recitation',
+      liveDeviceNote: 'In a live recitation the words are recognised on the student\'s device, so the score is only a guide: the decision is yours.',
       noRoom: 'The recitation was sent without the recording: the center’s storage is full.',
       audioDeleted: 'The recording was deleted after review to save space',
       loading: 'Loading the ayahs…',
@@ -4381,6 +4467,38 @@ class S {
       priceIn: 'Price ({symbol})',
       stock: 'Stock (empty = unlimited)',
       active: 'Active (shown to students)',
+    ),
+    myAccount: SMyAccount(
+      title: 'My account',
+      subtitle: 'How you sign in to the platform',
+      emailSection: 'Email',
+      currentEmail: 'Your current email: {email}',
+      newEmail: 'New email',
+      sendLink: 'Send the confirmation link',
+      sending: 'Sending...',
+      emailSent: 'We sent a confirmation link to {email}. Your email does not change until you open it; if a link also reaches your current email, open that one too.',
+      emailTaken: 'This email is used by another account',
+      emailSame: 'This is already your email',
+      emailInvalid: 'Enter a valid email address',
+      noEmail: 'Your account signs in with a number, not an email. To change how you sign in, contact the center supervisor.',
+      passwordSection: 'Password',
+      currentPassword: 'Current password',
+      newPassword: 'New password',
+      confirmPassword: 'Confirm the new password',
+      savePassword: 'Change password',
+      saving: 'Saving...',
+      passwordChanged: 'Password changed',
+      wrongCurrent: 'The current password is not correct',
+      short: 'The password must be at least 8 characters',
+      mismatch: 'The passwords do not match',
+      same: 'The new password is the same as the old one',
+      weak: 'The password does not meet the security rules: use at least 8 characters mixing upper and lower case letters, digits and symbols',
+      needCode: 'Your account uses two-step sign-in: sign in again with the code, then try again',
+      tooMany: 'Too many attempts: wait a little and try again',
+      failed: 'Could not save: {error}',
+      google: 'Google account',
+      googleLinked: 'Linked to Google: you can sign in with “Continue with Google”',
+      googleHint: 'If your email is a Google account, “Continue with Google” on the sign-in page works for your account directly.',
     ),
     nav: SNav(
       items: {'/dashboard': 'Dashboard', '/attention': 'Students needing attention', '/review-plan': 'Daily review portions', '/sync': 'Sync', '/students': 'Students', '/circles': 'Circles', '/attendance': 'Attendance', '/gatherings': 'Gatherings & activities', '/recitations': 'Recorded recitations', '/external-recitations': 'External recitations', '/reviews': 'Suggested review', '/search': 'Search', '/quran': 'Quran', '/serd': 'Quran serd', '/stages': 'Stages', '/points': 'Points', '/badges': 'Badges', '/market': 'Points market', '/circle-challenges': 'Circle challenges', '/activities': 'Activities', '/announcements': 'Announcements', '/calendar': 'Calendar', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Reports', '/certificates': 'Certificates', '/fees': 'Fees', '/members': 'Members & roles', '/deletion-requests': 'Data deletion requests', '/audit': 'Activity log', '/site': 'Public page', '/settings': 'Center settings'},
@@ -5424,7 +5542,7 @@ class S {
       signInTo: '{name} merkezine giriş',
       signIn: 'Giriş yap',
       whoHint: 'Öğretmenler, yöneticiler, veliler ve öğrenciler için giriş; her biri merkezdeki yetkisiyle.',
-      confirmEmail: 'Önce hesabı onaylamak için e-postanızı kontrol edin, sonra katılımı tamamlamak için davet bağlantısını yeniden açın',
+      confirmEmail: 'E-postanıza bir onay bağlantısı gönderdik: katılmayı tamamlamak için açın, sonra buradan giriş yapın (istenmeyen klasörüne bakın)',
       joinFailed: 'Katılım tamamlanamadı; internetinizi kontrol edip tekrar deneyin',
       joinTitle: 'Bir merkeze katıl',
       invalidInvite: 'Geçersiz davet',
@@ -5453,6 +5571,11 @@ class S {
       registerCenter: 'Web sitesinde yeni bir merkez kaydedin ↗',
       pickCenter: 'Merkezi seçin',
       noCenters: 'Hesabınız henüz hiçbir merkeze bağlı değil',
+      numberReset: 'Hesabınız e-postayla değil numarayla giriş yapıyor: şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
+      google: 'Google ile devam et',
+      googleHint: 'Öğretmenler ve yöneticiler için',
+      googleNotStaff: 'Bu Google hesabı ({email}) hiçbir merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
+      googleFailed: 'Google ile giriş yapılamadı. Tekrar deneyin.',
       noCentersHint: 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın',
     ),
     badgesStaff: SBadgesStaff(
@@ -5960,6 +6083,7 @@ class S {
       error: 'Bir hata oluştu. Tekrar deneyin.',
       fab: 'Dinlet',
       liveBadge: 'Canlı dinletme',
+      liveDeviceNote: 'Canlı dinletmede kelimeler öğrencinin cihazında tanınır; puan yalnızca yol göstericidir, karar sizindir.',
       noRoom: 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
       audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       loading: 'Ayetler yükleniyor…',
@@ -6054,6 +6178,38 @@ class S {
       priceIn: 'Fiyat ({symbol})',
       stock: 'Stok (boş = sınırsız)',
       active: 'Etkin (öğrencilere gösterilir)',
+    ),
+    myAccount: SMyAccount(
+      title: 'Hesabım',
+      subtitle: 'Platforma nasıl giriş yaptığınız',
+      emailSection: 'E-posta',
+      currentEmail: 'Mevcut e-postanız: {email}',
+      newEmail: 'Yeni e-posta',
+      sendLink: 'Onay bağlantısını gönder',
+      sending: 'Gönderiliyor...',
+      emailSent: '{email} adresine bir onay bağlantısı gönderdik. Açana kadar e-postanız değişmez; mevcut e-postanıza da bir bağlantı gelirse onu da açın.',
+      emailTaken: 'Bu e-posta başka bir hesapta kullanılıyor',
+      emailSame: 'Bu zaten sizin e-postanız',
+      emailInvalid: 'Geçerli bir e-posta adresi girin',
+      noEmail: 'Hesabınız e-postayla değil numarayla giriş yapıyor. Giriş bilgilerinizi değiştirmek için merkez yöneticisine başvurun.',
+      passwordSection: 'Şifre',
+      currentPassword: 'Mevcut şifre',
+      newPassword: 'Yeni şifre',
+      confirmPassword: 'Yeni şifreyi onaylayın',
+      savePassword: 'Şifreyi değiştir',
+      saving: 'Kaydediliyor...',
+      passwordChanged: 'Şifre değiştirildi',
+      wrongCurrent: 'Mevcut şifre yanlış',
+      short: 'Şifre en az 8 karakter olmalı',
+      mismatch: 'Şifreler eşleşmiyor',
+      same: 'Yeni şifre eskisiyle aynı',
+      weak: 'Şifre güvenlik kurallarını karşılamıyor: büyük ve küçük harf, rakam ve sembol içeren en az 8 karakter kullanın',
+      needCode: 'Hesabınızda iki adımlı giriş açık: kodla yeniden giriş yapıp tekrar deneyin',
+      tooMany: 'Çok fazla deneme: biraz bekleyip tekrar deneyin',
+      failed: 'Kaydedilemedi: {error}',
+      google: 'Google hesabı',
+      googleLinked: 'Google’a bağlı: “Google ile devam et” ile giriş yapabilirsiniz',
+      googleHint: 'E-postanız bir Google hesabıysa, giriş sayfasındaki “Google ile devam et” hesabınız için doğrudan çalışır.',
     ),
     nav: SNav(
       items: {'/dashboard': 'Kontrol paneli', '/attention': 'İlgi bekleyen öğrenciler', '/review-plan': 'Günlük tekrar payları', '/sync': 'Eşitleme', '/students': 'Öğrenciler', '/circles': 'Halkalar', '/attendance': 'Yoklama', '/gatherings': 'Toplantılar ve etkinlikler', '/external-recitations': 'Dış dinletmeler', '/recitations': 'Kayıtlı dinletmeler', '/reviews': 'Önerilen tekrar', '/search': 'Ara', '/quran': 'Kur’an', '/serd': 'Kur’an serdi', '/stages': 'Aşamalar', '/points': 'Puanlar', '/badges': 'Rozetler', '/market': 'Puan marketi', '/circle-challenges': 'Halka yarışmaları', '/activities': 'Etkinlikler', '/announcements': 'Duyurular', '/calendar': 'Takvim', '/chat': 'Mesajlar', '/notifications': 'Bildirimler', '/reports': 'Raporlar', '/certificates': 'Sertifikalar', '/members': 'Üyeler ve roller', '/deletion-requests': 'Veri silme talepleri', '/audit': 'İşlem kaydı', '/site': 'Herkese açık sayfa', '/settings': 'Merkez ayarları', '/fees': 'Ücretler'},
@@ -7097,7 +7253,7 @@ class S {
       signInTo: 'Se connecter à {name}',
       signIn: 'Se connecter',
       whoHint: 'Connexion pour les enseignants, administrateurs, parents et élèves, chacun avec ses accès dans le centre.',
-      confirmEmail: 'Vérifiez d’abord votre e-mail pour confirmer le compte, puis rouvrez le lien d’invitation pour terminer',
+      confirmEmail: 'Nous avons envoyé un lien de confirmation à votre e-mail : ouvrez-le pour terminer, puis connectez-vous ici (vérifiez vos spams)',
       joinFailed: 'Impossible de terminer l’adhésion ; vérifiez internet et réessayez',
       joinTitle: 'Rejoindre un centre',
       invalidInvite: 'Invitation invalide',
@@ -7126,6 +7282,11 @@ class S {
       registerCenter: 'Inscrire un nouveau centre sur le site ↗',
       pickCenter: 'Choisissez le centre',
       noCenters: 'Votre compte n’est encore lié à aucun centre',
+      numberReset: 'Votre compte se connecte avec un numéro, pas un e-mail : pour changer votre mot de passe, contactez votre enseignant ou le responsable du centre.',
+      google: 'Continuer avec Google',
+      googleHint: 'Pour les enseignants et l’équipe',
+      googleNotStaff: 'Ce compte Google ({email}) n’est enseignant ni administrateur d’aucun centre. Demandez à l’administrateur d’ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.',
+      googleFailed: 'Connexion avec Google impossible. Réessayez.',
       noCentersHint: 'Demandez à l’administrateur du centre de vous inviter, ou connectez-vous avec un autre compte',
     ),
     badgesStaff: SBadgesStaff(
@@ -7633,6 +7794,7 @@ class S {
       error: 'Une erreur s’est produite. Réessayez.',
       fab: 'Réciter',
       liveBadge: 'Récitation en direct',
+      liveDeviceNote: 'Dans une récitation en direct, les mots sont reconnus sur l’appareil de l’élève : le score n’est qu’indicatif, la décision vous revient.',
       noRoom: 'La récitation a été envoyée sans l’enregistrement : l’espace de stockage du centre est plein.',
       audioDeleted: 'L’enregistrement a été supprimé après examen pour gagner de la place',
       loading: 'Chargement des âyahs…',
@@ -7727,6 +7889,38 @@ class S {
       priceIn: 'Prix ({symbol})',
       stock: 'Stock (vide = illimité)',
       active: 'Actif (visible par les élèves)',
+    ),
+    myAccount: SMyAccount(
+      title: 'Mon compte',
+      subtitle: 'Comment vous vous connectez à la plateforme',
+      emailSection: 'E-mail',
+      currentEmail: 'Votre e-mail actuel : {email}',
+      newEmail: 'Nouvel e-mail',
+      sendLink: 'Envoyer le lien de confirmation',
+      sending: 'Envoi...',
+      emailSent: 'Nous avons envoyé un lien de confirmation à {email}. Votre e-mail ne change pas tant que vous ne l’ouvrez pas ; si un lien arrive aussi sur votre e-mail actuel, ouvrez-le également.',
+      emailTaken: 'Cet e-mail est utilisé par un autre compte',
+      emailSame: 'C’est déjà votre e-mail',
+      emailInvalid: 'Saisissez une adresse e-mail valide',
+      noEmail: 'Votre compte se connecte avec un numéro, pas un e-mail. Pour changer vos identifiants, contactez le responsable du centre.',
+      passwordSection: 'Mot de passe',
+      currentPassword: 'Mot de passe actuel',
+      newPassword: 'Nouveau mot de passe',
+      confirmPassword: 'Confirmez le nouveau mot de passe',
+      savePassword: 'Changer le mot de passe',
+      saving: 'Enregistrement...',
+      passwordChanged: 'Mot de passe changé',
+      wrongCurrent: 'Le mot de passe actuel est incorrect',
+      short: 'Le mot de passe doit contenir au moins 8 caractères',
+      mismatch: 'Les mots de passe ne correspondent pas',
+      same: 'Le nouveau mot de passe est identique à l’ancien',
+      weak: 'Le mot de passe ne respecte pas les règles de sécurité : au moins 8 caractères mêlant majuscules, minuscules, chiffres et symboles',
+      needCode: 'Votre compte utilise la connexion en deux étapes : reconnectez-vous avec le code, puis réessayez',
+      tooMany: 'Trop de tentatives : patientez un peu puis réessayez',
+      failed: 'Enregistrement impossible : {error}',
+      google: 'Compte Google',
+      googleLinked: 'Lié à Google : vous pouvez vous connecter avec « Continuer avec Google »',
+      googleHint: 'Si votre e-mail est un compte Google, « Continuer avec Google » sur la page de connexion fonctionne directement pour votre compte.',
     ),
     nav: SNav(
       items: {'/dashboard': 'Tableau de bord', '/attention': 'Élèves à suivre de près', '/review-plan': 'Portions de révision quotidiennes', '/sync': 'Synchronisation', '/students': 'Élèves', '/circles': 'Cercles', '/attendance': 'Présences', '/gatherings': 'Rassemblements et activités', '/external-recitations': 'Récitations externes', '/recitations': 'Récitations enregistrées', '/reviews': 'Révision suggérée', '/search': 'Recherche', '/quran': 'Coran', '/serd': 'Serd du Coran', '/stages': 'Niveaux', '/points': 'Points', '/badges': 'Badges', '/market': 'Boutique de points', '/circle-challenges': 'Défis entre cercles', '/activities': 'Activités', '/announcements': 'Annonces', '/calendar': 'Calendrier', '/chat': 'Messages', '/notifications': 'Notifications', '/reports': 'Rapports', '/certificates': 'Certificats', '/members': 'Membres et rôles', '/deletion-requests': 'Demandes de suppression de données', '/audit': 'Journal d’activité', '/site': 'Page publique', '/settings': 'Réglages du centre', '/fees': 'Frais'},

@@ -133,6 +133,8 @@ export const tr: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: 'Önce merkez adını ve bağlantısını yazın, sonra Google ile kaydol’u seçin',
+    google: 'Google ile kaydol',
     subtitle: 'Kur’an bahçesine ağacınızı dikin — bir dakika ve merkeziniz için eksiksiz bir yönetim paneliyle hemen başlarsınız',
     haveCenter: 'Zaten bir merkez kaydettiniz mi?',
     signIn: 'Giriş yap',
@@ -148,6 +150,7 @@ export const tr: Dictionary = {
     errorRequired: 'Tüm alanlar zorunludur',
     errorSlug: 'Geçersiz bağlantı - yalnızca küçük İngilizce harfler, rakamlar ve tire; ayrılmış kelimeler olmadan',
     errorConfirmEmail: 'Önce hesabınızı onaylamak için e-postanızı kontrol edin - sonra merkezi oluşturmayı bitirmek için geri dönün',
+    checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Merkezinizi oluşturmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     errorSlugTaken: 'Bu bağlantı zaten alınmış, başka birini deneyin',
     errorEmailTaken: 'Bu e-posta zaten kayıtlı - bunun yerine giriş yapın',
     errorWeakPassword: 'Şifre çok zayıf - en az 8 karakter kullanın',
@@ -161,6 +164,11 @@ export const tr: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: 'Bu Google hesabı ({email}) bu merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
+    errorGoogle: 'Google ile giriş yapılamadı. Tekrar deneyin.',
+    googleHint: 'Öğretmenler ve yöneticiler için',
+    or: 'veya',
+    google: 'Google ile devam et',
     subtitle: 'Öğretmenler, personel, öğrenciler ve veliler için',
     forgotCenter: 'Merkezinizin bağlantısını mı unuttunuz?',
     findIt: 'Buradan bulun',
@@ -180,7 +188,7 @@ export const tr: Dictionary = {
     sending: 'Gönderiliyor...',
     submit: 'Sıfırlama bağlantısı gönder',
     errorEmpty: 'Kimliğinizi veya e-postanızı girin',
-    errorNoEmail: 'Bu hesabın şifre kurtarmak için bir e-posta adresi yok - merkez yöneticisinden üyeler sayfasından sıfırlamasını isteyin',
+    errorNoEmail: 'Hesabınız e-postayla değil numarayla giriş yapıyor, bu yüzden bağlantı gönderilemez. Şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
   },
 
   reset: {
@@ -197,9 +205,16 @@ export const tr: Dictionary = {
     errorShort: 'Şifre en az 8 karakter olmalıdır',
     errorMismatch: 'Şifreler eşleşmiyor',
     errorFailed: 'Şifre güncellenemedi, yeni bir bağlantı istemeyi deneyin',
+    errorSame: 'Yeni şifre eskisiyle aynı: farklı bir şifre seçin',
+    errorWeak: 'Şifre güvenlik kurallarını karşılamıyor: büyük ve küçük harf, rakam ve sembol içeren en az 8 karakter kullanın',
+    errorNeedCode: 'Hesabınızda iki adımlı giriş açık: doğrulama uygulamasındaki kodu girip kaydedin',
+    errorCode: 'Kod hatalı: uygulamadaki güncel kodu girin',
+    errorUnknown: 'Şifre güncellenemedi',
+    code: 'İki adımlı giriş kodu',
   },
 
   join: {
+    google: 'Google ile katıl',
     incompleteTitle: 'Eksik davet bağlantısı',
     incompleteBody: 'Sizi davet eden kişiden gelen bağlantının tamamını kullandığınızdan emin olun.',
     invalidTitle: 'Geçersiz davet',
@@ -213,7 +228,34 @@ export const tr: Dictionary = {
     creating: 'Oluşturuluyor ve katılınıyor...',
     create: 'Hesap oluştur ve katıl',
     errorConfirmEmail: 'Önce hesabınızı onaylamak için e-postanızı kontrol edin, sonra katılımı tamamlamak için davet bağlantısını yeniden açın',
+    checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Katılmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     roles: { admin: 'yönetici', teacher: 'öğretmen', guardian: 'veli', student: 'öğrenci' },
+  },
+
+  googlePage: {
+    title: 'Google ile devam et',
+    toCenter: '{center} için',
+    newCenter: 'Yeni merkez “{name}”',
+    working: 'Giriş yapılıyor…',
+    back: 'Geri',
+    failed: 'Google ile giriş yapılamadı. Tekrar deneyin.',
+    unavailable: 'Google düğmesi yüklenemedi. Bağlantıyı kontrol edin veya numaranız ve şifrenizle giriş yapın.',
+  },
+
+  confirmEmail: {
+    changed: 'Yeni e-postanız onaylandı. Diğer e-postanıza da bir bağlantı geldiyse değişikliği tamamlamak için onu da açın, sonra yeni e-postayla giriş yapın.',
+    title: 'E-postanızı onaylayın',
+    checking: 'E-postanız onaylanıyor…',
+    finishing: 'Onaylandı. Hesabınız hazırlanıyor…',
+    invalid: 'Bu bağlantı geçersiz, kullanılmış veya süresi dolmuş. E-postanızı zaten onayladıysanız giriş yapın.',
+    error: 'E-postanız onaylandı ancak son adım tamamlanamadı. Giriş yapın veya bize ulaşın.',
+    slugTaken: '“{slug}” merkez bağlantısı artık kullanımda. Merkezinizi oluşturmayı tamamlamak için başka bir bağlantı seçin.',
+    finish: 'Merkezi oluşturmayı tamamla',
+    signIn: 'Giriş yap',
+    finishSignIn: 'E-postanız zaten onaylandıysa (e-posta hizmetleri bazen bağlantıyı sizden önce açar), merkezinizi oluşturmayı veya katılmayı tamamlamak için buradan giriş yapın:',
+    signInFinish: 'Giriş yap ve tamamla',
+    notConfirmed: 'E-postanız henüz onaylanmadı: gelen son onay e-postasını açın veya yeni bağlantı için tekrar kaydolun.',
+    wrongLogin: 'E-posta veya şifre hatalı.',
   },
 
   consent: {
@@ -251,6 +293,7 @@ export const tr: Dictionary = {
 
   shell: {
     roles: { admin: 'Yönetici', teacher: 'Öğretmen', guardian: 'Veli', student: 'Öğrenci' },
+    myAccount: 'Hesabım',
     signOut: 'Çıkış yap',
     signingOut: 'Çıkış yapılıyor...',
     platformOwner: 'Platform sahibi modu — bu merkeze üye olarak değil, denetçi olarak göz atıyorsunuz',
@@ -621,6 +664,7 @@ export const tr: Dictionary = {
       waitingN: 'İncelemenizi bekleyen {n} kayıtlı dinletme',
       recheck: 'Otomatik kontrolü yeniden çalıştır',
       liveBadge: 'Canlı dinletme',
+      liveDeviceNote: 'Canlı dinletmede kelimeler öğrencinin cihazında tanınır; puan yalnızca yol göstericidir, karar sizindir.',
       audioDeleted: 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
       testNote: 'Not (isteğe bağlı)',
       note: 'Öğretmene not (isteğe bağlı)',

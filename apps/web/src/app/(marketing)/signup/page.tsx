@@ -3,15 +3,20 @@ import { AuthCard } from '@/components/auth-card';
 import { authInputClass, authLabelClass, authButtonClass } from '@/components/auth-styles';
 import { SubmitButton } from '@/components/submit-button';
 import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 import { signUpAndCreateOrganization } from './actions';
+import { signUpWithGoogle } from '@/lib/auth/google';
+import { GoogleButton, OrLine } from '@/components/google-button';
+import { googleEnabled } from '@/lib/auth/google-enabled';
 import { Check } from 'lucide-react';
 
 // Creates the auth user AND the organization + first admin membership in
 // one step (see supabase/migrations/0010_self_serve_signup.sql), then sends
 // the new admin straight to their own subdomain's dashboard.
-export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string; sent?: string }> }) {
+  const { error, sent } = await searchParams;
   const { t } = await getI18n();
+  const google = await googleEnabled();
 
   return (
     <>
@@ -29,6 +34,11 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           </>
         }
       >
+        {sent ? (
+          // "Confirm email" is on: the rest happens from the link in the email
+          <p className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">{fmt(t.signup.checkEmail, { email: sent })}</p>
+        ) : (
+        <>
         <ul className="mb-6 flex flex-col gap-2 text-sm text-gray-600">
           {t.signup.benefits.map((b) => (
             <li key={b} className="flex items-start gap-2">
@@ -66,7 +76,16 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText={t.signup.creating}>
             {t.signup.submit}
           </SubmitButton>
+          {/* the same center name and link, with a Google account instead of email + password */}
+          {google && (
+            <>
+              <OrLine text={t.login.or} />
+              <GoogleButton label={t.signup.google} pendingText={t.signup.creating} formAction={signUpWithGoogle} />
+            </>
+          )}
         </form>
+        </>
+        )}
       </AuthCard>
     </>
   );

@@ -106,6 +106,9 @@ export function RecitationList({
               {r.grade && <span>{gradeLabel.get(r.grade) ?? r.grade}</span>}
               {r.reviewer && r.kind === 'self' && r.status !== 'submitted' && <span>{fmt(R.reviewedBy, { name: r.reviewer })}</span>}
             </p>
+            {mode === 'staff' && r.source === 'live' && r.kind === 'self' && r.auto_score != null && (
+              <p className="text-xs text-sky-700">{R.liveDeviceNote}</p>
+            )}
             {url && <audio controls preload="none" src={url} className="h-9 w-full" />}
             {!r.audio_path && r.audio_deleted_at && <p className="text-xs text-gray-400">{R.audioDeleted}</p>}
             {mode === 'staff' && r.kind === 'self' && r.status === 'submitted' && !r.auto_result && <RecheckButton id={r.id} label={R.recheck} />}

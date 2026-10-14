@@ -69,6 +69,9 @@ class RecitationItem {
   String? get audioPath => raw['audio_path'] as String?;
   String get status => raw['status'] as String? ?? 'draft';
   double? get autoScore => (raw['auto_score'] as num?)?.toDouble();
+
+  /// 'live' when recited word by word (0087): the words were recognised on the student's device.
+  bool get live => raw['source'] == 'live';
   ReciteCheck get check => ReciteCheck.fromJson(raw['auto_result'] as Map<String, dynamic>?);
   List<Map<String, dynamic>> get mistakes => ((raw['mistakes'] as List?) ?? const []).cast<Map<String, dynamic>>();
   String? get grade => raw['grade'] as String?;

@@ -7,6 +7,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/org_avatar.dart';
 import '../../core/widgets/ui.dart';
+import 'google_auth.dart';
 import 'login_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -30,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _centerNotFound = false;
   bool _showPassword = false;
   bool _submitting = false;
+  bool _google = false;
   String? _error;
 
   @override
@@ -125,10 +127,40 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Password reset needs a real inbox and an email link - both are a web
   // job, same as center registration (see onboarding_screen.dart).
+  // teachers and admins: Google's own account picker, then the same "staff somewhere" rule as the website
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _google = true;
+      _error = null;
+    });
+    final outcome = await GoogleAuth.signIn(AppSupabase.client);
+    if (!mounted) return;
+    setState(() {
+      _google = false;
+      _error = switch (outcome) {
+        GoogleNotStaff(:final email) => fmt(tr(context).auth.googleNotStaff, {'email': email}),
+        GoogleFailed() => tr(context).auth.googleFailed,
+        _ => null,
+      };
+    });
+  }
+
   Future<void> _openForgotPassword() async {
     final slug = (_center?.slug ?? _centerController.text).trim().toLowerCase();
     if (slug.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context).auth.codeFirst)));
+      return;
+    }
+    // a number login has no inbox: the center changes its password
+    final id = _emailController.text.trim();
+    if (id.isNotEmpty && !id.contains('@')) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(tr(context).auth.numberReset),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(MaterialLocalizations.of(context).okButtonLabel))],
+        ),
+      );
       return;
     }
     final uri = Uri.parse('https://$slug.bustan-alquran.com/forgot-password');
@@ -295,6 +327,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
                           : Text(_center != null ? fmt(tr(context).auth.signInTo, {'name': _center!.name}) : tr(context).auth.signIn),
                     ),
+                    if (googleSignInAvailable) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: _google || _submitting ? null : _signInWithGoogle,
+                        icon: _google
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Text('G', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF4285F4))),
+                        label: Text(tr(context).auth.google),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(tr(context).auth.googleHint, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     Text(
                       tr(context).auth.whoHint,

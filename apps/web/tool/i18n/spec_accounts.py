@@ -26,4 +26,5 @@ SPEC = {'accounts': ('Creating accounts (students, teachers, guardians) - errors
   ('relinkFailed', 'تعذّر تحديث الربط', 'Could not update the link'),
   ('noMember', 'العضو غير موجود في هذا المركز', 'This member isn’t in this center'),
   ('passwordFailed', 'تعذّر تغيير كلمة السر', 'Could not change the password'),
+  ('sharedAccount', 'هذا الحساب مرتبط بمركز آخر أو بإدارة المنصة، فلا تُغيَّر كلمة سرّه أو بريده من هنا. يغيّرها صاحبه من حسابه.', 'This account also belongs to another center or to the platform, so its password or email cannot be changed here. Its owner can change it from their account.'),
 ))}

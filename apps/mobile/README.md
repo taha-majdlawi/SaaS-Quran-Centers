@@ -36,6 +36,18 @@ flutter run --dart-define-from-file=env.json
 
 ⚠️ لا تشغّل `flutter run` بدون `--dart-define-from-file=env.json` (أو بدون تعبية `--dart-define=SUPABASE_URL=... --dart-define=SUPABASE_PUBLISHABLE_KEY=...` يدويًا) - بدونها بيفتح التطبيق على شاشة "إعدادات الاتصال بالخادم مفقودة" فقط، لأنه ما يقدر يتصل بسوبا بيز أصلاً.
 
+## بناء نسخة المتجر (أندرويد)
+
+```
+flutter build appbundle --release --dart-define-from-file=env.json --obfuscate --split-debug-info=build/symbols
+```
+
+`--obfuscate` يصعّب الهندسة العكسية للتطبيق (أسماء الكلاسات والدوال بتصير رموز). التطبيق ما فيه أسرار أصلًا، فهذه طبقة إضافية بس.
+احتفظ بمجلد `build/symbols` لكل إصدار (مش بـgit): بدونه ما بتقدر تقرأ مسار الخطأ في صفحة «الأخطاء». لقراءة مسار من نسخة مموّهة:
+`flutter symbolize -i stack.txt -d build/symbols/app.android-arm64.symbols`
+
+لـAPK للتجربة: نفس الأمر مع `apk` بدل `appbundle`.
+
 ## الآيفون
 
 نفس الكود يبني للآيفون على Codemagic (`codemagic.yaml` بجذر المستودع) — الخطوات كاملة في [docs/IOS.md](../../docs/IOS.md).

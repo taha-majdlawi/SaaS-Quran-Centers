@@ -15,5 +15,11 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "overrides": {
+    "@node-minify/core": {
+      "glob": "^13.0.6"
+    },
+    "next": "16.3.8"
   }
 }

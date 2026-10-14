@@ -6,7 +6,12 @@
     <application
         android:label="بستان القرآن"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:usesCleartextTraffic="false">
+        <!-- no backup of the app's data (the offline copy holds students' names and phones; the
+             sign-in lives in the keystore and would not restore anyway), and https only -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

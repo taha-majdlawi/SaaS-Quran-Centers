@@ -16,17 +16,22 @@ export function SubmitButton({
   pendingText,
   className,
   disabled = false,
+  formAction,
+  formNoValidate,
 }: {
   children: React.ReactNode;
   pendingText?: string;
   className?: string;
   disabled?: boolean;
+  /** a second button of a form, sending its fields to another action */
+  formAction?: (formData: FormData) => void | Promise<void> | Promise<never>;
+  formNoValidate?: boolean;
 }) {
   const { pending } = useFormStatus();
   const i18n = useClientI18n();
 
   return (
-    <button type="submit" disabled={pending || disabled} className={className}>
+    <button type="submit" disabled={pending || disabled} className={className} formAction={formAction} formNoValidate={formNoValidate}>
       {pending ? (
         <span className="flex items-center justify-center gap-2">
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

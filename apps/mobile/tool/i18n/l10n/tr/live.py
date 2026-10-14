@@ -45,6 +45,7 @@ T = {
  'error': 'Bir hata oluştu. Tekrar deneyin.',
  'fab': 'Dinlet',
  'liveBadge': 'Canlı dinletme',
+ 'liveDeviceNote': 'Canlı dinletmede kelimeler öğrencinin cihazında tanınır; puan yalnızca yol göstericidir, karar sizindir.',
  'noRoom': 'Dinletme ses kaydı olmadan gönderildi: merkezin depolama alanı dolu.',
  'audioDeleted': 'Ses kaydı yer açmak için değerlendirmeden sonra silindi',
  'loading': 'Ayetler yükleniyor…',
