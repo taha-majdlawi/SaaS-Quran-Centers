@@ -36,7 +36,8 @@ android {
         applicationId = "com.bustanalquran.bustan_alquran_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Google sign-in (Credential Manager) needs Android 7.0+; older Flutter versions default lower
+        minSdk = maxOf(24, flutter.minSdkVersion)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

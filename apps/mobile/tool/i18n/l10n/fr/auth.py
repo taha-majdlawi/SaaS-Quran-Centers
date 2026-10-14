@@ -52,4 +52,8 @@ T = {'thisCenter': 'ce centre',
  'pickCenter': 'Choisissez le centre',
  'noCenters': 'Votre compte n’est encore lié à aucun centre',
  'numberReset': 'Votre compte se connecte avec un numéro, pas un e-mail : pour changer votre mot de passe, contactez votre enseignant ou le responsable du centre.',
+ 'google': 'Continuer avec Google',
+ 'googleHint': 'Pour les enseignants et l’équipe',
+ 'googleNotStaff': 'Ce compte Google ({email}) n’est enseignant ni administrateur d’aucun centre. Demandez à l’administrateur d’ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.',
+ 'googleFailed': 'Connexion avec Google impossible. Réessayez.',
  'noCentersHint': 'Demandez à l’administrateur du centre de vous inviter, ou connectez-vous avec un autre compte'}

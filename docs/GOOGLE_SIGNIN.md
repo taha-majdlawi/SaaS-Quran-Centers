@@ -51,3 +51,18 @@
 - بالطريقة القديمة (بدون Client ID بالكود)، Google بيكتب «للمتابعة إلى `<project>.supabase.co`». مع زر Google الرسمي بيكتب `bustan-alquran.com`، وبعد التحقق من العلامة (Branding ← Verify branding) بيكتب «بستان القرآن».
 - بريد الدعم بشاشة Google لازم يكون حساب Google أو مجموعة Google انت بتديرها. عشان يصير `support@bustan-alquran.com`: اعمل حساب Google بنفس البريد (من «استخدام عنوان بريدك الإلكتروني الحالي»)، وأضفه للمشروع بـIAM كـOwner، فبيظهر بقائمة «User support email».
 - إذا المعلم بريده مش Gmail (مثلًا Outlook)، بيضل يدخل بالبريد وكلمة السر.
+
+## بالتطبيق (أندرويد)
+- **زر «الدخول بحساب Google» بشاشة الدخول:** بيفتح قائمة حسابات Google على الجوال نفسه (بدون متصفح).
+  - الـtoken مع nonce بيروح لـSupabase (`signInWithIdToken`).
+  - بعدها التطبيق بيسأل الموقع (`/api/auth/google-check`) إذا الحساب معلم أو مدير بأي مركز. إذا لا، بيطلع منه، والحساب الغريب بينحذف.
+- **الكود:** `apps/mobile/lib/features/auth/google_auth.dart`، والتطبيق بيستعمل الـClient ID تبع الويب كـ`serverClientId`.
+- **الإعداد بـGoogle Cloud:** لازم تعمل Client من نوع **Android** لكل مفتاح توقيع.
+  1. روح على **Clients ← Create client ← Android**.
+  2. Package name: `com.bustanalquran.bustan_alquran_app`
+  3. **SHA-1:** من مفتاح التوقيع، على اللابتوب:
+     - مفتاح الإصدار: `keytool -list -v -keystore <ملف upload-keystore.jks> -alias upload`
+     - للتجربة (debug): `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
+     - إذا التطبيق على Google Play مع «App signing»: كمان الـSHA-1 من **Play Console ← App integrity**.
+  4. ما في شي تحطه بالتطبيق أو بـSupabase من هالـClient. Google بيتعرّف على التطبيق من اسمه وبصمته.
+- **الآيفون:** لسا مش مفعّل (بدها Client من نوع iOS، ورابط بـInfo.plist)، فالزر ما بيظهر هناك.
