@@ -22,6 +22,8 @@ const PUBLIC_TENANT_PATHS = new Set([
   '/delete-account',
   '/forgot-password',
   '/reset-password',
+  // back from Google (the session is made there)
+  '/auth/callback',
 ]);
 // /verify/<serial> lets anyone check a printed certificate is genuine
 const isPublicTenantPath = (p: string) => PUBLIC_TENANT_PATHS.has(p) || /^\/verify\/[A-Za-z0-9-]{1,40}$/.test(p);

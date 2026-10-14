@@ -133,6 +133,8 @@ export const en: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: 'Enter the center name and link first, then choose Sign up with Google',
+    google: 'Sign up with Google',
     subtitle: 'Plant your tree in the Quran orchard — one minute, and you start right away with a full admin dashboard for your center',
     haveCenter: 'Already registered a center?',
     signIn: 'Sign in',
@@ -162,6 +164,11 @@ export const en: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: 'This Google account ({email}) is not a teacher or admin of this center. Ask the center admin to add your email, or sign in with your number and password.',
+    errorGoogle: 'Could not sign in with Google. Try again.',
+    googleHint: 'For teachers and staff',
+    or: 'or',
+    google: 'Continue with Google',
     subtitle: 'For teachers, staff, students and guardians',
     forgotCenter: 'Forgot your center’s link?',
     findIt: 'Find it here',
@@ -207,6 +214,7 @@ export const en: Dictionary = {
   },
 
   join: {
+    google: 'Join with Google',
     incompleteTitle: 'Incomplete invitation link',
     incompleteBody: 'Make sure you used the full link from the person who invited you.',
     invalidTitle: 'Invalid invitation',

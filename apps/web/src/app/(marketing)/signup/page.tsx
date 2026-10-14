@@ -5,6 +5,9 @@ import { SubmitButton } from '@/components/submit-button';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 import { signUpAndCreateOrganization } from './actions';
+import { signUpWithGoogle } from '@/lib/auth/google';
+import { GoogleButton, OrLine } from '@/components/google-button';
+import { googleEnabled } from '@/lib/auth/google-enabled';
 import { Check } from 'lucide-react';
 
 // Creates the auth user AND the organization + first admin membership in
@@ -13,6 +16,7 @@ import { Check } from 'lucide-react';
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string; sent?: string }> }) {
   const { error, sent } = await searchParams;
   const { t } = await getI18n();
+  const google = await googleEnabled();
 
   return (
     <>
@@ -72,6 +76,13 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           <SubmitButton className={`mt-2 ${authButtonClass}`} pendingText={t.signup.creating}>
             {t.signup.submit}
           </SubmitButton>
+          {/* the same center name and link, with a Google account instead of email + password */}
+          {google && (
+            <>
+              <OrLine text={t.login.or} />
+              <GoogleButton label={t.signup.google} pendingText={t.signup.creating} formAction={signUpWithGoogle} />
+            </>
+          )}
         </form>
         </>
         )}

@@ -134,6 +134,8 @@ export const ar = {
   },
 
   signup: {
+    googleNeedsCenter: 'اكتب اسم المركز ورابطه أولًا، ثم اختر التسجيل بحساب Google',
+    google: 'التسجيل بحساب Google',
     subtitle: 'أضف شجرتك إلى بستان القرآن — دقيقة واحدة وتبدأ فورًا بلوحة إدارة كاملة لمركزك',
     haveCenter: 'عندك مركز مسجّل من قبل؟',
     signIn: 'سجّل دخولك',
@@ -163,6 +165,11 @@ export const ar = {
   },
 
   login: {
+    errorGoogleNotStaff: 'حساب Google هذا ({email}) غير مسجّل في هذا المركز كمعلم أو مدير. اطلب من مدير المركز إضافة بريدك، أو ادخل برقمك وكلمة السر.',
+    errorGoogle: 'تعذّر الدخول بحساب Google، حاول مرة أخرى.',
+    googleHint: 'للمعلمين والإدارة',
+    or: 'أو',
+    google: 'الدخول بحساب Google',
     subtitle: 'للمعلمين والإدارة والطلاب وأولياء الأمور',
     forgotCenter: 'نسيت رابط مركزك؟',
     findIt: 'دوّر عليه من هنا',
@@ -208,6 +215,7 @@ export const ar = {
   },
 
   join: {
+    google: 'الانضمام بحساب Google',
     incompleteTitle: 'رابط الدعوة غير مكتمل',
     incompleteBody: 'تأكد إنك استخدمت الرابط كامل من الشخص اللي دعاك.',
     invalidTitle: 'دعوة غير صالحة',

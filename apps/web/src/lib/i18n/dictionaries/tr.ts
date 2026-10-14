@@ -133,6 +133,8 @@ export const tr: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: 'Önce merkez adını ve bağlantısını yazın, sonra Google ile kaydol’u seçin',
+    google: 'Google ile kaydol',
     subtitle: 'Kur’an bahçesine ağacınızı dikin — bir dakika ve merkeziniz için eksiksiz bir yönetim paneliyle hemen başlarsınız',
     haveCenter: 'Zaten bir merkez kaydettiniz mi?',
     signIn: 'Giriş yap',
@@ -162,6 +164,11 @@ export const tr: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: 'Bu Google hesabı ({email}) bu merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
+    errorGoogle: 'Google ile giriş yapılamadı. Tekrar deneyin.',
+    googleHint: 'Öğretmenler ve yöneticiler için',
+    or: 'veya',
+    google: 'Google ile devam et',
     subtitle: 'Öğretmenler, personel, öğrenciler ve veliler için',
     forgotCenter: 'Merkezinizin bağlantısını mı unuttunuz?',
     findIt: 'Buradan bulun',
@@ -207,6 +214,7 @@ export const tr: Dictionary = {
   },
 
   join: {
+    google: 'Google ile katıl',
     incompleteTitle: 'Eksik davet bağlantısı',
     incompleteBody: 'Sizi davet eden kişiden gelen bağlantının tamamını kullandığınızdan emin olun.',
     invalidTitle: 'Geçersiz davet',

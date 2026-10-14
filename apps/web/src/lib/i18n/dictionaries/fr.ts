@@ -133,6 +133,8 @@ export const fr: Dictionary = {
   },
 
   signup: {
+    googleNeedsCenter: "Saisissez d'abord le nom et le lien du centre, puis choisissez S'inscrire avec Google",
+    google: "S'inscrire avec Google",
     subtitle: 'Plantez votre arbre dans le jardin du Coran — une minute, et vous démarrez avec un tableau de bord complet pour votre centre',
     haveCenter: 'Vous avez déjà inscrit un centre ?',
     signIn: 'Se connecter',
@@ -162,6 +164,11 @@ export const fr: Dictionary = {
   },
 
   login: {
+    errorGoogleNotStaff: "Ce compte Google ({email}) n'est pas enseignant ni administrateur de ce centre. Demandez à l'administrateur d'ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.",
+    errorGoogle: 'Connexion avec Google impossible. Réessayez.',
+    googleHint: 'Pour les enseignants et l’équipe',
+    or: 'ou',
+    google: 'Continuer avec Google',
     subtitle: 'Pour les enseignants, le personnel, les élèves et les parents',
     forgotCenter: 'Vous avez oublié le lien de votre centre ?',
     findIt: 'Retrouvez-le ici',
@@ -207,6 +214,7 @@ export const fr: Dictionary = {
   },
 
   join: {
+    google: 'Rejoindre avec Google',
     incompleteTitle: 'Lien d’invitation incomplet',
     incompleteBody: 'Assurez-vous d’utiliser le lien complet reçu de la personne qui vous a invité.',
     invalidTitle: 'Invitation invalide',
