@@ -234,7 +234,7 @@ class SAttn {
 
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
-  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.noCentersHint});
+  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
   final String thisCenter;
   final String noCenter;
   final String badLogin;
@@ -287,6 +287,10 @@ class SAuth {
   final String pickCenter;
   final String noCenters;
   final String numberReset;
+  final String google;
+  final String googleHint;
+  final String googleNotStaff;
+  final String googleFailed;
   final String noCentersHint;
 }
 
@@ -2146,6 +2150,10 @@ class S {
       pickCenter: 'اختر المركز',
       noCenters: 'حسابك غير مرتبط بأي مركز بعد',
       numberReset: 'حسابك يدخل برقم وليس ببريد إلكتروني: لتغيير كلمة السر تواصل مع معلمك أو مشرف المركز.',
+      google: 'الدخول بحساب Google',
+      googleHint: 'للمعلمين والإدارة',
+      googleNotStaff: 'حساب Google هذا ({email}) غير مسجّل كمعلم أو مدير في أي مركز. اطلب من مدير المركز إضافة بريدك، أو ادخل برقمك وكلمة السر.',
+      googleFailed: 'تعذّر الدخول بحساب Google، حاول مرة أخرى.',
       noCentersHint: 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر',
     ),
     badgesStaff: SBadgesStaff(
@@ -3853,6 +3861,10 @@ class S {
       pickCenter: 'Choose the center',
       noCenters: 'Your account isn’t linked to any center yet',
       numberReset: 'Your account signs in with a number, not an email: to change your password, contact your teacher or the center supervisor.',
+      google: 'Continue with Google',
+      googleHint: 'For teachers and staff',
+      googleNotStaff: 'This Google account ({email}) is not a teacher or admin of any center. Ask the center admin to add your email, or sign in with your number and password.',
+      googleFailed: 'Could not sign in with Google. Try again.',
       noCentersHint: 'Ask the center admin to invite you, or sign in with another account',
     ),
     badgesStaff: SBadgesStaff(
@@ -5560,6 +5572,10 @@ class S {
       pickCenter: 'Merkezi seçin',
       noCenters: 'Hesabınız henüz hiçbir merkeze bağlı değil',
       numberReset: 'Hesabınız e-postayla değil numarayla giriş yapıyor: şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
+      google: 'Google ile devam et',
+      googleHint: 'Öğretmenler ve yöneticiler için',
+      googleNotStaff: 'Bu Google hesabı ({email}) hiçbir merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
+      googleFailed: 'Google ile giriş yapılamadı. Tekrar deneyin.',
       noCentersHint: 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın',
     ),
     badgesStaff: SBadgesStaff(
@@ -7267,6 +7283,10 @@ class S {
       pickCenter: 'Choisissez le centre',
       noCenters: 'Votre compte n’est encore lié à aucun centre',
       numberReset: 'Votre compte se connecte avec un numéro, pas un e-mail : pour changer votre mot de passe, contactez votre enseignant ou le responsable du centre.',
+      google: 'Continuer avec Google',
+      googleHint: 'Pour les enseignants et l’équipe',
+      googleNotStaff: 'Ce compte Google ({email}) n’est enseignant ni administrateur d’aucun centre. Demandez à l’administrateur d’ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.',
+      googleFailed: 'Connexion avec Google impossible. Réessayez.',
       noCentersHint: 'Demandez à l’administrateur du centre de vous inviter, ou connectez-vous avec un autre compte',
     ),
     badgesStaff: SBadgesStaff(

@@ -51,4 +51,8 @@ T = {'thisCenter': 'bu merkez',
  'pickCenter': 'Merkezi seçin',
  'noCenters': 'Hesabınız henüz hiçbir merkeze bağlı değil',
  'numberReset': 'Hesabınız e-postayla değil numarayla giriş yapıyor: şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
+ 'google': 'Google ile devam et',
+ 'googleHint': 'Öğretmenler ve yöneticiler için',
+ 'googleNotStaff': 'Bu Google hesabı ({email}) hiçbir merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
+ 'googleFailed': 'Google ile giriş yapılamadı. Tekrar deneyin.',
  'noCentersHint': 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın'}

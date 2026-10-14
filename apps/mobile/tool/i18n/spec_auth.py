@@ -52,5 +52,9 @@ SPEC = {'auth': ('Sign in, join, onboarding and the center picker.', (
   ('pickCenter', 'اختر المركز', 'Choose the center'),
   ('noCenters', 'حسابك غير مرتبط بأي مركز بعد', 'Your account isn’t linked to any center yet'),
   ('numberReset', 'حسابك يدخل برقم وليس ببريد إلكتروني: لتغيير كلمة السر تواصل مع معلمك أو مشرف المركز.', 'Your account signs in with a number, not an email: to change your password, contact your teacher or the center supervisor.'),
+  ('google', 'الدخول بحساب Google', 'Continue with Google'),
+  ('googleHint', 'للمعلمين والإدارة', 'For teachers and staff'),
+  ('googleNotStaff', 'حساب Google هذا ({email}) غير مسجّل كمعلم أو مدير في أي مركز. اطلب من مدير المركز إضافة بريدك، أو ادخل برقمك وكلمة السر.', 'This Google account ({email}) is not a teacher or admin of any center. Ask the center admin to add your email, or sign in with your number and password.'),
+  ('googleFailed', 'تعذّر الدخول بحساب Google، حاول مرة أخرى.', 'Could not sign in with Google. Try again.'),
   ('noCentersHint', 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر', 'Ask the center admin to invite you, or sign in with another account'),
 ))}

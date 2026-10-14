@@ -26,12 +26,17 @@ export async function finishGoogleSignIn(supabase: SupabaseClient, user: User, s
   if (member?.role === 'admin' || member?.role === 'teacher') return { to: productUrl('/dashboard', slug) };
 
   await supabase.auth.signOut();
-  // a stranger's account Google just made (no center anywhere, Google its only sign-in): gone again
+  await removeIfStranger(user);
+  return { error: fmt(t.login.errorGoogleNotStaff, { email: user.email ?? '' }) };
+}
+
+/** A stranger's account Google just made (no center anywhere, Google its only sign-in): gone again. */
+export async function removeIfStranger(user: User): Promise<void> {
+  const admin = createAdminClient();
   const { count } = await admin.from('organization_members').select('id', { count: 'exact', head: true }).eq('user_id', user.id);
   const fresh = Date.now() - new Date(user.created_at).getTime() < 10 * 60 * 1000;
   const googleOnly = (user.identities ?? []).every((i) => i.provider === 'google');
   if (!count && fresh && googleOnly) await admin.auth.admin.deleteUser(user.id);
-  return { error: fmt(t.login.errorGoogleNotStaff, { email: user.email ?? '' }) };
 }
 
 /** After Google, for a new center: its name and link waited in a cookie (lib/auth/google.ts). */
