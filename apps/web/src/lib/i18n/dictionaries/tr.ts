@@ -232,6 +232,16 @@ export const tr: Dictionary = {
     roles: { admin: 'yönetici', teacher: 'öğretmen', guardian: 'veli', student: 'öğrenci' },
   },
 
+  googlePage: {
+    title: 'Google ile devam et',
+    toCenter: '{center} için',
+    newCenter: 'Yeni merkez “{name}”',
+    working: 'Giriş yapılıyor…',
+    back: 'Geri',
+    failed: 'Google ile giriş yapılamadı. Tekrar deneyin.',
+    unavailable: 'Google düğmesi yüklenemedi. Bağlantıyı kontrol edin veya numaranız ve şifrenizle giriş yapın.',
+  },
+
   confirmEmail: {
     changed: 'Yeni e-postanız onaylandı. Diğer e-postanıza da bir bağlantı geldiyse değişikliği tamamlamak için onu da açın, sonra yeni e-postayla giriş yapın.',
     title: 'E-postanızı onaylayın',

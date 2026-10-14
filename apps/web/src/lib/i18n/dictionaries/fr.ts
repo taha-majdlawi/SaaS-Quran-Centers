@@ -232,6 +232,16 @@ export const fr: Dictionary = {
     roles: { admin: 'administrateur', teacher: 'enseignant', guardian: 'parent', student: 'élève' },
   },
 
+  googlePage: {
+    title: 'Continuer avec Google',
+    toCenter: 'vers {center}',
+    newCenter: 'Nouveau centre « {name} »',
+    working: 'Connexion…',
+    back: 'Retour',
+    failed: 'Connexion avec Google impossible. Réessayez.',
+    unavailable: "Le bouton Google n'a pas pu se charger. Vérifiez la connexion, ou connectez-vous avec votre numéro et votre mot de passe.",
+  },
+
   confirmEmail: {
     changed: 'Votre nouvel e-mail est confirmé. Si un lien est aussi arrivé sur votre autre e-mail, ouvrez-le pour terminer le changement, puis connectez-vous avec le nouvel e-mail.',
     title: 'Confirmez votre e-mail',
