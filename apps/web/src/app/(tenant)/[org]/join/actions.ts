@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getI18n } from '@/lib/i18n/server';
-import { confirmUrl, type PendingSignup } from '@/lib/auth/signup';
+import { confirmUrl, isExistingAccount, type PendingSignup } from '@/lib/auth/signup';
 
 /** Invitee has no account yet - create one, then accept in the same request. */
 export async function signUpAndAcceptInvitation(formData: FormData) {
@@ -22,6 +22,11 @@ export async function signUpAndAcceptInvitation(formData: FormData) {
   });
   if (signUpError) {
     redirect(`/join?token=${token}&error=${encodeURIComponent(signUpError.message)}`);
+  }
+
+  if (isExistingAccount(signUpData.user)) {
+    const { t } = await getI18n();
+    redirect(`/join?token=${token}&error=${encodeURIComponent(t.join.errorEmailHasAccount)}`);
   }
 
   if (!signUpData.session) {

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getI18n } from '@/lib/i18n/server';
-import { confirmUrl, productUrl, validSlug, type PendingSignup } from '@/lib/auth/signup';
+import { confirmUrl, isExistingAccount, productUrl, validSlug, type PendingSignup } from '@/lib/auth/signup';
 
 export async function signUpAndCreateOrganization(formData: FormData) {
   const orgName = (formData.get('orgName') as string)?.trim();
@@ -46,6 +46,8 @@ export async function signUpAndCreateOrganization(formData: FormData) {
         : signUpError.message;
     redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
+
+  if (isExistingAccount(signUpData.user)) redirect(`/signup?error=${encodeURIComponent(t.signup.errorEmailHasAccount)}`);
 
   if (!signUpData.session) {
     // "Confirm email" is on: the link in the email finishes the center (/confirm)

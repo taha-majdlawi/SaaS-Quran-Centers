@@ -153,6 +153,7 @@ export const fr: Dictionary = {
     checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer la création de votre centre (vérifiez vos spams s'il n'est pas arrivé).",
     errorSlugTaken: 'Ce lien est déjà pris, essayez-en un autre',
     errorEmailTaken: 'Cet e-mail est déjà inscrit - connectez-vous plutôt',
+    errorEmailHasAccount: 'Cet e-mail a déjà un compte, aucun lien de confirmation n’a donc été envoyé. Utilisez un autre e-mail pour le nouveau centre, ou connectez-vous à votre centre avec celui-ci.',
     errorWeakPassword: 'Mot de passe trop faible - utilisez au moins 8 caractères',
   },
 
@@ -214,6 +215,7 @@ export const fr: Dictionary = {
   },
 
   join: {
+    errorEmailHasAccount: 'Cet e-mail a déjà un compte, aucun lien de confirmation n’a donc été envoyé. Connectez-vous avec ce compte, puis rouvrez le lien d’invitation pour l’accepter.',
     google: 'Rejoindre avec Google',
     incompleteTitle: 'Lien d’invitation incomplet',
     incompleteBody: 'Assurez-vous d’utiliser le lien complet reçu de la personne qui vous a invité.',

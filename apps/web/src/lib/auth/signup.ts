@@ -29,3 +29,12 @@ export const confirmUrl = () => productUrl('/confirm');
 
 /** The cookie that carries a new center's name and link across the Google round-trip (lib/auth/google.ts). */
 export const PENDING_ORG_COOKIE = 'bustan-pending-org';
+
+/**
+ * signUp() for an email that already has an account: with "Confirm email" on, Supabase answers
+ * as if it worked (so nobody can probe which emails are registered) but creates nothing and sends
+ * no email - the user it returns has no identities. Said plainly here instead of "check your email".
+ */
+export function isExistingAccount(user: { identities?: unknown[] | null } | null | undefined): boolean {
+  return !!user && Array.isArray(user.identities) && user.identities.length === 0;
+}
