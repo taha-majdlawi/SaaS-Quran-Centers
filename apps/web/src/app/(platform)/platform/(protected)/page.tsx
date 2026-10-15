@@ -64,7 +64,7 @@ export default async function PlatformOverviewPage() {
                 {o.orgs.map((c) => (
                   <tr key={c.id} className="border-t">
                     <td className="px-3 py-2">
-                      <a href={`/organizations/${c.id}` as never} className="font-semibold text-blue-700 hover:underline">
+                      <a href={`/organizations/${c.id}` as never} className="font-semibold text-brand hover:underline">
                         {c.name}
                       </a>{' '}
                       <span className="text-xs text-gray-400">{c.slug}</span>

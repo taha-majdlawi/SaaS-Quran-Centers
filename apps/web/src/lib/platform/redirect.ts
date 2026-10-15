@@ -4,7 +4,8 @@ import { redirect as nextRedirect } from 'next/navigation';
 const ROOT = (process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'bustan-alquran.com').toLowerCase().split(':')[0];
 
 /**
- * redirect() for the owner console's actions, to the full address on admin.{ROOT_DOMAIN}.
+ * redirect() for server actions, to the full address on the request's own subdomain
+ * (admin.{ROOT_DOMAIN} for the owner console, {center}.{ROOT_DOMAIN} for sign-in / sign-out).
  * A relative redirect is rendered by Next through an internal request that can lose the
  * subdomain on Cloudflare (middleware.ts, x-bustan-host): "mark as fixed" on the errors page
  * ended on the 404 page. A full address skips that request - the browser opens the page itself.

@@ -53,7 +53,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
               <div className="text-xs text-gray-600">
                 {u.memberships.map((m) => (
                   <div key={m.slug + m.role}>
-                    <a href="/organizations" className="text-blue-700">
+                    <a href="/organizations" className="text-brand">
                       {m.org}
                     </a>{' '}
                     · {ROLE_LABELS[m.role] ?? m.role}

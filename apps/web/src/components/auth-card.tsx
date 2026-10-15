@@ -21,8 +21,8 @@ export function AuthCard({
   languages?: boolean;
 }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
-      <div className="relative w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+    <main className="flex min-h-screen items-center justify-center bg-page p-6">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         {languages && <LanguageSwitcher className="absolute end-3 top-3" />}
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex justify-center">

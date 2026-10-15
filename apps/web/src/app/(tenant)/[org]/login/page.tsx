@@ -7,6 +7,9 @@ import { signInWithGoogle } from '@/lib/auth/google';
 import { GoogleButton, OrLine } from '@/components/google-button';
 import { googleEnabled } from '@/lib/auth/google-enabled';
 import { getI18n } from '@/lib/i18n/server';
+import { redirect } from 'next/navigation';
+import { getOrgContext } from '@/lib/tenant/get-org-context';
+import { destinationFor, safeNext } from '@/lib/auth/next';
 
 // Replaces wep-eqraa-center/admin/login - now scoped to one organization by
 // slug (via the hidden orgSlug field) instead of "the one admin account on
@@ -16,10 +19,14 @@ export default async function TenantLoginPage({
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const { org } = await params;
-  const { error } = await searchParams;
+  const { error, next: nextParam } = await searchParams;
+  const next = safeNext(nextParam);
+  // already signed in to this center: straight to their page, not the form again
+  const ctx = await getOrgContext(org);
+  if (ctx.myRole) redirect(destinationFor(ctx.myRole, next) as never);
   const site = await getPublicSite(org);
   const { t } = await getI18n();
   const google = await googleEnabled();
@@ -49,6 +56,7 @@ export default async function TenantLoginPage({
     >
       <form action={signInToTenant} className="flex flex-col gap-3">
         <input type="hidden" name="orgSlug" value={org} />
+        {next && <input type="hidden" name="next" value={next} />}
         <label className={authLabelClass}>
           {t.common.identifier}
           <input name="identifier" required dir="ltr" autoComplete="username" className={`mt-1 ${authInputClass}`} />

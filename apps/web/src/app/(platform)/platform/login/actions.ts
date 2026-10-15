@@ -1,6 +1,7 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { redirect } from '@/lib/platform/redirect';
+import { safeNext } from '@/lib/auth/next';
 import { createClient } from '@/lib/supabase/server';
 
 export async function signInToPlatform(formData: FormData) {
@@ -12,7 +13,7 @@ export async function signInToPlatform(formData: FormData) {
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
   if (signInError || !signInData.user) {
-    redirect(`/login?error=${encodeURIComponent('البريد الإلكتروني أو كلمة السر غير صحيحة')}`);
+    return redirect(`/login?error=${encodeURIComponent('البريد الإلكتروني أو كلمة السر غير صحيحة')}`);
   }
 
   const { data: owner } = await supabase
@@ -23,8 +24,9 @@ export async function signInToPlatform(formData: FormData) {
 
   if (!owner) {
     await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent('حسابك ليس من مالكي المنصة')}`);
+    return redirect(`/login?error=${encodeURIComponent('حسابك ليس من مالكي المنصة')}`);
   }
 
-  redirect('/');
+  // a full address on admin.{ROOT_DOMAIN} (lib/platform/redirect.ts); the console's layout asks for the code next
+  return redirect(safeNext(formData.get('next')) ?? '/');
 }

@@ -44,7 +44,7 @@ export default async function PlatformOrganizationsPage({ searchParams }: { sear
             {orgs.map((c) => (
               <tr key={c.id} className="border-t hover:bg-gray-50">
                 <td className="px-3 py-2">
-                  <a href={`/organizations/${c.id}` as never} className="font-semibold text-blue-700 hover:underline">
+                  <a href={`/organizations/${c.id}` as never} className="font-semibold text-brand hover:underline">
                     {c.name}
                   </a>
                   <span className="mr-2 text-xs text-gray-400">{c.slug}</span>

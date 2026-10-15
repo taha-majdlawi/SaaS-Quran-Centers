@@ -3,6 +3,7 @@ import { GrowingTree } from '@/components/growing-tree';
 import { MonitoringOrg } from '@/components/error-reporter';
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
+import { loginWithNext } from '@/lib/auth/next';
 import { SubmitButton } from '@/components/submit-button';
 import { OrgLogo } from '@/components/org-logo';
 import { signOut } from '@/lib/auth/actions';
@@ -29,7 +30,7 @@ export default async function TenantProtectedLayout({
   // Not authenticated, or authenticated but not a member of THIS org - RLS
   // would block every query anyway, so send them to sign in rather than show
   // an empty shell.
-  if (!org.myRole) redirect('/login');
+  if (!org.myRole) redirect(loginWithNext((await headers()).get('x-bustan-path')) as never);
 
   // A viewing (read-only) account is told so on every page; the database refuses its writes regardless.
   const supabase = await createClient();
