@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 import { fmt } from '@/lib/i18n/config';
+import { PlatformLogo } from '@/components/org-logo';
 
 const TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const MAX_SIDE = 512;
@@ -68,7 +69,7 @@ export function LogoField({ orgId, initialUrl, name, labels: L }: { orgId: strin
           // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt="" className="h-20 w-20 rounded-xl border object-cover" />
         ) : (
-          <span className="flex h-20 w-20 items-center justify-center rounded-xl bg-brand text-2xl font-bold text-white">{name.trim().charAt(0) || 'ب'}</span>
+          <PlatformLogo size={80} />
         )}
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">

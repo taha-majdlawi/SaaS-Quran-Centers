@@ -39,7 +39,7 @@ export default async function OrgDetailPage({
 
   return (
     <div className="max-w-4xl">
-      <a href="/organizations" className="text-sm text-blue-700 hover:underline">
+      <a href="/organizations" className="text-sm text-brand hover:underline">
         ← المراكز
       </a>
       <div className="mb-4 mt-2 flex flex-wrap items-center justify-between gap-2">

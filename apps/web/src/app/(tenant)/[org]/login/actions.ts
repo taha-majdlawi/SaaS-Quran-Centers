@@ -1,9 +1,16 @@
 'use server';
 
-import { redirect } from 'next/navigation';
+import { redirect } from '@/lib/platform/redirect';
+import { destinationFor, safeNext } from '@/lib/auth/next';
 import { createClient } from '@/lib/supabase/server';
 import { toLoginEmail } from '@/lib/accounts/login-id';
 import { getI18n } from '@/lib/i18n/server';
+
+/** A failed attempt keeps the page to come back to. */
+function withNext(path: string, formData: FormData): string {
+  const next = safeNext(formData.get('next'));
+  return next ? `${path}&next=${encodeURIComponent(next)}` : path;
+}
 
 export async function signInToTenant(formData: FormData) {
   const orgSlug = formData.get('orgSlug') as string;
@@ -16,7 +23,7 @@ export async function signInToTenant(formData: FormData) {
   const { data: org } = await supabase.from('organizations').select('id').eq('slug', orgSlug).maybeSingle();
 
   if (!org) {
-    redirect(`/login?error=${encodeURIComponent(t.login.errorNoCenter)}`);
+    return redirect(`/login?error=${encodeURIComponent(t.login.errorNoCenter)}`);
   }
 
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -25,12 +32,12 @@ export async function signInToTenant(formData: FormData) {
   });
 
   if (signInError || !signInData.user) {
-    redirect(`/login?error=${encodeURIComponent(t.login.errorCredentials)}`);
+    return redirect(withNext(`/login?error=${encodeURIComponent(t.login.errorCredentials)}`, formData));
   }
 
   const { data: membership } = await supabase
     .from('organization_members')
-    .select('id')
+    .select('role')
     .eq('organization_id', org.id)
     .eq('user_id', signInData.user.id)
     .eq('status', 'active')
@@ -38,8 +45,9 @@ export async function signInToTenant(formData: FormData) {
 
   if (!membership) {
     await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent(t.login.errorNotMember)}`);
+    return redirect(withNext(`/login?error=${encodeURIComponent(t.login.errorNotMember)}`, formData));
   }
 
-  redirect('/dashboard');
+  // the page they were on when the session ran out, else their own first page (students: /my)
+  return redirect(destinationFor(membership.role, safeNext(formData.get('next'))));
 }

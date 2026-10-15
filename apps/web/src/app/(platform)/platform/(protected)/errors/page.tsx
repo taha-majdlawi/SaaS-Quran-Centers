@@ -74,7 +74,7 @@ export default async function PlatformErrorsPage({ searchParams }: { searchParam
           ['resolved', 'مُصلَحة'],
           ['all', 'الكل'],
         ].map(([k, label]) => (
-          <a key={k} href={`/errors?status=${k}` as never} className={`rounded-full px-3 py-1 ${status === k ? 'bg-gray-900 text-white' : 'bg-white border'}`}>
+          <a key={k} href={`/errors?status=${k}` as never} className={`rounded-full px-3 py-1 ${status === k ? 'bg-brand text-white' : 'bg-white border'}`}>
             {label}
           </a>
         ))}
@@ -119,7 +119,7 @@ export default async function PlatformErrorsPage({ searchParams }: { searchParam
                 <form action={resolveError}>
                   <input type="hidden" name="fingerprint" value={d.group.fingerprint} />
                   <input type="hidden" name="resolved" value={d.group.resolved_at ? '0' : '1'} />
-                  <SubmitButton className="rounded bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white" pendingText="...">
+                  <SubmitButton className="rounded bg-brand px-3 py-1.5 text-xs font-semibold text-white" pendingText="...">
                     {d.group.resolved_at ? 'إعادة فتح' : 'تعليم كمُصلَح'}
                   </SubmitButton>
                 </form>

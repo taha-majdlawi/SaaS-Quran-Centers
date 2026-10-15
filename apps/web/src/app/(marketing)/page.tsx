@@ -96,7 +96,7 @@ export default async function MarketingHomePage() {
       </div>
       <span className="sr-only">{m.heroImageAlt}</span>
       <RevealOnScroll />
-      <GrowingTree />
+      <GrowingTree over />
       {/* header */}
       <header className="sticky top-0 z-20 border-b border-black/5 bg-[#FBFAF6]/90 backdrop-blur">
         <div className={`${container} flex items-center justify-between gap-3 py-3`}>
