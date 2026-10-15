@@ -153,7 +153,7 @@ export const fr: Dictionary = {
     checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer la création de votre centre (vérifiez vos spams s'il n'est pas arrivé).",
     errorSlugTaken: 'Ce lien est déjà pris, essayez-en un autre',
     errorEmailTaken: 'Cet e-mail est déjà inscrit - connectez-vous plutôt',
-    errorEmailHasAccount: 'Cet e-mail a déjà un compte, aucun lien de confirmation n’a donc été envoyé. Utilisez un autre e-mail pour le nouveau centre, ou connectez-vous à votre centre avec celui-ci.',
+    errorEmailHasAccount: 'Cet e-mail a déjà un compte et le mot de passe ne correspond pas, le centre n’a donc pas été créé. Saisissez le mot de passe de votre compte, inscrivez-vous avec Google ou utilisez un autre e-mail.',
     errorWeakPassword: 'Mot de passe trop faible - utilisez au moins 8 caractères',
   },
 

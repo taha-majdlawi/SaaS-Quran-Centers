@@ -153,7 +153,7 @@ export const tr: Dictionary = {
     checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Merkezinizi oluşturmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     errorSlugTaken: 'Bu bağlantı zaten alınmış, başka birini deneyin',
     errorEmailTaken: 'Bu e-posta zaten kayıtlı - bunun yerine giriş yapın',
-    errorEmailHasAccount: 'Bu e-postanın zaten bir hesabı var, bu yüzden onay bağlantısı gönderilmedi. Yeni merkez için başka bir e-posta kullanın veya bu e-postayla merkezinize giriş yapın.',
+    errorEmailHasAccount: 'Bu e-postanın zaten bir hesabı var ve şifre eşleşmiyor, bu yüzden merkez oluşturulmadı. Hesabınızın şifresini girin, Google ile kaydolun veya başka bir e-posta kullanın.',
     errorWeakPassword: 'Şifre çok zayıf - en az 8 karakter kullanın',
   },
 
