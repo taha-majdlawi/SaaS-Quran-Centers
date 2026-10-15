@@ -153,6 +153,7 @@ export const en: Dictionary = {
     checkEmail: "We sent a confirmation link to {email}. Open it to finish creating your center (check your spam folder if it isn't there).",
     errorSlugTaken: 'This link is already taken, try another one',
     errorEmailTaken: 'This email is already registered - sign in instead',
+    errorEmailHasAccount: 'This email already has an account, so no confirmation link was sent. Use another email for the new center, or sign in to your center with this one.',
     errorWeakPassword: 'Password too weak - use at least 8 characters',
   },
 
@@ -214,6 +215,7 @@ export const en: Dictionary = {
   },
 
   join: {
+    errorEmailHasAccount: 'This email already has an account, so no confirmation link was sent. Sign in with that account, then open the invitation link again to accept it.',
     google: 'Join with Google',
     incompleteTitle: 'Incomplete invitation link',
     incompleteBody: 'Make sure you used the full link from the person who invited you.',

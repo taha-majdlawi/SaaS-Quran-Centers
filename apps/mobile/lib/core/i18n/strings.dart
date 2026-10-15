@@ -234,7 +234,7 @@ class SAttn {
 
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
-  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
+  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.emailHasAccount, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
   final String thisCenter;
   final String noCenter;
   final String badLogin;
@@ -258,6 +258,7 @@ class SAuth {
   final String signIn;
   final String whoHint;
   final String confirmEmail;
+  final String emailHasAccount;
   final String joinFailed;
   final String joinTitle;
   final String invalidInvite;
@@ -2121,6 +2122,7 @@ class S {
       signIn: 'دخول',
       whoHint: 'الدخول للمعلمين والإدارة وأولياء الأمور والطلاب، كلٌّ حسب صلاحياته في المركز.',
       confirmEmail: 'أرسلنا رابط تأكيد إلى بريدك: افتحه لإكمال الانضمام، ثم سجّل دخولك هنا (تفقّد الرسائل غير المرغوبة إن لم يصل)',
+      emailHasAccount: 'هذا البريد له حساب من قبل: اكتب كلمة سر حسابك واضغط الدخول والانضمام',
       joinFailed: 'تعذّر إكمال الانضمام، تأكد من الإنترنت وحاول مرة أخرى',
       joinTitle: 'الانضمام إلى مركز',
       invalidInvite: 'الدعوة غير صالحة',
@@ -3832,6 +3834,7 @@ class S {
       signIn: 'Sign in',
       whoHint: 'Sign-in for teachers, admins, guardians and students, each with their access in the center.',
       confirmEmail: 'We sent a confirmation link to your email: open it to finish joining, then sign in here (check spam if it isn’t there)',
+      emailHasAccount: 'This email already has an account: enter its password and sign in to join',
       joinFailed: 'Couldn’t finish joining; check the internet and try again',
       joinTitle: 'Join a center',
       invalidInvite: 'Invalid invitation',
@@ -5543,6 +5546,7 @@ class S {
       signIn: 'Giriş yap',
       whoHint: 'Öğretmenler, yöneticiler, veliler ve öğrenciler için giriş; her biri merkezdeki yetkisiyle.',
       confirmEmail: 'E-postanıza bir onay bağlantısı gönderdik: katılmayı tamamlamak için açın, sonra buradan giriş yapın (istenmeyen klasörüne bakın)',
+      emailHasAccount: 'Bu e-postanın zaten bir hesabı var: şifresini girin ve katılmak için giriş yapın',
       joinFailed: 'Katılım tamamlanamadı; internetinizi kontrol edip tekrar deneyin',
       joinTitle: 'Bir merkeze katıl',
       invalidInvite: 'Geçersiz davet',
@@ -7254,6 +7258,7 @@ class S {
       signIn: 'Se connecter',
       whoHint: 'Connexion pour les enseignants, administrateurs, parents et élèves, chacun avec ses accès dans le centre.',
       confirmEmail: 'Nous avons envoyé un lien de confirmation à votre e-mail : ouvrez-le pour terminer, puis connectez-vous ici (vérifiez vos spams)',
+      emailHasAccount: 'Cet e-mail a déjà un compte : saisissez son mot de passe et connectez-vous pour rejoindre',
       joinFailed: 'Impossible de terminer l’adhésion ; vérifiez internet et réessayez',
       joinTitle: 'Rejoindre un centre',
       invalidInvite: 'Invitation invalide',

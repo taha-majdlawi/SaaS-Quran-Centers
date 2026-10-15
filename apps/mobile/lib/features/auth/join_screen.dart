@@ -71,6 +71,12 @@ class _JoinScreenState extends State<JoinScreen> {
             data: {'pending_invite': widget.token},
             emailRedirectTo: 'https://bustan-alquran.com/confirm',
           );
+          // an email that already has an account: Supabase answers as if it signed up, but makes
+          // nothing and sends nothing (no identities) - switch to signing in with that account
+          if (res.user != null && (res.user!.identities ?? const []).isEmpty) {
+            if (mounted) setState(() => _haveAccount = true);
+            throw StateError(currentStrings.auth.emailHasAccount);
+          }
           if (res.session == null) {
             throw StateError(currentStrings.auth.confirmEmail);
           }
