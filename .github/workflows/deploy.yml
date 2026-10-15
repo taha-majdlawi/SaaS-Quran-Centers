@@ -49,6 +49,12 @@ jobs:
           out=$(psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/invariants.sql 2>&1 || true)
           result=$(grep -o 'RESULT: .*' <<< "$out" | head -1)
           echo "${result:-$out}"
+          # SKIPPED: the live database has no "eqraa" demo center to test with (centers can be
+          # deleted on purpose). CI already ran every invariant on a fresh database; warn, don't block.
+          if [[ "$result" == "RESULT: SKIPPED"* ]]; then
+            echo "::warning::Live invariants skipped - no eqraa demo center with admin/teacher/student. CI ran them on a fresh database."
+            exit 0
+          fi
           [[ "$result" == "RESULT: OK"* ]]
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
