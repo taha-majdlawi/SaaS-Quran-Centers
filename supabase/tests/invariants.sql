@@ -180,6 +180,8 @@ begin
     begin
       select c.teacher_id, c.id into v_prim, v_c from public.circles c where c.organization_id = v_org and c.teacher_id is not null and exists (select 1 from public.students_profile x where x.circle_id = c.id) limit 1;
       select id into v_s from public.students_profile where circle_id = v_c limit 1;
+      -- needs a circle with a teacher and a student (a real center may have none yet): skipped then
+      if v_c is not null and v_s is not null then
       perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
       insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
         values (v_asst, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'asst-test-' || v_asst || '@example.test', '{}', '{}', now(), now());
@@ -201,6 +203,7 @@ begin
       set local role authenticated;
       if public._teaches_student(v_s) then v_fail := v_fail || text 'removed assistant keeps access'; end if;
       reset role;
+      end if;
     end;
   end;
 
