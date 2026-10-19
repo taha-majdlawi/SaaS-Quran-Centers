@@ -503,6 +503,14 @@ export const staffAr = {
     okNote: 'أُضيفت الملاحظة',
     okCheckIn: 'سُجّل حضورك',
     okTeacherAttendance: 'حُفظ حضور المعلم',
+    quick: 'وصول سريع',
+    quickAttendance: 'تسجيل الحضور',
+    quickAddStudent: 'إضافة طالب',
+    quickRecitations: 'تسميعات الطلاب',
+    quickAnnouncement: 'إعلان جديد',
+    quickReports: 'التقارير',
+    quickStudents: 'طلابي',
+    quickMushaf: 'المصحف',
   },
   /** Data deletion requests. */
   deletion: {
@@ -1451,6 +1459,12 @@ export const staffAr = {
     linkFailed: 'تعذّر تحديث الربط',
     reportTitle: 'تقرير طالب',
     backStudents: '← الطلاب',
+    searchPh: 'ابحث بالاسم أو الرقم',
+    allCircles: 'كل الحلقات',
+    filter: 'تصفية',
+    clear: 'مسح',
+    countN: '{n} طالب',
+    noMatch: 'لا يوجد طالب يطابق البحث',
   },
   /** Importing students from CSV. */
   studentsImport: {

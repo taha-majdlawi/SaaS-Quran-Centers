@@ -41,4 +41,12 @@ SPEC = {'dash': ('The dashboard home.', (
   ('okNote', 'أُضيفت الملاحظة', 'Note added'),
   ('okCheckIn', 'سُجّل حضورك', 'Your attendance is recorded'),
   ('okTeacherAttendance', 'حُفظ حضور المعلم', 'Teacher attendance saved'),
+  ('quick', 'وصول سريع', 'Quick actions'),
+  ('quickAttendance', 'تسجيل الحضور', 'Take attendance'),
+  ('quickAddStudent', 'إضافة طالب', 'Add a student'),
+  ('quickRecitations', 'تسميعات الطلاب', 'Students’ recitations'),
+  ('quickAnnouncement', 'إعلان جديد', 'New announcement'),
+  ('quickReports', 'التقارير', 'Reports'),
+  ('quickStudents', 'طلابي', 'My students'),
+  ('quickMushaf', 'المصحف', 'Mushaf'),
 ))}

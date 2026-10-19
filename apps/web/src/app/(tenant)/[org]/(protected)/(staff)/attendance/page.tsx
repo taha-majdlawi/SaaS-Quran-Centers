@@ -5,6 +5,13 @@ import { saveAttendance } from './actions';
 import { getI18n } from '@/lib/i18n/server';
 
 const STATUS_OPTIONS = ['present', 'absent', 'excused', 'late'];
+/** each status's colour once chosen (a radio styled as a chip, no script needed) */
+const STATUS_CHIP: Record<string, string> = {
+  present: 'has-[:checked]:border-green-600 has-[:checked]:bg-green-600 has-[:checked]:text-white',
+  late: 'has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500 has-[:checked]:text-white',
+  excused: 'has-[:checked]:border-sky-600 has-[:checked]:bg-sky-600 has-[:checked]:text-white',
+  absent: 'has-[:checked]:border-red-600 has-[:checked]:bg-red-600 has-[:checked]:text-white',
+};
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -18,18 +25,20 @@ export default async function AttendancePage({
   searchParams: Promise<{ circleId?: string; date?: string; saved?: string; error?: string }>;
 }) {
   const { org: slug } = await params;
-  const { circleId, date, saved, error } = await searchParams;
+  const { circleId: pickedCircle, date, saved, error } = await searchParams;
   const sessionDate = date || today();
   const org = await getOrgContext(slug);
   const { t: T } = await getI18n();
   const S = T.staff;
   const supabase = await createClient();
 
-  const { data: circles } = await supabase
-    .from('circles')
-    .select('id, name')
-    .eq('organization_id', org.id)
-    .order('name');
+  const [{ data: circles }, { data: auth }] = await Promise.all([
+    supabase.from('circles').select('id, name, teacher_id').eq('organization_id', org.id).order('name'),
+    supabase.auth.getUser(),
+  ]);
+  // no circle chosen yet: open the teacher's own circle (or the first one) instead of an empty page
+  const circleId =
+    pickedCircle ?? ((circles ?? []).find((c) => c.teacher_id === auth.user?.id) ?? (circles ?? [])[0])?.id;
 
   let students: { id: string; full_name: string; student_code: string }[] = [];
   let existingByStudent = new Map<string, string>();
@@ -97,50 +106,42 @@ export default async function AttendancePage({
             <span className="text-sm text-gray-500"> — {sessionDate}</span>
           </div>
 
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-start">
-              <tr>
-                <th className="px-4 py-2">{S.attendance.colCode}</th>
-                <th className="px-4 py-2">{S.attendance.colName}</th>
-                <th className="px-4 py-2">{S.attendance.colStatus}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((s) => (
-                <tr key={s.id} className="border-t">
-                  <td className="px-4 py-2">{s.student_code}</td>
-                  <td className="px-4 py-2"><a href={`/students/${s.id}` as never} className="font-medium text-brand hover:underline">{s.full_name}</a></td>
-                  <td className="px-4 py-2">
-                    <div className="flex gap-4">
-                      {STATUS_OPTIONS.map((opt) => (
-                        <label key={opt} className="flex items-center gap-1">
-                          <input
-                            type="radio"
-                            name={`status_${s.id}`}
-                            value={opt}
-                            defaultChecked={(existingByStudent.get(s.id) ?? 'present') === opt}
-                          />
-                          {S.attendance.status[opt]}
-                        </label>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!students.length && (
-                <tr>
-                  <td colSpan={3} className="px-4 py-6 text-center text-gray-400">
-                    {S.attendance.noStudents}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <ul className="divide-y">
+            {students.map((s) => (
+              <li key={s.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <a href={`/students/${s.id}` as never} className="font-medium text-brand hover:underline">
+                    {s.full_name}
+                  </a>
+                  <span className="mx-2 text-xs text-gray-400" dir="ltr">{s.student_code}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={`${S.attendance.colStatus} - ${s.full_name}`}>
+                  {STATUS_OPTIONS.map((opt) => (
+                    <label
+                      key={opt}
+                      className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40 ${STATUS_CHIP[opt]}`}
+                    >
+                      <input
+                        type="radio"
+                        className="sr-only"
+                        name={`status_${s.id}`}
+                        value={opt}
+                        defaultChecked={(existingByStudent.get(s.id) ?? 'present') === opt}
+                      />
+                      {S.attendance.status[opt]}
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+            {!students.length && <li className="px-4 py-6 text-center text-gray-400">{S.attendance.noStudents}</li>}
+          </ul>
 
+          {/* pe-36: room at the end for the phone menu button (staff-nav.tsx) */}
           {students.length > 0 && (
-            <div className="p-4">
+            <div className="sticky bottom-0 border-t bg-white/95 p-4 pe-36 backdrop-blur lg:pe-4">
               <SubmitButton
-                className="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
                 pendingText={S.common.saving}
               >
                 {S.attendance.save}

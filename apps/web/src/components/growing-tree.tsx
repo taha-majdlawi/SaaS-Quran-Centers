@@ -80,8 +80,8 @@ function Limb({ d, width, delay, duration }: { d: string; width: number; delay: 
   );
 }
 
-/** `corner`: the small one for the dashboards - bottom left, out of the way, under every menu. */
-/** `over`: above the page's own sections (the marketing page); otherwise behind cards like the sign-in form. */
+/** `corner`: the small one for the dashboards, bottom left, from a laptop up only - on a phone that corner holds the menu / recite buttons.
+ * `over`: above the page's own sections (the marketing page); otherwise behind cards like the sign-in form. */
 export function GrowingTree({ corner = false, over = false }: { corner?: boolean; over?: boolean }) {
   const [elapsed, setElapsed] = useState<number | null>(null);
 
@@ -114,7 +114,7 @@ export function GrowingTree({ corner = false, over = false }: { corner?: boolean
       aria-hidden
       className={
         corner
-          ? 'growing-tree pointer-events-none fixed bottom-0 left-1 z-10 w-[62px] opacity-95 print:hidden sm:w-[76px]'
+          ? 'growing-tree pointer-events-none fixed bottom-0 left-1 z-10 hidden w-[76px] opacity-95 print:hidden lg:block'
           : `growing-tree pointer-events-none fixed bottom-0 left-1 ${over ? 'z-30' : 'z-0'} w-[92px] print:hidden sm:w-[118px] lg:left-4 lg:w-[160px]`
       }
     >
