@@ -44,4 +44,9 @@ SPEC = {'rec': ('Recording recitations (sheet, lesson mode).', (
   ('saveWithPoints', 'حفظ التسميع  •  {n}+ نقطة', 'Save recitation  •  +{n} pts'),
   ('change', 'تغيير', 'Change'),
   ('wholeSurah', 'السورة كاملة', 'Whole surah'),
+  ('reachedAyah', 'وصل إلى سورة {surah}، آية {ayah}', 'Reached Surah {surah}, ayah {ayah}'),
+  ('finishedSurah', 'أنهى سورة {surah}', 'Finished Surah {surah}'),
+  ('nextSurahIs', 'التالية: سورة {surah}', 'Next: Surah {surah}'),
+  ('wholeQuranDone', 'أتمّ حفظ القرآن كاملًا', 'Has memorised the whole Quran'),
+  ('carryOn', 'تعبئة تلقائية من حيث توقف، غيّرها إن لزم', 'Filled in from where they stopped - change it if needed'),
 ))}

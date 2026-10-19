@@ -8,6 +8,7 @@ import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/widgets/ui.dart';
+import 'next_position.dart';
 import 'recitation_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -80,6 +81,10 @@ class _RecitationSheetState extends State<RecitationSheet> {
   bool _saving = false;
   String? _error;
 
+  /// Where the student stopped last time (new memorization), and the prefill it gave.
+  NextPosition? _position;
+  bool _autoFilled = false;
+
   @override
   void initState() {
     super.initState();
@@ -99,7 +104,63 @@ class _RecitationSheetState extends State<RecitationSheet> {
         ..surah = s
         ..from.text = '1'
         ..to.text = '${ayahCount(s)}';
+    } else {
+      _loadPosition();
     }
+  }
+
+  /// A new recitation: carry on from where the student stopped (next_position.dart).
+  Future<void> _loadPosition() async {
+    try {
+      final history = await _repository.fetchMemorizationHistory(widget.studentId);
+      final position = nextPosition(history);
+      if (!mounted || position == null) return;
+      setState(() {
+        _position = position;
+        // only into an untouched form, and only for new memorization
+        final first = _parts.first;
+        if (_parts.length == 1 && first.surah == null && _type == 'new_memorization' && position.surah != null) {
+          first
+            ..surah = position.surah
+            ..from.text = '${position.ayahFrom}'
+            ..to.text = '${ayahCount(position.surah!)}';
+          _autoFilled = true;
+        }
+      });
+    } catch (_) {
+      // no history yet / offline without a cache: the form simply starts empty
+    }
+  }
+
+  /// "Finished Surah X ✓ - next: Surah Y" or "Reached Surah X, ayah N".
+  Widget _positionBanner(BuildContext context, NextPosition pos) {
+    final t = tr(context);
+    final done = pos.finishedSurah;
+    final color = done ? Colors.green : Colors.blue;
+    final title = done ? fmt(t.rec.finishedSurah, {'surah': surahName(pos.lastSurah)}) : fmt(t.rec.reachedAyah, {'surah': surahName(pos.lastSurah), 'ayah': pos.lastAyah});
+    final next = !done ? null : pos.surah == null ? t.rec.wholeQuranDone : fmt(t.rec.nextSurahIs, {'surah': surahName(pos.surah!)});
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: color.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: color.shade100)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(done ? Icons.check_circle_rounded : Icons.bookmark_rounded, size: 20, color: color.shade700),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: color.shade900)),
+            if (next != null) ...[
+              const SizedBox(height: 2),
+              Text(next, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: color.shade800)),
+            ],
+            if (_autoFilled) ...[
+              const SizedBox(height: 4),
+              Text(t.rec.carryOn, style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700)),
+            ],
+          ]),
+        ),
+      ]),
+    );
   }
 
   @override
@@ -282,6 +343,7 @@ class _RecitationSheetState extends State<RecitationSheet> {
                       Expanded(child: Text(t.rec.prefilled, style: TextStyle(fontSize: 12, color: Colors.amber.shade900))),
                     ]),
                   ),
+                if (widget.editing == null && _position != null) _positionBanner(context, _position!),
                 if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: MessageBanner(message: _error!)),
 
                 // 1. what kind of work - one tap
@@ -621,7 +683,8 @@ class _SurahPickerState extends State<_SurahPicker> {
   @override
   Widget build(BuildContext context) {
     final items = [
-      for (var i = 1; i <= 114; i++)
+      // from An-Nas down to Al-Fatiha: the order most students memorise in
+      for (var i = 114; i >= 1; i--)
         if (_query.isEmpty || surahName(i).contains(_query) || '$i' == _query) i,
     ];
     return Padding(

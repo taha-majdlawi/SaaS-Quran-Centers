@@ -1,4 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'next_position.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/i18n/i18n.dart';
@@ -313,6 +315,30 @@ class RecitationRepository {
       orderKey: 'att:$studentId:$today',
     );
     return outcome.queued;
+  }
+
+  /// The student's latest new-memorization recitations, newest first - for the smart start of the
+  /// recitation sheet (next_position.dart). Cached, so it works offline too.
+  Future<List<MemorizedPart>> fetchMemorizationHistory(String studentId) {
+    return SyncService.instance.cached<List<MemorizedPart>>(
+      'memorized:$studentId',
+      () => _client
+          .from('daily_achievements')
+          .select('surah_from, ayah_from, ayah_to')
+          .eq('student_id', studentId)
+          .eq('achievement_type', 'new_memorization')
+          .not('surah_from', 'is', null)
+          .order('created_at', ascending: false)
+          .limit(12),
+      (rows) => [
+        for (final r in rows as List)
+          MemorizedPart(
+            surah: r['surah_from'] as int,
+            ayahFrom: (r['ayah_from'] as int?) ?? 1,
+            ayahTo: (r['ayah_to'] as int?) ?? (r['ayah_from'] as int?) ?? 1,
+          ),
+      ],
+    );
   }
 
   Future<List<RecitationEntry>> fetchStudentRecitations(String studentId, {int limit = 60}) async {

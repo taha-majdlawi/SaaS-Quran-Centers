@@ -1156,6 +1156,11 @@ export const staffTr: typeof staffAr = {
     back: '← Geri',
     needSurah: 'Bir sure seçin',
     needGrade: 'Bir not seçin',
+    reachedAyah: '{surah} suresi, {ayah}. ayete ulaştı',
+    finishedSurah: '{surah} suresini bitirdi',
+    nextSurahIs: 'Sıradaki: {surah} suresi',
+    wholeQuranDone: 'Kur’an’ın tamamını ezberledi',
+    carryOn: 'Kaldığı yerden otomatik dolduruldu - gerekirse değiştirin',
   },
   /** Center reports. */
   reportsPage: {

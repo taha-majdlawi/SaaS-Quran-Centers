@@ -3,6 +3,8 @@ import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { SURAH_NAMES, AYAH_COUNTS, surahLabel } from '@/lib/quran/data';
+import { nextPosition } from '@/lib/quran/next-position';
+import { BookmarkCheck, CheckCircle2 } from 'lucide-react';
 import { SerdSummaryCard, type SerdSummary } from '@/components/serd-summary-card';
 import { logRecitation, setStudentPlan, deleteRecitation } from './actions';
 import { getI18n } from '@/lib/i18n/server';
@@ -60,6 +62,15 @@ export default async function StudentRecitationsPage({
     supabase.rpc('serd_student_summary', { p_org: org.id, p_student: id }),
     supabase.rpc('student_due_reviews', { p_org: org.id, p_student: id }),
   ]);
+  // where the student stopped (their latest memorization), for the smart start below
+  const { data: memorized } = await supabase
+    .from('daily_achievements')
+    .select('surah_from, ayah_from, ayah_to')
+    .eq('student_id', id)
+    .eq('achievement_type', 'new_memorization')
+    .not('surah_from', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(12);
 
   if (!student) notFound();
 
@@ -67,7 +78,19 @@ export default async function StudentRecitationsPage({
   const typeLabel = new Map(Object.entries(T.labels.recitationType));
   const today = new Date().toISOString().slice(0, 10);
   const due = (dueData ?? []) as { surah: number; days_overdue: number }[];
-  const chosenSurah = prefillSurah ? Number(prefillSurah) : null;
+  const position = nextPosition(
+    ((memorized ?? []) as { surah_from: number; ayah_from: number | null; ayah_to: number | null }[]).map((r) => ({
+      surah: r.surah_from,
+      ayahFrom: r.ayah_from ?? 1,
+      ayahTo: r.ayah_to ?? r.ayah_from ?? 1,
+    })),
+  );
+  // a due-review chip wins; otherwise carry on from where they stopped (new memorization)
+  const autoFill = !prefillSurah && position?.surah ? position : null;
+  const chosenSurah = prefillSurah ? Number(prefillSurah) : (autoFill?.surah ?? null);
+  const chosenFrom = autoFill?.ayahFrom ?? 1;
+  // from An-Nas down to Al-Fatiha: the order most students memorise in
+  const surahOrder = Array.from({ length: 114 }, (_, i) => 114 - i);
 
   return (
     <div className="max-w-2xl">
@@ -126,7 +149,27 @@ export default async function StudentRecitationsPage({
         <input type="hidden" name="orgId" value={org.id} />
         <input type="hidden" name="studentId" value={student.id} />
         <h2 className="font-semibold">{S.recitations.logTitle}</h2>
-        {chosenSurah && <p className="-mt-1 text-xs text-amber-700">{S.recitations.prefilled}</p>}
+        {prefillSurah && <p className="-mt-1 text-xs text-amber-700">{S.recitations.prefilled}</p>}
+        {position && (
+          <div
+            className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${position.finishedSurah ? 'border-green-200 bg-green-50 text-green-900' : 'border-sky-200 bg-sky-50 text-sky-900'}`}
+          >
+            {position.finishedSurah ? <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-green-600" aria-hidden /> : <BookmarkCheck size={18} className="mt-0.5 shrink-0 text-sky-600" aria-hidden />}
+            <div>
+              <p className="font-semibold">
+                {position.finishedSurah
+                  ? fmt(S.recitations.finishedSurah, { surah: surahLabel(position.lastSurah, locale) })
+                  : fmt(S.recitations.reachedAyah, { surah: surahLabel(position.lastSurah, locale), ayah: position.lastAyah })}
+              </p>
+              {position.finishedSurah && (
+                <p className="mt-0.5">
+                  {position.surah ? fmt(S.recitations.nextSurahIs, { surah: surahLabel(position.surah, locale) }) : S.recitations.wholeQuranDone}
+                </p>
+              )}
+              {autoFill && <p className="mt-1 text-xs text-gray-600">{S.recitations.carryOn}</p>}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <label className="text-sm font-medium text-gray-700">
@@ -151,16 +194,16 @@ export default async function StudentRecitationsPage({
               {i === 0 ? S.recitations.surah : fmt(S.recitations.extraSurah, { n: i })}
               <select name="surah" defaultValue={i === 0 && chosenSurah ? String(chosenSurah) : ''} className={input}>
                 <option value="">{i === 0 ? S.recitations.pickSurah : '—'}</option>
-                {SURAH_NAMES.map((n, idx) => (
-                  <option key={idx + 1} value={idx + 1}>
-                    {idx + 1}. {surahLabel(idx + 1, locale) || n} ({fmt(S.recitations.ayahCount, { n: AYAH_COUNTS[idx] })})
+                {surahOrder.map((n) => (
+                  <option key={n} value={n}>
+                    {n}. {surahLabel(n, locale) || SURAH_NAMES[n - 1]} ({fmt(S.recitations.ayahCount, { n: AYAH_COUNTS[n - 1] })})
                   </option>
                 ))}
               </select>
             </label>
             <label className="text-sm font-medium text-gray-700">
               {S.recitations.fromAyah}
-              <input type="number" name="ayahFrom" min={1} defaultValue={1} className={input} />
+              <input type="number" name="ayahFrom" min={1} defaultValue={i === 0 ? chosenFrom : 1} className={input} />
             </label>
             <label className="text-sm font-medium text-gray-700">
               {S.recitations.toAyah}

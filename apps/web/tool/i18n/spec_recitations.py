@@ -33,4 +33,9 @@ SPEC = {'recitations': ('Logging and editing recitations.', (
   ('back', '← رجوع', '← Back'),
   ('needSurah', 'اختر السورة', 'Choose a surah'),
   ('needGrade', 'اختر تقييم التلاوة', 'Choose a grade'),
+  ('reachedAyah', 'وصل إلى سورة {surah}، آية {ayah}', 'Reached Surah {surah}, ayah {ayah}'),
+  ('finishedSurah', 'أنهى سورة {surah}', 'Finished Surah {surah}'),
+  ('nextSurahIs', 'التالية: سورة {surah}', 'Next: Surah {surah}'),
+  ('wholeQuranDone', 'أتمّ حفظ القرآن كاملًا', 'Has memorised the whole Quran'),
+  ('carryOn', 'تعبئة تلقائية من حيث توقف، غيّرها إن لزم', 'Filled in from where they stopped - change it if needed'),
 ))}

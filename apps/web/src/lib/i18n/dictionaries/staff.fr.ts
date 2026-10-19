@@ -1156,6 +1156,11 @@ export const staffFr: typeof staffAr = {
     back: '← Retour',
     needSurah: 'Choisissez une sourate',
     needGrade: 'Choisissez une mention',
+    reachedAyah: 'Arrivé à la sourate {surah}, verset {ayah}',
+    finishedSurah: 'A terminé la sourate {surah}',
+    nextSurahIs: 'Suivante : sourate {surah}',
+    wholeQuranDone: 'A mémorisé tout le Coran',
+    carryOn: 'Rempli à partir de là où il s’est arrêté - modifiez si besoin',
   },
   /** Center reports. */
   reportsPage: {

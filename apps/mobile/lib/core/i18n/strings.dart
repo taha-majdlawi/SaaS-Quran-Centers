@@ -1236,7 +1236,7 @@ class SQuran {
 
 /// Recording recitations (sheet, lesson mode).
 class SRec {
-  const SRec({required this.pickGrade, required this.pickSurah, required this.enterRange, required this.rangeOrder, required this.tooFar, required this.partial, required this.newTitle, required this.editTitle, required this.prefilled, required this.dateToday, required this.dateV, required this.type, required this.addSurah, required this.grade, required this.notes, required this.saveBtn, required this.saveEdit, required this.fromAyah, required this.toAyah, required this.maxV, required this.searchSurah, required this.ayahsN, required this.absenceFailed, required this.lessonTitle, required this.studentXofY, required this.plan, required this.recordBtn, required this.absent, required this.later, required this.nobody, required this.done, required this.summary, required this.anotherRound, required this.finish, required this.circle, required this.doneToday, required this.outboxAttendance, required this.outboxRecitation, required this.today, required this.dayMonth, required this.addNote, required this.saveWithPoints, required this.change, required this.wholeSurah});
+  const SRec({required this.pickGrade, required this.pickSurah, required this.enterRange, required this.rangeOrder, required this.tooFar, required this.partial, required this.newTitle, required this.editTitle, required this.prefilled, required this.dateToday, required this.dateV, required this.type, required this.addSurah, required this.grade, required this.notes, required this.saveBtn, required this.saveEdit, required this.fromAyah, required this.toAyah, required this.maxV, required this.searchSurah, required this.ayahsN, required this.absenceFailed, required this.lessonTitle, required this.studentXofY, required this.plan, required this.recordBtn, required this.absent, required this.later, required this.nobody, required this.done, required this.summary, required this.anotherRound, required this.finish, required this.circle, required this.doneToday, required this.outboxAttendance, required this.outboxRecitation, required this.today, required this.dayMonth, required this.addNote, required this.saveWithPoints, required this.change, required this.wholeSurah, required this.reachedAyah, required this.finishedSurah, required this.nextSurahIs, required this.wholeQuranDone, required this.carryOn});
   final String pickGrade;
   final String pickSurah;
   final String enterRange;
@@ -1281,6 +1281,11 @@ class SRec {
   final String saveWithPoints;
   final String change;
   final String wholeSurah;
+  final String reachedAyah;
+  final String finishedSurah;
+  final String nextSurahIs;
+  final String wholeQuranDone;
+  final String carryOn;
 }
 
 /// Reciting to the system, the teacher's test in the mushaf, passage repeat, the recorded recitations.
@@ -3080,6 +3085,11 @@ class S {
       saveWithPoints: 'حفظ التسميع  •  {n}+ نقطة',
       change: 'تغيير',
       wholeSurah: 'السورة كاملة',
+      reachedAyah: 'وصل إلى سورة {surah}، آية {ayah}',
+      finishedSurah: 'أنهى سورة {surah}',
+      nextSurahIs: 'التالية: سورة {surah}',
+      wholeQuranDone: 'أتمّ حفظ القرآن كاملًا',
+      carryOn: 'تعبئة تلقائية من حيث توقف، غيّرها إن لزم',
     ),
     recite: SRecite(
       rangeTitle: 'تكرار مقطع',
@@ -4796,6 +4806,11 @@ class S {
       saveWithPoints: 'Save recitation  •  +{n} pts',
       change: 'Change',
       wholeSurah: 'Whole surah',
+      reachedAyah: 'Reached Surah {surah}, ayah {ayah}',
+      finishedSurah: 'Finished Surah {surah}',
+      nextSurahIs: 'Next: Surah {surah}',
+      wholeQuranDone: 'Has memorised the whole Quran',
+      carryOn: 'Filled in from where they stopped - change it if needed',
     ),
     recite: SRecite(
       rangeTitle: 'Repeat a passage',
@@ -6512,6 +6527,11 @@ class S {
       saveWithPoints: 'Dinletmeyi kaydet  •  +{n} puan',
       change: 'Değiştir',
       wholeSurah: 'Surenin tamamı',
+      reachedAyah: '{surah} suresi, {ayah}. ayete ulaştı',
+      finishedSurah: '{surah} suresini bitirdi',
+      nextSurahIs: 'Sıradaki: {surah} suresi',
+      wholeQuranDone: 'Kur’an’ın tamamını ezberledi',
+      carryOn: 'Kaldığı yerden otomatik dolduruldu - gerekirse değiştirin',
     ),
     recite: SRecite(
       rangeTitle: 'Bölüm tekrarı',
@@ -8228,6 +8248,11 @@ class S {
       saveWithPoints: 'Enregistrer la récitation  •  +{n} pts',
       change: 'Changer',
       wholeSurah: 'Sourate entière',
+      reachedAyah: 'Arrivé à la sourate {surah}, verset {ayah}',
+      finishedSurah: 'A terminé la sourate {surah}',
+      nextSurahIs: 'Suivante : sourate {surah}',
+      wholeQuranDone: 'A mémorisé tout le Coran',
+      carryOn: 'Rempli à partir de là où il s’est arrêté - modifiez si besoin',
     ),
     recite: SRecite(
       rangeTitle: 'Répéter un passage',
