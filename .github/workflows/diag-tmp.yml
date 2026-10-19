@@ -1,0 +1,19 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-inv]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - name: invariants on the live database (rolled back; names of failing checks only)
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          out=$(psql "$DB" -X -v ON_ERROR_STOP=1 -f supabase/tests/invariants.sql 2>&1 || true)
+          result=$(grep -o 'RESULT: .*' <<< "$out" | head -1)
+          if [ -z "$result" ]; then result="no RESULT line: $(grep -o 'ERROR: .*' <<< "$out" | head -1 | cut -c1-300)"; fi
+          echo "::notice::$result"
+          psql "$DB" -X -A -t -c "set default_transaction_read_only = on" -c "select 'col_priv national_id: ' || has_column_privilege('authenticated', 'public.organization_members', 'national_id', 'SELECT') || ' table_priv: ' || has_table_privilege('authenticated', 'public.organization_members', 'SELECT') || ' orgs: ' || (select count(*) from public.organizations) || ' eqraa: ' || (select count(*) from public.organizations where slug = 'eqraa')" 2>&1 | grep . | sed 's/^/::notice::/'
