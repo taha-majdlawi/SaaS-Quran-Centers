@@ -23,6 +23,12 @@ html:not([dir]) {
   :where(input[type='checkbox'], input[type='radio']) {
     accent-color: var(--brand-primary, #1e7a54);
   }
+  /* a fieldset (min-inline-size: min-content) and a text field (its default size) refuse to
+     shrink inside a grid or a flex row by default, which pushed phone pages sideways */
+  fieldset,
+  :where(input, select, textarea) {
+    min-width: 0;
+  }
   ::selection {
     background: color-mix(in srgb, var(--brand-primary, #1e7a54) 20%, transparent);
   }
@@ -32,6 +38,17 @@ html:not([dir]) {
   }
   :where(main table tbody tr) {
     @apply transition-colors hover:bg-gray-50/70;
+  }
+}
+
+/* On a phone a wide table scrolls inside itself instead of pushing the whole page sideways
+   (a table that already sits in an overflow-x-auto box is unaffected). */
+@media (max-width: 639px) {
+  main table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

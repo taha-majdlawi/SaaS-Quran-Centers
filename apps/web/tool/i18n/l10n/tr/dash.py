@@ -39,4 +39,12 @@ T = {'riskTags': {'never': 'Hiç dinletme yapmadı', 'regressed': 'Düzenliyken 
  'absentN': ' · {n} yok',
  'okNote': 'Not eklendi',
  'okCheckIn': 'Devamınız kaydedildi',
- 'okTeacherAttendance': 'Öğretmen devamı kaydedildi'}
+ 'okTeacherAttendance': 'Öğretmen devamı kaydedildi',
+ 'quick': 'Hızlı işlemler',
+ 'quickAttendance': 'Yoklama al',
+ 'quickAddStudent': 'Öğrenci ekle',
+ 'quickRecitations': 'Öğrenci okumaları',
+ 'quickAnnouncement': 'Yeni duyuru',
+ 'quickReports': 'Raporlar',
+ 'quickStudents': 'Öğrencilerim',
+ 'quickMushaf': 'Mushaf'}

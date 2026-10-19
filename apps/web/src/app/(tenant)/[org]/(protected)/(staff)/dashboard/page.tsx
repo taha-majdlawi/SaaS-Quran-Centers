@@ -5,6 +5,7 @@ import { teacherCheckIn } from '@/lib/insights/actions';
 import { SubmitButton } from '@/components/submit-button';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
+import { BarChart3, BookOpen, CalendarCheck, Megaphone, Mic, UserPlus, Users, type LucideIcon } from 'lucide-react';
 
 interface Risk { id: string; name: string; circle: string | null; last_at: string | null; idle_days: number; tag: string }
 interface Perf { teacher_id: string; name: string | null; circles: number; students: number; recitations: number; reciting_students: number; check_ins: number }
@@ -85,9 +86,39 @@ export default async function DashboardPage({ params, searchParams }: { params: 
     { label: S.dash.circles, value: circleCount ?? 0 },
   ];
 
+  const quick: { href: string; label: string; icon: LucideIcon; module?: string }[] = isAdmin
+    ? [
+        { href: '/attendance', label: S.dash.quickAttendance, icon: CalendarCheck, module: 'attendance' },
+        { href: '/students/new', label: S.dash.quickAddStudent, icon: UserPlus, module: 'students' },
+        { href: '/recitations', label: S.dash.quickRecitations, icon: Mic, module: 'students' },
+        { href: '/announcements/new', label: S.dash.quickAnnouncement, icon: Megaphone, module: 'announcements' },
+        { href: '/reports', label: S.dash.quickReports, icon: BarChart3, module: 'reports' },
+      ]
+    : [
+        { href: '/attendance', label: S.dash.quickAttendance, icon: CalendarCheck, module: 'attendance' },
+        { href: '/students', label: S.dash.quickStudents, icon: Users, module: 'students' },
+        { href: '/recitations', label: S.dash.quickRecitations, icon: Mic, module: 'students' },
+        { href: '/quran', label: S.dash.quickMushaf, icon: BookOpen },
+      ];
+
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">{S.dash.title}</h1>
+      <h1 className="mb-4 text-2xl font-bold">{S.dash.title}</h1>
+      {/* the day's usual jobs, one tap away (only features this center has on) */}
+      <nav aria-label={S.dash.quick} className="mb-6 flex gap-2 overflow-x-auto pb-1">
+        {quick
+          .filter((q) => !q.module || !org.disabledModules.includes(q.module))
+          .map(({ href, label, icon: Icon }) => (
+            <a
+              key={href}
+              href={href}
+              className="flex shrink-0 items-center gap-2 rounded-xl border bg-white px-3.5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-brand/40 hover:text-brand"
+            >
+              <Icon size={17} className="text-brand" aria-hidden />
+              {label}
+            </a>
+          ))}
+      </nav>
       {ok && <p className="mb-4 rounded bg-green-50 px-3 py-2 text-sm text-green-700">{ok}</p>}
       {error && <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
       <form action={'/search' as never} className="mb-6 flex max-w-xl gap-2">

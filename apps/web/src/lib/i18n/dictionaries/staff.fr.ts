@@ -505,6 +505,14 @@ export const staffFr: typeof staffAr = {
     okNote: 'Remarque ajoutée',
     okCheckIn: 'Votre présence est enregistrée',
     okTeacherAttendance: 'Présence de l’enseignant enregistrée',
+    quick: 'Actions rapides',
+    quickAttendance: 'Faire l’appel',
+    quickAddStudent: 'Ajouter un élève',
+    quickRecitations: 'Récitations des élèves',
+    quickAnnouncement: 'Nouvelle annonce',
+    quickReports: 'Rapports',
+    quickStudents: 'Mes élèves',
+    quickMushaf: 'Mushaf',
   },
   /** Data deletion requests. */
   deletion: {
@@ -1453,6 +1461,12 @@ export const staffFr: typeof staffAr = {
     linkFailed: 'Impossible de mettre à jour le lien',
     reportTitle: 'Rapport de l’élève',
     backStudents: '← Élèves',
+    searchPh: 'Rechercher par nom ou numéro',
+    allCircles: 'Tous les cercles',
+    filter: 'Filtrer',
+    clear: 'Effacer',
+    countN: '{n} élèves',
+    noMatch: 'Aucun élève ne correspond à la recherche',
   },
   /** Importing students from CSV. */
   studentsImport: {

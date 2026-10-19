@@ -505,6 +505,14 @@ export const staffEn: typeof staffAr = {
     okNote: 'Note added',
     okCheckIn: 'Your attendance is recorded',
     okTeacherAttendance: 'Teacher attendance saved',
+    quick: 'Quick actions',
+    quickAttendance: 'Take attendance',
+    quickAddStudent: 'Add a student',
+    quickRecitations: 'Students’ recitations',
+    quickAnnouncement: 'New announcement',
+    quickReports: 'Reports',
+    quickStudents: 'My students',
+    quickMushaf: 'Mushaf',
   },
   /** Data deletion requests. */
   deletion: {
@@ -1453,6 +1461,12 @@ export const staffEn: typeof staffAr = {
     linkFailed: 'Could not update the link',
     reportTitle: 'Student report',
     backStudents: '← Students',
+    searchPh: 'Search by name or number',
+    allCircles: 'All circles',
+    filter: 'Filter',
+    clear: 'Clear',
+    countN: '{n} students',
+    noMatch: 'No student matches the search',
   },
   /** Importing students from CSV. */
   studentsImport: {

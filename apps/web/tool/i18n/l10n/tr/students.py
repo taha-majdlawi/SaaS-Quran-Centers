@@ -60,4 +60,10 @@ T = {'status': {'active': 'Aktif', 'paused': 'Durduruldu', 'graduated': 'Mezun',
  'createFailed': 'Hesap oluşturulamadı',
  'linkFailed': 'Bağlantı güncellenemedi',
  'reportTitle': 'Öğrenci raporu',
- 'backStudents': '← Öğrenciler'}
+ 'backStudents': '← Öğrenciler',
+ 'searchPh': 'Ada veya numaraya göre ara',
+ 'allCircles': 'Tüm halkalar',
+ 'filter': 'Filtrele',
+ 'clear': 'Temizle',
+ 'countN': '{n} öğrenci',
+ 'noMatch': 'Aramayla eşleşen öğrenci yok'}

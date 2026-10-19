@@ -13,6 +13,22 @@ import type { BadgeProgress } from '@/lib/engagement/format';
 import { addDays, computeGoals, dailyInspiration, fmtDate, localDate, recitationLabels, type Dashboard } from '@/lib/portal/format';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
+import {
+  Award,
+  BarChart3,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  ClipboardList,
+  Megaphone,
+  MessageCircle,
+  Mic,
+  ScrollText,
+  ShieldCheck,
+  ShoppingBag,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
 interface StudentRow {
@@ -80,74 +96,44 @@ export default async function MyPortalPage({
   const prayerSettings = Object.fromEntries(((settings.data ?? []) as { key: string; value: string }[]).map((r) => [r.key, r.value]));
   const inspiration = dailyInspiration(today);
 
+  const portalLinks: { href: string; label: string; icon: LucideIcon; show: boolean; muted?: boolean }[] = [
+    { href: `/my/record?s=${current.id}`, label: p.nav.record, icon: ClipboardList, show: true },
+    { href: '/my/quran', label: p.nav.quran, icon: BookOpen, show: on('quran') },
+    { href: `/my/recitations?s=${current.id}`, label: t.quran.recite.myTitle, icon: Mic, show: on('recitations') },
+    { href: '/my/announcements', label: p.nav.announcements, icon: Megaphone, show: on('announcements') },
+    { href: '/my/chat', label: p.nav.chat, icon: MessageCircle, show: on('chat') },
+    { href: '/my/notifications', label: p.nav.notifications, icon: Bell, show: true },
+    { href: '/my/badges', label: p.nav.badges, icon: Award, show: on('badges') },
+    { href: '/my/market', label: p.nav.market, icon: ShoppingBag, show: on('market') },
+    { href: `/my/fees?s=${current.id}`, label: t.staff.fees.title, icon: Wallet, show: org.feesEnabled },
+    { href: '/my/report', label: p.nav.report, icon: BarChart3, show: on('reports') },
+    { href: '/my/certificates', label: p.nav.certificates, icon: ScrollText, show: on('certificates') },
+    { href: '/my/calendar', label: p.nav.calendar, icon: CalendarDays, show: on('calendar') },
+    { href: '/my/privacy', label: p.nav.privacy, icon: ShieldCheck, show: true, muted: true },
+  ];
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">
           {fmt(org.myRole === 'guardian' ? p.titleGuardian : p.titleStudent, { org: org.name })}
         </h1>
-        <div className="flex flex-wrap gap-2">
-          <a href={`/my/record?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
-            {p.nav.record}
-          </a>
-          {on('quran') && (
-            <a href="/my/quran" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.quran}
-            </a>
-          )}
-          {on('recitations') && (
-            <a href={`/my/recitations?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
-              {t.quran.recite.myTitle}
-            </a>
-          )}
-          {on('announcements') && (
-            <a href="/my/announcements" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.announcements}
-            </a>
-          )}
-          {on('chat') && (
-            <a href="/my/chat" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.chat}
-            </a>
-          )}
-          <a href="/my/notifications" className="rounded border px-4 py-2 text-sm text-brand">
-            {p.nav.notifications}
-          </a>
-          {on('badges') && (
-            <a href="/my/badges" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.badges}
-            </a>
-          )}
-          {on('market') && (
-            <a href="/my/market" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.market}
-            </a>
-          )}
-          {org.feesEnabled && (
-            <a href={`/my/fees?s=${current.id}` as never} className="rounded border px-4 py-2 text-sm text-brand">
-              {t.staff.fees.title}
-            </a>
-          )}
-          <a href="/my/privacy" className="rounded border px-4 py-2 text-sm text-gray-500">
-            {p.nav.privacy}
-          </a>
-          {on('reports') && (
-            <a href="/my/report" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.report}
-            </a>
-          )}
-          {on('certificates') && (
-            <a href="/my/certificates" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.certificates}
-            </a>
-          )}
-          {on('calendar') && (
-            <a href="/my/calendar" className="rounded border px-4 py-2 text-sm text-brand">
-              {p.nav.calendar}
-            </a>
-          )}
-        </div>
       </div>
+      {/* the portal's pages: one row that scrolls sideways on a phone, wrapping on a wide screen */}
+      <nav aria-label={p.nav.record} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible">
+        {portalLinks
+          .filter((l) => l.show)
+          .map(({ href, label, icon: Icon, muted }) => (
+            <a
+              key={href}
+              href={href as never}
+              className={`flex shrink-0 items-center gap-2 rounded-xl border bg-white px-3.5 py-2 text-sm font-medium shadow-sm transition hover:border-brand/40 ${muted ? 'text-gray-500' : 'text-gray-700 hover:text-brand'}`}
+            >
+              <Icon size={16} className={muted ? 'text-gray-400' : 'text-brand'} aria-hidden />
+              {label}
+            </a>
+          ))}
+      </nav>
 
       {rows.length > 1 && (
         <div className="flex flex-wrap gap-2">

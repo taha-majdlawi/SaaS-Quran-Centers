@@ -505,6 +505,14 @@ export const staffTr: typeof staffAr = {
     okNote: 'Not eklendi',
     okCheckIn: 'Devamınız kaydedildi',
     okTeacherAttendance: 'Öğretmen devamı kaydedildi',
+    quick: 'Hızlı işlemler',
+    quickAttendance: 'Yoklama al',
+    quickAddStudent: 'Öğrenci ekle',
+    quickRecitations: 'Öğrenci okumaları',
+    quickAnnouncement: 'Yeni duyuru',
+    quickReports: 'Raporlar',
+    quickStudents: 'Öğrencilerim',
+    quickMushaf: 'Mushaf',
   },
   /** Data deletion requests. */
   deletion: {
@@ -1453,6 +1461,12 @@ export const staffTr: typeof staffAr = {
     linkFailed: 'Bağlantı güncellenemedi',
     reportTitle: 'Öğrenci raporu',
     backStudents: '← Öğrenciler',
+    searchPh: 'Ada veya numaraya göre ara',
+    allCircles: 'Tüm halkalar',
+    filter: 'Filtrele',
+    clear: 'Temizle',
+    countN: '{n} öğrenci',
+    noMatch: 'Aramayla eşleşen öğrenci yok',
   },
   /** Importing students from CSV. */
   studentsImport: {

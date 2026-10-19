@@ -62,4 +62,10 @@ SPEC = {'students': ('Students list and form.', (
   ('linkFailed', 'تعذّر تحديث الربط', 'Could not update the link'),
   ('reportTitle', 'تقرير طالب', 'Student report'),
   ('backStudents', '← الطلاب', '← Students'),
+  ('searchPh', 'ابحث بالاسم أو الرقم', 'Search by name or number'),
+  ('allCircles', 'كل الحلقات', 'All circles'),
+  ('filter', 'تصفية', 'Filter'),
+  ('clear', 'مسح', 'Clear'),
+  ('countN', '{n} طالب', '{n} students'),
+  ('noMatch', 'لا يوجد طالب يطابق البحث', 'No student matches the search'),
 ))}

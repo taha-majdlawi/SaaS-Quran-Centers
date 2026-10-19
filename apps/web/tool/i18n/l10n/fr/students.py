@@ -60,4 +60,10 @@ T = {'status': {'active': 'Actif', 'paused': 'En pause', 'graduated': 'Diplômé
  'createFailed': 'Impossible de créer le compte',
  'linkFailed': 'Impossible de mettre à jour le lien',
  'reportTitle': 'Rapport de l’élève',
- 'backStudents': '← Élèves'}
+ 'backStudents': '← Élèves',
+ 'searchPh': 'Rechercher par nom ou numéro',
+ 'allCircles': 'Tous les cercles',
+ 'filter': 'Filtrer',
+ 'clear': 'Effacer',
+ 'countN': '{n} élèves',
+ 'noMatch': 'Aucun élève ne correspond à la recherche'}

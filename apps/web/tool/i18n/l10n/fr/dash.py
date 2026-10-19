@@ -42,4 +42,12 @@ T = {'riskTags': {'never': 'N’a jamais récité',
  'absentN': ' · {n} absents',
  'okNote': 'Remarque ajoutée',
  'okCheckIn': 'Votre présence est enregistrée',
- 'okTeacherAttendance': 'Présence de l’enseignant enregistrée'}
+ 'okTeacherAttendance': 'Présence de l’enseignant enregistrée',
+ 'quick': 'Actions rapides',
+ 'quickAttendance': 'Faire l’appel',
+ 'quickAddStudent': 'Ajouter un élève',
+ 'quickRecitations': 'Récitations des élèves',
+ 'quickAnnouncement': 'Nouvelle annonce',
+ 'quickReports': 'Rapports',
+ 'quickStudents': 'Mes élèves',
+ 'quickMushaf': 'Mushaf'}
