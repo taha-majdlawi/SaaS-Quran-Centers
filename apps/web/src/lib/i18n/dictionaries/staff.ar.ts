@@ -1154,6 +1154,11 @@ export const staffAr = {
     back: '← رجوع',
     needSurah: 'اختر السورة',
     needGrade: 'اختر تقييم التلاوة',
+    reachedAyah: 'وصل إلى سورة {surah}، آية {ayah}',
+    finishedSurah: 'أنهى سورة {surah}',
+    nextSurahIs: 'التالية: سورة {surah}',
+    wholeQuranDone: 'أتمّ حفظ القرآن كاملًا',
+    carryOn: 'تعبئة تلقائية من حيث توقف، غيّرها إن لزم',
   },
   /** Center reports. */
   reportsPage: {

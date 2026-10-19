@@ -1156,6 +1156,11 @@ export const staffEn: typeof staffAr = {
     back: '← Back',
     needSurah: 'Choose a surah',
     needGrade: 'Choose a grade',
+    reachedAyah: 'Reached Surah {surah}, ayah {ayah}',
+    finishedSurah: 'Finished Surah {surah}',
+    nextSurahIs: 'Next: Surah {surah}',
+    wholeQuranDone: 'Has memorised the whole Quran',
+    carryOn: 'Filled in from where they stopped - change it if needed',
   },
   /** Center reports. */
   reportsPage: {
