@@ -32,6 +32,7 @@ class CircleStudent {
     required this.recitedToday,
     this.attendanceToday,
     this.nextPlan,
+    this.lastRecitation,
   });
 
   final String id;
@@ -39,10 +40,23 @@ class CircleStudent {
   final String studentCode;
   final int totalPoints;
 
+  /// The student's most recent recitation (any circle), for the teacher to pick up from.
+  final LastRecitation? lastRecitation;
+
   /// How many recitations were logged for this student since local midnight.
   final int recitedToday;
   final String? attendanceToday;
   final String? nextPlan;
+}
+
+class LastRecitation {
+  const LastRecitation({required this.type, required this.surah, required this.ayahFrom, required this.ayahTo, this.grade, required this.createdAt});
+  final String type;
+  final int surah;
+  final int ayahFrom;
+  final int ayahTo;
+  final String? grade;
+  final String createdAt;
 }
 
 class SurahPart {
@@ -183,8 +197,18 @@ class RecitationRepository {
         _client.from('daily_achievements').select('student_id').eq('circle_id', circleId).gte('created_at', startOfDay),
         _client.from('attendance').select('student_id, status').eq('circle_id', circleId).eq('session_date', today),
       ]);
+      // each student's latest recitation, wherever it was (newest first: the first row per student wins)
+      final ids = [for (final r in results[0] as List) r['id'] as String];
+      final last = ids.isEmpty
+          ? <dynamic>[]
+          : await _client
+              .from('daily_achievements')
+              .select('student_id, achievement_type, surah_from, ayah_from, ayah_to, grade, created_at')
+              .inFilter('student_id', ids)
+              .order('created_at', ascending: false)
+              .limit(ids.length * 15);
       // one JSON-able snapshot so it can be cached as a whole
-      return {'students': results[0], 'recited': results[1], 'attendance': results[2], 'today': today};
+      return {'students': results[0], 'recited': results[1], 'attendance': results[2], 'today': today, 'last': last};
     }, (json) {
       final data = json as Map<String, dynamic>;
       final recitedCount = <String, int>{};
@@ -194,6 +218,19 @@ class RecitationRepository {
       }
       final attendance = {for (final a in data['attendance'] as List) a['student_id'] as String: a['status'] as String};
       final today = data['today'] as String;
+      final lastBy = <String, LastRecitation>{};
+      for (final r in (data['last'] as List?) ?? const []) {
+        final id = r['student_id'] as String;
+        if (lastBy.containsKey(id) || r['surah_from'] == null) continue;
+        lastBy[id] = LastRecitation(
+          type: r['achievement_type'] as String,
+          surah: r['surah_from'] as int,
+          ayahFrom: (r['ayah_from'] as int?) ?? 1,
+          ayahTo: (r['ayah_to'] as int?) ?? (r['ayah_from'] as int?) ?? 1,
+          grade: r['grade'] as String?,
+          createdAt: r['created_at'] as String,
+        );
+      }
 
       return (data['students'] as List).map((s) {
         final id = s['id'] as String;
@@ -207,6 +244,7 @@ class RecitationRepository {
           recitedToday: (recitedCount[id] ?? 0) + sync.pendingRecitationsToday(id),
           attendanceToday: sync.pendingAttendance(id, today) ?? attendance[id],
           nextPlan: s['next_plan'] as String?,
+          lastRecitation: lastBy[id],
         );
       }).toList();
     });

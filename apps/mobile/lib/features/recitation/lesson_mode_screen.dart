@@ -7,6 +7,8 @@ import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/tenant/tenant_controller.dart';
+import '../../core/data/quran_data.dart';
+import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
 import 'recitation_repository.dart';
 import 'recitation_sheet.dart';
@@ -156,6 +158,8 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
           Text(s.fullName, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
           const SizedBox(height: 6),
           Text(fmt(tr(context).teach.pointsN, {'totalPoints': s.totalPoints}), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
+          const SizedBox(height: 14),
+          _lastRecitation(context, s.lastRecitation),
           if (s.nextPlan != null && s.nextPlan!.trim().isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
@@ -198,6 +202,50 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
           const SizedBox(height: 8),
         ],
       ),
+    );
+  }
+
+  /// Where the student stopped last time, so the teacher picks up from there.
+  Widget _lastRecitation(BuildContext context, LastRecitation? last) {
+    final t = tr(context);
+    if (last == null) {
+      return Text('${t.stu.lastRecitation}: ${t.stu.noRecitations}',
+          textAlign: TextAlign.center, style: const TextStyle(fontSize: 12.5, color: TeacherStyle.textMuted));
+    }
+    final grade = _grades.where((g) => g.key == last.grade).map((g) => g.label).firstOrNull;
+    final color = TeacherStyle.gradeColor(_grades, last.grade);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.history_rounded, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(t.stu.lastRecitation, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: color)),
+          const Spacer(),
+          Text(formatDate(last.createdAt), style: const TextStyle(fontSize: 11.5, color: TeacherStyle.textMuted)),
+        ]),
+        const SizedBox(height: 6),
+        Row(children: [
+          Expanded(
+            child: Text(fmt(t.stu.surahV, {'v': surahName(last.surah)}),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
+          ),
+          if (grade != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+              child: Text(grade, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+            ),
+        ]),
+        const SizedBox(height: 2),
+        Text(fmt(t.stu.recLine, {'type': kAchievementTypes[last.type] ?? last.type, 'ayahFrom': last.ayahFrom, 'ayahTo': last.ayahTo}),
+            style: const TextStyle(fontSize: 12.5, color: TeacherStyle.textMuted)),
+      ]),
     );
   }
 
