@@ -82,4 +82,8 @@ T = {'status': {'active': 'Actif', 'paused': 'En pause', 'graduated': 'Diplômé
  'linkExisting': 'Lier un compte existant',
  'unlink': 'Délier',
  'log': 'Journal des récitations',
- 'noRecitations': 'Aucune récitation pour l’instant'}
+ 'noRecitations': 'Aucune récitation pour l’instant',
+ 'nationalId': 'Numéro d’identité',
+ 'nationalIdHint': 'Facultatif. Il peut aussi se connecter avec, avec le même mot de passe.',
+ 'nationalIdInvalid': 'Numéro d’identité invalide : lettres latines ou chiffres uniquement, de 4 à 20 caractères.',
+ 'nationalIdTaken': 'Ce numéro d’identité est déjà utilisé par une autre personne dans ce centre.'}

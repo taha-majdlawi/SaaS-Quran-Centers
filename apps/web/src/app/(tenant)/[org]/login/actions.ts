@@ -3,7 +3,8 @@
 import { redirect } from '@/lib/platform/redirect';
 import { destinationFor, safeNext } from '@/lib/auth/next';
 import { createClient } from '@/lib/supabase/server';
-import { toLoginEmail } from '@/lib/accounts/login-id';
+import { isEmail, toLoginEmail } from '@/lib/accounts/login-id';
+import { signInWithNationalId } from '@/lib/auth/national-id';
 import { getI18n } from '@/lib/i18n/server';
 
 /** A failed attempt keeps the page to come back to. */
@@ -26,10 +27,15 @@ export async function signInToTenant(formData: FormData) {
     return redirect(`/login?error=${encodeURIComponent(t.login.errorNoCenter)}`);
   }
 
-  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+  let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
     email: toLoginEmail(orgSlug, identifier),
     password,
   });
+  // not the number at the center / the email: maybe the national ID (0095), with the same password
+  if ((signInError || !signInData.user) && !isEmail(identifier)) {
+    const byId = await signInWithNationalId(supabase, orgSlug, identifier, password);
+    if (byId) ({ data: signInData, error: signInError } = { data: byId, error: null });
+  }
 
   if (signInError || !signInData.user) {
     return redirect(withNext(`/login?error=${encodeURIComponent(t.login.errorCredentials)}`, formData));

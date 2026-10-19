@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { toLoginEmail } from './login-id';
+import { isEmail, toLoginEmail } from './login-id';
+import { normalizeNationalId } from '@/lib/auth/national-id';
 import { staffStrings } from '@/lib/i18n/server';
 import type { Dictionary } from '@/lib/i18n/dictionaries/ar';
 
@@ -53,6 +54,8 @@ export interface ProvisionStudentInput {
   phone?: string | null;
   whatsapp?: string | null;
   address?: string | null;
+  /** National ID (0095), normalised by the caller (lib/auth/national-id.ts); a second way to sign in. */
+  nationalId?: string | null;
 }
 
 /**
@@ -137,11 +140,13 @@ export async function provisionStudent(admin: SupabaseClient, callerId: string, 
       phone: input.phone?.trim() || null,
       whatsapp: input.whatsapp?.trim() || null,
       address: input.address?.trim() || null,
+      national_id: normalizeNationalId(input.nationalId) ?? null,
     })
     .select('id')
     .single();
   if (studentError || !student) {
     await undo();
+    if (studentError?.code === '23505' && /national/i.test(studentError.message)) throw new AccountError((await staffStrings()).students.nationalIdTaken);
     throw new AccountError(studentError?.code === '23505' ? A.codeTaken : A.studentFailed);
   }
 
@@ -156,6 +161,8 @@ export interface ProvisionTeacherInput {
   password: string;
   phone?: string | null;
   whatsapp?: string | null;
+  /** National ID (0095); when the identifier itself is an ID number, that is used. */
+  nationalId?: string | null;
 }
 
 export async function provisionTeacher(admin: SupabaseClient, callerId: string, input: ProvisionTeacherInput) {
@@ -181,15 +188,19 @@ export async function provisionTeacher(admin: SupabaseClient, callerId: string, 
   });
   if (createError || !created.user) throw new AccountError(friendlyAuthError(createError?.message ?? '', A));
 
+  // a second way in: the national ID (an ID-number login is its own ID)
+  const nationalId = normalizeNationalId(input.nationalId) ?? (isEmail(identifier) ? null : normalizeNationalId(identifier));
   const { error: memberError } = await admin.from('organization_members').insert({
     organization_id: input.orgId,
     user_id: created.user.id,
     role: 'teacher',
     status: 'active',
     invited_by: callerId,
+    national_id: nationalId,
   });
   if (memberError) {
     await admin.auth.admin.deleteUser(created.user.id);
+    if (memberError.code === '23505' && /national/i.test(memberError.message)) throw new AccountError((await staffStrings()).students.nationalIdTaken);
     throw new AccountError(A.linkFailed);
   }
 

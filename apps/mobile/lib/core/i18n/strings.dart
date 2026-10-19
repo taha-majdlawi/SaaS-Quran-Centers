@@ -1623,7 +1623,7 @@ class SSet {
 
 /// Students: list, form and the student file.
 class SStu {
-  const SStu({required this.status, required this.noCircle, required this.deleteTitle, required this.deleteBody, required this.title, required this.add, required this.searchPh, required this.empty, required this.emptyHint, required this.noMatch, required this.editDetails, required this.deleteWithFile, required this.circleRequired, required this.accountCreated, required this.codeTaken, required this.saveError, required this.deleteBodyPlain, required this.editTitle, required this.details, required this.fullName, required this.nameRequired, required this.birthDate, required this.tapToPick, required this.stageCircle, required this.stage, required this.allStages, required this.circleReq, required this.noCircles, required this.code, required this.codeHint, required this.codeRequired, required this.contact, required this.phone, required this.whatsapp, required this.address, required this.login, required this.password, required this.passwordHint, required this.min8, required this.email, required this.emailHint, required this.statusLabel, required this.saveChanges, required this.addBtn, required this.recEdited, required this.recDeleteTitle, required this.recDeleteBody, required this.deleted, required this.nextPlan, required this.planPh, required this.planSaved, required this.linkUpdated, required this.pickGuardian, required this.noGuardians, required this.newGuardian, required this.guardianName, required this.loginId, required this.phoneOpt, required this.password8, required this.create, required this.guardianIncomplete, required this.guardianCreated, required this.allRecitations, required this.streak, required this.weeklyAttendance, required this.lastRecitation, required this.surahV, required this.recLine, required this.progress, required this.partsOf30, required this.weeklyAttendanceV, required this.statsLine, required this.noPlan, required this.sheikh, required this.phone2, required this.addressLabel, required this.guardian, required this.noGuardian, required this.linkedTo, required this.newAccount, required this.linkExisting, required this.unlink, required this.log, required this.noRecitations});
+  const SStu({required this.status, required this.noCircle, required this.deleteTitle, required this.deleteBody, required this.title, required this.add, required this.searchPh, required this.empty, required this.emptyHint, required this.noMatch, required this.editDetails, required this.deleteWithFile, required this.circleRequired, required this.accountCreated, required this.codeTaken, required this.saveError, required this.deleteBodyPlain, required this.editTitle, required this.details, required this.fullName, required this.nameRequired, required this.birthDate, required this.tapToPick, required this.stageCircle, required this.stage, required this.allStages, required this.circleReq, required this.noCircles, required this.code, required this.codeHint, required this.codeRequired, required this.contact, required this.phone, required this.whatsapp, required this.address, required this.login, required this.password, required this.passwordHint, required this.min8, required this.email, required this.emailHint, required this.statusLabel, required this.saveChanges, required this.addBtn, required this.recEdited, required this.recDeleteTitle, required this.recDeleteBody, required this.deleted, required this.nextPlan, required this.planPh, required this.planSaved, required this.linkUpdated, required this.pickGuardian, required this.noGuardians, required this.newGuardian, required this.guardianName, required this.loginId, required this.phoneOpt, required this.password8, required this.create, required this.guardianIncomplete, required this.guardianCreated, required this.allRecitations, required this.streak, required this.weeklyAttendance, required this.lastRecitation, required this.surahV, required this.recLine, required this.progress, required this.partsOf30, required this.weeklyAttendanceV, required this.statsLine, required this.noPlan, required this.sheikh, required this.phone2, required this.addressLabel, required this.guardian, required this.noGuardian, required this.linkedTo, required this.newAccount, required this.linkExisting, required this.unlink, required this.log, required this.noRecitations, required this.nationalId, required this.nationalIdHint, required this.nationalIdInvalid, required this.nationalIdTaken});
   final Map<String, String> status;
   final String noCircle;
   final String deleteTitle;
@@ -1708,6 +1708,10 @@ class SStu {
   final String unlink;
   final String log;
   final String noRecitations;
+  final String nationalId;
+  final String nationalIdHint;
+  final String nationalIdInvalid;
+  final String nationalIdTaken;
 }
 
 /// Offline uploads.
@@ -3485,6 +3489,10 @@ class S {
       unlink: 'فك الربط',
       log: 'سجل التسميع',
       noRecitations: 'لا يوجد تسميعات بعد',
+      nationalId: 'رقم الهوية',
+      nationalIdHint: 'اختياري. بيقدر يدخل فيه كمان بنفس كلمة السر.',
+      nationalIdInvalid: 'رقم الهوية غير صالح: أرقام أو حروف إنجليزية فقط، من 4 إلى 20 خانة.',
+      nationalIdTaken: 'رقم الهوية هذا مستخدم لشخص آخر في المركز.',
     ),
     sync: SSync(
       title: 'المزامنة',
@@ -5197,6 +5205,10 @@ class S {
       unlink: 'Unlink',
       log: 'Recitation log',
       noRecitations: 'No recitations yet',
+      nationalId: 'National ID number',
+      nationalIdHint: 'Optional. They can also sign in with it, with the same password.',
+      nationalIdInvalid: 'Invalid ID number: Latin letters or digits only, 4 to 20 characters.',
+      nationalIdTaken: 'This ID number is already used by someone else in this center.',
     ),
     sync: SSync(
       title: 'Sync',
@@ -6909,6 +6921,10 @@ class S {
       unlink: 'Bağlantıyı kaldır',
       log: 'Dinletme kaydı',
       noRecitations: 'Henüz dinletme yok',
+      nationalId: 'Kimlik numarası',
+      nationalIdHint: 'İsteğe bağlı. Aynı şifreyle bununla da giriş yapabilir.',
+      nationalIdInvalid: 'Geçersiz kimlik numarası: yalnızca Latin harfleri veya rakamlar, 4-20 karakter.',
+      nationalIdTaken: 'Bu kimlik numarası bu merkezde başka biri tarafından kullanılıyor.',
     ),
     sync: SSync(
       title: 'Eşitleme',
@@ -8621,6 +8637,10 @@ class S {
       unlink: 'Délier',
       log: 'Journal des récitations',
       noRecitations: 'Aucune récitation pour l’instant',
+      nationalId: 'Numéro d’identité',
+      nationalIdHint: 'Facultatif. Il peut aussi se connecter avec, avec le même mot de passe.',
+      nationalIdInvalid: 'Numéro d’identité invalide : lettres latines ou chiffres uniquement, de 4 à 20 caractères.',
+      nationalIdTaken: 'Ce numéro d’identité est déjà utilisé par une autre personne dans ce centre.',
     ),
     sync: SSync(
       title: 'Synchronisation',

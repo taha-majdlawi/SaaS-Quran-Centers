@@ -64,9 +64,11 @@ class AccountsApi {
     String? phone,
     String? whatsapp,
     String? address,
+    String? nationalId,
   }) async {
     final result = await _post({
       'action': 'create_student',
+      'nationalId': nationalId,
       'orgId': orgId,
       'fullName': fullName,
       'studentCode': studentCode,
@@ -88,9 +90,11 @@ class AccountsApi {
     required String password,
     String? phone,
     String? whatsapp,
+    String? nationalId,
   }) async {
     final result = await _post({
       'action': 'create_teacher',
+      'nationalId': nationalId,
       'orgId': orgId,
       'fullName': fullName,
       'identifier': identifier,

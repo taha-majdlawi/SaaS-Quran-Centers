@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/api/accounts_api.dart';
+import '../../core/utils/national_id.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/credentials_dialog.dart';
 import '../../core/widgets/ui.dart';
@@ -23,6 +24,7 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
   final _identifier = TextEditingController();
   final _phone = TextEditingController();
   final _whatsapp = TextEditingController();
+  final _nationalId = TextEditingController();
   final _password = TextEditingController();
   bool _saving = false;
   String? _error;
@@ -33,6 +35,7 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
     _identifier.dispose();
     _phone.dispose();
     _whatsapp.dispose();
+    _nationalId.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -53,6 +56,7 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
         password: password,
         phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
         whatsapp: _whatsapp.text.trim().isEmpty ? null : _whatsapp.text.trim(),
+        nationalId: normalizeNationalId(_nationalId.text),
       );
       if (!mounted) return;
       await showCredentialsDialog(
@@ -96,6 +100,17 @@ class _TeacherFormScreenState extends State<TeacherFormScreen> {
               textDirection: TextDirection.ltr,
               decoration: InputDecoration(labelText: tr(context).mem.loginId),
               validator: (v) => (v == null || v.trim().isEmpty) ? tr(context).mem.required : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _nationalId,
+              textDirection: TextDirection.ltr,
+              decoration: InputDecoration(
+                labelText: tr(context).stu.nationalId,
+                helperText: tr(context).stu.nationalIdHint,
+                helperMaxLines: 2,
+              ),
+              validator: (v) => (v != null && v.trim().isNotEmpty && normalizeNationalId(v) == null) ? tr(context).stu.nationalIdInvalid : null,
             ),
             const SizedBox(height: 12),
             TextFormField(

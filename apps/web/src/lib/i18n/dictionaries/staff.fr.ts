@@ -1467,6 +1467,10 @@ export const staffFr: typeof staffAr = {
     clear: 'Effacer',
     countN: '{n} élèves',
     noMatch: 'Aucun élève ne correspond à la recherche',
+    nationalId: 'Numéro d’identité',
+    nationalIdHint: 'Facultatif. Il peut aussi se connecter avec, avec le même mot de passe.',
+    nationalIdInvalid: 'Numéro d’identité invalide : lettres latines ou chiffres uniquement, de 4 à 20 caractères.',
+    nationalIdTaken: 'Ce numéro d’identité est déjà utilisé par une autre personne dans ce centre.',
   },
   /** Importing students from CSV. */
   studentsImport: {

@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit/log';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AccountError, provisionStudent } from '@/lib/accounts/provision';
 import { staffStrings } from '@/lib/i18n/server';
+import { nationalIdField } from '@/lib/auth/national-id';
 
 function readStudentFields(formData: FormData) {
   return {
@@ -14,7 +15,16 @@ function readStudentFields(formData: FormData) {
     student_code: (formData.get('studentCode') as string)?.trim(),
     circle_id: (formData.get('circleId') as string) || null,
     birth_date: (formData.get('birthDate') as string) || null,
+    // only when the form has the field (0095); undefined = what was typed is not an ID
+    ...(formData.has('nationalId') ? { national_id: nationalIdField(formData.get('nationalId')) } : {}),
   };
+}
+
+/** A unique clash: the national ID (0095) or, otherwise, the student number. */
+async function clashMessage(error: { code?: string; message: string }) {
+  const S = (await staffStrings()).students;
+  if (error.code !== '23505') return error.message;
+  return /national/i.test(error.message) ? S.nationalIdTaken : S.codeTaken;
 }
 
 export async function createStudent(formData: FormData) {
@@ -29,6 +39,9 @@ export async function createStudent(formData: FormData) {
 
   if (!fields.circle_id) {
     redirect(`/students/new?error=${encodeURIComponent((await staffStrings()).students.needCircle)}` as never);
+  }
+  if (fields.national_id === undefined && 'national_id' in fields) {
+    redirect(`/students/new?error=${encodeURIComponent((await staffStrings()).students.nationalIdInvalid)}` as never);
   }
 
   const supabase = await createClient();
@@ -49,6 +62,7 @@ export async function createStudent(formData: FormData) {
         password,
         email: (formData.get('email') as string) || null,
         birthDate: fields.birth_date,
+        nationalId: fields.national_id ?? null,
         ...contact,
       });
       redirect(
@@ -62,10 +76,7 @@ export async function createStudent(formData: FormData) {
 
   const { error } = await supabase.from('students_profile').insert({ organization_id: orgId, ...fields, ...contact });
 
-  if (error) {
-    const message = error.code === '23505' ? (await staffStrings()).students.codeTaken : error.message;
-    redirect(`/students/new?error=${encodeURIComponent(message)}` as never);
-  }
+  if (error) redirect(`/students/new?error=${encodeURIComponent(await clashMessage(error))}` as never);
 
   redirect('/students');
 }
@@ -77,6 +88,9 @@ export async function updateStudent(formData: FormData) {
 
   if (!fields.circle_id) {
     redirect(`/students/${id}/edit?error=${encodeURIComponent((await staffStrings()).students.needCircle)}` as never);
+  }
+  if (fields.national_id === undefined && 'national_id' in fields) {
+    redirect(`/students/${id}/edit?error=${encodeURIComponent((await staffStrings()).students.nationalIdInvalid)}` as never);
   }
 
   // Contact fields are only touched when the form actually carries them.
@@ -91,10 +105,7 @@ export async function updateStudent(formData: FormData) {
     .update({ ...fields, ...contact, status })
     .eq('id', id);
 
-  if (error) {
-    const message = error.code === '23505' ? (await staffStrings()).students.codeTaken : error.message;
-    redirect(`/students/${id}/edit?error=${encodeURIComponent(message)}` as never);
-  }
+  if (error) redirect(`/students/${id}/edit?error=${encodeURIComponent(await clashMessage(error))}` as never);
 
   redirect(`/students/${id}` as never);
 }

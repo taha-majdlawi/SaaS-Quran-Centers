@@ -66,4 +66,8 @@ T = {'status': {'active': 'Aktif', 'paused': 'Durduruldu', 'graduated': 'Mezun',
  'filter': 'Filtrele',
  'clear': 'Temizle',
  'countN': '{n} öğrenci',
- 'noMatch': 'Aramayla eşleşen öğrenci yok'}
+ 'noMatch': 'Aramayla eşleşen öğrenci yok',
+ 'nationalId': 'Kimlik numarası',
+ 'nationalIdHint': 'İsteğe bağlı. Aynı şifreyle bununla da giriş yapabilir.',
+ 'nationalIdInvalid': 'Geçersiz kimlik numarası: yalnızca Latin harfleri veya rakamlar, 4-20 karakter.',
+ 'nationalIdTaken': 'Bu kimlik numarası bu merkezde başka biri tarafından kullanılıyor.'}
