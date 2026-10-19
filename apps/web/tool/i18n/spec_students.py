@@ -68,4 +68,8 @@ SPEC = {'students': ('Students list and form.', (
   ('clear', 'مسح', 'Clear'),
   ('countN', '{n} طالب', '{n} students'),
   ('noMatch', 'لا يوجد طالب يطابق البحث', 'No student matches the search'),
+  ('nationalId', 'رقم الهوية', 'National ID number'),
+  ('nationalIdHint', 'اختياري. بيقدر يدخل فيه كمان بنفس كلمة السر.', 'Optional. They can also sign in with it, with the same password.'),
+  ('nationalIdInvalid', 'رقم الهوية غير صالح: أرقام أو حروف إنجليزية فقط، من 4 إلى 20 خانة.', 'Invalid ID number: Latin letters or digits only, 4 to 20 characters.'),
+  ('nationalIdTaken', 'رقم الهوية هذا مستخدم لشخص آخر في المركز.', 'This ID number is already used by someone else in this center.'),
 ))}

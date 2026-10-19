@@ -1467,6 +1467,10 @@ export const staffEn: typeof staffAr = {
     clear: 'Clear',
     countN: '{n} students',
     noMatch: 'No student matches the search',
+    nationalId: 'National ID number',
+    nationalIdHint: 'Optional. They can also sign in with it, with the same password.',
+    nationalIdInvalid: 'Invalid ID number: Latin letters or digits only, 4 to 20 characters.',
+    nationalIdTaken: 'This ID number is already used by someone else in this center.',
   },
   /** Importing students from CSV. */
   studentsImport: {

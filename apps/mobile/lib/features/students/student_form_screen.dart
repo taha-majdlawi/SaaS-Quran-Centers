@@ -4,6 +4,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:provider/provider.dart';
 
 import '../../core/api/accounts_api.dart';
+import '../../core/utils/national_id.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/widgets/credentials_dialog.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -42,6 +43,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   final _phoneController = TextEditingController();
   final _whatsappController = TextEditingController();
   final _addressController = TextEditingController();
+  final _nationalIdController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController(text: _generatePassword());
 
@@ -82,6 +84,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         _phoneController.text = student.phone ?? '';
         _whatsappController.text = student.whatsapp ?? '';
         _addressController.text = student.address ?? '';
+        _nationalIdController.text = student.nationalId ?? '';
         _circleId = student.circleId;
         _status = student.status;
         _birthDate = student.birthDate != null ? DateTime.tryParse(student.birthDate!) : null;
@@ -99,6 +102,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     _phoneController.dispose();
     _whatsappController.dispose();
     _addressController.dispose();
+    _nationalIdController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -161,6 +165,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           phone: _nullIfEmpty(_phoneController.text),
           whatsapp: _nullIfEmpty(_whatsappController.text),
           address: _nullIfEmpty(_addressController.text),
+          nationalId: normalizeNationalId(_nationalIdController.text),
         );
       } else if (_passwordController.text.trim().isNotEmpty) {
         // Login + record in one step, through the server (it holds the service key).
@@ -175,6 +180,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           phone: _nullIfEmpty(_phoneController.text),
           whatsapp: _nullIfEmpty(_whatsappController.text),
           address: _nullIfEmpty(_addressController.text),
+          nationalId: normalizeNationalId(_nationalIdController.text),
         );
         if (mounted) {
           final slug = context.read<TenantController>().active!.organization.slug;
@@ -196,13 +202,19 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           phone: _nullIfEmpty(_phoneController.text),
           whatsapp: _nullIfEmpty(_whatsappController.text),
           address: _nullIfEmpty(_addressController.text),
+          nationalId: normalizeNationalId(_nationalIdController.text),
         );
       }
       if (mounted) context.pop();
     } on AccountsApiException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = e.toString().contains('23505') ? tr(context).stu.codeTaken : friendlyError(e, tr(context).stu.saveError));
+      final text = e.toString();
+      setState(() => _error = text.contains('national')
+          ? tr(context).stu.nationalIdTaken
+          : text.contains('23505')
+              ? tr(context).stu.codeTaken
+              : friendlyError(e, tr(context).stu.saveError));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -330,6 +342,18 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                     TextFormField(
                       controller: _addressController,
                       decoration: InputDecoration(labelText: tr(context).stu.address, prefixIcon: Icon(Icons.home_outlined)),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _nationalIdController,
+                      textDirection: TextDirection.ltr,
+                      decoration: InputDecoration(
+                        labelText: tr(context).stu.nationalId,
+                        helperText: tr(context).stu.nationalIdHint,
+                        helperMaxLines: 2,
+                        prefixIcon: const Icon(Icons.badge_outlined),
+                      ),
+                      validator: (v) => (v != null && v.trim().isNotEmpty && normalizeNationalId(v) == null) ? tr(context).stu.nationalIdInvalid : null,
                     ),
                     if (!widget.isEditing) ...[
                       SectionTitle(tr(context).stu.login),

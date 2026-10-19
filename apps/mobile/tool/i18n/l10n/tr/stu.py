@@ -82,4 +82,8 @@ T = {'status': {'active': 'Aktif', 'paused': 'Durduruldu', 'graduated': 'Mezun',
  'linkExisting': 'Mevcut birine bağla',
  'unlink': 'Bağlantıyı kaldır',
  'log': 'Dinletme kaydı',
- 'noRecitations': 'Henüz dinletme yok'}
+ 'noRecitations': 'Henüz dinletme yok',
+ 'nationalId': 'Kimlik numarası',
+ 'nationalIdHint': 'İsteğe bağlı. Aynı şifreyle bununla da giriş yapabilir.',
+ 'nationalIdInvalid': 'Geçersiz kimlik numarası: yalnızca Latin harfleri veya rakamlar, 4-20 karakter.',
+ 'nationalIdTaken': 'Bu kimlik numarası bu merkezde başka biri tarafından kullanılıyor.'}

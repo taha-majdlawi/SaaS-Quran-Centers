@@ -7,6 +7,7 @@ import { onlyHere } from '@/lib/accounts/provision';
 import { logAudit } from '@/lib/audit/log';
 import { ALL_MODULE_KEYS } from '@/lib/permissions/modules';
 import { staffStrings } from '@/lib/i18n/server';
+import { nationalIdField } from '@/lib/auth/national-id';
 
 /**
  * Full account edit (name, email, password, role, status) - not just the
@@ -86,6 +87,17 @@ export async function updateTeacherAccount(formData: FormData) {
   });
   if (contactError) {
     redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(contactError.message)}` as never);
+  }
+
+  if (formData.has('nationalId')) {
+    const nationalId = nationalIdField(formData.get('nationalId'));
+    const S = await staffStrings();
+    if (nationalId === undefined) redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(S.students.nationalIdInvalid)}` as never);
+    const { error: idError } = await supabase.rpc('set_member_national_id', { p_org: orgId, p_member: memberId, p_national_id: nationalId ?? '' });
+    if (idError) {
+      const message = idError.code === '23505' ? S.students.nationalIdTaken : idError.message;
+      redirect(`/teachers/${memberId}/edit?error=${encodeURIComponent(message)}` as never);
+    }
   }
 
   const { error: memberError } = await admin

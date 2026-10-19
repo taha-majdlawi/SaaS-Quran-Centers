@@ -10,6 +10,7 @@ import '../../core/access/module_keys.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import 'members_repository.dart';
+import '../../core/utils/national_id.dart';
 import '../../core/i18n/i18n.dart';
 
 /// Mirrors apps/web's members/[id] page: edit role/status/permissions,
@@ -63,6 +64,9 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       _phone.text = c.phone ?? '';
       _whatsapp.text = c.whatsapp ?? '';
     } catch (_) {}
+    try {
+      _nationalId.text = await _repository.nationalId(orgId, member.id) ?? '';
+    } catch (_) {}
     if (mounted) setState(() => _loading = false);
   }
 
@@ -82,9 +86,16 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
       if (_role == 'teacher' || _role == 'admin') {
         await _repository.setContact(orgId, widget.memberId, _phone.text.trim(), _whatsapp.text.trim());
       }
+      if (_nationalId.text.trim().isNotEmpty && normalizeNationalId(_nationalId.text) == null) {
+        setState(() => _error = tr(context).stu.nationalIdInvalid);
+        return;
+      }
+      await _repository.setNationalId(orgId, widget.memberId, normalizeNationalId(_nationalId.text));
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = friendlyError(e, tr(context).stu.saveError));
+      setState(() => _error = e.toString().contains('national') || e.toString().contains('23505')
+          ? tr(context).stu.nationalIdTaken
+          : friendlyError(e, tr(context).stu.saveError));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -93,6 +104,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
   final _newPassword = TextEditingController();
   final _phone = TextEditingController();
   final _whatsapp = TextEditingController();
+  final _nationalId = TextEditingController();
   bool _resetting = false;
 
   @override
@@ -100,6 +112,7 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
     _newPassword.dispose();
     _phone.dispose();
     _whatsapp.dispose();
+    _nationalId.dispose();
     super.dispose();
   }
 
@@ -216,6 +229,16 @@ class _MemberEditScreenState extends State<MemberEditScreen> {
                         decoration: InputDecoration(labelText: tr(context).stu.whatsapp, helperText: tr(context).mem.contactHint),
                       ),
                     ],
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _nationalId,
+                      textDirection: TextDirection.ltr,
+                      decoration: InputDecoration(
+                        labelText: tr(context).stu.nationalId,
+                        helperText: tr(context).stu.nationalIdHint,
+                        helperMaxLines: 2,
+                      ),
+                    ),
                     if (_role == 'teacher') ...[
                       const SizedBox(height: 16),
                       Text(tr(context).mem.modulesTitle, style: Theme.of(context).textTheme.titleSmall),

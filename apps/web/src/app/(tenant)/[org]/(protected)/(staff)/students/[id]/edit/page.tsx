@@ -35,7 +35,7 @@ export default async function EditStudentPage({
   const [{ data: student }, { data: circles }, { data: members }] = await Promise.all([
     supabase
       .from('students_profile')
-      .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address, guardian_member_id')
+      .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address, guardian_member_id, national_id')
       .eq('organization_id', org.id)
       .eq('id', id)
       .maybeSingle(),
@@ -80,6 +80,20 @@ export default async function EditStudentPage({
             defaultValue={student.student_code}
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
           />
+        </label>
+
+        <label className="text-sm font-medium text-gray-700">
+          {S.students.nationalId}
+          <input
+            name="nationalId"
+            defaultValue={student.national_id ?? ''}
+            inputMode="numeric"
+            autoComplete="off"
+            dir="ltr"
+            maxLength={24}
+            className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          />
+          <span className="mt-1 block text-xs font-normal text-gray-400">{S.students.nationalIdHint}</span>
         </label>
 
         <label className="text-sm font-medium text-gray-700">

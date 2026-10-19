@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { AccountError, provisionTeacher } from '@/lib/accounts/provision';
 import { staffStrings } from '@/lib/i18n/server';
+import { nationalIdField } from '@/lib/auth/national-id';
 
 /**
  * Creates a ready-to-use login for a teacher directly - no invite link.
@@ -19,6 +20,10 @@ export async function createTeacherDirectly(formData: FormData) {
   const phone = (formData.get('phone') as string)?.trim();
   const whatsapp = (formData.get('whatsapp') as string)?.trim();
   const password = formData.get('password') as string;
+  const nationalId = nationalIdField(formData.get('nationalId'));
+  if (nationalId === undefined) {
+    redirect(`/members/new-teacher?error=${encodeURIComponent((await staffStrings()).students.nationalIdInvalid)}` as never);
+  }
 
   const supabase = await createClient();
   const {
@@ -27,7 +32,7 @@ export async function createTeacherDirectly(formData: FormData) {
   if (!user) redirect('/login' as never);
 
   try {
-    await provisionTeacher(createAdminClient(), user.id, { orgId, fullName, identifier, password, phone, whatsapp });
+    await provisionTeacher(createAdminClient(), user.id, { orgId, fullName, identifier, password, phone, whatsapp, nationalId });
   } catch (e) {
     const message = e instanceof AccountError ? e.message : (await staffStrings()).students.createFailed;
     redirect(`/members/new-teacher?error=${encodeURIComponent(message)}` as never);

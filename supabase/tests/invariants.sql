@@ -375,5 +375,13 @@ begin
     if sqlerrm <> 'mfa-check-undo' then v_fail := v_fail || ('owner mfa check could not run: ' || sqlerrm); end if;
   end;
 
+  -- 0095: a member of a center reads its membership rows, never the staff's national ID
+  if has_column_privilege('authenticated', 'public.organization_members', 'national_id', 'SELECT') then
+    v_fail := v_fail || text 'members can read staff national IDs';
+  end if;
+  if has_function_privilege('anon', 'public.member_national_id(uuid, uuid)', 'EXECUTE') then
+    v_fail := v_fail || text 'visitors can call member_national_id';
+  end if;
+
   raise exception 'RESULT: %', case when array_length(v_fail, 1) is null then 'OK' else 'FAILED - ' || array_to_string(v_fail, '; ') end;
 end $$;

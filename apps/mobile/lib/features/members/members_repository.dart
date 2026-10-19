@@ -95,6 +95,13 @@ class MembersRepository {
   }
 
   /// Saves them (checked by the database; empty clears).
+  /// A staff member's national ID (0095): admins only, the column itself is not readable.
+  Future<String?> nationalId(String orgId, String memberId) async =>
+      await _client.rpc('member_national_id', params: {'p_org': orgId, 'p_member': memberId}) as String?;
+
+  Future<void> setNationalId(String orgId, String memberId, String? nationalId) =>
+      _client.rpc('set_member_national_id', params: {'p_org': orgId, 'p_member': memberId, 'p_national_id': nationalId ?? ''});
+
   Future<void> setContact(String orgId, String memberId, String phone, String whatsapp) =>
       _client.rpc('set_member_contact', params: {'p_org': orgId, 'p_member': memberId, 'p_phone': phone, 'p_whatsapp': whatsapp});
 

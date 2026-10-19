@@ -41,6 +41,7 @@ class StudentDetail {
     this.phone,
     this.whatsapp,
     this.address,
+    this.nationalId,
   });
 
   final String id;
@@ -52,6 +53,7 @@ class StudentDetail {
   final String? phone;
   final String? whatsapp;
   final String? address;
+  final String? nationalId;
 }
 
 /// Mirrors apps/web's students/actions.ts - same table, same organization_id
@@ -111,7 +113,7 @@ class StudentsRepository {
   Future<StudentDetail?> fetchStudent(String id) async {
     final row = (await SyncService.instance.raw('stu.fetchStudent:$id', () => _client
         .from('students_profile')
-        .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address')
+        .select('id, full_name, student_code, birth_date, circle_id, status, phone, whatsapp, address, national_id')
         .eq('id', id)
         .maybeSingle())) as Map<String, dynamic>?;
 
@@ -127,6 +129,7 @@ class StudentsRepository {
       phone: row['phone'] as String?,
       whatsapp: row['whatsapp'] as String?,
       address: row['address'] as String?,
+      nationalId: row['national_id'] as String?,
     );
   }
 
@@ -139,8 +142,10 @@ class StudentsRepository {
     String? phone,
     String? whatsapp,
     String? address,
+    String? nationalId,
   }) {
     return _client.from('students_profile').insert({
+      'national_id': nationalId,
       'phone': phone,
       'whatsapp': whatsapp,
       'address': address,
@@ -162,8 +167,10 @@ class StudentsRepository {
     String? phone,
     String? whatsapp,
     String? address,
+    String? nationalId,
   }) {
     return _client.from('students_profile').update({
+      'national_id': nationalId,
       'phone': phone,
       'whatsapp': whatsapp,
       'address': address,

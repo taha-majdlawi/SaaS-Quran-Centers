@@ -1465,6 +1465,10 @@ export const staffAr = {
     clear: 'مسح',
     countN: '{n} طالب',
     noMatch: 'لا يوجد طالب يطابق البحث',
+    nationalId: 'رقم الهوية',
+    nationalIdHint: 'اختياري. بيقدر يدخل فيه كمان بنفس كلمة السر.',
+    nationalIdInvalid: 'رقم الهوية غير صالح: أرقام أو حروف إنجليزية فقط، من 4 إلى 20 خانة.',
+    nationalIdTaken: 'رقم الهوية هذا مستخدم لشخص آخر في المركز.',
   },
   /** Importing students from CSV. */
   studentsImport: {

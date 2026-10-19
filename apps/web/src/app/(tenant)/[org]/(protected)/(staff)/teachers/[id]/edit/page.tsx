@@ -44,6 +44,8 @@ export default async function EditTeacherPage({
 
   if (!member) notFound();
 
+  // the ID is not a column members can read (0095): admins get it through this function
+  const { data: nationalId } = await supabase.rpc('member_national_id', { p_org: org.id, p_member: member.id });
   const today = new Date().toISOString().slice(0, 10);
   const from = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
   const [{ data: attData }, { data: circleRows }, { data: contactData }] = await Promise.all([
@@ -91,6 +93,12 @@ export default async function EditTeacherPage({
             className="mt-1 w-full rounded border px-3 py-2 text-sm"
             dir="ltr"
           />
+        </label>
+        <label className="text-sm font-medium text-gray-700">
+          {S.students.nationalId}
+          <input name="nationalId"
+            defaultValue={nationalId ?? ''} autoComplete="off" dir="ltr" maxLength={24} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          <span className="mt-1 block text-xs font-normal text-gray-400">{S.students.nationalIdHint}</span>
         </label>
 
         <div className="grid gap-3 sm:grid-cols-2">
