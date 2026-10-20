@@ -1,0 +1,27 @@
+name: diag-tmp
+on:
+  push:
+    branches: [diag-tmp-invite]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get install -y -qq postgresql-client >/dev/null
+      - name: memberships and invitations (read-only; masked emails)
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB" -X -A -t -F ' | ' -c "set default_transaction_read_only = on" -c "
+            with mask as (select id, regexp_replace(email, '^(.).*(@.*)$', '\1***\2') as m from auth.users)
+            select 'member: ' || o.slug || ' | ' || coalesce(mk.m, '?') || ' | ' || mb.role || ' | ' || mb.status || ' | since ' || to_char(mb.created_at, 'MM-DD HH24:MI')
+              || ' | owner=' || exists (select 1 from public.platform_owners po where po.user_id = mb.user_id)
+            from public.organization_members mb join public.organizations o on o.id = mb.organization_id left join mask mk on mk.id = mb.user_id
+            order by o.slug, mb.created_at;
+            with mask as (select id, email, regexp_replace(email, '^(.).*(@.*)$', '\1***\2') as m from auth.users)
+            select 'invite: ' || o.slug || ' | for ' || regexp_replace(coalesce(i.email,'-'), '^(.).*(@.*)$', '\1***\2') || ' | ' || i.role
+              || ' | accepted=' || (i.accepted_at is not null) || coalesce(' ' || to_char(i.accepted_at, 'MM-DD HH24:MI'), '')
+              || ' | invitee-is-member=' || exists (select 1 from public.organization_members mb join auth.users u on u.id = mb.user_id
+                                                    where mb.organization_id = i.organization_id and lower(u.email) = lower(i.email))
+            from public.organization_invitations i join public.organizations o on o.id = i.organization_id order by i.created_at;
+            select 'audit: ' || to_char(created_at, 'MM-DD HH24:MI') || ' ' || action || ' ' || entity_table from public.audit_log
+             where entity_table in ('organization_members','organization_invitations') order by created_at desc limit 20;" 2>&1 | grep . | sed 's/^/::notice::/'
