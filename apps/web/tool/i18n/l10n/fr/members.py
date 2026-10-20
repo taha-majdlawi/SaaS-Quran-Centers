@@ -1,5 +1,5 @@
 # members - Français. Same keys as the spec's English column.
-T = {'copyHint': 'Copiez le lien et envoyez-le à la personne (WhatsApp / e-mail) — rien n’est encore envoyé automatiquement.',
+T = {'copyHint': 'Copiez le lien et envoyez-le à la personne (WhatsApp / e-mail) — rien n’est encore envoyé automatiquement. La personne l’ouvre et choisit un mot de passe pour son e-mail ; le lien ne fonctionne que pour cet e-mail.',
  'passwordOnce': 'Le mot de passe n’est affiché qu’une seule fois — copiez-le maintenant, il ne réapparaîtra pas.',
  'teacherCreated': 'Compte enseignant créé — transmettez-lui ces informations maintenant :',
  'addTeacher': '+ Ajouter un enseignant manuellement',

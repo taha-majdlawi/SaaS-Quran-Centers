@@ -10,6 +10,8 @@ import '../../core/i18n/i18n.dart';
 
 Map<String, String> get _roleLabels => currentStrings.labels.roles;
 
+bool _sameEmail(String? a, String? b) => a != null && b != null && a.trim().toLowerCase() == b.trim().toLowerCase();
+
 /// Opened from an invitation link (`https://CENTER.bustan-alquran.com/join?token=...`):
 /// shows who invited you, then either confirms (already signed in), signs in with the
 /// invited e-mail, or creates the account - and accepts the invitation in one go.
@@ -82,7 +84,13 @@ class _JoinScreenState extends State<JoinScreen> {
           }
         }
       }
-      await client.rpc('accept_invitation', params: {'invite_token': widget.token});
+      try {
+        await client.rpc('accept_invitation', params: {'invite_token': widget.token});
+      } catch (_) {
+        // just signed in for this invitation and it was refused: not left signed in as a non-member
+        if (!signedIn) await client.auth.signOut();
+        rethrow;
+      }
       if (!mounted) return;
       await context.read<TenantController>().loadMemberships();
       if (mounted) context.go('/dashboard');
@@ -126,7 +134,19 @@ class _JoinScreenState extends State<JoinScreen> {
             Text(fmt(tr(context).auth.asRole, {'role': role}), textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
             const SizedBox(height: 20),
             if (_error != null) MessageBanner(message: _error!),
-            if (signedIn) ...[
+            if (signedIn && !_sameEmail(AppSupabase.client.auth.currentUser?.email, inv['email'] as String?)) ...[
+              // another account is signed in (often the admin who made the link): never join it
+              MessageBanner(message: fmt(tr(context).auth.wrongAccount, {'email': AppSupabase.client.auth.currentUser?.email ?? '', 'invited': inv['email'] ?? ''})),
+              const SizedBox(height: 12),
+              LoadingButton(
+                label: tr(context).auth.signOutContinue,
+                loading: _busy,
+                onPressed: () async {
+                  await AppSupabase.client.auth.signOut();
+                  if (mounted) setState(() => _error = null);
+                },
+              ),
+            ] else if (signedIn) ...[
               Text(fmt(tr(context).auth.signedInAs, {'email': AppSupabase.client.auth.currentUser?.email ?? ''}), textAlign: TextAlign.center),
               const SizedBox(height: 12),
               LoadingButton(label: tr(context).auth.confirmJoin, loading: _busy, onPressed: () => _accept(inv, signedIn: true)),

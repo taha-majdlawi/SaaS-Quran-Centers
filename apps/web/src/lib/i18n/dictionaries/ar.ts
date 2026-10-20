@@ -216,7 +216,7 @@ export const ar = {
   },
 
   join: {
-    errorEmailHasAccount: 'هذا البريد له حساب من قبل، لذلك لم نرسل رابط تأكيد. سجّل دخولك بهذا الحساب ثم افتح رابط الدعوة من جديد لقبولها.',
+    errorEmailHasAccount: "هذا البريد له حساب من قبل — أدخل كلمة سر حسابك لقبول الدعوة.",
     google: 'الانضمام بحساب Google',
     incompleteTitle: 'رابط الدعوة غير مكتمل',
     incompleteBody: 'تأكد إنك استخدمت الرابط كامل من الشخص اللي دعاك.',
@@ -233,6 +233,18 @@ export const ar = {
     errorConfirmEmail: 'تحقق من بريدك لتأكيد الحساب أولًا، ثم افتح رابط الدعوة من جديد لإكمال الانضمام',
     checkEmail: 'أرسلنا رابط تأكيد إلى {email}. افتحه لإكمال الانضمام (تفقّد مجلد الرسائل غير المرغوبة إن لم يصل).',
     roles: { admin: 'مدير', teacher: 'معلم', guardian: 'ولي أمر', student: 'طالب' } as Record<string, string>,
+    wrongAccount: "أنت مسجّل دخول بحساب {email}، لكن هذه الدعوة مرسلة إلى {invited}. سجّل الخروج لتكمل بالبريد المدعوّ.",
+    signOutContinue: "تسجيل الخروج والمتابعة",
+    haveAccount: "عندك حساب بهذا البريد؟ سجّل دخولك",
+    noAccount: "ما عندك حساب بعد؟ أنشئ كلمة سر",
+    asRoleSignIn: "كـ {role} - سجّل دخولك بكلمة سر حسابك",
+    signIn: "تسجيل الدخول والانضمام",
+    signingIn: "جاري الدخول والانضمام...",
+    confirmPassword: "تأكيد كلمة السر",
+    passwordHint: "8 أحرف على الأقل",
+    passwordsDiffer: "كلمتا السر غير متطابقتين",
+    errorWrongPassword: "كلمة السر غير صحيحة لهذا البريد.",
+    errorOtherEmail: "هذه الدعوة مرسلة إلى {invited} — لا يمكن قبولها بحساب آخر.",
   },
 
   googlePage: {

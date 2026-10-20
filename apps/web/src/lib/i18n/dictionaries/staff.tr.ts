@@ -804,7 +804,7 @@ export const staffTr: typeof staffAr = {
   },
   /** Members, roles and invitations. */
   members: {
-    copyHint: 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-posta) — henüz otomatik bir şey gönderilmez.',
+    copyHint: 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-posta) — henüz otomatik bir şey gönderilmez. Davet edilen kişi bağlantıyı açıp e-postası için bir şifre belirler; bağlantı yalnızca o e-posta için çalışır.',
     passwordOnce: 'Şifre yalnızca bu kez gösterilir — şimdi kopyalayın, tekrar görünmeyecek.',
     teacherCreated: 'Öğretmen hesabı oluşturuldu — bu bilgileri şimdi kendisine verin:',
     addTeacher: '+ Elle öğretmen ekle',
