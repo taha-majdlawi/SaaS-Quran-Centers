@@ -12,12 +12,9 @@ jobs:
           DB: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           psql "$DB" -X -A -t -c "set default_transaction_read_only = on" -c "
-            select 'org: ' || o.slug || ' | created ' || to_char(o.created_at, 'MM-DD HH24:MI:SS') || ' | members ' || (select count(*) from public.organization_members m where m.organization_id = o.id)
-              || ' | admins ' || (select count(*) from public.organization_members m where m.organization_id = o.id and m.role = 'admin' and m.status = 'active')
+            select 'org: ' || o.slug || ' | admins ' || (select count(*) from public.organization_members m where m.organization_id = o.id and m.role = 'admin' and m.status = 'active')
+              || ' | members ' || (select count(*) from public.organization_members m where m.organization_id = o.id)
             from public.organizations o order by o.created_at;
-            select 'esam member: invited_by_null=' || (mb.invited_by is null) || ' | joined ' || to_char(mb.created_at, 'MM-DD HH24:MI:SS') || ' | user created ' || to_char(u.created_at, 'MM-DD HH24:MI:SS')
-              || ' | provider ' || coalesce(u.raw_app_meta_data->>'provider', '?')
-            from public.organization_members mb join public.organizations o on o.id = mb.organization_id and o.slug = 'esam' join auth.users u on u.id = mb.user_id;
-            select 'esam invite: created ' || to_char(i.created_at, 'MM-DD HH24:MI:SS') || ' | invited_by=member? ' || exists (select 1 from public.organization_members mb where mb.user_id = i.invited_by and mb.organization_id = i.organization_id)
-              || ' | invitee has account=' || exists (select 1 from auth.users u where lower(u.email) = lower(i.email))
-            from public.organization_invitations i join public.organizations o on o.id = i.organization_id and o.slug = 'esam';" 2>&1 | grep . | sed 's/^/::notice::/'
+            select 'invite: ' || o.slug || ' | ' || i.role || ' | accepted=' || (i.accepted_at is not null) || ' | valid=' || (i.accepted_at is null and i.expires_at > now())
+            from public.organization_invitations i join public.organizations o on o.id = i.organization_id order by i.created_at;
+            select 'accept_invitation checks email: ' || (pg_get_functiondef('public.accept_invitation(uuid)'::regprocedure) like '%email_confirmed_at%');" 2>&1 | grep . | sed 's/^/::notice::/'
