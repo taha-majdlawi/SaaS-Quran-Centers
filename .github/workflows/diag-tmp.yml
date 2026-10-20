@@ -11,17 +11,13 @@ jobs:
         env:
           DB: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          psql "$DB" -X -A -t -F ' | ' -c "set default_transaction_read_only = on" -c "
-            with mask as (select id, regexp_replace(email, '^(.).*(@.*)$', '\1***\2') as m from auth.users)
-            select 'member: ' || o.slug || ' | ' || coalesce(mk.m, '?') || ' | ' || mb.role || ' | ' || mb.status || ' | since ' || to_char(mb.created_at, 'MM-DD HH24:MI')
-              || ' | owner=' || exists (select 1 from public.platform_owners po where po.user_id = mb.user_id)
-            from public.organization_members mb join public.organizations o on o.id = mb.organization_id left join mask mk on mk.id = mb.user_id
-            order by o.slug, mb.created_at;
-            with mask as (select id, email, regexp_replace(email, '^(.).*(@.*)$', '\1***\2') as m from auth.users)
-            select 'invite: ' || o.slug || ' | for ' || regexp_replace(coalesce(i.email,'-'), '^(.).*(@.*)$', '\1***\2') || ' | ' || i.role
-              || ' | accepted=' || (i.accepted_at is not null) || coalesce(' ' || to_char(i.accepted_at, 'MM-DD HH24:MI'), '')
-              || ' | invitee-is-member=' || exists (select 1 from public.organization_members mb join auth.users u on u.id = mb.user_id
-                                                    where mb.organization_id = i.organization_id and lower(u.email) = lower(i.email))
-            from public.organization_invitations i join public.organizations o on o.id = i.organization_id order by i.created_at;
-            select 'audit: ' || to_char(created_at, 'MM-DD HH24:MI') || ' ' || action || ' ' || entity_table from public.audit_log
-             where entity_table in ('organization_members','organization_invitations') order by created_at desc limit 20;" 2>&1 | grep . | sed 's/^/::notice::/'
+          psql "$DB" -X -A -t -c "set default_transaction_read_only = on" -c "
+            select 'org: ' || o.slug || ' | created ' || to_char(o.created_at, 'MM-DD HH24:MI:SS') || ' | members ' || (select count(*) from public.organization_members m where m.organization_id = o.id)
+              || ' | admins ' || (select count(*) from public.organization_members m where m.organization_id = o.id and m.role = 'admin' and m.status = 'active')
+            from public.organizations o order by o.created_at;
+            select 'esam member: invited_by_null=' || (mb.invited_by is null) || ' | joined ' || to_char(mb.created_at, 'MM-DD HH24:MI:SS') || ' | user created ' || to_char(u.created_at, 'MM-DD HH24:MI:SS')
+              || ' | provider ' || coalesce(u.raw_app_meta_data->>'provider', '?')
+            from public.organization_members mb join public.organizations o on o.id = mb.organization_id and o.slug = 'esam' join auth.users u on u.id = mb.user_id;
+            select 'esam invite: created ' || to_char(i.created_at, 'MM-DD HH24:MI:SS') || ' | invited_by=member? ' || exists (select 1 from public.organization_members mb where mb.user_id = i.invited_by and mb.organization_id = i.organization_id)
+              || ' | invitee has account=' || exists (select 1 from auth.users u where lower(u.email) = lower(i.email))
+            from public.organization_invitations i join public.organizations o on o.id = i.organization_id and o.slug = 'esam';" 2>&1 | grep . | sed 's/^/::notice::/'
