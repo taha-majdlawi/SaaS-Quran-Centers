@@ -12,6 +12,7 @@ import '../recitation/recitation_repository.dart';
 import '../recitation/recitation_sheet.dart';
 import 'teacher_widgets.dart';
 import '../../core/i18n/i18n.dart';
+import '../points/points_ledger.dart';
 
 enum _Filter { all, notYet, done }
 
@@ -218,6 +219,11 @@ class _CircleRosterState extends State<CircleRoster> {
             onAttendance: (status) => _mark(s, status),
             dueReviews: _due[s.id] ?? const [],
             onRecordDue: (_due[s.id] ?? const []).isEmpty ? null : () => _record(s, prefillSurah: _due[s.id]!.first),
+            onAward: context.watch<TenantController>().isDisabled('points')
+                ? null
+                : () async {
+                    if (await showAwardPointsSheet(context, studentId: s.id, studentName: s.fullName) != null) widget.onChanged();
+                  },
           ),
     ]);
   }
