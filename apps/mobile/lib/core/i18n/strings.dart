@@ -1187,6 +1187,40 @@ class SProf {
   final String whatsapp;
 }
 
+/// The points system: add / deduct, the breakdown, the page estimate (0096).
+class SPts {
+  const SPts({required this.award, required this.bonus, required this.penalty, required this.note, required this.save, required this.pickReason, required this.noReasons, required this.saved, required this.outbox, required this.staffTitle, required this.mineTitle, required this.total, required this.noPoints, required this.mismatch, required this.countPages, required this.count, required this.recent, required this.undo, required this.undone, required this.sumLine, required this.estimate, required this.estimateNote, required this.modeTitle, required this.perRec, required this.perPage, required this.modeSaved, required this.pointsPerPage, required this.moreOnWeb, required this.kinds});
+  final String award;
+  final String bonus;
+  final String penalty;
+  final String note;
+  final String save;
+  final String pickReason;
+  final String noReasons;
+  final String saved;
+  final String outbox;
+  final String staffTitle;
+  final String mineTitle;
+  final String total;
+  final String noPoints;
+  final String mismatch;
+  final String countPages;
+  final String count;
+  final String recent;
+  final String undo;
+  final String undone;
+  final String sumLine;
+  final String estimate;
+  final String estimateNote;
+  final String modeTitle;
+  final String perRec;
+  final String perPage;
+  final String modeSaved;
+  final String pointsPerPage;
+  final String moreOnWeb;
+  final Map<String, String> kinds;
+}
+
 /// The Quran screens (the text itself stays Arabic).
 class SQuran {
   const SQuran({required this.title, required this.surahs, required this.search, required this.continueReading, required this.position, required this.ayahs, required this.noBookmarks, required this.noBookmarksHint, required this.playFailed, required this.ayahOf, required this.playFromHere, required this.unmark, required this.copyAyah, required this.copied, required this.smaller, required this.bigger, required this.loadFailed, required this.repeat, required this.noRepeat, required this.prevAyah, required this.nextAyah, required this.credit, required this.bookmarks, required this.mark, required this.repeatN, required this.play, required this.pause, required this.sync, required this.syncNone, required this.syncAyah, required this.syncWord, required this.reciter, required this.noTimings, required this.noSurahAudio, required this.fontSize, required this.testMode, required this.testHint, required this.revealPage, required this.hidePage, required this.prevPage, required this.nextPage, required this.readingSettings});
@@ -1855,7 +1889,7 @@ class SWird {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.myAccount, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.myAccount, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.pts, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1891,6 +1925,7 @@ class S {
   final SPlan plan;
   final SPriv priv;
   final SProf prof;
+  final SPts pts;
   final SQuran quran;
   final SRec rec;
   final SRecite recite;
@@ -2995,6 +3030,37 @@ class S {
       invalidPages: 'أدخل عددًا بين 0.25 و20',
       outboxGoal: 'هدف حفظ {name}',
       whatsapp: 'واتساب',
+    ),
+    pts: SPts(
+      award: 'إضافة أو خصم نقاط',
+      bonus: 'إضافة نقاط',
+      penalty: 'خصم نقاط',
+      note: 'ملاحظة (اختياري)',
+      save: 'حفظ',
+      pickReason: 'اختر السبب',
+      noReasons: 'لا أسباب مفعّلة بعد — يضيفها المشرف من لوحة الويب.',
+      saved: 'تم: {points} نقطة لـ{name}',
+      outbox: 'نقاط {name}: {points}',
+      staffTitle: 'تفصيل النقاط',
+      mineTitle: 'كيف كسبت نقاطك',
+      total: 'المجموع',
+      noPoints: 'لا نقاط بعد',
+      mismatch: 'مجموع التفصيل {sum} يختلف عن المجموع {total} — يصلحه المشرف من صفحة النقاط على الويب.',
+      countPages: '{count} مرة · {pages} صفحة',
+      count: '{count} مرة',
+      recent: 'آخر الإضافات والخصومات',
+      undo: 'تراجع',
+      undone: 'تم التراجع',
+      sumLine: 'تسميعات {r} · حفظ {m} صفحة · مراجعة {v} صفحة · حضور {a} · غياب {b}',
+      estimate: '≈ {pages} صفحة · {points} نقطة تقريباً',
+      estimateNote: 'القيمة النهائية يحسبها الخادم عند الحفظ.',
+      modeTitle: 'طريقة احتساب نقاط التسميع',
+      perRec: 'نقاط ثابتة لكل تسميع',
+      perPage: 'حسب عدد الصفحات (المراجعة بالنصف)',
+      modeSaved: 'تم حفظ طريقة الاحتساب',
+      pointsPerPage: 'نقاط الصفحة',
+      moreOnWeb: 'نقاط الحضور وأسباب الإضافة والخصم والرصيد الافتتاحي تُضبط من لوحة الويب.',
+      kinds: {'opening': 'الرصيد الافتتاحي', 'recitation': 'تسميع', 'serd': 'السرد القرآني المعتمد', 'attendance': 'الحضور والغياب', 'bonus': 'إضافة', 'penalty': 'خصم'},
     ),
     quran: SQuran(
       title: 'المصحف',
@@ -4717,6 +4783,37 @@ class S {
       outboxGoal: 'Memorization goal for {name}',
       whatsapp: 'WhatsApp',
     ),
+    pts: SPts(
+      award: 'Add or deduct points',
+      bonus: 'Add points',
+      penalty: 'Deduct points',
+      note: 'Note (optional)',
+      save: 'Save',
+      pickReason: 'Choose a reason',
+      noReasons: 'No active reasons yet — the admin adds them on the web dashboard.',
+      saved: 'Done: {points} points for {name}',
+      outbox: 'Points for {name}: {points}',
+      staffTitle: 'Points breakdown',
+      mineTitle: 'How you earned your points',
+      total: 'Total',
+      noPoints: 'No points yet',
+      mismatch: 'The breakdown adds up to {sum}, the total is {total} — the admin can fix it on the web Points page.',
+      countPages: '{count}× · {pages} pages',
+      count: '{count}×',
+      recent: 'Latest additions and deductions',
+      undo: 'Undo',
+      undone: 'Undone',
+      sumLine: '{r} recitations · {m} pages memorised · {v} reviewed · {a} present · {b} absent',
+      estimate: '≈ {pages} pages · about {points} points',
+      estimateNote: 'The server works out the final value when saving.',
+      modeTitle: 'How recitations are scored',
+      perRec: 'Fixed points per recitation',
+      perPage: 'By pages (review counts half)',
+      modeSaved: 'Scoring method saved',
+      pointsPerPage: 'Points per page',
+      moreOnWeb: 'Attendance points, reasons to add / deduct and opening balances are set on the web dashboard.',
+      kinds: {'opening': 'Opening balance', 'recitation': 'Recitation', 'serd': 'Approved Quran serd', 'attendance': 'Attendance', 'bonus': 'Added', 'penalty': 'Deducted'},
+    ),
     quran: SQuran(
       title: 'Quran',
       surahs: 'Surahs',
@@ -6438,6 +6535,37 @@ class S {
       outboxGoal: '{name} için ezber hedefi',
       whatsapp: 'WhatsApp',
     ),
+    pts: SPts(
+      award: 'Puan ekle veya düş',
+      bonus: 'Puan ekle',
+      penalty: 'Puan düş',
+      note: 'Not (isteğe bağlı)',
+      save: 'Kaydet',
+      pickReason: 'Bir neden seçin',
+      noReasons: 'Henüz etkin neden yok — yönetici web panelinden ekler.',
+      saved: 'Tamam: {name} için {points} puan',
+      outbox: '{name} puanları: {points}',
+      staffTitle: 'Puan dökümü',
+      mineTitle: 'Puanlarını nasıl kazandın',
+      total: 'Toplam',
+      noPoints: 'Henüz puan yok',
+      mismatch: 'Döküm {sum}, toplam {total} — yönetici web Puanlar sayfasından düzeltebilir.',
+      countPages: '{count} kez · {pages} sayfa',
+      count: '{count} kez',
+      recent: 'Son eklemeler ve düşmeler',
+      undo: 'Geri al',
+      undone: 'Geri alındı',
+      sumLine: '{r} dinletme · {m} sayfa ezber · {v} tekrar · {a} katılım · {b} devamsız',
+      estimate: '≈ {pages} sayfa · yaklaşık {points} puan',
+      estimateNote: 'Kesin değeri kaydederken sunucu hesaplar.',
+      modeTitle: 'Dinletme puanı nasıl hesaplanır',
+      perRec: 'Dinletme başına sabit puan',
+      perPage: 'Sayfaya göre (tekrar yarım sayılır)',
+      modeSaved: 'Hesaplama yöntemi kaydedildi',
+      pointsPerPage: 'Sayfa puanı',
+      moreOnWeb: 'Devam puanları, ekleme / düşme nedenleri ve açılış bakiyeleri web panelinden ayarlanır.',
+      kinds: {'opening': 'Açılış bakiyesi', 'recitation': 'Dinletme', 'serd': 'Onaylı Kur\'an serdi', 'attendance': 'Devam', 'bonus': 'Eklendi', 'penalty': 'Düşüldü'},
+    ),
     quran: SQuran(
       title: 'Kur’an',
       surahs: 'Sureler',
@@ -8158,6 +8286,37 @@ class S {
       invalidPages: 'Saisissez un nombre entre 0,25 et 20',
       outboxGoal: 'Objectif de mémorisation de {name}',
       whatsapp: 'WhatsApp',
+    ),
+    pts: SPts(
+      award: 'Ajouter ou retirer des points',
+      bonus: 'Ajouter des points',
+      penalty: 'Retirer des points',
+      note: 'Note (facultative)',
+      save: 'Enregistrer',
+      pickReason: 'Choisissez un motif',
+      noReasons: 'Aucun motif actif — l\'administrateur les ajoute sur le tableau de bord web.',
+      saved: 'Fait : {points} points pour {name}',
+      outbox: 'Points de {name} : {points}',
+      staffTitle: 'Détail des points',
+      mineTitle: 'Comment tu as gagné tes points',
+      total: 'Total',
+      noPoints: 'Pas encore de points',
+      mismatch: 'Le détail totalise {sum}, le total est {total} — l\'administrateur peut corriger sur la page Points du web.',
+      countPages: '{count} fois · {pages} pages',
+      count: '{count} fois',
+      recent: 'Derniers ajouts et retraits',
+      undo: 'Annuler',
+      undone: 'Annulé',
+      sumLine: '{r} récitations · {m} pages mémorisées · {v} révisées · {a} présences · {b} absences',
+      estimate: '≈ {pages} pages · environ {points} points',
+      estimateNote: 'Le serveur calcule la valeur finale à l\'enregistrement.',
+      modeTitle: 'Mode de calcul des points de récitation',
+      perRec: 'Points fixes par récitation',
+      perPage: 'Selon les pages (la révision compte moitié)',
+      modeSaved: 'Mode de calcul enregistré',
+      pointsPerPage: 'Points par page',
+      moreOnWeb: 'Les points de présence, les motifs d\'ajout / retrait et les soldes d\'ouverture se règlent sur le tableau de bord web.',
+      kinds: {'opening': 'Solde d\'ouverture', 'recitation': 'Récitation', 'serd': 'Serd du Coran approuvé', 'attendance': 'Présence', 'bonus': 'Ajout', 'penalty': 'Retrait'},
     ),
     quran: SQuran(
       title: 'Coran',

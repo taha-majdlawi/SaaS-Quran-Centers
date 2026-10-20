@@ -22,6 +22,7 @@ import 'home_extras.dart';
 import 'my_portal_repository.dart';
 import 'record_extras.dart';
 import '../fees/fees_screens.dart';
+import '../points/points_ledger.dart';
 
 /// The student's (or guardian's) whole app: home, record, account. Students
 /// and guardians never reach the staff screens - the router sends them here.
@@ -230,6 +231,7 @@ class _HomeTab extends StatelessWidget {
         AnnouncementsPreviewCard(announcements: data.announcements),
         const SizedBox(height: 12),
         GoalCard(key: ValueKey('goal$studentId'), studentId: studentId, studentName: data.fullName),
+        if (!context.watch<TenantController>().isDisabled('points')) StudentPointsCard(key: ValueKey('pts$studentId'), studentId: studentId, studentName: data.fullName, mine: true),
         if (!context.watch<TenantController>().isDisabled('wird'))
           WirdCard(key: ValueKey('wird$studentId'), studentId: studentId, canRecite: !context.watch<TenantController>().isDisabled('recitations')),
         FeesTile(studentId: studentId),

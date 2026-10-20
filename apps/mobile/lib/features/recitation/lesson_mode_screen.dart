@@ -10,6 +10,7 @@ import '../../core/tenant/tenant_controller.dart';
 import '../../core/data/quran_data.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/ui.dart';
+import '../points/points_ledger.dart';
 import 'recitation_repository.dart';
 import 'recitation_sheet.dart';
 import '../../core/i18n/i18n.dart';
@@ -157,7 +158,16 @@ class _LessonModeScreenState extends State<LessonModeScreen> {
           const SizedBox(height: 16),
           Text(s.fullName, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: TeacherStyle.textPrimary)),
           const SizedBox(height: 6),
-          Text(fmt(tr(context).teach.pointsN, {'totalPoints': s.totalPoints}), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text(fmt(tr(context).teach.pointsN, {'totalPoints': s.totalPoints}), style: const TextStyle(fontSize: 13, color: TeacherStyle.textMuted)),
+            if (!context.watch<TenantController>().isDisabled('points'))
+              IconButton(
+                tooltip: tr(context).pts.award,
+                visualDensity: VisualDensity.compact,
+                icon: Icon(Icons.star_rounded, color: Colors.amber.shade700),
+                onPressed: () => showAwardPointsSheet(context, studentId: s.id, studentName: s.fullName),
+              ),
+          ]),
           const SizedBox(height: 14),
           _lastRecitation(context, s.lastRecitation),
           if (s.nextPlan != null && s.nextPlan!.trim().isNotEmpty) ...[

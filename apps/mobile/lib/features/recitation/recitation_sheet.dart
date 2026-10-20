@@ -3,11 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/data/quran_data.dart';
+import '../../core/data/quran_pages.dart';
 import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/widgets/ui.dart';
+import '../points/points_ledger.dart' show PointsLedgerRepository;
+import '../profiles/profile_widgets.dart' show numText;
 import 'next_position.dart';
 import 'recitation_repository.dart';
 import '../../core/i18n/i18n.dart';
@@ -85,9 +88,21 @@ class _RecitationSheetState extends State<RecitationSheet> {
   NextPosition? _position;
   bool _autoFilled = false;
 
+  /// The center scores by pages (0096): show the pages and an estimate - the server has the last word.
+  bool _perPage = false;
+
   @override
   void initState() {
     super.initState();
+    final org = context.read<TenantController>().active?.organization.id;
+    if (org != null) {
+      PointsLedgerRepository(AppSupabase.client).mode(org).then((m) {
+        if (mounted && m == 'per_page') setState(() => _perPage = true);
+      }).catchError((_) {});
+    }
+    for (final c in [_parts.first.from, _parts.first.to]) {
+      c.addListener(_rangeChanged);
+    }
     final e = widget.editing;
     if (e != null) {
       _type = e.type;
@@ -107,6 +122,23 @@ class _RecitationSheetState extends State<RecitationSheet> {
     } else {
       _loadPosition();
     }
+  }
+
+  void _rangeChanged() {
+    if (_perPage && mounted) setState(() {});
+  }
+
+  /// Pages of every complete part of the form (null while none is complete).
+  double? get _pages {
+    var total = 0.0;
+    var any = false;
+    for (final p in _parts) {
+      final a = int.tryParse(p.from.text.trim()), b = int.tryParse(p.to.text.trim());
+      if (p.surah == null || a == null || b == null || a < 1 || b > ayahCount(p.surah!) || b < a) continue;
+      total += recitationPages(p.surah!, a, b);
+      any = true;
+    }
+    return any ? total : null;
   }
 
   /// A new recitation: carry on from where the student stopped (next_position.dart).
@@ -293,7 +325,14 @@ class _RecitationSheetState extends State<RecitationSheet> {
     final today = DateTime.now();
     final isToday = _date.year == today.year && _date.month == today.month && _date.day == today.day;
     final picked = widget.grades.where((g) => g.key == _grade).firstOrNull;
-    final points = picked == null ? null : picked.points * _parts.length;
+    final pages = _perPage ? _pages : null;
+    final points = picked == null
+        ? null
+        : !_perPage
+            ? picked.points * _parts.length
+            : pages == null
+                ? null
+                : estimatePagePoints(pages: pages, gradePoints: picked.points, type: _type);
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -392,7 +431,9 @@ class _RecitationSheetState extends State<RecitationSheet> {
                   Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
-                      onPressed: () => setState(() => _parts.add(_PartInput())),
+                      onPressed: () => setState(() => _parts.add(_PartInput()
+                        ..from.addListener(_rangeChanged)
+                        ..to.addListener(_rangeChanged))),
                       icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
                       label: Text(t.rec.addSurah),
                     ),
@@ -421,6 +462,21 @@ class _RecitationSheetState extends State<RecitationSheet> {
                       ),
                   ]);
                 }),
+
+                if (pages != null) ...[
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    Icon(Icons.auto_stories_rounded, size: 16, color: brand),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        fmt(t.pts.estimate, {'pages': numText(pages), 'points': points ?? '—'}),
+                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: brand),
+                      ),
+                    ),
+                  ]),
+                  Text(t.pts.estimateNote, style: const TextStyle(fontSize: 11, color: TeacherStyle.textMuted)),
+                ],
 
                 // 4. a note only when needed
                 const SizedBox(height: 14),

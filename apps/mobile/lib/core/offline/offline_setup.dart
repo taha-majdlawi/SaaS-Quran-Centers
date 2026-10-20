@@ -28,6 +28,7 @@ SyncService createSyncService(SupabaseClient client) {
   sync.register('review_approve', (payload) => client.rpc('approve_review_plan', params: payload));
   sync.register('student_goal', (payload) => client.rpc('set_student_goal', params: payload));
   sync.register('fee_payment', (payload) => client.rpc('record_fee_payment', params: payload));
+  sync.register('point_award', (payload) => client.rpc('teacher_award_points', params: payload));
   sync.register('recitation_delete', (payload) => client.rpc('delete_recitation', params: payload));
   sync.register('attendance', (payload) async {
     final rows = (payload['rows'] as List).cast<Map<String, dynamic>>();

@@ -25,6 +25,7 @@ import '../serd/serd_widgets.dart';
 import '../teacher/teacher_widgets.dart';
 import '../profiles/profile_widgets.dart';
 import '../../core/i18n/i18n.dart';
+import '../points/points_ledger.dart';
 
 class _FileData {
   const _FileData({
@@ -390,6 +391,7 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
           ),
           const SizedBox(height: 14),
           GoalCard(studentId: widget.studentId, studentName: d.fullName),
+          if (!context.watch<TenantController>().isDisabled('points')) StudentPointsCard(studentId: widget.studentId, studentName: d.fullName),
           if (!context.watch<TenantController>().isDisabled('wird')) WirdCard(studentId: widget.studentId),
           if (!context.watch<TenantController>().isDisabled('recitations')) MistakeStatsCard(studentId: widget.studentId),
           Align(

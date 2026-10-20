@@ -26,6 +26,7 @@ import {
   ScrollText,
   ShieldCheck,
   ShoppingBag,
+  Star,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -103,6 +104,7 @@ export default async function MyPortalPage({
     { href: '/my/announcements', label: p.nav.announcements, icon: Megaphone, show: on('announcements') },
     { href: '/my/chat', label: p.nav.chat, icon: MessageCircle, show: on('chat') },
     { href: '/my/notifications', label: p.nav.notifications, icon: Bell, show: true },
+    { href: `/my/points?s=${current.id}`, label: t.staff.points.myPoints, icon: Star, show: on('points') },
     { href: '/my/badges', label: p.nav.badges, icon: Award, show: on('badges') },
     { href: '/my/market', label: p.nav.market, icon: ShoppingBag, show: on('market') },
     { href: `/my/fees?s=${current.id}`, label: t.staff.fees.title, icon: Wallet, show: org.feesEnabled },

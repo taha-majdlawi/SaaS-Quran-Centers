@@ -314,6 +314,62 @@ begin
     end;
   end;
 
+  -- ===== 0096: points by pages (per center), the ledger (attendance, bonus / penalty, opening) and
+  --       the breakdown that always adds up to the total. Tried as the admin, then undone.
+  declare v_gp integer; v_reason uuid; v_ref uuid := gen_random_uuid(); v_att uuid; v_pts integer;
+  begin
+    perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    v_gp := public.grade_points(v_org, v_grade);
+    perform public.set_points_mode(v_org, 'per_page');
+    -- Al-Fatiha is exactly one page; a review counts half
+    r := public.log_recitation(v_org, v_sp, 'recent_review', 1, 1, 7, v_grade, null, gen_random_uuid(), now(), null);
+    v_pts := case when v_gp <= 0 then 0 else greatest(1, round(v_gp * 0.5))::integer end;
+    if (r->>'points_awarded')::integer <> v_pts then
+      v_fail := v_fail || ('per-page review of Al-Fatiha gave ' || (r->>'points_awarded') || ' for grade points ' || v_gp);
+    end if;
+    begin
+      insert into public.point_adjustments (organization_id, student_id, source, points) values (v_org, v_sp, 'opening', 5000);
+      v_fail := v_fail || text 'point_adjustments directly writable';
+    exception when others then null; end;
+    -- a penalty takes its value and sign from the reason; a retry with the same client_ref adds nothing
+    select id, points into v_reason, v_pts from public.point_reasons where organization_id = v_org and kind = 'penalty' and is_active limit 1;
+    if v_reason is null then v_fail := v_fail || text 'no penalty reasons seeded';
+    else
+      select total_points into v_before from public.students_profile where id = v_sp;
+      perform public.teacher_award_points(v_org, v_sp, v_reason, 'invariants', null, v_ref);
+      perform public.teacher_award_points(v_org, v_sp, v_reason, 'invariants', null, v_ref);
+      select total_points into v_after from public.students_profile where id = v_sp;
+      if v_after <> v_before - v_pts then v_fail := v_fail || ('penalty moved the total by ' || (v_after - v_before) || ', not -' || v_pts); end if;
+    end if;
+    -- attendance: a correction replaces the day's points, never adds on top
+    perform public.set_attendance_points(v_org, 1, -1, 0, 0, current_date);
+    insert into public.attendance (organization_id, student_id, circle_id, session_date, status)
+      values (v_org, v_sp, v_circle, current_date, 'absent')
+      on conflict (student_id, session_date) do update set status = 'absent'
+      returning id into v_att;
+    update public.attendance set status = 'present' where id = v_att;
+    select count(*), coalesce(sum(points), 0) into v_n, v_pts from public.point_adjustments where attendance_id = v_att;
+    if v_n <> 1 or v_pts <> 1 then v_fail := v_fail || ('attendance points after a correction: ' || v_n || ' rows, ' || v_pts); end if;
+    -- every point explained
+    perform public.recompute_all_points(v_org);
+    r := public.get_student_points_breakdown(v_org, v_sp);
+    if (r->>'rows_sum')::integer <> (r->>'total_points')::integer then
+      v_fail := v_fail || ('breakdown ' || (r->>'rows_sum') || ' <> total ' || (r->>'total_points'));
+    end if;
+    reset role;
+    -- a student cannot award points, change the values or read another student's breakdown
+    perform set_config('request.jwt.claims', json_build_object('sub', v_stu, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    begin perform public.teacher_award_points(v_org, v_sp, v_reason, null, null, null); v_fail := v_fail || text 'student awarded points'; exception when others then null; end;
+    begin perform public.set_points_mode(v_org, 'per_recitation'); v_fail := v_fail || text 'student changed the points mode'; exception when others then null; end;
+    begin perform public.set_opening_balance(v_org, v_sp, 100); v_fail := v_fail || text 'student set an opening balance'; exception when others then null; end;
+    reset role;
+    raise exception 'points-check-undo';
+  exception when others then
+    if sqlerrm <> 'points-check-undo' then v_fail := v_fail || ('points check could not run: ' || sqlerrm); end if;
+  end;
+
   -- ===== 0066 billing: a locked center is read-only for everyone, yet its admin can still report a payment
   insert into public.platform_settings (key, value) values ('billing_enforce', 'true') on conflict (key) do update set value = 'true';
   update public.organizations set status = 'suspended' where id = v_org;
