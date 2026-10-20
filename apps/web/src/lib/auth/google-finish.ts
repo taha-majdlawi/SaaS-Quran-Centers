@@ -15,7 +15,17 @@ export type GoogleResult = { to: string } | { error: string };
 export async function finishGoogleSignIn(supabase: SupabaseClient, user: User, slug: string, invite?: string | null): Promise<GoogleResult> {
   const { t } = await getI18n();
   if (!validSlug(slug)) return { error: t.login.errorGoogle };
-  if (invite) await supabase.rpc('accept_invitation', { invite_token: invite });
+  if (invite) {
+    const { error } = await supabase.rpc('accept_invitation', { invite_token: invite });
+    // a Google account of another email: the invitation is not theirs (0097)
+    if (error?.code === '42501') {
+      const { data: inv } = await supabase.rpc('get_invitation', { invite_token: invite });
+      const invited = (inv as { email: string | null }[] | null)?.[0]?.email ?? '';
+      await supabase.auth.signOut();
+      await removeIfStranger(user);
+      return { error: fmt(t.join.errorOtherEmail, { invited }) };
+    }
+  }
 
   const admin = createAdminClient();
   const { data: org } = await admin.from('organizations').select('id').eq('slug', slug).maybeSingle();

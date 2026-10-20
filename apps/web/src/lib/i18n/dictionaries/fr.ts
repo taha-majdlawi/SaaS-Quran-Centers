@@ -215,7 +215,7 @@ export const fr: Dictionary = {
   },
 
   join: {
-    errorEmailHasAccount: 'Cet e-mail a déjà un compte, aucun lien de confirmation n’a donc été envoyé. Connectez-vous avec ce compte, puis rouvrez le lien d’invitation pour l’accepter.',
+    errorEmailHasAccount: "Cet e-mail a déjà un compte — saisissez son mot de passe pour accepter l’invitation.",
     google: 'Rejoindre avec Google',
     incompleteTitle: 'Lien d’invitation incomplet',
     incompleteBody: 'Assurez-vous d’utiliser le lien complet reçu de la personne qui vous a invité.',
@@ -232,6 +232,18 @@ export const fr: Dictionary = {
     errorConfirmEmail: 'Vérifiez d’abord votre e-mail pour confirmer votre compte, puis rouvrez le lien d’invitation pour terminer',
     checkEmail: "Nous avons envoyé un lien de confirmation à {email}. Ouvrez-le pour terminer votre inscription (vérifiez vos spams s'il n'est pas arrivé).",
     roles: { admin: 'administrateur', teacher: 'enseignant', guardian: 'parent', student: 'élève' },
+    wrongAccount: "Vous êtes connecté en tant que {email}, mais cette invitation a été envoyée à {invited}. Déconnectez-vous pour continuer avec l’e-mail invité.",
+    signOutContinue: "Se déconnecter et continuer",
+    haveAccount: "Vous avez déjà un compte avec cet e-mail ? Connectez-vous",
+    noAccount: "Pas encore de compte ? Créez un mot de passe",
+    asRoleSignIn: "en tant que {role} - connectez-vous avec le mot de passe de votre compte",
+    signIn: "Se connecter et rejoindre",
+    signingIn: "Connexion et inscription...",
+    confirmPassword: "Confirmer le mot de passe",
+    passwordHint: "Au moins 8 caractères",
+    passwordsDiffer: "Les deux mots de passe ne correspondent pas",
+    errorWrongPassword: "Mot de passe incorrect pour cet e-mail.",
+    errorOtherEmail: "Cette invitation a été envoyée à {invited} — elle ne peut pas être acceptée avec un autre compte.",
   },
 
   googlePage: {

@@ -234,7 +234,7 @@ class SAttn {
 
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
-  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.emailHasAccount, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
+  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.emailHasAccount, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.wrongAccount, required this.signOutContinue, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
   final String thisCenter;
   final String noCenter;
   final String badLogin;
@@ -267,6 +267,8 @@ class SAuth {
   final String asRole;
   final String signedInAs;
   final String confirmJoin;
+  final String wrongAccount;
+  final String signOutContinue;
   final String inviteEmail;
   final String yourPassword;
   final String createPassword;
@@ -2175,6 +2177,8 @@ class S {
       asRole: 'للانضمام كـ {role}',
       signedInAs: 'مسجّل دخول بـ {email}',
       confirmJoin: 'تأكيد الانضمام',
+      wrongAccount: 'أنت مسجّل دخول بحساب {email}، لكن هذه الدعوة مرسلة إلى {invited}. سجّل الخروج لتكمل بالبريد المدعوّ.',
+      signOutContinue: 'تسجيل الخروج والمتابعة',
       inviteEmail: 'البريد الإلكتروني (من الدعوة)',
       yourPassword: 'كلمة سر حسابك',
       createPassword: 'أنشئ كلمة سر (8 أحرف على الأقل)',
@@ -3927,6 +3931,8 @@ class S {
       asRole: 'To join as {role}',
       signedInAs: 'Signed in as {email}',
       confirmJoin: 'Confirm joining',
+      wrongAccount: 'You are signed in as {email}, but this invitation was sent to {invited}. Sign out to continue with the invited email.',
+      signOutContinue: 'Sign out and continue',
       inviteEmail: 'Email (from the invitation)',
       yourPassword: 'Your account password',
       createPassword: 'Create a password (at least 8 characters)',
@@ -5679,6 +5685,8 @@ class S {
       asRole: '{role} olarak katılmak için',
       signedInAs: '{email} olarak giriş yapıldı',
       confirmJoin: 'Katılımı onayla',
+      wrongAccount: '{email} olarak giriş yaptınız, ancak bu davet {invited} adresine gönderildi. Davet edilen e-postayla devam etmek için çıkış yapın.',
+      signOutContinue: 'Çıkış yap ve devam et',
       inviteEmail: 'E-posta (davetten)',
       yourPassword: 'Hesap şifreniz',
       createPassword: 'Bir şifre oluşturun (en az 8 karakter)',
@@ -7431,6 +7439,8 @@ class S {
       asRole: 'Pour rejoindre en tant que {role}',
       signedInAs: 'Connecté en tant que {email}',
       confirmJoin: 'Confirmer l’adhésion',
+      wrongAccount: 'Vous êtes connecté en tant que {email}, mais cette invitation a été envoyée à {invited}. Déconnectez-vous pour continuer avec l’e-mail invité.',
+      signOutContinue: 'Se déconnecter et continuer',
       inviteEmail: 'E-mail (de l’invitation)',
       yourPassword: 'Mot de passe de votre compte',
       createPassword: 'Créez un mot de passe (au moins 8 caractères)',

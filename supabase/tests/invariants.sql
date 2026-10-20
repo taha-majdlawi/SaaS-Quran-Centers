@@ -370,6 +370,35 @@ begin
     if sqlerrm <> 'points-check-undo' then v_fail := v_fail || ('points check could not run: ' || sqlerrm); end if;
   end;
 
+  -- ===== 0097: an invitation is accepted only by the account it was sent to, and a link never
+  --       demotes (the admin who opened their own link became a teacher). Tried, then undone.
+  declare v_tok uuid; v_role text;
+  begin
+    insert into public.organization_invitations (organization_id, email, role, invited_by)
+      values (v_org, 'invariants-' || gen_random_uuid() || '@t.test', 'teacher', v_adm) returning token into v_tok;
+    perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    begin perform public.accept_invitation(v_tok); v_fail := v_fail || text 'invitation accepted by another account'; exception when others then null; end;
+    reset role;
+    select role into v_role from public.organization_members where organization_id = v_org and user_id = v_adm;
+    if v_role <> 'admin' then v_fail := v_fail || ('admin became ' || v_role || ' through a link'); end if;
+    -- the admin's own email, as a teacher: accepted, still admin
+    insert into public.organization_invitations (organization_id, email, role, invited_by)
+      select v_org, lower(email), 'teacher', v_adm from auth.users where id = v_adm
+      on conflict (organization_id, email, role) do update set accepted_at = null, expires_at = now() + interval '1 day'
+      returning token into v_tok;
+    update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now()) where id = v_adm;
+    perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    perform public.accept_invitation(v_tok);
+    reset role;
+    select role into v_role from public.organization_members where organization_id = v_org and user_id = v_adm;
+    if v_role <> 'admin' then v_fail := v_fail || text 'own-email teacher link demoted the admin'; end if;
+    raise exception 'invite-check-undo';
+  exception when others then
+    if sqlerrm <> 'invite-check-undo' then v_fail := v_fail || ('invitation check could not run: ' || sqlerrm); end if;
+  end;
+
   -- ===== 0066 billing: a locked center is read-only for everyone, yet its admin can still report a payment
   insert into public.platform_settings (key, value) values ('billing_enforce', 'true') on conflict (key) do update set value = 'true';
   update public.organizations set status = 'suspended' where id = v_org;

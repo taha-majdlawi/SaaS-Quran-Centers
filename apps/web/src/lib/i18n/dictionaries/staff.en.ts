@@ -804,7 +804,7 @@ export const staffEn: typeof staffAr = {
   },
   /** Members, roles and invitations. */
   members: {
-    copyHint: 'Copy the link and send it to the person (WhatsApp / email) — nothing is sent automatically yet.',
+    copyHint: 'Copy the link and send it to the person (WhatsApp / email) — nothing is sent automatically yet. They open it and set a password for their email; the link works for that email only.',
     passwordOnce: 'The password is shown only this once — copy it now, it won’t appear again.',
     teacherCreated: 'Teacher account created — give them these details now:',
     addTeacher: '+ Add a teacher manually',

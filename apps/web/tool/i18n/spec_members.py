@@ -1,6 +1,6 @@
 # (key, arabic, english) - see gen.py
 SPEC = {'members': ('Members, roles and invitations.', (
-  ('copyHint', 'انسخ الرابط وابعثه للشخص (واتساب/إيميل) - ما في إرسال تلقائي بعد.', 'Copy the link and send it to the person (WhatsApp / email) — nothing is sent automatically yet.'),
+  ('copyHint', 'انسخ الرابط وابعثه للشخص (واتساب/إيميل) - ما في إرسال تلقائي بعد. المدعوّ يفتحه ويضع كلمة سر لبريده؛ والرابط يعمل لهذا البريد فقط.', 'Copy the link and send it to the person (WhatsApp / email) — nothing is sent automatically yet. They open it and set a password for their email; the link works for that email only.'),
   ('passwordOnce', 'هذا العرض الوحيد لكلمة السر - انسخها الآن، ما رح تظهر مرة ثانية.', 'The password is shown only this once — copy it now, it won’t appear again.'),
   ('teacherCreated', 'تم إنشاء حساب المعلم بنجاح - أعطه هذي البيانات الآن:', 'Teacher account created — give them these details now:'),
   ('addTeacher', '+ إضافة معلم يدويًا', '+ Add a teacher manually'),

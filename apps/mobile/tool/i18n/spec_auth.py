@@ -32,6 +32,8 @@ SPEC = {'auth': ('Sign in, join, onboarding and the center picker.', (
   ('asRole', 'للانضمام كـ {role}', 'To join as {role}'),
   ('signedInAs', 'مسجّل دخول بـ {email}', 'Signed in as {email}'),
   ('confirmJoin', 'تأكيد الانضمام', 'Confirm joining'),
+  ('wrongAccount', 'أنت مسجّل دخول بحساب {email}، لكن هذه الدعوة مرسلة إلى {invited}. سجّل الخروج لتكمل بالبريد المدعوّ.', 'You are signed in as {email}, but this invitation was sent to {invited}. Sign out to continue with the invited email.'),
+  ('signOutContinue', 'تسجيل الخروج والمتابعة', 'Sign out and continue'),
   ('inviteEmail', 'البريد الإلكتروني (من الدعوة)', 'Email (from the invitation)'),
   ('yourPassword', 'كلمة سر حسابك', 'Your account password'),
   ('createPassword', 'أنشئ كلمة سر (8 أحرف على الأقل)', 'Create a password (at least 8 characters)'),
