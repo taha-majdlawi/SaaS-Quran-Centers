@@ -29,4 +29,8 @@ SPEC = {'pts': ('The points system: add / deduct, the breakdown, the page estima
   ('pointsPerPage', 'نقاط الصفحة', 'Points per page'),
   ('moreOnWeb', 'نقاط الحضور وأسباب الإضافة والخصم والرصيد الافتتاحي تُضبط من لوحة الويب.', 'Attendance points, reasons to add / deduct and opening balances are set on the web dashboard.'),
   ('kinds', {'opening': 'الرصيد الافتتاحي', 'recitation': 'تسميع', 'serd': 'السرد القرآني المعتمد', 'attendance': 'الحضور والغياب', 'bonus': 'إضافة', 'penalty': 'خصم'}, {'opening': 'Opening balance', 'recitation': 'Recitation', 'serd': 'Approved Quran serd', 'attendance': 'Attendance', 'bonus': 'Added', 'penalty': 'Deducted'}),
+  ('suggestTitle', 'قيم التقديرات للطريقة الجديدة', 'Grade values for the new method'),
+  ('suggestBody', 'نعدّل نقاط التقديرات الأربعة للقيم المناسبة؟ حسب الصفحات: 10، 7، 5، 0 للصفحة · ثابتة: 20، 15، 10، 5 للتسميع.', 'Set the four usual grades to suitable values? By pages: 10, 7, 5, 0 per page · fixed: 20, 15, 10, 5 per recitation.'),
+  ('suggestYes', 'نعم، عدّلها', 'Yes, set them'),
+  ('suggestNo', 'لا، اتركها', 'No, keep them'),
 ))}

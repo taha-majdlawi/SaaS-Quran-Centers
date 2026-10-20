@@ -73,4 +73,6 @@ T = {'intro': 'Les noms des mentions et le nombre de points de chacune. Chaque r
  'openingSave': 'Enregistrer le solde',
  'openingSaved': "Solde d'ouverture enregistré",
  'myPoints': 'Mes points',
- 'kinds': {'opening': "Solde d'ouverture", 'recitation': 'Récitation', 'serd': 'Serd du Coran approuvé', 'attendance': 'Présence', 'bonus': 'Ajout', 'penalty': 'Retrait'}}
+ 'kinds': {'opening': "Solde d'ouverture", 'recitation': 'Récitation', 'serd': 'Serd du Coran approuvé', 'attendance': 'Présence', 'bonus': 'Ajout', 'penalty': 'Retrait'},
+ 'modeSuggest': 'Régler les quatre notes habituelles sur des valeurs adaptées au nouveau mode',
+ 'modeSuggestHint': 'Par pages : excellent 10, très bien 7, bien 5, passable 0 par page · fixe : 20, 15, 10, 5 par récitation. Appliqué seulement si le mode change.'}

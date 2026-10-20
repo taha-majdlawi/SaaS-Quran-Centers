@@ -399,6 +399,34 @@ begin
     if sqlerrm <> 'invite-check-undo' then v_fail := v_fail || ('invitation check could not run: ' || sqlerrm); end if;
   end;
 
+  -- ===== 0098: a center never loses its last admin (the members page let an admin demote or delete
+  --       themselves); this month's points include attendance / bonus / penalty. Tried, then undone.
+  declare v_mp integer; v_mp2 integer; v_reason2 uuid;
+  begin
+    if (select count(*) from public.organization_members where organization_id = v_org and role = 'admin' and status = 'active') = 1 then
+      perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      begin update public.organization_members set role = 'teacher' where organization_id = v_org and user_id = v_adm;
+            v_fail := v_fail || text 'the last admin could demote themselves'; exception when others then null; end;
+      begin delete from public.organization_members where organization_id = v_org and user_id = v_adm;
+            v_fail := v_fail || text 'the last admin could remove themselves'; exception when others then null; end;
+      reset role;
+    end if;
+    perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    v_mp := (public.student_record_detail(v_org, v_sp) ->> 'monthly_points')::integer;
+    select id into v_reason2 from public.point_reasons where organization_id = v_org and kind = 'bonus' and is_active limit 1;
+    if v_reason2 is not null then
+      perform public.teacher_award_points(v_org, v_sp, v_reason2, null, null, null);
+      v_mp2 := (public.student_record_detail(v_org, v_sp) ->> 'monthly_points')::integer;
+      if v_mp2 <= v_mp then v_fail := v_fail || ('monthly points ignore a bonus: ' || v_mp || ' -> ' || v_mp2); end if;
+    end if;
+    reset role;
+    raise exception 'admin-check-undo';
+  exception when others then
+    if sqlerrm <> 'admin-check-undo' then v_fail := v_fail || ('admin / monthly check could not run: ' || sqlerrm); end if;
+  end;
+
   -- ===== 0066 billing: a locked center is read-only for everyone, yet its admin can still report a payment
   insert into public.platform_settings (key, value) values ('billing_enforce', 'true') on conflict (key) do update set value = 'true';
   update public.organizations set status = 'suspended' where id = v_org;

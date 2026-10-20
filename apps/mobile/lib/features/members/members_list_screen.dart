@@ -61,10 +61,10 @@ class _MembersListScreenState extends State<MembersListScreen> {
       _message = null;
     });
     try {
-      await _repository.createInvitation(organizationId: _loadedForOrgId!, email: email, role: _inviteRole);
+      final sent = await _repository.createInvitation(organizationId: _loadedForOrgId!, email: email, role: _inviteRole);
       _emailController.clear();
       if (mounted) {
-        setState(() { _message = tr(context).mem.inviteCreated; _isError = false; });
+        setState(() { _message = sent ? fmt(tr(context).mem.inviteSent, {'email': email}) : tr(context).mem.inviteCreated; _isError = false; });
         _reload(_loadedForOrgId!);
       }
     } catch (e) {

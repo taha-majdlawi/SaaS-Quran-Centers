@@ -3,17 +3,19 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit } from '@/lib/audit/log';
+import { inviteMember } from '@/lib/accounts/invite';
 
 export async function createInvitation(formData: FormData) {
-  const orgId = formData.get('orgId') as string;
-  const email = (formData.get('email') as string)?.trim().toLowerCase();
-  const role = formData.get('role') as string;
-
   const supabase = await createClient();
-  const { error } = await supabase.rpc('create_invitation', { org_id: orgId, invite_email: email, invite_role: role });
-  if (error) redirect(`/members?error=${encodeURIComponent(error.message)}` as never);
-
-  redirect('/members');
+  const email = ((formData.get('email') as string) ?? '').trim().toLowerCase();
+  // the link is emailed when the platform can send email; else the admin copies it from the list
+  const { sent, error } = await inviteMember(supabase, {
+    orgId: formData.get('orgId') as string,
+    email,
+    role: formData.get('role') as string,
+  });
+  if (error) redirect(`/members?error=${encodeURIComponent(error)}` as never);
+  redirect(`/members?invited=${encodeURIComponent(email)}&sent=${sent ? 1 : 0}` as never);
 }
 
 export async function updateMember(formData: FormData) {

@@ -63,6 +63,17 @@ It is shown on:
 - **web:** the staff student profile (with the add / deduct form and the opening balance), and `/my/points` in the portal;
 - **app:** the student file (staff), the portal home, and a star button on every student of the roster and in lesson mode.
 
+## Points of a period
+
+"This month", the weekly report and digest, and circle challenges count recitations, approved serd and the ledger's attendance / bonus / penalty in the period (`_adjustment_points`, 0098). The opening balance is never part of a period.
+
+Switching the mode (`set_points_mode(org, mode, p_suggest)`) can set the four usual grades to values that suit the new mode:
+
+| Mode | excellent | very_good | good | acceptable |
+|---|---|---|---|---|
+| per page | 10 | 7 | 5 | 0 |
+| per recitation | 20 | 15 | 10 | 5 |
+
 ## Tests
 
 - `supabase/tests/invariants.sql` (block 0096) covers:

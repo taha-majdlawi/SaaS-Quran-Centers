@@ -24,6 +24,7 @@ SPEC = {'mem': ('Members, teachers and permissions (admin).', (
   ('min8', '8 أحرف على الأقل', 'At least 8 characters'),
   ('createAccount', 'إنشاء الحساب', 'Create the account'),
   ('inviteCreated', 'تم إنشاء الدعوة', 'Invitation created'),
+  ('inviteSent', 'أرسلنا الدعوة إلى {email}. المدعوّ يفتح الرابط ويختار كلمة سر لحسابه.', 'The invitation was emailed to {email}. They open the link and choose a password.'),
   ('inviteError', 'حدث خطأ أثناء الدعوة', 'Something went wrong with the invitation'),
   ('inviteTitle', 'دعوة عضو جديد', 'Invite a new member'),
   ('email', 'البريد الإلكتروني', 'Email'),

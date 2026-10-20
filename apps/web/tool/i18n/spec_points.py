@@ -74,4 +74,6 @@ SPEC = {'points': ('Recitation grades and points.', (
   ('openingSaved', 'تم حفظ الرصيد الافتتاحي', 'Opening balance saved'),
   ('myPoints', 'نقاطي', 'My points'),
   ('kinds', {'opening': 'الرصيد الافتتاحي', 'recitation': 'تسميع', 'serd': 'السرد القرآني المعتمد', 'attendance': 'الحضور والغياب', 'bonus': 'إضافة', 'penalty': 'خصم'}, {'opening': 'Opening balance', 'recitation': 'Recitation', 'serd': 'Approved Quran serd', 'attendance': 'Attendance', 'bonus': 'Added', 'penalty': 'Deducted'}),
+  ('modeSuggest', 'عدّل نقاط التقديرات الأربعة للقيم المناسبة للطريقة الجديدة', 'Set the four usual grades to values that suit the new method'),
+  ('modeSuggestHint', 'حسب الصفحات: ممتاز 10، جيد جداً 7، جيد 5، مقبول 0 للصفحة · ثابتة: 20، 15، 10، 5 للتسميع. تنطبق فقط إذا تغيّرت الطريقة.', 'By pages: excellent 10, very good 7, good 5, acceptable 0 per page · fixed: 20, 15, 10, 5 per recitation. Applied only if the method changes.'),
 ))}

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
 import { createInvitation } from './actions';
 import { getI18n } from '@/lib/i18n/server';
+import { fmt } from '@/lib/i18n/config';
 
 
 interface MemberRow {
@@ -29,10 +30,10 @@ export default async function MembersPage({
   searchParams,
 }: {
   params: Promise<{ org: string }>;
-  searchParams: Promise<{ createdEmail?: string; createdPassword?: string; error?: string }>;
+  searchParams: Promise<{ createdEmail?: string; createdPassword?: string; error?: string; invited?: string; sent?: string }>;
 }) {
   const { org: slug } = await params;
-  const { createdEmail, createdPassword, error: actionError } = await searchParams;
+  const { createdEmail, createdPassword, error: actionError, invited, sent } = await searchParams;
   const org = await getOrgContext(slug);
   const { t: T } = await getI18n();
   const S = T.staff;
@@ -51,6 +52,11 @@ export default async function MembersPage({
 
   return (
     <div className="flex flex-col gap-8">
+      {invited && (
+        <p className={`rounded-lg px-4 py-3 text-sm ${sent === '1' ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-800'}`}>
+          {fmt(sent === '1' ? S.members.inviteSent : S.members.inviteNotSent, { email: `\u2068${invited}\u2069` })}
+        </p>
+      )}
       {createdEmail && createdPassword && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
           <p className="mb-2 font-semibold text-green-800">{S.members.teacherCreated}</p>
@@ -159,6 +165,15 @@ export default async function MembersPage({
                       <span>
                         {inv.email} — {T.shell.roles[inv.role] ?? inv.role}
                       </span>
+                      {/* a new link (the old one stops working), emailed again when possible */}
+                      <form action={createInvitation}>
+                        <input type="hidden" name="orgId" value={org.id} />
+                        <input type="hidden" name="email" value={inv.email} />
+                        <input type="hidden" name="role" value={inv.role} />
+                        <SubmitButton className="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" pendingText={S.common.saving}>
+                          {S.members.resend}
+                        </SubmitButton>
+                      </form>
                     </div>
                     <p className="break-all text-xs text-gray-400" dir="ltr">
                       {`https://${org.slug}.bustan-alquran.com/join?token=${inv.token}`}

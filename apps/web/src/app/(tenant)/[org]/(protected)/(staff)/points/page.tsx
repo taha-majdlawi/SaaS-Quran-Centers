@@ -85,6 +85,13 @@ export default async function PointsPage({
               </span>
             </label>
           ))}
+          <label className="mt-1 flex items-start gap-2 text-sm">
+            <input type="checkbox" name="suggest" defaultChecked className="mt-1 h-4 w-4" />
+            <span>
+              {P.modeSuggest}
+              <span className="block text-xs text-gray-500">{P.modeSuggestHint}</span>
+            </span>
+          </label>
           {isAdmin && (
             <SubmitButton className="mt-1 self-start rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" pendingText={S.common.saving}>
               {P.modeSave}

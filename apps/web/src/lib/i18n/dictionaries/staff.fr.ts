@@ -836,6 +836,9 @@ export const staffFr: typeof staffAr = {
     createTeacher: 'Créer le compte enseignant',
     teacherName: 'Nom de l’enseignant',
     whatsappOptional: 'Numéro WhatsApp (facultatif)',
+    inviteSent: 'L’invitation a été envoyée à {email}. Le lien est aussi ci-dessous si vous devez le copier.',
+    inviteNotSent: 'L’invitation pour {email} a été créée. Copiez le lien ci-dessous et envoyez-le (l’envoi par e-mail n’est pas encore activé).',
+    resend: 'Nouveau lien et renvoi',
   },
   /** The staff member's own account page (/account): email and password. */
   myAccount: {
@@ -1090,6 +1093,8 @@ export const staffFr: typeof staffAr = {
     openingSaved: 'Solde d\'ouverture enregistré',
     myPoints: 'Mes points',
     kinds: { "opening": 'Solde d\'ouverture', "recitation": 'Récitation', "serd": 'Serd du Coran approuvé', "attendance": 'Présence', "bonus": 'Ajout', "penalty": 'Retrait' } as Record<string, string>,
+    modeSuggest: 'Régler les quatre notes habituelles sur des valeurs adaptées au nouveau mode',
+    modeSuggestHint: 'Par pages : excellent 10, très bien 7, bien 5, passable 0 par page · fixe : 20, 15, 10, 5 par récitation. Appliqué seulement si le mode change.',
   },
   /** Student / teacher / circle profile pages. */
   profile: {

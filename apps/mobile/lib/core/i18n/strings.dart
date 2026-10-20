@@ -844,7 +844,7 @@ class SLive {
 
 /// Members, teachers and permissions (admin).
 class SMem {
-  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
+  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteSent, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
   final Map<String, String> modules;
   final Map<String, String> status;
   final String password8;
@@ -869,6 +869,7 @@ class SMem {
   final String min8;
   final String createAccount;
   final String inviteCreated;
+  final String inviteSent;
   final String inviteError;
   final String inviteTitle;
   final String email;
@@ -1191,7 +1192,7 @@ class SProf {
 
 /// The points system: add / deduct, the breakdown, the page estimate (0096).
 class SPts {
-  const SPts({required this.award, required this.bonus, required this.penalty, required this.note, required this.save, required this.pickReason, required this.noReasons, required this.saved, required this.outbox, required this.staffTitle, required this.mineTitle, required this.total, required this.noPoints, required this.mismatch, required this.countPages, required this.count, required this.recent, required this.undo, required this.undone, required this.sumLine, required this.estimate, required this.estimateNote, required this.modeTitle, required this.perRec, required this.perPage, required this.modeSaved, required this.pointsPerPage, required this.moreOnWeb, required this.kinds});
+  const SPts({required this.award, required this.bonus, required this.penalty, required this.note, required this.save, required this.pickReason, required this.noReasons, required this.saved, required this.outbox, required this.staffTitle, required this.mineTitle, required this.total, required this.noPoints, required this.mismatch, required this.countPages, required this.count, required this.recent, required this.undo, required this.undone, required this.sumLine, required this.estimate, required this.estimateNote, required this.modeTitle, required this.perRec, required this.perPage, required this.modeSaved, required this.pointsPerPage, required this.moreOnWeb, required this.kinds, required this.suggestTitle, required this.suggestBody, required this.suggestYes, required this.suggestNo});
   final String award;
   final String bonus;
   final String penalty;
@@ -1221,6 +1222,10 @@ class SPts {
   final String pointsPerPage;
   final String moreOnWeb;
   final Map<String, String> kinds;
+  final String suggestTitle;
+  final String suggestBody;
+  final String suggestYes;
+  final String suggestNo;
 }
 
 /// The Quran screens (the text itself stays Arabic).
@@ -2743,6 +2748,7 @@ class S {
       min8: '8 أحرف على الأقل',
       createAccount: 'إنشاء الحساب',
       inviteCreated: 'تم إنشاء الدعوة',
+      inviteSent: 'أرسلنا الدعوة إلى {email}. المدعوّ يفتح الرابط ويختار كلمة سر لحسابه.',
       inviteError: 'حدث خطأ أثناء الدعوة',
       inviteTitle: 'دعوة عضو جديد',
       email: 'البريد الإلكتروني',
@@ -3065,6 +3071,10 @@ class S {
       pointsPerPage: 'نقاط الصفحة',
       moreOnWeb: 'نقاط الحضور وأسباب الإضافة والخصم والرصيد الافتتاحي تُضبط من لوحة الويب.',
       kinds: {'opening': 'الرصيد الافتتاحي', 'recitation': 'تسميع', 'serd': 'السرد القرآني المعتمد', 'attendance': 'الحضور والغياب', 'bonus': 'إضافة', 'penalty': 'خصم'},
+      suggestTitle: 'قيم التقديرات للطريقة الجديدة',
+      suggestBody: 'نعدّل نقاط التقديرات الأربعة للقيم المناسبة؟ حسب الصفحات: 10، 7، 5، 0 للصفحة · ثابتة: 20، 15، 10، 5 للتسميع.',
+      suggestYes: 'نعم، عدّلها',
+      suggestNo: 'لا، اتركها',
     ),
     quran: SQuran(
       title: 'المصحف',
@@ -4497,6 +4507,7 @@ class S {
       min8: 'At least 8 characters',
       createAccount: 'Create the account',
       inviteCreated: 'Invitation created',
+      inviteSent: 'The invitation was emailed to {email}. They open the link and choose a password.',
       inviteError: 'Something went wrong with the invitation',
       inviteTitle: 'Invite a new member',
       email: 'Email',
@@ -4819,6 +4830,10 @@ class S {
       pointsPerPage: 'Points per page',
       moreOnWeb: 'Attendance points, reasons to add / deduct and opening balances are set on the web dashboard.',
       kinds: {'opening': 'Opening balance', 'recitation': 'Recitation', 'serd': 'Approved Quran serd', 'attendance': 'Attendance', 'bonus': 'Added', 'penalty': 'Deducted'},
+      suggestTitle: 'Grade values for the new method',
+      suggestBody: 'Set the four usual grades to suitable values? By pages: 10, 7, 5, 0 per page · fixed: 20, 15, 10, 5 per recitation.',
+      suggestYes: 'Yes, set them',
+      suggestNo: 'No, keep them',
     ),
     quran: SQuran(
       title: 'Quran',
@@ -6251,6 +6266,7 @@ class S {
       min8: 'En az 8 karakter',
       createAccount: 'Hesabı oluştur',
       inviteCreated: 'Davet oluşturuldu',
+      inviteSent: 'Davet {email} adresine gönderildi. Bağlantıyı açıp bir şifre seçecekler.',
       inviteError: 'Davette bir sorun oluştu',
       inviteTitle: 'Yeni üye davet et',
       email: 'E-posta',
@@ -6573,6 +6589,10 @@ class S {
       pointsPerPage: 'Sayfa puanı',
       moreOnWeb: 'Devam puanları, ekleme / düşme nedenleri ve açılış bakiyeleri web panelinden ayarlanır.',
       kinds: {'opening': 'Açılış bakiyesi', 'recitation': 'Dinletme', 'serd': 'Onaylı Kur\'an serdi', 'attendance': 'Devam', 'bonus': 'Eklendi', 'penalty': 'Düşüldü'},
+      suggestTitle: 'Yeni yöntem için not değerleri',
+      suggestBody: 'Dört temel not uygun değerlere ayarlansın mı? Sayfaya göre: sayfa başına 10, 7, 5, 0 · sabit: dinletme başına 20, 15, 10, 5.',
+      suggestYes: 'Evet, ayarla',
+      suggestNo: 'Hayır, kalsın',
     ),
     quran: SQuran(
       title: 'Kur’an',
@@ -8005,6 +8025,7 @@ class S {
       min8: 'Au moins 8 caractères',
       createAccount: 'Créer le compte',
       inviteCreated: 'Invitation créée',
+      inviteSent: 'L’invitation a été envoyée à {email}. La personne ouvre le lien et choisit un mot de passe.',
       inviteError: 'Un problème est survenu avec l’invitation',
       inviteTitle: 'Inviter un nouveau membre',
       email: 'E-mail',
@@ -8327,6 +8348,10 @@ class S {
       pointsPerPage: 'Points par page',
       moreOnWeb: 'Les points de présence, les motifs d\'ajout / retrait et les soldes d\'ouverture se règlent sur le tableau de bord web.',
       kinds: {'opening': 'Solde d\'ouverture', 'recitation': 'Récitation', 'serd': 'Serd du Coran approuvé', 'attendance': 'Présence', 'bonus': 'Ajout', 'penalty': 'Retrait'},
+      suggestTitle: 'Valeurs des notes pour le nouveau mode',
+      suggestBody: 'Régler les quatre notes habituelles sur des valeurs adaptées ? Par pages : 10, 7, 5, 0 par page · fixe : 20, 15, 10, 5 par récitation.',
+      suggestYes: 'Oui, les régler',
+      suggestNo: 'Non, les garder',
     ),
     quran: SQuran(
       title: 'Coran',

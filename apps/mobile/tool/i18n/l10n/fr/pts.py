@@ -32,4 +32,8 @@ T = {'award': 'Ajouter ou retirer des points',
            'serd': 'Serd du Coran approuvé',
            'attendance': 'Présence',
            'bonus': 'Ajout',
-           'penalty': 'Retrait'}}
+           'penalty': 'Retrait'},
+ 'suggestTitle': 'Valeurs des notes pour le nouveau mode',
+ 'suggestBody': 'Régler les quatre notes habituelles sur des valeurs adaptées ? Par pages : 10, 7, 5, 0 par page · fixe : 20, 15, 10, 5 par récitation.',
+ 'suggestYes': 'Oui, les régler',
+ 'suggestNo': 'Non, les garder'}

@@ -836,6 +836,9 @@ export const staffTr: typeof staffAr = {
     createTeacher: 'Öğretmen hesabı oluştur',
     teacherName: 'Öğretmenin adı',
     whatsappOptional: 'WhatsApp numarası (isteğe bağlı)',
+    inviteSent: 'Davet {email} adresine gönderildi. Kopyalamanız gerekirse bağlantı aşağıda da var.',
+    inviteNotSent: '{email} için davet oluşturuldu. Aşağıdaki bağlantıyı kopyalayıp gönderin (e-postayla gönderim henüz açık değil).',
+    resend: 'Yeni bağlantı ve yeniden gönder',
   },
   /** The staff member's own account page (/account): email and password. */
   myAccount: {
@@ -1090,6 +1093,8 @@ export const staffTr: typeof staffAr = {
     openingSaved: 'Açılış bakiyesi kaydedildi',
     myPoints: 'Puanlarım',
     kinds: { "opening": 'Açılış bakiyesi', "recitation": 'Dinletme', "serd": 'Onaylı Kur\'an serdi', "attendance": 'Devam', "bonus": 'Eklendi', "penalty": 'Düşüldü' } as Record<string, string>,
+    modeSuggest: 'Dört temel notu yeni yönteme uygun değerlere ayarla',
+    modeSuggestHint: 'Sayfaya göre: mükemmel 10, çok iyi 7, iyi 5, kabul edilebilir 0 sayfa başına · sabit: dinletme başına 20, 15, 10, 5. Yalnızca yöntem değişirse uygulanır.',
   },
   /** Student / teacher / circle profile pages. */
   profile: {

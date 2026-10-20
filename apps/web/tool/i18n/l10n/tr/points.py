@@ -73,4 +73,6 @@ T = {'intro': 'Not adları ve her birinin kaç puan değerinde olduğu. Her dinl
  'openingSave': 'Bakiyeyi kaydet',
  'openingSaved': 'Açılış bakiyesi kaydedildi',
  'myPoints': 'Puanlarım',
- 'kinds': {'opening': 'Açılış bakiyesi', 'recitation': 'Dinletme', 'serd': "Onaylı Kur'an serdi", 'attendance': 'Devam', 'bonus': 'Eklendi', 'penalty': 'Düşüldü'}}
+ 'kinds': {'opening': 'Açılış bakiyesi', 'recitation': 'Dinletme', 'serd': "Onaylı Kur'an serdi", 'attendance': 'Devam', 'bonus': 'Eklendi', 'penalty': 'Düşüldü'},
+ 'modeSuggest': 'Dört temel notu yeni yönteme uygun değerlere ayarla',
+ 'modeSuggestHint': 'Sayfaya göre: mükemmel 10, çok iyi 7, iyi 5, kabul edilebilir 0 sayfa başına · sabit: dinletme başına 20, 15, 10, 5. Yalnızca yöntem değişirse uygulanır.'}

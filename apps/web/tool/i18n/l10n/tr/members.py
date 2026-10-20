@@ -32,4 +32,7 @@ T = {'copyHint': 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-post
  'newTeacherTitle': 'Elle öğretmen ekle',
  'createTeacher': 'Öğretmen hesabı oluştur',
  'teacherName': 'Öğretmenin adı',
- 'whatsappOptional': 'WhatsApp numarası (isteğe bağlı)'}
+ 'whatsappOptional': 'WhatsApp numarası (isteğe bağlı)',
+ 'inviteSent': 'Davet {email} adresine gönderildi. Kopyalamanız gerekirse bağlantı aşağıda da var.',
+ 'inviteNotSent': '{email} için davet oluşturuldu. Aşağıdaki bağlantıyı kopyalayıp gönderin (e-postayla gönderim henüz açık değil).',
+ 'resend': 'Yeni bağlantı ve yeniden gönder'}
