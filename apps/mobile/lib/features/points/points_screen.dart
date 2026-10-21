@@ -124,11 +124,25 @@ class _PointsScreenState extends State<PointsScreen> {
 
   Future<void> _setMode(String mode) async {
     final previous = _mode;
+    // a grade's points mean "per page" in one mode and "per recitation" in the other: offer values that suit
+    final suggest = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(ctx).pts.suggestTitle),
+        content: Text(tr(ctx).pts.suggestBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr(ctx).pts.suggestNo)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr(ctx).pts.suggestYes)),
+        ],
+      ),
+    );
+    if (suggest == null || !mounted) return;
     setState(() => _mode = mode);
     try {
       final orgId = context.read<TenantController>().active!.organization.id;
-      await AppSupabase.client.rpc('set_points_mode', params: {'p_org': orgId, 'p_mode': mode});
+      await AppSupabase.client.rpc('set_points_mode', params: {'p_org': orgId, 'p_mode': mode, 'p_suggest': suggest});
       await SyncService.instance.remember('pt-mode:$orgId', mode);
+      if (suggest) await _load();
       if (mounted) setState(() { _message = tr(context).pts.modeSaved; _isError = false; });
     } catch (e) {
       if (mounted) setState(() { _mode = previous; _message = friendlyError(e, tr(context).stu.saveError); _isError = true; });

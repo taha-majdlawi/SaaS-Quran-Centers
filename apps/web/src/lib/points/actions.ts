@@ -23,7 +23,11 @@ async function finish(back: string, error: { message: string } | null, okMessage
 export async function savePointsMode(formData: FormData) {
   const back = safeBack(formData.get('back'), '/points');
   const supabase = await createClient();
-  const { error } = await supabase.rpc('set_points_mode', { p_org: s(formData, 'orgId'), p_mode: s(formData, 'mode') });
+  const { error } = await supabase.rpc('set_points_mode', {
+    p_org: s(formData, 'orgId'),
+    p_mode: s(formData, 'mode'),
+    p_suggest: formData.get('suggest') === 'on',
+  });
   await finish(back, error, (await staffStrings()).points.modeSaved);
 }
 

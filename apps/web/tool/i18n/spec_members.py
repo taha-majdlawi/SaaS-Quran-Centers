@@ -32,4 +32,7 @@ SPEC = {'members': ('Members, roles and invitations.', (
   ('createTeacher', 'إنشاء حساب المعلم', 'Create teacher account'),
   ('teacherName', 'اسم المعلم', 'Teacher’s name'),
   ('whatsappOptional', 'رقم الواتساب (اختياري)', 'WhatsApp number (optional)'),
+  ('inviteSent', 'أرسلنا الدعوة إلى {email}. الرابط ظاهر بالأسفل أيضًا إن احتجت نسخه.', 'The invitation was emailed to {email}. The link is also below if you need to copy it.'),
+  ('inviteNotSent', 'أنشأنا الدعوة لـ{email}. انسخ الرابط بالأسفل وابعثه له (الإرسال بالبريد غير مفعّل بعد).', 'The invitation for {email} was created. Copy the link below and send it (sending by email isn’t on yet).'),
+  ('resend', 'رابط جديد وإعادة إرسال', 'New link & resend'),
 ))}

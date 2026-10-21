@@ -836,6 +836,9 @@ export const staffEn: typeof staffAr = {
     createTeacher: 'Create teacher account',
     teacherName: 'Teacher’s name',
     whatsappOptional: 'WhatsApp number (optional)',
+    inviteSent: 'The invitation was emailed to {email}. The link is also below if you need to copy it.',
+    inviteNotSent: 'The invitation for {email} was created. Copy the link below and send it (sending by email isn’t on yet).',
+    resend: 'New link & resend',
   },
   /** The staff member's own account page (/account): email and password. */
   myAccount: {
@@ -1090,6 +1093,8 @@ export const staffEn: typeof staffAr = {
     openingSaved: 'Opening balance saved',
     myPoints: 'My points',
     kinds: { "opening": 'Opening balance', "recitation": 'Recitation', "serd": 'Approved Quran serd', "attendance": 'Attendance', "bonus": 'Added', "penalty": 'Deducted' } as Record<string, string>,
+    modeSuggest: 'Set the four usual grades to values that suit the new method',
+    modeSuggestHint: 'By pages: excellent 10, very good 7, good 5, acceptable 0 per page · fixed: 20, 15, 10, 5 per recitation. Applied only if the method changes.',
   },
   /** Student / teacher / circle profile pages. */
   profile: {

@@ -834,6 +834,9 @@ export const staffAr = {
     createTeacher: 'إنشاء حساب المعلم',
     teacherName: 'اسم المعلم',
     whatsappOptional: 'رقم الواتساب (اختياري)',
+    inviteSent: 'أرسلنا الدعوة إلى {email}. الرابط ظاهر بالأسفل أيضًا إن احتجت نسخه.',
+    inviteNotSent: 'أنشأنا الدعوة لـ{email}. انسخ الرابط بالأسفل وابعثه له (الإرسال بالبريد غير مفعّل بعد).',
+    resend: 'رابط جديد وإعادة إرسال',
   },
   /** The staff member's own account page (/account): email and password. */
   myAccount: {
@@ -1088,6 +1091,8 @@ export const staffAr = {
     openingSaved: 'تم حفظ الرصيد الافتتاحي',
     myPoints: 'نقاطي',
     kinds: { "opening": 'الرصيد الافتتاحي', "recitation": 'تسميع', "serd": 'السرد القرآني المعتمد', "attendance": 'الحضور والغياب', "bonus": 'إضافة', "penalty": 'خصم' } as Record<string, string>,
+    modeSuggest: 'عدّل نقاط التقديرات الأربعة للقيم المناسبة للطريقة الجديدة',
+    modeSuggestHint: 'حسب الصفحات: ممتاز 10، جيد جداً 7، جيد 5، مقبول 0 للصفحة · ثابتة: 20، 15، 10، 5 للتسميع. تنطبق فقط إذا تغيّرت الطريقة.',
   },
   /** Student / teacher / circle profile pages. */
   profile: {

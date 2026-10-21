@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { inviteMember } from '@/lib/accounts/invite';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
   AccountError,
@@ -41,6 +43,16 @@ export async function POST(request: Request) {
       case 'link_guardian':
         await linkGuardian(admin, user.id, body as never);
         return NextResponse.json({ ok: true });
+      case 'invite': {
+        // as the caller themself (their token): create_invitation checks they are the center's admin
+        const asUser = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+          auth: { persistSession: false, autoRefreshToken: false },
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+        const r = await inviteMember(asUser, { orgId: String(body.orgId ?? ''), email: String(body.email ?? ''), role: String(body.role ?? '') });
+        if (r.error) return NextResponse.json({ error: r.error }, { status: 400 });
+        return NextResponse.json({ token: r.token, sent: r.sent });
+      }
       case 'reset_password':
         await resetMemberPassword(admin, user.id, body as never);
         return NextResponse.json({ ok: true });

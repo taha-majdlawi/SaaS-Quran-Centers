@@ -32,4 +32,7 @@ T = {'copyHint': 'Copiez le lien et envoyez-le à la personne (WhatsApp / e-mail
  'newTeacherTitle': 'Ajouter un enseignant manuellement',
  'createTeacher': 'Créer le compte enseignant',
  'teacherName': 'Nom de l’enseignant',
- 'whatsappOptional': 'Numéro WhatsApp (facultatif)'}
+ 'whatsappOptional': 'Numéro WhatsApp (facultatif)',
+ 'inviteSent': 'L’invitation a été envoyée à {email}. Le lien est aussi ci-dessous si vous devez le copier.',
+ 'inviteNotSent': 'L’invitation pour {email} a été créée. Copiez le lien ci-dessous et envoyez-le (l’envoi par e-mail n’est pas encore activé).',
+ 'resend': 'Nouveau lien et renvoi'}

@@ -32,4 +32,8 @@ T = {'award': 'Puan ekle veya düş',
            'serd': "Onaylı Kur'an serdi",
            'attendance': 'Devam',
            'bonus': 'Eklendi',
-           'penalty': 'Düşüldü'}}
+           'penalty': 'Düşüldü'},
+ 'suggestTitle': 'Yeni yöntem için not değerleri',
+ 'suggestBody': 'Dört temel not uygun değerlere ayarlansın mı? Sayfaya göre: sayfa başına 10, 7, 5, 0 · sabit: dinletme başına 20, 15, 10, 5.',
+ 'suggestYes': 'Evet, ayarla',
+ 'suggestNo': 'Hayır, kalsın'}
