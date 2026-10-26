@@ -60,4 +60,14 @@ T = {'status': {'active': 'Actif', 'paused': 'En pause', 'graduated': 'Diplômé
  'createFailed': 'Impossible de créer le compte',
  'linkFailed': 'Impossible de mettre à jour le lien',
  'reportTitle': 'Rapport de l’élève',
- 'backStudents': '← Élèves'}
+ 'backStudents': '← Élèves',
+ 'searchPh': 'Rechercher par nom ou numéro',
+ 'allCircles': 'Tous les cercles',
+ 'filter': 'Filtrer',
+ 'clear': 'Effacer',
+ 'countN': '{n} élèves',
+ 'noMatch': 'Aucun élève ne correspond à la recherche',
+ 'nationalId': 'Numéro d’identité',
+ 'nationalIdHint': 'Facultatif. Il peut aussi se connecter avec, avec le même mot de passe.',
+ 'nationalIdInvalid': 'Numéro d’identité invalide : lettres latines ou chiffres uniquement, de 4 à 20 caractères.',
+ 'nationalIdTaken': 'Ce numéro d’identité est déjà utilisé par une autre personne dans ce centre.'}

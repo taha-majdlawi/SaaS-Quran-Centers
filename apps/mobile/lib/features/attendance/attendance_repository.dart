@@ -6,9 +6,12 @@ import '../../core/i18n/i18n.dart';
 Map<String, String> get kAttendanceStatusOptions => currentStrings.org.attStatus;
 
 class CirclePickerOption {
-  const CirclePickerOption({required this.id, required this.name});
+  const CirclePickerOption({required this.id, required this.name, this.teacherId});
   final String id;
   final String name;
+
+  /// The circle's teacher (auth user id), so a teacher's own circle opens by default.
+  final String? teacherId;
 }
 
 class AttendanceStudentRow {
@@ -29,8 +32,11 @@ class AttendanceRepository {
   Future<List<CirclePickerOption>> fetchCircles(String organizationId) {
     return SyncService.instance.cached<List<CirclePickerOption>>(
       'att-circles:$organizationId',
-      () => _client.from('circles').select('id, name').eq('organization_id', organizationId).order('name'),
-      (rows) => [for (final r in rows as List) CirclePickerOption(id: r['id'] as String, name: r['name'] as String)],
+      () => _client.from('circles').select('id, name, teacher_id').eq('organization_id', organizationId).order('name'),
+      (rows) => [
+        for (final r in rows as List)
+          CirclePickerOption(id: r['id'] as String, name: r['name'] as String, teacherId: r['teacher_id'] as String?),
+      ],
     );
   }
 

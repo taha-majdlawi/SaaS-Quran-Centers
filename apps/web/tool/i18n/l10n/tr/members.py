@@ -1,5 +1,5 @@
 # members - Türkçe. Same keys as the spec's English column.
-T = {'copyHint': 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-posta) — henüz otomatik bir şey gönderilmez.',
+T = {'copyHint': 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-posta) — henüz otomatik bir şey gönderilmez. Davet edilen kişi bağlantıyı açıp e-postası için bir şifre belirler; bağlantı yalnızca o e-posta için çalışır.',
  'passwordOnce': 'Şifre yalnızca bu kez gösterilir — şimdi kopyalayın, tekrar görünmeyecek.',
  'teacherCreated': 'Öğretmen hesabı oluşturuldu — bu bilgileri şimdi kendisine verin:',
  'addTeacher': '+ Elle öğretmen ekle',
@@ -32,4 +32,7 @@ T = {'copyHint': 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-post
  'newTeacherTitle': 'Elle öğretmen ekle',
  'createTeacher': 'Öğretmen hesabı oluştur',
  'teacherName': 'Öğretmenin adı',
- 'whatsappOptional': 'WhatsApp numarası (isteğe bağlı)'}
+ 'whatsappOptional': 'WhatsApp numarası (isteğe bağlı)',
+ 'inviteSent': 'Davet {email} adresine gönderildi. Kopyalamanız gerekirse bağlantı aşağıda da var.',
+ 'inviteNotSent': '{email} için davet oluşturuldu. Aşağıdaki bağlantıyı kopyalayıp gönderin (e-postayla gönderim henüz açık değil).',
+ 'resend': 'Yeni bağlantı ve yeniden gönder'}

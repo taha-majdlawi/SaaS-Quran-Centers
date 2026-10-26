@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 // (sessionStorage), so moving around never sends it back to a seed.
 //
 // Pure CSS animations with negative delays: no JavaScript runs while it grows.
-// Small at the side on a phone, in the middle at the bottom on a large screen;
+// Always at the side of the screen (never under the content), a little larger on a big screen;
 // it never takes a click (pointer-events: none).
 
 const KEY = 'bustan_tree_t0';
@@ -80,8 +80,9 @@ function Limb({ d, width, delay, duration }: { d: string; width: number; delay: 
   );
 }
 
-/** `corner`: the small one for the dashboards - bottom left, out of the way, under every menu. */
-export function GrowingTree({ corner = false }: { corner?: boolean }) {
+/** `corner`: the small one for the dashboards, bottom left, from a laptop up only - on a phone that corner holds the menu / recite buttons.
+ * `over`: above the page's own sections (the marketing page); otherwise behind cards like the sign-in form. */
+export function GrowingTree({ corner = false, over = false }: { corner?: boolean; over?: boolean }) {
   const [elapsed, setElapsed] = useState<number | null>(null);
 
   useEffect(() => {
@@ -113,8 +114,8 @@ export function GrowingTree({ corner = false }: { corner?: boolean }) {
       aria-hidden
       className={
         corner
-          ? 'growing-tree pointer-events-none fixed bottom-0 left-1 z-10 w-[62px] opacity-95 print:hidden sm:w-[76px]'
-          : 'growing-tree pointer-events-none fixed bottom-0 left-1 z-30 w-[92px] print:hidden sm:w-[118px] lg:left-1/2 lg:w-[210px] lg:-translate-x-1/2'
+          ? 'growing-tree pointer-events-none fixed bottom-0 left-1 z-10 hidden w-[76px] opacity-95 print:hidden lg:block'
+          : `growing-tree pointer-events-none fixed bottom-0 left-1 ${over ? 'z-30' : 'z-0'} w-[92px] print:hidden sm:w-[118px] lg:left-4 lg:w-[160px]`
       }
     >
       <svg viewBox="0 0 200 222" className="block h-auto w-full overflow-visible">

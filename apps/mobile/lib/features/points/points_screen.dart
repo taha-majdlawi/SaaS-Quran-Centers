@@ -6,6 +6,8 @@ import '../../core/tenant/organization.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
 import '../../core/widgets/ui.dart';
+import '../../core/offline/sync_service.dart';
+import 'points_ledger.dart' show PointsLedgerRepository;
 import 'points_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -26,6 +28,7 @@ class _PointsScreenState extends State<PointsScreen> {
   final _newLabel = TextEditingController();
   final _newPoints = TextEditingController();
 
+  String _mode = 'per_recitation';
   bool _loading = true;
   bool _saving = false;
   String? _message;
@@ -50,6 +53,7 @@ class _PointsScreenState extends State<PointsScreen> {
       final orgId = context.read<TenantController>().active!.organization.id;
       _disposeControllers();
       _grades = await _repository.fetchGrades(orgId);
+      _mode = await PointsLedgerRepository(AppSupabase.client).mode(orgId).catchError((_) => _mode);
       for (final g in _grades) {
         _controllers[g.key] = (TextEditingController(text: g.label), TextEditingController(text: '${g.points}'));
       }
@@ -118,6 +122,33 @@ class _PointsScreenState extends State<PointsScreen> {
     }
   }
 
+  Future<void> _setMode(String mode) async {
+    final previous = _mode;
+    // a grade's points mean "per page" in one mode and "per recitation" in the other: offer values that suit
+    final suggest = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(ctx).pts.suggestTitle),
+        content: Text(tr(ctx).pts.suggestBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr(ctx).pts.suggestNo)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr(ctx).pts.suggestYes)),
+        ],
+      ),
+    );
+    if (suggest == null || !mounted) return;
+    setState(() => _mode = mode);
+    try {
+      final orgId = context.read<TenantController>().active!.organization.id;
+      await AppSupabase.client.rpc('set_points_mode', params: {'p_org': orgId, 'p_mode': mode, 'p_suggest': suggest});
+      await SyncService.instance.remember('pt-mode:$orgId', mode);
+      if (suggest) await _load();
+      if (mounted) setState(() { _message = tr(context).pts.modeSaved; _isError = false; });
+    } catch (e) {
+      if (mounted) setState(() { _mode = previous; _message = friendlyError(e, tr(context).stu.saveError); _isError = true; });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAdmin = context.watch<TenantController>().active?.role == OrgRole.admin;
@@ -137,6 +168,18 @@ class _PointsScreenState extends State<PointsScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (_message != null) MessageBanner(message: _message!, isError: _isError),
+                SectionTitle(tr(context).pts.modeTitle),
+                SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(value: 'per_recitation', label: Text(tr(context).pts.perRec)),
+                    ButtonSegment(value: 'per_page', label: Text(tr(context).pts.perPage)),
+                  ],
+                  selected: {_mode},
+                  onSelectionChanged: isAdmin ? (v) => _setMode(v.first) : null,
+                ),
+                const SizedBox(height: 6),
+                Text(tr(context).pts.moreOnWeb, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                const SizedBox(height: 12),
                 for (final g in _grades)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -160,7 +203,7 @@ class _PointsScreenState extends State<PointsScreen> {
                                 controller: _controllers[g.key]!.$2,
                                 enabled: isAdmin,
                                 keyboardType: TextInputType.number,
-                                decoration: InputDecoration(labelText: tr(context).org.points),
+                                decoration: InputDecoration(labelText: _mode == 'per_page' ? tr(context).pts.pointsPerPage : tr(context).org.points),
                               ),
                             ),
                             Switch(

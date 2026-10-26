@@ -42,4 +42,9 @@ T = {'pickGrade': 'Choisissez la mention de la récitation',
  'addNote': 'Ajouter une remarque',
  'saveWithPoints': 'Enregistrer la récitation  •  +{n} pts',
  'change': 'Changer',
- 'wholeSurah': 'Sourate entière'}
+ 'wholeSurah': 'Sourate entière',
+ 'reachedAyah': 'Arrivé à la sourate {surah}, verset {ayah}',
+ 'finishedSurah': 'A terminé la sourate {surah}',
+ 'nextSurahIs': 'Suivante : sourate {surah}',
+ 'wholeQuranDone': 'A mémorisé tout le Coran',
+ 'carryOn': 'Rempli à partir de là où il s’est arrêté - modifiez si besoin'}

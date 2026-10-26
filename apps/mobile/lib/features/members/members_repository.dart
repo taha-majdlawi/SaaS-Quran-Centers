@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/api/accounts_api.dart';
 import '../../core/i18n/i18n.dart';
 import '../../core/offline/sync_service.dart';
 
@@ -67,12 +68,20 @@ class MembersRepository {
         .toList();
   }
 
-  Future<void> createInvitation({required String organizationId, required String email, required String role}) {
-    return _client.rpc('create_invitation', params: {
+  /// Through the web (it also emails the link); straight to the database if the web can't be
+  /// reached - the invitation is made either way, then the admin shares the link. True when emailed.
+  Future<bool> createInvitation({required String organizationId, required String email, required String role}) async {
+    try {
+      return await AccountsApi().invite(orgId: organizationId, email: email, role: role);
+    } on AccountsApiException catch (e) {
+      if (e.message != currentStrings.auth.serverDown) rethrow;
+    }
+    await _client.rpc('create_invitation', params: {
       'org_id': organizationId,
       'invite_email': email,
       'invite_role': role,
     });
+    return false;
   }
 
   Future<void> updateMember({
@@ -95,6 +104,13 @@ class MembersRepository {
   }
 
   /// Saves them (checked by the database; empty clears).
+  /// A staff member's national ID (0095): admins only, the column itself is not readable.
+  Future<String?> nationalId(String orgId, String memberId) async =>
+      await _client.rpc('member_national_id', params: {'p_org': orgId, 'p_member': memberId}) as String?;
+
+  Future<void> setNationalId(String orgId, String memberId, String? nationalId) =>
+      _client.rpc('set_member_national_id', params: {'p_org': orgId, 'p_member': memberId, 'p_national_id': nationalId ?? ''});
+
   Future<void> setContact(String orgId, String memberId, String phone, String whatsapp) =>
       _client.rpc('set_member_contact', params: {'p_org': orgId, 'p_member': memberId, 'p_phone': phone, 'p_whatsapp': whatsapp});
 

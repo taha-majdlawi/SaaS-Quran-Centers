@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -78,7 +81,11 @@ class LoginRepository {
     try {
       await _client.auth.signInWithPassword(email: toLoginEmail(center.slug, identifier), password: password);
     } on AuthException {
-      throw const WrongCredentialsException();
+      // not the number at the center / the email: maybe the national ID (0095) - only the server
+      // may look up whose it is, so it signs in there and hands back the session
+      if (identifier.contains('@') || !await _signInWithNationalId(center.slug, identifier, password)) {
+        throw const WrongCredentialsException();
+      }
     }
 
     final userId = _client.auth.currentUser?.id;
@@ -96,5 +103,31 @@ class LoginRepository {
     }
 
     await prefs.setString(lastCenterPrefKey, center.slug);
+  }
+
+  static const _baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://bustan-alquran.com');
+
+  /// apps/web /api/auth/id-login: signs in with the ID and the password, returns the session.
+  Future<bool> _signInWithNationalId(String center, String identifier, String password) async {
+    final http = HttpClient()..connectionTimeout = const Duration(seconds: 20);
+    try {
+      final request = await http.postUrl(Uri.parse('$_baseUrl/api/auth/id-login'));
+      request.headers.contentType = ContentType.json;
+      request.write(jsonEncode({'center': center, 'identifier': identifier, 'password': password}));
+      final response = await request.close();
+      final body = jsonDecode(await response.transform(utf8.decoder).join());
+      final refresh = body is Map ? body['refresh_token'] as String? : null;
+      if (response.statusCode != 200 || refresh == null) return false;
+      await _client.auth.setSession(refresh);
+      return _client.auth.currentUser != null;
+    } on SocketException {
+      return false;
+    } on FormatException {
+      return false;
+    } on AuthException {
+      return false;
+    } finally {
+      http.close();
+    }
   }
 }

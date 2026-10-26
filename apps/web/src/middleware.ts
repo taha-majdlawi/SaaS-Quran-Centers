@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { authCookieDomain } from './lib/supabase/cookie-options';
+import { loginWithNext } from './lib/auth/next';
 import { contentSecurityPolicy, newNonce } from './lib/csp';
 import { I18N_READY_HEADER, LANG_OVERRIDE_HEADER, LOCALE_COOKIE, ORG_SLUG_HEADER, isI18nReady, isLocale } from './lib/i18n/config';
 
@@ -100,6 +101,17 @@ export async function middleware(req: NextRequest) {
   const isRootDomain =
     bareHost === bareRoot || bareHost === `www.${bareRoot}` || bareHost === 'localhost';
 
+  // The console lives on admin.{ROOT_DOMAIN} only. /platform/... typed on the root domain used to
+  // render its login there, and after signing in the owner landed on the marketing page; typed on
+  // admin it became /platform/platform/... (404). Both now go to the console's own address.
+  const platformPath = req.nextUrl.pathname.match(/^\/platform(\/.*)?$/);
+  const onAdmin = bareHost === `admin.${bareRoot}` || (bareRoot === 'localhost' && bareHost === 'admin.localhost');
+  if (platformPath && (isRootDomain || onAdmin)) {
+    const target = new URL(`${req.nextUrl.protocol}//admin.${ROOT_DOMAIN}${platformPath[1] ?? '/'}`);
+    target.search = req.nextUrl.search;
+    return NextResponse.redirect(target);
+  }
+
   let response: NextResponse;
   let scope: 'platform' | 'tenant' | null = null;
 
@@ -149,7 +161,8 @@ export async function middleware(req: NextRequest) {
     const isPublic =
       scope === 'platform' ? PUBLIC_PLATFORM_PATHS.has(req.nextUrl.pathname) : isPublicTenantPath(req.nextUrl.pathname);
     if (!isPublic) {
-      const redirectResponse = NextResponse.redirect(new URL('/login', req.url));
+      // back to this page once signed in (lib/auth/next.ts checks it stays on this site)
+      const redirectResponse = NextResponse.redirect(new URL(loginWithNext(req.nextUrl.pathname + req.nextUrl.search), req.url));
       // keep whatever getUser() just refreshed (a rotated / cleared cookie)
       response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
       return redirectResponse;

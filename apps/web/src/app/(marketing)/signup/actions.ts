@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getI18n } from '@/lib/i18n/server';
-import { confirmUrl, productUrl, validSlug, type PendingSignup } from '@/lib/auth/signup';
+import { confirmUrl, isExistingAccount, productUrl, validSlug, type PendingSignup } from '@/lib/auth/signup';
 
 export async function signUpAndCreateOrganization(formData: FormData) {
   const orgName = (formData.get('orgName') as string)?.trim();
@@ -47,7 +47,16 @@ export async function signUpAndCreateOrganization(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
 
-  if (!signUpData.session) {
+  let session = signUpData.session;
+  if (isExistingAccount(signUpData.user)) {
+    // the email already has an account (Supabase made nothing and sent nothing): with that
+    // account's own password the new center is simply created for it - no email needed
+    const { data: signIn } = await supabase.auth.signInWithPassword({ email, password });
+    if (!signIn.session) redirect(`/signup?error=${encodeURIComponent(t.signup.errorEmailHasAccount)}`);
+    session = signIn.session;
+  }
+
+  if (!session) {
     // "Confirm email" is on: the link in the email finishes the center (/confirm)
     redirect(`/signup?sent=${encodeURIComponent(email)}`);
   }

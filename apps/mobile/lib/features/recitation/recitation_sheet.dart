@@ -3,11 +3,15 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/data/quran_data.dart';
+import '../../core/data/quran_pages.dart';
 import '../../core/offline/sync_service.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/widgets/ui.dart';
+import '../points/points_ledger.dart' show PointsLedgerRepository;
+import '../profiles/profile_widgets.dart' show numText;
+import 'next_position.dart';
 import 'recitation_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -80,9 +84,25 @@ class _RecitationSheetState extends State<RecitationSheet> {
   bool _saving = false;
   String? _error;
 
+  /// Where the student stopped last time (new memorization), and the prefill it gave.
+  NextPosition? _position;
+  bool _autoFilled = false;
+
+  /// The center scores by pages (0096): show the pages and an estimate - the server has the last word.
+  bool _perPage = false;
+
   @override
   void initState() {
     super.initState();
+    final org = context.read<TenantController>().active?.organization.id;
+    if (org != null) {
+      PointsLedgerRepository(AppSupabase.client).mode(org).then((m) {
+        if (mounted && m == 'per_page') setState(() => _perPage = true);
+      }).catchError((_) {});
+    }
+    for (final c in [_parts.first.from, _parts.first.to]) {
+      c.addListener(_rangeChanged);
+    }
     final e = widget.editing;
     if (e != null) {
       _type = e.type;
@@ -99,7 +119,80 @@ class _RecitationSheetState extends State<RecitationSheet> {
         ..surah = s
         ..from.text = '1'
         ..to.text = '${ayahCount(s)}';
+    } else {
+      _loadPosition();
     }
+  }
+
+  void _rangeChanged() {
+    if (_perPage && mounted) setState(() {});
+  }
+
+  /// Pages of every complete part of the form (null while none is complete).
+  double? get _pages {
+    var total = 0.0;
+    var any = false;
+    for (final p in _parts) {
+      final a = int.tryParse(p.from.text.trim()), b = int.tryParse(p.to.text.trim());
+      if (p.surah == null || a == null || b == null || a < 1 || b > ayahCount(p.surah!) || b < a) continue;
+      total += recitationPages(p.surah!, a, b);
+      any = true;
+    }
+    return any ? total : null;
+  }
+
+  /// A new recitation: carry on from where the student stopped (next_position.dart).
+  Future<void> _loadPosition() async {
+    try {
+      final history = await _repository.fetchMemorizationHistory(widget.studentId);
+      final position = nextPosition(history);
+      if (!mounted || position == null) return;
+      setState(() {
+        _position = position;
+        // only into an untouched form, and only for new memorization
+        final first = _parts.first;
+        if (_parts.length == 1 && first.surah == null && _type == 'new_memorization' && position.surah != null) {
+          first
+            ..surah = position.surah
+            ..from.text = '${position.ayahFrom}'
+            ..to.text = '${ayahCount(position.surah!)}';
+          _autoFilled = true;
+        }
+      });
+    } catch (_) {
+      // no history yet / offline without a cache: the form simply starts empty
+    }
+  }
+
+  /// "Finished Surah X ✓ - next: Surah Y" or "Reached Surah X, ayah N".
+  Widget _positionBanner(BuildContext context, NextPosition pos) {
+    final t = tr(context);
+    final done = pos.finishedSurah;
+    final color = done ? Colors.green : Colors.blue;
+    final title = done ? fmt(t.rec.finishedSurah, {'surah': surahName(pos.lastSurah)}) : fmt(t.rec.reachedAyah, {'surah': surahName(pos.lastSurah), 'ayah': pos.lastAyah});
+    final next = !done ? null : pos.surah == null ? t.rec.wholeQuranDone : fmt(t.rec.nextSurahIs, {'surah': surahName(pos.surah!)});
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: color.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: color.shade100)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(done ? Icons.check_circle_rounded : Icons.bookmark_rounded, size: 20, color: color.shade700),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: color.shade900)),
+            if (next != null) ...[
+              const SizedBox(height: 2),
+              Text(next, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: color.shade800)),
+            ],
+            if (_autoFilled) ...[
+              const SizedBox(height: 4),
+              Text(t.rec.carryOn, style: TextStyle(fontSize: 11.5, color: Colors.grey.shade700)),
+            ],
+          ]),
+        ),
+      ]),
+    );
   }
 
   @override
@@ -232,7 +325,14 @@ class _RecitationSheetState extends State<RecitationSheet> {
     final today = DateTime.now();
     final isToday = _date.year == today.year && _date.month == today.month && _date.day == today.day;
     final picked = widget.grades.where((g) => g.key == _grade).firstOrNull;
-    final points = picked == null ? null : picked.points * _parts.length;
+    final pages = _perPage ? _pages : null;
+    final points = picked == null
+        ? null
+        : !_perPage
+            ? picked.points * _parts.length
+            : pages == null
+                ? null
+                : estimatePagePoints(pages: pages, gradePoints: picked.points, type: _type);
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -282,6 +382,7 @@ class _RecitationSheetState extends State<RecitationSheet> {
                       Expanded(child: Text(t.rec.prefilled, style: TextStyle(fontSize: 12, color: Colors.amber.shade900))),
                     ]),
                   ),
+                if (widget.editing == null && _position != null) _positionBanner(context, _position!),
                 if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: MessageBanner(message: _error!)),
 
                 // 1. what kind of work - one tap
@@ -330,7 +431,9 @@ class _RecitationSheetState extends State<RecitationSheet> {
                   Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
-                      onPressed: () => setState(() => _parts.add(_PartInput())),
+                      onPressed: () => setState(() => _parts.add(_PartInput()
+                        ..from.addListener(_rangeChanged)
+                        ..to.addListener(_rangeChanged))),
                       icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
                       label: Text(t.rec.addSurah),
                     ),
@@ -359,6 +462,21 @@ class _RecitationSheetState extends State<RecitationSheet> {
                       ),
                   ]);
                 }),
+
+                if (pages != null) ...[
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    Icon(Icons.auto_stories_rounded, size: 16, color: brand),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        fmt(t.pts.estimate, {'pages': numText(pages), 'points': points ?? '—'}),
+                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: brand),
+                      ),
+                    ),
+                  ]),
+                  Text(t.pts.estimateNote, style: const TextStyle(fontSize: 11, color: TeacherStyle.textMuted)),
+                ],
 
                 // 4. a note only when needed
                 const SizedBox(height: 14),
@@ -621,7 +739,8 @@ class _SurahPickerState extends State<_SurahPicker> {
   @override
   Widget build(BuildContext context) {
     final items = [
-      for (var i = 1; i <= 114; i++)
+      // from An-Nas down to Al-Fatiha: the order most students memorise in
+      for (var i = 114; i >= 1; i--)
         if (_query.isEmpty || surahName(i).contains(_query) || '$i' == _query) i,
     ];
     return Padding(

@@ -153,6 +153,7 @@ export const tr: Dictionary = {
     checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Merkezinizi oluşturmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     errorSlugTaken: 'Bu bağlantı zaten alınmış, başka birini deneyin',
     errorEmailTaken: 'Bu e-posta zaten kayıtlı - bunun yerine giriş yapın',
+    errorEmailHasAccount: 'Bu e-postanın zaten bir hesabı var ve şifre eşleşmiyor, bu yüzden merkez oluşturulmadı. Hesabınızın şifresini girin, Google ile kaydolun veya başka bir e-posta kullanın.',
     errorWeakPassword: 'Şifre çok zayıf - en az 8 karakter kullanın',
   },
 
@@ -214,6 +215,7 @@ export const tr: Dictionary = {
   },
 
   join: {
+    errorEmailHasAccount: "Bu e-postanın zaten bir hesabı var — daveti kabul etmek için şifresini girin.",
     google: 'Google ile katıl',
     incompleteTitle: 'Eksik davet bağlantısı',
     incompleteBody: 'Sizi davet eden kişiden gelen bağlantının tamamını kullandığınızdan emin olun.',
@@ -230,6 +232,18 @@ export const tr: Dictionary = {
     errorConfirmEmail: 'Önce hesabınızı onaylamak için e-postanızı kontrol edin, sonra katılımı tamamlamak için davet bağlantısını yeniden açın',
     checkEmail: '{email} adresine bir onay bağlantısı gönderdik. Katılmayı tamamlamak için açın (gelmediyse istenmeyen klasörüne bakın).',
     roles: { admin: 'yönetici', teacher: 'öğretmen', guardian: 'veli', student: 'öğrenci' },
+    wrongAccount: "{email} olarak giriş yaptınız, ancak bu davet {invited} adresine gönderildi. Davet edilen e-postayla devam etmek için çıkış yapın.",
+    signOutContinue: "Çıkış yap ve devam et",
+    haveAccount: "Bu e-postayla bir hesabınız mı var? Giriş yapın",
+    noAccount: "Henüz hesabınız yok mu? Bir şifre oluşturun",
+    asRoleSignIn: "{role} olarak - hesabınızın şifresiyle giriş yapın",
+    signIn: "Giriş yap ve katıl",
+    signingIn: "Giriş yapılıyor ve katılınıyor...",
+    confirmPassword: "Şifreyi onayla",
+    passwordHint: "En az 8 karakter",
+    passwordsDiffer: "İki şifre eşleşmiyor",
+    errorWrongPassword: "Bu e-posta için şifre yanlış.",
+    errorOtherEmail: "Bu davet {invited} adresine gönderildi — başka bir hesapla kabul edilemez.",
   },
 
   googlePage: {

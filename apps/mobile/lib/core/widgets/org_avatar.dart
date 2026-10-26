@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
 import 'net_image.dart';
 
-/// The center's logo, or its first letter on the brand colour when there is no
-/// logo (or it fails to load). Used wherever the app says which center this is,
+/// The center's logo, or the platform's own mark when there is no logo (or it
+/// fails to load). Used wherever the app says which center this is,
 /// so a center's identity - name, logo, colours - shows up everywhere.
 class OrgAvatar extends StatelessWidget {
   const OrgAvatar({super.key, required this.name, this.logoUrl, this.brandColor, this.size = 44, this.onDark = false});
@@ -12,25 +11,19 @@ class OrgAvatar extends StatelessWidget {
   final String name;
   final String? logoUrl;
 
-  /// Hex ("#rrggbb") of the center's colour; falls back to the theme's primary.
+  /// Hex ("#rrggbb") of the center's colour (kept for callers; the platform mark has its own colours).
   final String? brandColor;
   final double size;
 
-  /// On a coloured header the fallback tile is white with a coloured letter.
+  /// On a coloured header (the mark has its own light background).
   final bool onDark;
 
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(size / 3.2);
-    final brand = brandColor == null ? Theme.of(context).colorScheme.primary : parseBrandColor(brandColor);
-    final letter = name.trim().isEmpty ? 'ب' : name.trim().characters.first;
-
-    Widget fallback() => Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(color: onDark ? Colors.white : brand, borderRadius: radius),
-          alignment: Alignment.center,
-          child: Text(letter, style: TextStyle(color: onDark ? brand : Colors.white, fontSize: size * 0.44, fontWeight: FontWeight.w800)),
+    Widget fallback() => ClipRRect(
+          borderRadius: radius,
+          child: Image.asset('assets/brand/icon-source.png', width: size, height: size, fit: BoxFit.cover),
         );
 
     final url = logoUrl;

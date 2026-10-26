@@ -153,6 +153,7 @@ export const en: Dictionary = {
     checkEmail: "We sent a confirmation link to {email}. Open it to finish creating your center (check your spam folder if it isn't there).",
     errorSlugTaken: 'This link is already taken, try another one',
     errorEmailTaken: 'This email is already registered - sign in instead',
+    errorEmailHasAccount: 'This email already has an account and the password doesn’t match it, so the center wasn’t created. Enter your account’s password, sign up with Google, or use another email.',
     errorWeakPassword: 'Password too weak - use at least 8 characters',
   },
 
@@ -214,6 +215,7 @@ export const en: Dictionary = {
   },
 
   join: {
+    errorEmailHasAccount: "This email already has an account — enter its password to accept the invitation.",
     google: 'Join with Google',
     incompleteTitle: 'Incomplete invitation link',
     incompleteBody: 'Make sure you used the full link from the person who invited you.',
@@ -230,6 +232,18 @@ export const en: Dictionary = {
     errorConfirmEmail: 'Check your email to confirm your account first, then open the invitation link again to finish joining',
     checkEmail: "We sent a confirmation link to {email}. Open it to finish joining (check your spam folder if it isn't there).",
     roles: { admin: 'admin', teacher: 'teacher', guardian: 'guardian', student: 'student' },
+    wrongAccount: "You are signed in as {email}, but this invitation was sent to {invited}. Sign out to continue with the invited email.",
+    signOutContinue: "Sign out and continue",
+    haveAccount: "Already have an account with this email? Sign in",
+    noAccount: "No account yet? Create a password",
+    asRoleSignIn: "as {role} - sign in with your account’s password",
+    signIn: "Sign in and join",
+    signingIn: "Signing in and joining...",
+    confirmPassword: "Confirm password",
+    passwordHint: "At least 8 characters",
+    passwordsDiffer: "The two passwords don’t match",
+    errorWrongPassword: "Wrong password for this email.",
+    errorOtherEmail: "This invitation was sent to {invited} — it can’t be accepted with another account.",
   },
 
   googlePage: {

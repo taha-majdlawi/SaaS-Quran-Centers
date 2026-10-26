@@ -12,6 +12,7 @@ import { MistakeStats, type MistakeStatsData } from '@/components/mistake-stats'
 import { defaultRange, fmtDay, pct, type StudentReport } from '@/lib/reports/format';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
+import { PointsBreakdownCard, type PointReason, type PointsBreakdown } from '@/components/points-breakdown';
 
 interface StudentProfile {
   id: string;
@@ -75,6 +76,15 @@ export default async function StudentProfilePage({
   ]);
   const recorded = (recData ?? []) as Recitation[];
   const recordedAudio = await recitationAudio(recorded);
+  // the points breakdown (0096), and the reasons a teacher may pick to add / deduct
+  const pointsOn = !org.disabledModules.includes('points');
+  const [{ data: bdData }, { data: reasonRows }, { data: me }] = await Promise.all([
+    pointsOn ? supabase.rpc('get_student_points_breakdown', { p_org: org.id, p_student: id }) : Promise.resolve({ data: null }),
+    pointsOn
+      ? supabase.from('point_reasons').select('id, name, points, kind').eq('organization_id', org.id).eq('is_active', true).order('kind').order('sort_order')
+      : Promise.resolve({ data: [] }),
+    supabase.auth.getUser(),
+  ]);
   const { data: gradeRows } = await supabase.from('recitation_grades').select('key, label').eq('organization_id', org.id).eq('is_active', true).order('sort_order');
   if (pError && /غير موجود|not found/i.test(pError.message)) notFound();
   const p = pData as StudentProfile | null;
@@ -84,6 +94,14 @@ export default async function StudentProfilePage({
   const age = p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date).getTime()) / (365.25 * 86400000)) : null;
   const canEdit = org.myRole === 'admin' || org.myPermissions?.includes('students');
   const sep = T.labels.listSep;
+  const isAdmin = org.myRole === 'admin';
+  // add / deduct: the admin, or the student's own circle teacher with the students module (the same
+  // people who record recitations - the database checks it again)
+  let teachesThis = false;
+  if (!isAdmin && p.circle && org.myPermissions?.includes('students') && me.user) {
+    const { data: c } = await supabase.from('circles').select('teacher_id').eq('id', p.circle.id).maybeSingle();
+    teachesThis = c?.teacher_id === me.user.id;
+  }
 
   return (
     <div className="max-w-6xl">
@@ -132,6 +150,17 @@ export default async function StudentProfilePage({
         <Stat label={P.recitationsTotal} value={p.recitations_total} />
         <Stat label={P.lastRecited} value={<span className="text-lg">{relDay(p.last_recited, P, lang)}</span>} />
       </StatGrid>
+
+      {bdData && (
+        <div className="mb-6">
+          <PointsBreakdownCard
+            data={bdData as PointsBreakdown}
+            T={T}
+            lang={lang}
+            staff={{ orgId: org.id, studentId: p.id, back: `/students/${p.id}`, reasons: (reasonRows ?? []) as PointReason[], canAward: isAdmin || teachesThis, isAdmin }}
+          />
+        </div>
+      )}
 
       {goal && (
         <div className="mb-6">

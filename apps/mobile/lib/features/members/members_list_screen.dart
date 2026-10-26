@@ -27,6 +27,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
   List<PendingInvitation> _invitations = [];
 
   final _emailController = TextEditingController();
+  String _query = '';
   String _inviteRole = 'teacher';
   bool _inviting = false;
   String? _message;
@@ -60,10 +61,10 @@ class _MembersListScreenState extends State<MembersListScreen> {
       _message = null;
     });
     try {
-      await _repository.createInvitation(organizationId: _loadedForOrgId!, email: email, role: _inviteRole);
+      final sent = await _repository.createInvitation(organizationId: _loadedForOrgId!, email: email, role: _inviteRole);
       _emailController.clear();
       if (mounted) {
-        setState(() { _message = tr(context).mem.inviteCreated; _isError = false; });
+        setState(() { _message = sent ? fmt(tr(context).mem.inviteSent, {'email': email}) : tr(context).mem.inviteCreated; _isError = false; });
         _reload(_loadedForOrgId!);
       }
     } catch (e) {
@@ -100,13 +101,37 @@ class _MembersListScreenState extends State<MembersListScreen> {
                 if (snapshot.connectionState != ConnectionState.done) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return ListView(
-                  padding: const EdgeInsets.all(16),
+                final q = _query.trim().toLowerCase();
+                final shown = q.isEmpty
+                    ? _members
+                    : _members.where((m) => '${m.fullName ?? ''} ${m.email ?? ''}'.toLowerCase().contains(q)).toList();
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() => _reload(orgId));
+                    await _dataFuture;
+                  },
+                  child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  // bottom room so the add-teacher button never covers the last row
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
                   children: [
                     if (_message != null) MessageBanner(message: _message!, isError: _isError),
-                    ..._members.map((m) => Card(
+                    if (_members.length > 8)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.search_rounded),
+                            hintText: tr(context).ui.search,
+                            isDense: true,
+                          ),
+                          onChanged: (v) => setState(() => _query = v),
+                        ),
+                      ),
+                    ...shown.map((m) => Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
+                            leading: InitialAvatar(m.fullName ?? m.email ?? '?', radius: 18),
                             title: Text(m.fullName ?? m.email ?? '—'),
                             subtitle: Text(
                               '${kMemberRoleLabels[m.role] ?? m.role} · ${kMemberStatusLabels[m.status] ?? m.status}',
@@ -151,6 +176,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
                       ..._invitations.map((i) => Text('${i.email} — ${kMemberRoleLabels[i.role] ?? i.role}')),
                     ],
                   ],
+                  ),
                 );
               },
             ),

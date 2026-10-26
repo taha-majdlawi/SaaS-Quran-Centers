@@ -58,7 +58,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     setState(() => _loadingCircles = true);
     try {
       final circles = await _repository.fetchCircles(orgId);
-      if (mounted) setState(() => _circles = circles);
+      if (!mounted) return;
+      setState(() => _circles = circles);
+      // open the teacher's own circle (or the first one) instead of an empty page
+      if (_circleId == null && circles.isNotEmpty) {
+        final me = AppSupabase.client.auth.currentUser?.id;
+        final own = circles.where((c) => c.teacherId != null && c.teacherId == me);
+        setState(() => _circleId = (own.isNotEmpty ? own.first : circles.first).id);
+        await _loadSheet();
+      }
     } catch (_) {
       if (mounted) setState(() { _message = tr(context).org.circlesLoadFailed; _isError = true; });
     } finally {

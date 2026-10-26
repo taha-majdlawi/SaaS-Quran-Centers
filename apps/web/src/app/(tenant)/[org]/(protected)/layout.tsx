@@ -3,7 +3,9 @@ import { GrowingTree } from '@/components/growing-tree';
 import { MonitoringOrg } from '@/components/error-reporter';
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
+import { loginWithNext } from '@/lib/auth/next';
 import { SubmitButton } from '@/components/submit-button';
+import { LogOut } from 'lucide-react';
 import { OrgLogo } from '@/components/org-logo';
 import { signOut } from '@/lib/auth/actions';
 import { createClient } from '@/lib/supabase/server';
@@ -29,7 +31,7 @@ export default async function TenantProtectedLayout({
   // Not authenticated, or authenticated but not a member of THIS org - RLS
   // would block every query anyway, so send them to sign in rather than show
   // an empty shell.
-  if (!org.myRole) redirect('/login');
+  if (!org.myRole) redirect(loginWithNext((await headers()).get('x-bustan-path')) as never);
 
   // A viewing (read-only) account is told so on every page; the database refuses its writes regardless.
   const supabase = await createClient();
@@ -70,7 +72,8 @@ export default async function TenantProtectedLayout({
     >
       <MonitoringOrg orgId={org.id} />
       <LocaleSync />
-      <div className="flex-1">
+      {/* min-w-0: a wide table or header scrolls inside the page instead of widening it */}
+      <div className="min-w-0 flex-1">
         {org.isPlatformOwner && (
           <div className="bg-purple-700 px-6 py-2 text-center text-sm font-semibold text-white print:hidden">
             {t.shell.platformOwner}
@@ -120,7 +123,7 @@ export default async function TenantProtectedLayout({
             <OrgLogo name={org.name} logoUrl={org.logoUrl} size={32} />
             <span className="truncate">{org.name}</span>
           </a>
-          <div className="flex shrink-0 items-center gap-3 text-sm text-gray-500 sm:gap-4">
+          <div className="flex shrink-0 items-center gap-2 text-sm text-gray-500 sm:gap-4">
             {translated && <LanguageSwitcher />}
             {isStaff && !org.isPlatformOwner ? (
               // the teacher's / admin's own sign-in details (students' accounts are the center's to change)
@@ -132,8 +135,10 @@ export default async function TenantProtectedLayout({
               <span className="hidden rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 sm:inline">{t.shell.roles[org.myRole] ?? org.myRole}</span>
             )}
             <form action={signOut} data-allow-locked>
-              <SubmitButton className="hover:text-red-600" pendingText={t.shell.signingOut}>
-                {t.shell.signOut}
+              {/* an icon on a phone, so the header fits one row */}
+              <SubmitButton className="flex items-center gap-1.5 rounded-full p-1.5 hover:bg-red-50 hover:text-red-600 sm:p-0 sm:hover:bg-transparent" pendingText={t.shell.signingOut} title={t.shell.signOut}>
+                <LogOut size={16} aria-hidden />
+                <span className="sr-only sm:not-sr-only">{t.shell.signOut}</span>
               </SubmitButton>
             </form>
           </div>

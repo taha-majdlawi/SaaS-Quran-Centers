@@ -234,7 +234,7 @@ class SAttn {
 
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
-  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
+  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.emailHasAccount, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.wrongAccount, required this.signOutContinue, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
   final String thisCenter;
   final String noCenter;
   final String badLogin;
@@ -258,6 +258,7 @@ class SAuth {
   final String signIn;
   final String whoHint;
   final String confirmEmail;
+  final String emailHasAccount;
   final String joinFailed;
   final String joinTitle;
   final String invalidInvite;
@@ -266,6 +267,8 @@ class SAuth {
   final String asRole;
   final String signedInAs;
   final String confirmJoin;
+  final String wrongAccount;
+  final String signOutContinue;
   final String inviteEmail;
   final String yourPassword;
   final String createPassword;
@@ -841,7 +844,7 @@ class SLive {
 
 /// Members, teachers and permissions (admin).
 class SMem {
-  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
+  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteSent, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
   final Map<String, String> modules;
   final Map<String, String> status;
   final String password8;
@@ -866,6 +869,7 @@ class SMem {
   final String min8;
   final String createAccount;
   final String inviteCreated;
+  final String inviteSent;
   final String inviteError;
   final String inviteTitle;
   final String email;
@@ -1186,6 +1190,44 @@ class SProf {
   final String whatsapp;
 }
 
+/// The points system: add / deduct, the breakdown, the page estimate (0096).
+class SPts {
+  const SPts({required this.award, required this.bonus, required this.penalty, required this.note, required this.save, required this.pickReason, required this.noReasons, required this.saved, required this.outbox, required this.staffTitle, required this.mineTitle, required this.total, required this.noPoints, required this.mismatch, required this.countPages, required this.count, required this.recent, required this.undo, required this.undone, required this.sumLine, required this.estimate, required this.estimateNote, required this.modeTitle, required this.perRec, required this.perPage, required this.modeSaved, required this.pointsPerPage, required this.moreOnWeb, required this.kinds, required this.suggestTitle, required this.suggestBody, required this.suggestYes, required this.suggestNo});
+  final String award;
+  final String bonus;
+  final String penalty;
+  final String note;
+  final String save;
+  final String pickReason;
+  final String noReasons;
+  final String saved;
+  final String outbox;
+  final String staffTitle;
+  final String mineTitle;
+  final String total;
+  final String noPoints;
+  final String mismatch;
+  final String countPages;
+  final String count;
+  final String recent;
+  final String undo;
+  final String undone;
+  final String sumLine;
+  final String estimate;
+  final String estimateNote;
+  final String modeTitle;
+  final String perRec;
+  final String perPage;
+  final String modeSaved;
+  final String pointsPerPage;
+  final String moreOnWeb;
+  final Map<String, String> kinds;
+  final String suggestTitle;
+  final String suggestBody;
+  final String suggestYes;
+  final String suggestNo;
+}
+
 /// The Quran screens (the text itself stays Arabic).
 class SQuran {
   const SQuran({required this.title, required this.surahs, required this.search, required this.continueReading, required this.position, required this.ayahs, required this.noBookmarks, required this.noBookmarksHint, required this.playFailed, required this.ayahOf, required this.playFromHere, required this.unmark, required this.copyAyah, required this.copied, required this.smaller, required this.bigger, required this.loadFailed, required this.repeat, required this.noRepeat, required this.prevAyah, required this.nextAyah, required this.credit, required this.bookmarks, required this.mark, required this.repeatN, required this.play, required this.pause, required this.sync, required this.syncNone, required this.syncAyah, required this.syncWord, required this.reciter, required this.noTimings, required this.noSurahAudio, required this.fontSize, required this.testMode, required this.testHint, required this.revealPage, required this.hidePage, required this.prevPage, required this.nextPage, required this.readingSettings});
@@ -1235,7 +1277,7 @@ class SQuran {
 
 /// Recording recitations (sheet, lesson mode).
 class SRec {
-  const SRec({required this.pickGrade, required this.pickSurah, required this.enterRange, required this.rangeOrder, required this.tooFar, required this.partial, required this.newTitle, required this.editTitle, required this.prefilled, required this.dateToday, required this.dateV, required this.type, required this.addSurah, required this.grade, required this.notes, required this.saveBtn, required this.saveEdit, required this.fromAyah, required this.toAyah, required this.maxV, required this.searchSurah, required this.ayahsN, required this.absenceFailed, required this.lessonTitle, required this.studentXofY, required this.plan, required this.recordBtn, required this.absent, required this.later, required this.nobody, required this.done, required this.summary, required this.anotherRound, required this.finish, required this.circle, required this.doneToday, required this.outboxAttendance, required this.outboxRecitation, required this.today, required this.dayMonth, required this.addNote, required this.saveWithPoints, required this.change, required this.wholeSurah});
+  const SRec({required this.pickGrade, required this.pickSurah, required this.enterRange, required this.rangeOrder, required this.tooFar, required this.partial, required this.newTitle, required this.editTitle, required this.prefilled, required this.dateToday, required this.dateV, required this.type, required this.addSurah, required this.grade, required this.notes, required this.saveBtn, required this.saveEdit, required this.fromAyah, required this.toAyah, required this.maxV, required this.searchSurah, required this.ayahsN, required this.absenceFailed, required this.lessonTitle, required this.studentXofY, required this.plan, required this.recordBtn, required this.absent, required this.later, required this.nobody, required this.done, required this.summary, required this.anotherRound, required this.finish, required this.circle, required this.doneToday, required this.outboxAttendance, required this.outboxRecitation, required this.today, required this.dayMonth, required this.addNote, required this.saveWithPoints, required this.change, required this.wholeSurah, required this.reachedAyah, required this.finishedSurah, required this.nextSurahIs, required this.wholeQuranDone, required this.carryOn});
   final String pickGrade;
   final String pickSurah;
   final String enterRange;
@@ -1280,6 +1322,11 @@ class SRec {
   final String saveWithPoints;
   final String change;
   final String wholeSurah;
+  final String reachedAyah;
+  final String finishedSurah;
+  final String nextSurahIs;
+  final String wholeQuranDone;
+  final String carryOn;
 }
 
 /// Reciting to the system, the teacher's test in the mushaf, passage repeat, the recorded recitations.
@@ -1622,7 +1669,7 @@ class SSet {
 
 /// Students: list, form and the student file.
 class SStu {
-  const SStu({required this.status, required this.noCircle, required this.deleteTitle, required this.deleteBody, required this.title, required this.add, required this.searchPh, required this.empty, required this.emptyHint, required this.noMatch, required this.editDetails, required this.deleteWithFile, required this.circleRequired, required this.accountCreated, required this.codeTaken, required this.saveError, required this.deleteBodyPlain, required this.editTitle, required this.details, required this.fullName, required this.nameRequired, required this.birthDate, required this.tapToPick, required this.stageCircle, required this.stage, required this.allStages, required this.circleReq, required this.noCircles, required this.code, required this.codeHint, required this.codeRequired, required this.contact, required this.phone, required this.whatsapp, required this.address, required this.login, required this.password, required this.passwordHint, required this.min8, required this.email, required this.emailHint, required this.statusLabel, required this.saveChanges, required this.addBtn, required this.recEdited, required this.recDeleteTitle, required this.recDeleteBody, required this.deleted, required this.nextPlan, required this.planPh, required this.planSaved, required this.linkUpdated, required this.pickGuardian, required this.noGuardians, required this.newGuardian, required this.guardianName, required this.loginId, required this.phoneOpt, required this.password8, required this.create, required this.guardianIncomplete, required this.guardianCreated, required this.allRecitations, required this.streak, required this.weeklyAttendance, required this.lastRecitation, required this.surahV, required this.recLine, required this.progress, required this.partsOf30, required this.weeklyAttendanceV, required this.statsLine, required this.noPlan, required this.sheikh, required this.phone2, required this.addressLabel, required this.guardian, required this.noGuardian, required this.linkedTo, required this.newAccount, required this.linkExisting, required this.unlink, required this.log, required this.noRecitations});
+  const SStu({required this.status, required this.noCircle, required this.deleteTitle, required this.deleteBody, required this.title, required this.add, required this.searchPh, required this.empty, required this.emptyHint, required this.noMatch, required this.editDetails, required this.deleteWithFile, required this.circleRequired, required this.accountCreated, required this.codeTaken, required this.saveError, required this.deleteBodyPlain, required this.editTitle, required this.details, required this.fullName, required this.nameRequired, required this.birthDate, required this.tapToPick, required this.stageCircle, required this.stage, required this.allStages, required this.circleReq, required this.noCircles, required this.code, required this.codeHint, required this.codeRequired, required this.contact, required this.phone, required this.whatsapp, required this.address, required this.login, required this.password, required this.passwordHint, required this.min8, required this.email, required this.emailHint, required this.statusLabel, required this.saveChanges, required this.addBtn, required this.recEdited, required this.recDeleteTitle, required this.recDeleteBody, required this.deleted, required this.nextPlan, required this.planPh, required this.planSaved, required this.linkUpdated, required this.pickGuardian, required this.noGuardians, required this.newGuardian, required this.guardianName, required this.loginId, required this.phoneOpt, required this.password8, required this.create, required this.guardianIncomplete, required this.guardianCreated, required this.allRecitations, required this.streak, required this.weeklyAttendance, required this.lastRecitation, required this.surahV, required this.recLine, required this.progress, required this.partsOf30, required this.weeklyAttendanceV, required this.statsLine, required this.noPlan, required this.sheikh, required this.phone2, required this.addressLabel, required this.guardian, required this.noGuardian, required this.linkedTo, required this.newAccount, required this.linkExisting, required this.unlink, required this.log, required this.noRecitations, required this.nationalId, required this.nationalIdHint, required this.nationalIdInvalid, required this.nationalIdTaken});
   final Map<String, String> status;
   final String noCircle;
   final String deleteTitle;
@@ -1707,6 +1754,10 @@ class SStu {
   final String unlink;
   final String log;
   final String noRecitations;
+  final String nationalId;
+  final String nationalIdHint;
+  final String nationalIdInvalid;
+  final String nationalIdTaken;
 }
 
 /// Offline uploads.
@@ -1845,7 +1896,7 @@ class SWird {
 }
 
 class S {
-  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.myAccount, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
+  const S({required this.lang, required this.common, required this.labels, required this.banners, required this.portal, required this.record, required this.badges, required this.market, required this.serdCard, required this.ann, required this.attn, required this.auth, required this.badgesStaff, required this.cal, required this.cert, required this.cfeat, required this.chat, required this.dash, required this.fees, required this.garden, required this.gather, required this.ins, required this.live, required this.mem, required this.mistakes, required this.mkt, required this.myAccount, required this.nav, required this.notif, required this.org, required this.plan, required this.priv, required this.prof, required this.pts, required this.quran, required this.rec, required this.recite, required this.rep, required this.rplan, required this.serd, required this.set, required this.stu, required this.sync, required this.teach, required this.ui, required this.weekly, required this.wird});
   /// 'ar', 'en', 'tr' or 'fr'.
   final String lang;
   bool get isAr => lang == 'ar';
@@ -1881,6 +1932,7 @@ class S {
   final SPlan plan;
   final SPriv priv;
   final SProf prof;
+  final SPts pts;
   final SQuran quran;
   final SRec rec;
   final SRecite recite;
@@ -2121,6 +2173,7 @@ class S {
       signIn: 'دخول',
       whoHint: 'الدخول للمعلمين والإدارة وأولياء الأمور والطلاب، كلٌّ حسب صلاحياته في المركز.',
       confirmEmail: 'أرسلنا رابط تأكيد إلى بريدك: افتحه لإكمال الانضمام، ثم سجّل دخولك هنا (تفقّد الرسائل غير المرغوبة إن لم يصل)',
+      emailHasAccount: 'هذا البريد له حساب من قبل: اكتب كلمة سر حسابك واضغط الدخول والانضمام',
       joinFailed: 'تعذّر إكمال الانضمام، تأكد من الإنترنت وحاول مرة أخرى',
       joinTitle: 'الانضمام إلى مركز',
       invalidInvite: 'الدعوة غير صالحة',
@@ -2129,6 +2182,8 @@ class S {
       asRole: 'للانضمام كـ {role}',
       signedInAs: 'مسجّل دخول بـ {email}',
       confirmJoin: 'تأكيد الانضمام',
+      wrongAccount: 'أنت مسجّل دخول بحساب {email}، لكن هذه الدعوة مرسلة إلى {invited}. سجّل الخروج لتكمل بالبريد المدعوّ.',
+      signOutContinue: 'تسجيل الخروج والمتابعة',
       inviteEmail: 'البريد الإلكتروني (من الدعوة)',
       yourPassword: 'كلمة سر حسابك',
       createPassword: 'أنشئ كلمة سر (8 أحرف على الأقل)',
@@ -2693,6 +2748,7 @@ class S {
       min8: '8 أحرف على الأقل',
       createAccount: 'إنشاء الحساب',
       inviteCreated: 'تم إنشاء الدعوة',
+      inviteSent: 'أرسلنا الدعوة إلى {email}. المدعوّ يفتح الرابط ويختار كلمة سر لحسابه.',
       inviteError: 'حدث خطأ أثناء الدعوة',
       inviteTitle: 'دعوة عضو جديد',
       email: 'البريد الإلكتروني',
@@ -2985,6 +3041,41 @@ class S {
       outboxGoal: 'هدف حفظ {name}',
       whatsapp: 'واتساب',
     ),
+    pts: SPts(
+      award: 'إضافة أو خصم نقاط',
+      bonus: 'إضافة نقاط',
+      penalty: 'خصم نقاط',
+      note: 'ملاحظة (اختياري)',
+      save: 'حفظ',
+      pickReason: 'اختر السبب',
+      noReasons: 'لا أسباب مفعّلة بعد — يضيفها المشرف من لوحة الويب.',
+      saved: 'تم: {points} نقطة لـ{name}',
+      outbox: 'نقاط {name}: {points}',
+      staffTitle: 'تفصيل النقاط',
+      mineTitle: 'كيف كسبت نقاطك',
+      total: 'المجموع',
+      noPoints: 'لا نقاط بعد',
+      mismatch: 'مجموع التفصيل {sum} يختلف عن المجموع {total} — يصلحه المشرف من صفحة النقاط على الويب.',
+      countPages: '{count} مرة · {pages} صفحة',
+      count: '{count} مرة',
+      recent: 'آخر الإضافات والخصومات',
+      undo: 'تراجع',
+      undone: 'تم التراجع',
+      sumLine: 'تسميعات {r} · حفظ {m} صفحة · مراجعة {v} صفحة · حضور {a} · غياب {b}',
+      estimate: '≈ {pages} صفحة · {points} نقطة تقريباً',
+      estimateNote: 'القيمة النهائية يحسبها الخادم عند الحفظ.',
+      modeTitle: 'طريقة احتساب نقاط التسميع',
+      perRec: 'نقاط ثابتة لكل تسميع',
+      perPage: 'حسب عدد الصفحات (المراجعة بالنصف)',
+      modeSaved: 'تم حفظ طريقة الاحتساب',
+      pointsPerPage: 'نقاط الصفحة',
+      moreOnWeb: 'نقاط الحضور وأسباب الإضافة والخصم والرصيد الافتتاحي تُضبط من لوحة الويب.',
+      kinds: {'opening': 'الرصيد الافتتاحي', 'recitation': 'تسميع', 'serd': 'السرد القرآني المعتمد', 'attendance': 'الحضور والغياب', 'bonus': 'إضافة', 'penalty': 'خصم'},
+      suggestTitle: 'قيم التقديرات للطريقة الجديدة',
+      suggestBody: 'نعدّل نقاط التقديرات الأربعة للقيم المناسبة؟ حسب الصفحات: 10، 7، 5، 0 للصفحة · ثابتة: 20، 15، 10، 5 للتسميع.',
+      suggestYes: 'نعم، عدّلها',
+      suggestNo: 'لا، اتركها',
+    ),
     quran: SQuran(
       title: 'المصحف',
       surahs: 'السور',
@@ -3074,6 +3165,11 @@ class S {
       saveWithPoints: 'حفظ التسميع  •  {n}+ نقطة',
       change: 'تغيير',
       wholeSurah: 'السورة كاملة',
+      reachedAyah: 'وصل إلى سورة {surah}، آية {ayah}',
+      finishedSurah: 'أنهى سورة {surah}',
+      nextSurahIs: 'التالية: سورة {surah}',
+      wholeQuranDone: 'أتمّ حفظ القرآن كاملًا',
+      carryOn: 'تعبئة تلقائية من حيث توقف، غيّرها إن لزم',
     ),
     recite: SRecite(
       rangeTitle: 'تكرار مقطع',
@@ -3483,6 +3579,10 @@ class S {
       unlink: 'فك الربط',
       log: 'سجل التسميع',
       noRecitations: 'لا يوجد تسميعات بعد',
+      nationalId: 'رقم الهوية',
+      nationalIdHint: 'اختياري. بيقدر يدخل فيه كمان بنفس كلمة السر.',
+      nationalIdInvalid: 'رقم الهوية غير صالح: أرقام أو حروف إنجليزية فقط، من 4 إلى 20 خانة.',
+      nationalIdTaken: 'رقم الهوية هذا مستخدم لشخص آخر في المركز.',
     ),
     sync: SSync(
       title: 'المزامنة',
@@ -3832,6 +3932,7 @@ class S {
       signIn: 'Sign in',
       whoHint: 'Sign-in for teachers, admins, guardians and students, each with their access in the center.',
       confirmEmail: 'We sent a confirmation link to your email: open it to finish joining, then sign in here (check spam if it isn’t there)',
+      emailHasAccount: 'This email already has an account: enter its password and sign in to join',
       joinFailed: 'Couldn’t finish joining; check the internet and try again',
       joinTitle: 'Join a center',
       invalidInvite: 'Invalid invitation',
@@ -3840,6 +3941,8 @@ class S {
       asRole: 'To join as {role}',
       signedInAs: 'Signed in as {email}',
       confirmJoin: 'Confirm joining',
+      wrongAccount: 'You are signed in as {email}, but this invitation was sent to {invited}. Sign out to continue with the invited email.',
+      signOutContinue: 'Sign out and continue',
       inviteEmail: 'Email (from the invitation)',
       yourPassword: 'Your account password',
       createPassword: 'Create a password (at least 8 characters)',
@@ -4404,6 +4507,7 @@ class S {
       min8: 'At least 8 characters',
       createAccount: 'Create the account',
       inviteCreated: 'Invitation created',
+      inviteSent: 'The invitation was emailed to {email}. They open the link and choose a password.',
       inviteError: 'Something went wrong with the invitation',
       inviteTitle: 'Invite a new member',
       email: 'Email',
@@ -4696,6 +4800,41 @@ class S {
       outboxGoal: 'Memorization goal for {name}',
       whatsapp: 'WhatsApp',
     ),
+    pts: SPts(
+      award: 'Add or deduct points',
+      bonus: 'Add points',
+      penalty: 'Deduct points',
+      note: 'Note (optional)',
+      save: 'Save',
+      pickReason: 'Choose a reason',
+      noReasons: 'No active reasons yet — the admin adds them on the web dashboard.',
+      saved: 'Done: {points} points for {name}',
+      outbox: 'Points for {name}: {points}',
+      staffTitle: 'Points breakdown',
+      mineTitle: 'How you earned your points',
+      total: 'Total',
+      noPoints: 'No points yet',
+      mismatch: 'The breakdown adds up to {sum}, the total is {total} — the admin can fix it on the web Points page.',
+      countPages: '{count}× · {pages} pages',
+      count: '{count}×',
+      recent: 'Latest additions and deductions',
+      undo: 'Undo',
+      undone: 'Undone',
+      sumLine: '{r} recitations · {m} pages memorised · {v} reviewed · {a} present · {b} absent',
+      estimate: '≈ {pages} pages · about {points} points',
+      estimateNote: 'The server works out the final value when saving.',
+      modeTitle: 'How recitations are scored',
+      perRec: 'Fixed points per recitation',
+      perPage: 'By pages (review counts half)',
+      modeSaved: 'Scoring method saved',
+      pointsPerPage: 'Points per page',
+      moreOnWeb: 'Attendance points, reasons to add / deduct and opening balances are set on the web dashboard.',
+      kinds: {'opening': 'Opening balance', 'recitation': 'Recitation', 'serd': 'Approved Quran serd', 'attendance': 'Attendance', 'bonus': 'Added', 'penalty': 'Deducted'},
+      suggestTitle: 'Grade values for the new method',
+      suggestBody: 'Set the four usual grades to suitable values? By pages: 10, 7, 5, 0 per page · fixed: 20, 15, 10, 5 per recitation.',
+      suggestYes: 'Yes, set them',
+      suggestNo: 'No, keep them',
+    ),
     quran: SQuran(
       title: 'Quran',
       surahs: 'Surahs',
@@ -4785,6 +4924,11 @@ class S {
       saveWithPoints: 'Save recitation  •  +{n} pts',
       change: 'Change',
       wholeSurah: 'Whole surah',
+      reachedAyah: 'Reached Surah {surah}, ayah {ayah}',
+      finishedSurah: 'Finished Surah {surah}',
+      nextSurahIs: 'Next: Surah {surah}',
+      wholeQuranDone: 'Has memorised the whole Quran',
+      carryOn: 'Filled in from where they stopped - change it if needed',
     ),
     recite: SRecite(
       rangeTitle: 'Repeat a passage',
@@ -5194,6 +5338,10 @@ class S {
       unlink: 'Unlink',
       log: 'Recitation log',
       noRecitations: 'No recitations yet',
+      nationalId: 'National ID number',
+      nationalIdHint: 'Optional. They can also sign in with it, with the same password.',
+      nationalIdInvalid: 'Invalid ID number: Latin letters or digits only, 4 to 20 characters.',
+      nationalIdTaken: 'This ID number is already used by someone else in this center.',
     ),
     sync: SSync(
       title: 'Sync',
@@ -5543,6 +5691,7 @@ class S {
       signIn: 'Giriş yap',
       whoHint: 'Öğretmenler, yöneticiler, veliler ve öğrenciler için giriş; her biri merkezdeki yetkisiyle.',
       confirmEmail: 'E-postanıza bir onay bağlantısı gönderdik: katılmayı tamamlamak için açın, sonra buradan giriş yapın (istenmeyen klasörüne bakın)',
+      emailHasAccount: 'Bu e-postanın zaten bir hesabı var: şifresini girin ve katılmak için giriş yapın',
       joinFailed: 'Katılım tamamlanamadı; internetinizi kontrol edip tekrar deneyin',
       joinTitle: 'Bir merkeze katıl',
       invalidInvite: 'Geçersiz davet',
@@ -5551,6 +5700,8 @@ class S {
       asRole: '{role} olarak katılmak için',
       signedInAs: '{email} olarak giriş yapıldı',
       confirmJoin: 'Katılımı onayla',
+      wrongAccount: '{email} olarak giriş yaptınız, ancak bu davet {invited} adresine gönderildi. Davet edilen e-postayla devam etmek için çıkış yapın.',
+      signOutContinue: 'Çıkış yap ve devam et',
       inviteEmail: 'E-posta (davetten)',
       yourPassword: 'Hesap şifreniz',
       createPassword: 'Bir şifre oluşturun (en az 8 karakter)',
@@ -6115,6 +6266,7 @@ class S {
       min8: 'En az 8 karakter',
       createAccount: 'Hesabı oluştur',
       inviteCreated: 'Davet oluşturuldu',
+      inviteSent: 'Davet {email} adresine gönderildi. Bağlantıyı açıp bir şifre seçecekler.',
       inviteError: 'Davette bir sorun oluştu',
       inviteTitle: 'Yeni üye davet et',
       email: 'E-posta',
@@ -6407,6 +6559,41 @@ class S {
       outboxGoal: '{name} için ezber hedefi',
       whatsapp: 'WhatsApp',
     ),
+    pts: SPts(
+      award: 'Puan ekle veya düş',
+      bonus: 'Puan ekle',
+      penalty: 'Puan düş',
+      note: 'Not (isteğe bağlı)',
+      save: 'Kaydet',
+      pickReason: 'Bir neden seçin',
+      noReasons: 'Henüz etkin neden yok — yönetici web panelinden ekler.',
+      saved: 'Tamam: {name} için {points} puan',
+      outbox: '{name} puanları: {points}',
+      staffTitle: 'Puan dökümü',
+      mineTitle: 'Puanlarını nasıl kazandın',
+      total: 'Toplam',
+      noPoints: 'Henüz puan yok',
+      mismatch: 'Döküm {sum}, toplam {total} — yönetici web Puanlar sayfasından düzeltebilir.',
+      countPages: '{count} kez · {pages} sayfa',
+      count: '{count} kez',
+      recent: 'Son eklemeler ve düşmeler',
+      undo: 'Geri al',
+      undone: 'Geri alındı',
+      sumLine: '{r} dinletme · {m} sayfa ezber · {v} tekrar · {a} katılım · {b} devamsız',
+      estimate: '≈ {pages} sayfa · yaklaşık {points} puan',
+      estimateNote: 'Kesin değeri kaydederken sunucu hesaplar.',
+      modeTitle: 'Dinletme puanı nasıl hesaplanır',
+      perRec: 'Dinletme başına sabit puan',
+      perPage: 'Sayfaya göre (tekrar yarım sayılır)',
+      modeSaved: 'Hesaplama yöntemi kaydedildi',
+      pointsPerPage: 'Sayfa puanı',
+      moreOnWeb: 'Devam puanları, ekleme / düşme nedenleri ve açılış bakiyeleri web panelinden ayarlanır.',
+      kinds: {'opening': 'Açılış bakiyesi', 'recitation': 'Dinletme', 'serd': 'Onaylı Kur\'an serdi', 'attendance': 'Devam', 'bonus': 'Eklendi', 'penalty': 'Düşüldü'},
+      suggestTitle: 'Yeni yöntem için not değerleri',
+      suggestBody: 'Dört temel not uygun değerlere ayarlansın mı? Sayfaya göre: sayfa başına 10, 7, 5, 0 · sabit: dinletme başına 20, 15, 10, 5.',
+      suggestYes: 'Evet, ayarla',
+      suggestNo: 'Hayır, kalsın',
+    ),
     quran: SQuran(
       title: 'Kur’an',
       surahs: 'Sureler',
@@ -6496,6 +6683,11 @@ class S {
       saveWithPoints: 'Dinletmeyi kaydet  •  +{n} puan',
       change: 'Değiştir',
       wholeSurah: 'Surenin tamamı',
+      reachedAyah: '{surah} suresi, {ayah}. ayete ulaştı',
+      finishedSurah: '{surah} suresini bitirdi',
+      nextSurahIs: 'Sıradaki: {surah} suresi',
+      wholeQuranDone: 'Kur’an’ın tamamını ezberledi',
+      carryOn: 'Kaldığı yerden otomatik dolduruldu - gerekirse değiştirin',
     ),
     recite: SRecite(
       rangeTitle: 'Bölüm tekrarı',
@@ -6905,6 +7097,10 @@ class S {
       unlink: 'Bağlantıyı kaldır',
       log: 'Dinletme kaydı',
       noRecitations: 'Henüz dinletme yok',
+      nationalId: 'Kimlik numarası',
+      nationalIdHint: 'İsteğe bağlı. Aynı şifreyle bununla da giriş yapabilir.',
+      nationalIdInvalid: 'Geçersiz kimlik numarası: yalnızca Latin harfleri veya rakamlar, 4-20 karakter.',
+      nationalIdTaken: 'Bu kimlik numarası bu merkezde başka biri tarafından kullanılıyor.',
     ),
     sync: SSync(
       title: 'Eşitleme',
@@ -7254,6 +7450,7 @@ class S {
       signIn: 'Se connecter',
       whoHint: 'Connexion pour les enseignants, administrateurs, parents et élèves, chacun avec ses accès dans le centre.',
       confirmEmail: 'Nous avons envoyé un lien de confirmation à votre e-mail : ouvrez-le pour terminer, puis connectez-vous ici (vérifiez vos spams)',
+      emailHasAccount: 'Cet e-mail a déjà un compte : saisissez son mot de passe et connectez-vous pour rejoindre',
       joinFailed: 'Impossible de terminer l’adhésion ; vérifiez internet et réessayez',
       joinTitle: 'Rejoindre un centre',
       invalidInvite: 'Invitation invalide',
@@ -7262,6 +7459,8 @@ class S {
       asRole: 'Pour rejoindre en tant que {role}',
       signedInAs: 'Connecté en tant que {email}',
       confirmJoin: 'Confirmer l’adhésion',
+      wrongAccount: 'Vous êtes connecté en tant que {email}, mais cette invitation a été envoyée à {invited}. Déconnectez-vous pour continuer avec l’e-mail invité.',
+      signOutContinue: 'Se déconnecter et continuer',
       inviteEmail: 'E-mail (de l’invitation)',
       yourPassword: 'Mot de passe de votre compte',
       createPassword: 'Créez un mot de passe (au moins 8 caractères)',
@@ -7826,6 +8025,7 @@ class S {
       min8: 'Au moins 8 caractères',
       createAccount: 'Créer le compte',
       inviteCreated: 'Invitation créée',
+      inviteSent: 'L’invitation a été envoyée à {email}. La personne ouvre le lien et choisit un mot de passe.',
       inviteError: 'Un problème est survenu avec l’invitation',
       inviteTitle: 'Inviter un nouveau membre',
       email: 'E-mail',
@@ -8118,6 +8318,41 @@ class S {
       outboxGoal: 'Objectif de mémorisation de {name}',
       whatsapp: 'WhatsApp',
     ),
+    pts: SPts(
+      award: 'Ajouter ou retirer des points',
+      bonus: 'Ajouter des points',
+      penalty: 'Retirer des points',
+      note: 'Note (facultative)',
+      save: 'Enregistrer',
+      pickReason: 'Choisissez un motif',
+      noReasons: 'Aucun motif actif — l\'administrateur les ajoute sur le tableau de bord web.',
+      saved: 'Fait : {points} points pour {name}',
+      outbox: 'Points de {name} : {points}',
+      staffTitle: 'Détail des points',
+      mineTitle: 'Comment tu as gagné tes points',
+      total: 'Total',
+      noPoints: 'Pas encore de points',
+      mismatch: 'Le détail totalise {sum}, le total est {total} — l\'administrateur peut corriger sur la page Points du web.',
+      countPages: '{count} fois · {pages} pages',
+      count: '{count} fois',
+      recent: 'Derniers ajouts et retraits',
+      undo: 'Annuler',
+      undone: 'Annulé',
+      sumLine: '{r} récitations · {m} pages mémorisées · {v} révisées · {a} présences · {b} absences',
+      estimate: '≈ {pages} pages · environ {points} points',
+      estimateNote: 'Le serveur calcule la valeur finale à l\'enregistrement.',
+      modeTitle: 'Mode de calcul des points de récitation',
+      perRec: 'Points fixes par récitation',
+      perPage: 'Selon les pages (la révision compte moitié)',
+      modeSaved: 'Mode de calcul enregistré',
+      pointsPerPage: 'Points par page',
+      moreOnWeb: 'Les points de présence, les motifs d\'ajout / retrait et les soldes d\'ouverture se règlent sur le tableau de bord web.',
+      kinds: {'opening': 'Solde d\'ouverture', 'recitation': 'Récitation', 'serd': 'Serd du Coran approuvé', 'attendance': 'Présence', 'bonus': 'Ajout', 'penalty': 'Retrait'},
+      suggestTitle: 'Valeurs des notes pour le nouveau mode',
+      suggestBody: 'Régler les quatre notes habituelles sur des valeurs adaptées ? Par pages : 10, 7, 5, 0 par page · fixe : 20, 15, 10, 5 par récitation.',
+      suggestYes: 'Oui, les régler',
+      suggestNo: 'Non, les garder',
+    ),
     quran: SQuran(
       title: 'Coran',
       surahs: 'Sourates',
@@ -8207,6 +8442,11 @@ class S {
       saveWithPoints: 'Enregistrer la récitation  •  +{n} pts',
       change: 'Changer',
       wholeSurah: 'Sourate entière',
+      reachedAyah: 'Arrivé à la sourate {surah}, verset {ayah}',
+      finishedSurah: 'A terminé la sourate {surah}',
+      nextSurahIs: 'Suivante : sourate {surah}',
+      wholeQuranDone: 'A mémorisé tout le Coran',
+      carryOn: 'Rempli à partir de là où il s’est arrêté - modifiez si besoin',
     ),
     recite: SRecite(
       rangeTitle: 'Répéter un passage',
@@ -8616,6 +8856,10 @@ class S {
       unlink: 'Délier',
       log: 'Journal des récitations',
       noRecitations: 'Aucune récitation pour l’instant',
+      nationalId: 'Numéro d’identité',
+      nationalIdHint: 'Facultatif. Il peut aussi se connecter avec, avec le même mot de passe.',
+      nationalIdInvalid: 'Numéro d’identité invalide : lettres latines ou chiffres uniquement, de 4 à 20 caractères.',
+      nationalIdTaken: 'Ce numéro d’identité est déjà utilisé par une autre personne dans ce centre.',
     ),
     sync: SSync(
       title: 'Synchronisation',

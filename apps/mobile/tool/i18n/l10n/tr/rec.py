@@ -42,4 +42,9 @@ T = {'pickGrade': 'Dinletme notunu seçin',
  'addNote': 'Not ekle',
  'saveWithPoints': 'Dinletmeyi kaydet  •  +{n} puan',
  'change': 'Değiştir',
- 'wholeSurah': 'Surenin tamamı'}
+ 'wholeSurah': 'Surenin tamamı',
+ 'reachedAyah': '{surah} suresi, {ayah}. ayete ulaştı',
+ 'finishedSurah': '{surah} suresini bitirdi',
+ 'nextSurahIs': 'Sıradaki: {surah} suresi',
+ 'wholeQuranDone': 'Kur’an’ın tamamını ezberledi',
+ 'carryOn': 'Kaldığı yerden otomatik dolduruldu - gerekirse değiştirin'}

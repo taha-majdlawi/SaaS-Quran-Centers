@@ -1,6 +1,7 @@
 import { getI18n } from '@/lib/i18n/server';
 import { LanguageSwitcher } from '@/lib/i18n/client';
 import type { LegalDoc } from '@/lib/legal/platform';
+import { PlatformLogo } from '@/components/org-logo';
 
 /** The platform's privacy policy / terms (lib/legal/platform.ts): Arabic, or English for the other languages. */
 export async function PlatformLegal({ docs }: { docs: Record<'ar' | 'en', LegalDoc> }) {
@@ -11,7 +12,7 @@ export async function PlatformLegal({ docs }: { docs: Record<'ar' | 'en', LegalD
     <div className="flex min-h-screen flex-col bg-[#FBFAF6]">
       <header className="flex items-center justify-between border-b bg-white px-6 py-4">
         <a href="/" className="flex items-center gap-2 font-bold text-brand">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white">ب</span>
+          <PlatformLogo size={32} />
           {t.common.brand}
         </a>
         <LanguageSwitcher />

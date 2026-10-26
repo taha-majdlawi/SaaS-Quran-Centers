@@ -53,6 +53,12 @@ class AccountsApi {
     }
   }
 
+  /// Creates (or renews) an invitation and emails its link when the platform can; true when sent.
+  Future<bool> invite({required String orgId, required String email, required String role}) async {
+    final data = await _post({'action': 'invite', 'orgId': orgId, 'email': email, 'role': role});
+    return data['sent'] == true;
+  }
+
   Future<CreatedAccount> createStudent({
     required String orgId,
     required String fullName,
@@ -64,9 +70,11 @@ class AccountsApi {
     String? phone,
     String? whatsapp,
     String? address,
+    String? nationalId,
   }) async {
     final result = await _post({
       'action': 'create_student',
+      'nationalId': nationalId,
       'orgId': orgId,
       'fullName': fullName,
       'studentCode': studentCode,
@@ -88,9 +96,11 @@ class AccountsApi {
     required String password,
     String? phone,
     String? whatsapp,
+    String? nationalId,
   }) async {
     final result = await _post({
       'action': 'create_teacher',
+      'nationalId': nationalId,
       'orgId': orgId,
       'fullName': fullName,
       'identifier': identifier,

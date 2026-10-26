@@ -105,7 +105,7 @@ const attendanceColors = <String, Color>{
 /// One student of a circle: avatar, name, points, today's state, and the two
 /// actions a teacher uses all day (attendance, record a recitation).
 class TeacherStudentTile extends StatelessWidget {
-  const TeacherStudentTile({super.key, required this.student, required this.onOpen, required this.onRecord, required this.onAttendance, this.dueReviews = const [], this.onRecordDue});
+  const TeacherStudentTile({super.key, required this.student, required this.onOpen, required this.onRecord, required this.onAttendance, this.dueReviews = const [], this.onRecordDue, this.onAward});
 
   final CircleStudent student;
   final VoidCallback onOpen;
@@ -114,6 +114,8 @@ class TeacherStudentTile extends StatelessWidget {
   /// Surah numbers the spaced-review schedule says are due today for this student.
   final List<int> dueReviews;
   final VoidCallback? onRecordDue;
+  /// add / deduct points for a reason (0096); null hides the star
+  final VoidCallback? onAward;
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +170,21 @@ class TeacherStudentTile extends StatelessWidget {
               ),
             const SizedBox(height: 10),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              if (onAward != null) ...[
+                InkWell(
+                  onTap: onAward,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Tooltip(
+                    message: tr(context).pts.award,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: TeacherStyle.tint(Colors.amber), borderRadius: BorderRadius.circular(10)),
+                      child: Icon(Icons.star_rounded, size: 20, color: Colors.amber.shade700),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
               PopupMenuButton<String>(
                 tooltip: tr(context).teach.takeAttendance,
                 onSelected: onAttendance,

@@ -48,6 +48,11 @@ export default async function NewTeacherPage({
             {fmt(S.members.identifierHint, { code: org.slug })}
           </span>
         </label>
+        <label className="text-sm font-medium text-gray-700">
+          {S.students.nationalId}
+          <input name="nationalId" autoComplete="off" dir="ltr" maxLength={24} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+          <span className="mt-1 block text-xs font-normal text-gray-400">{S.students.nationalIdHint}</span>
+        </label>
 
         <label className="text-sm font-medium text-gray-700">
           {S.members.phoneOptional}

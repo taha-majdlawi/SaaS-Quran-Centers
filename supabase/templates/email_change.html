@@ -4,19 +4,23 @@
 <body style="margin:0;padding:0;background:#FBF8F1;font-family:Tahoma,Arial,sans-serif;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FBF8F1;padding:32px 12px;">
 <tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #E7E2D6;border-radius:16px;">
-<tr><td align="center" style="padding:32px 28px 8px;">
-<div style="display:inline-block;width:56px;height:56px;line-height:56px;border-radius:14px;background:#1E7A54;color:#ffffff;font-size:28px;font-weight:bold;">ب</div>
-<p style="margin:12px 0 0;color:#1E7A54;font-size:14px;font-weight:bold;">بستان القرآن</p>
-<h1 style="margin:8px 0 0;color:#111827;font-size:20px;">تأكيد تغيير البريد الإلكتروني</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #E7E2D6;border-radius:16px;overflow:hidden;">
+<tr><td align="center" style="background:#1E7A54;border-radius:16px 16px 0 0;padding:28px 28px 22px;">
+<img src="https://bustan-alquran.com/email/logo.png" width="72" height="72" alt="بستان القرآن" style="display:block;width:72px;height:72px;border:0;border-radius:36px;">
+<p style="margin:12px 0 0;color:#ffffff;font-size:17px;font-weight:bold;letter-spacing:0.3px;">بستان القرآن</p>
+<p style="margin:2px 0 0;color:#CFE7DA;font-size:12px;">منصة إدارة مراكز تحفيظ القرآن الكريم</p>
+</td></tr>
+<tr><td align="center" style="padding:28px 28px 0;">
+<h1 style="margin:0;color:#111827;font-size:20px;">تأكيد تغيير البريد الإلكتروني</h1>
 </td></tr>
 <tr><td style="padding:16px 28px 0;color:#374151;font-size:15px;line-height:1.8;text-align:right;">السلام عليكم ورحمة الله،<br>طُلب تغيير بريد حسابك في بستان القرآن من <span dir="ltr">{{ .Email }}</span> إلى <span dir="ltr">{{ .NewEmail }}</span>. اضغط الزر لتأكيد التغيير.</td></tr>
 <tr><td align="center" style="padding:24px 28px;">
 <a href="{{ .SiteURL }}/confirm?token_hash={{ .TokenHash }}&type=email_change" style="display:inline-block;background:#1E7A54;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;padding:12px 28px;border-radius:10px;">تأكيد التغيير</a>
 </td></tr>
+<tr><td style="padding:0 28px 16px;color:#9CA3AF;font-size:12px;line-height:1.7;text-align:right;">إذا لم يعمل الزر، انسخ هذا الرابط في المتصفح:<br><a href="{{ .SiteURL }}/confirm?token_hash={{ .TokenHash }}&type=email_change" style="color:#1E7A54;word-break:break-all;" dir="ltr">{{ .SiteURL }}/confirm?token_hash={{ .TokenHash }}&type=email_change</a></td></tr>
 <tr><td style="padding:0 28px 8px;color:#6B7280;font-size:13px;line-height:1.7;text-align:right;">إذا لم تطلب ذلك فتجاهل هذه الرسالة، ولن يتغيّر بريدك.</td></tr>
 <tr><td style="padding:8px 28px 24px;color:#9CA3AF;font-size:12px;line-height:1.6;text-align:left;" dir="ltr">Assalamu alaikum. Tap the button to confirm the new email address of your Bustan Al-Quran account. If you did not ask for this, ignore this email.</td></tr>
-<tr><td style="border-top:1px solid #F0EBE0;padding:16px 28px;color:#9CA3AF;font-size:12px;text-align:center;">
+<tr><td style="border-top:1px solid #F0EBE0;background:#FBF8F1;border-radius:0 0 16px 16px;padding:16px 28px;color:#9CA3AF;font-size:12px;text-align:center;">
 بستان القرآن — منصة إدارة مراكز تحفيظ القرآن الكريم<br>
 <a href="https://bustan-alquran.com" style="color:#1E7A54;text-decoration:none;">bustan-alquran.com</a> · <a href="mailto:support@bustan-alquran.com" style="color:#1E7A54;text-decoration:none;">support@bustan-alquran.com</a>
 </td></tr>
