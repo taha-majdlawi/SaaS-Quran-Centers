@@ -4,7 +4,7 @@
 
 /// Shared words and the generic states.
 class SCommon {
-  const SCommon({required this.appName, required this.signOut, required this.loadFailed, required this.partFailed, required this.checkConnection, required this.retry, required this.noPermission, required this.linkedData, required this.offline, required this.cancel, required this.save, required this.delete, required this.edit, required this.send, required this.close, required this.confirm, required this.language, required this.goodMorning, required this.goodEvening, required this.listSep});
+  const SCommon({required this.appName, required this.signOut, required this.loadFailed, required this.partFailed, required this.checkConnection, required this.retry, required this.noPermission, required this.linkedData, required this.offline, required this.actionFailed, required this.cancel, required this.save, required this.delete, required this.edit, required this.send, required this.close, required this.confirm, required this.language, required this.goodMorning, required this.goodEvening, required this.listSep});
   final String appName;
   final String signOut;
   final String loadFailed;
@@ -14,6 +14,7 @@ class SCommon {
   final String noPermission;
   final String linkedData;
   final String offline;
+  final String actionFailed;
   final String cancel;
   final String save;
   final String delete;
@@ -1959,6 +1960,7 @@ class S {
       noPermission: 'لا تملك صلاحية تنفيذ هذه العملية',
       linkedData: 'لا يمكن تنفيذ العملية لوجود بيانات مرتبطة',
       offline: 'تعذّر الاتصال بالإنترنت، حاول مرة أخرى',
+      actionFailed: 'تعذّر تنفيذ العملية — تحقّق من الاتصال',
       cancel: 'إلغاء',
       save: 'حفظ',
       delete: 'حذف',
@@ -3718,6 +3720,7 @@ class S {
       noPermission: 'You don’t have permission to do this',
       linkedData: 'This can’t be done because other data depends on it',
       offline: 'No internet connection, try again',
+      actionFailed: 'That didn’t go through — check your connection',
       cancel: 'Cancel',
       save: 'Save',
       delete: 'Delete',
@@ -5477,6 +5480,7 @@ class S {
       noPermission: 'Bunu yapma izniniz yok',
       linkedData: 'Başka veriler buna bağlı olduğu için yapılamıyor',
       offline: 'İnternet bağlantısı yok, tekrar deneyin',
+      actionFailed: 'Gerçekleşmedi — bağlantınızı kontrol edin',
       cancel: 'İptal',
       save: 'Kaydet',
       delete: 'Sil',
@@ -7236,6 +7240,7 @@ class S {
       noPermission: 'Vous n’avez pas l’autorisation de faire cela',
       linkedData: 'Impossible car d’autres données en dépendent',
       offline: 'Pas de connexion internet, réessayez',
+      actionFailed: 'Cela n’a pas abouti — vérifiez votre connexion',
       cancel: 'Annuler',
       save: 'Enregistrer',
       delete: 'Supprimer',

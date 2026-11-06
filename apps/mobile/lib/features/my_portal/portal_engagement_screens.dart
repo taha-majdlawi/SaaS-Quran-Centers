@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/i18n/i18n.dart';
 import '../../core/supabase/supabase_client.dart';
@@ -61,8 +60,8 @@ class _PortalMarketScreenState extends State<PortalMarketScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
         _select(_studentId!);
       }
-    } on PostgrestException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyError(e, tr(context).common.actionFailed))));
     }
   }
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -44,8 +43,8 @@ class _MarketScreenState extends State<MarketScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
         setState(() => _load(_orgId!));
       }
-    } on PostgrestException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyError(e, tr(context).common.actionFailed))));
     }
   }
 

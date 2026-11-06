@@ -57,7 +57,7 @@ class _ReviewPlanScreenState extends State<ReviewPlanScreen> {
       if (out.queued) messenger.showSnackBar(SnackBar(content: Text(kQueuedMessage)));
       _reload();
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e is PostgrestException ? e.message : '$e')));
+      messenger.showSnackBar(SnackBar(content: Text(friendlyError(e, currentStrings.common.actionFailed))));
     }
   }
 
