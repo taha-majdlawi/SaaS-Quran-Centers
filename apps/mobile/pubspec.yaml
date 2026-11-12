@@ -1,7 +1,7 @@
 name: bustan_alquran_app
 description: "بستان القرآن (Bustan Al-Quran) - multi-tenant Quran memorization center app, built on the eqraa_app foundations."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.11.4
