@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -47,8 +46,8 @@ class _ChallengeDetailScreenState extends State<ChallengeDetailScreen> {
     try {
       await _repository.deleteChallenge(_orgId, widget.challengeId);
       if (mounted) context.pop();
-    } on PostgrestException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyError(e, tr(context).common.actionFailed))));
     }
   }
 

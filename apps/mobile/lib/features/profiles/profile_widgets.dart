@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/teacher_style.dart';
 import '../../core/widgets/format.dart';
 import '../../core/widgets/garden.dart';
+import '../../core/widgets/ui.dart';
 import 'profiles_repository.dart';
 
 num? _n(dynamic v) => v is num ? v : num.tryParse('${v ?? ''}');
@@ -367,7 +368,7 @@ class _GoalSheetState extends State<_GoalSheet> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(out.queued ? kQueuedMessage : t.goalSaved)));
       Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) setState(() => _error = '$e'.replaceFirst(RegExp(r'^.*?message: '), '').split(', code:').first);
+      if (mounted) setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -379,7 +380,7 @@ class _GoalSheetState extends State<_GoalSheet> {
       await widget.repo.clearGoal(widget.orgId, widget.studentId);
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) setState(() => _error = '$e');
+      if (mounted) setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
