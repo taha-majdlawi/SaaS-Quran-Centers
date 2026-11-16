@@ -140,8 +140,8 @@ class _MarketItemFormScreenState extends State<MarketItemFormScreen> {
     try {
       await _repository.deleteItem(_orgId, widget.itemId!);
       if (mounted) context.pop();
-    } on PostgrestException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     }
   }
 

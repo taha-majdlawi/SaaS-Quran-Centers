@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../quran/wird_widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/api/accounts_api.dart';
 import '../../core/data/quran_data.dart';
@@ -147,8 +146,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
         _toast(queued ? kQueuedMessage : tr(context).stu.deleted);
         _reload();
       }
-    } on PostgrestException catch (e) {
-      if (mounted) _toast(e.message);
+    } catch (e) {
+      if (mounted) _toast(friendlyError(e, currentStrings.common.actionFailed));
     }
   }
 
@@ -181,8 +180,8 @@ class _StudentFileScreenState extends State<StudentFileScreen> {
         _toast(queued ? kQueuedMessage : tr(context).stu.planSaved);
         _reload();
       }
-    } on PostgrestException catch (e) {
-      if (mounted) _toast(e.message);
+    } catch (e) {
+      if (mounted) _toast(friendlyError(e, currentStrings.common.actionFailed));
     }
   }
 

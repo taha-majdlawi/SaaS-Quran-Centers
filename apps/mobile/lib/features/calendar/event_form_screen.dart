@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -139,8 +138,8 @@ class _EventFormScreenState extends State<EventFormScreen> {
       } else {
         context.pop();
       }
-    } on PostgrestException catch (e) {
-      setState(() => _error = e.message);
+    } catch (e) {
+      setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -162,8 +161,8 @@ class _EventFormScreenState extends State<EventFormScreen> {
     try {
       await _repository.deleteEntry(_orgId, widget.entryId!);
       if (mounted) context.go('/calendar');
-    } on PostgrestException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     }
   }
 
