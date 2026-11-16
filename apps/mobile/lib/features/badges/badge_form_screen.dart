@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/organization.dart';
@@ -107,8 +106,8 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
         _say(done);
         setState(() => _future = _load());
       }
-    } on PostgrestException catch (e) {
-      if (mounted) _say(e.message, error: true);
+    } catch (e) {
+      if (mounted) _say(friendlyError(e, currentStrings.common.actionFailed), error: true);
     }
   }
 
@@ -134,8 +133,8 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
         sortOrder: 0,
       );
       if (mounted) context.pop();
-    } on PostgrestException catch (e) {
-      _say(e.message, error: true);
+    } catch (e) {
+      _say(friendlyError(e, currentStrings.common.actionFailed), error: true);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -165,8 +164,8 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
           _say(fmt(tr(context).badgesStaff.awardedN, {'n': n}));
           setState(() => _future = _load());
         }
-      } on PostgrestException catch (e) {
-        if (mounted) _say(e.message, error: true);
+      } catch (e) {
+        if (mounted) _say(friendlyError(e, currentStrings.common.actionFailed), error: true);
       }
     }
   }
@@ -187,8 +186,8 @@ class _BadgeFormScreenState extends State<BadgeFormScreen> {
     try {
       await _repository.deleteBadge(_orgId, widget.badgeId!);
       if (mounted) context.pop();
-    } on PostgrestException catch (e) {
-      if (mounted) _say(e.message, error: true);
+    } catch (e) {
+      if (mounted) _say(friendlyError(e, currentStrings.common.actionFailed), error: true);
     }
   }
 

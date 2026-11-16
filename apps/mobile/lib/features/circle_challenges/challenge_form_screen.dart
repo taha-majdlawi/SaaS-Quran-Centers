@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -67,8 +66,8 @@ class _ChallengeFormScreenState extends State<ChallengeFormScreen> {
         ends: _end,
       );
       if (mounted) context.pop(true);
-    } on PostgrestException catch (e) {
-      setState(() => _error = e.message);
+    } catch (e) {
+      setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
