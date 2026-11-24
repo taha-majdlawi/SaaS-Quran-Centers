@@ -31,5 +31,10 @@ SPEC = {'mem': ('Members, teachers and permissions (admin).', (
   ('inviteBtn', 'إنشاء دعوة', 'Create invitation'),
   ('pendingInvites', 'دعوات لسه ما انضمّت', 'Invitations not accepted yet'),
   ('contactTitle', 'التواصل', 'Contact'),
+  ('inviteName', 'الاسم الرسمي', 'Official name'),
+  ('inviteDetailsHint', 'الاسم ورقم الهوية اختياريان، لكن يُنصح بهما: يُحفظان في حسابه عند قبول الدعوة، ويقدر يدخل برقم الهوية بنفس كلمة السر. الطلاب يُضافون من صفحة الطلاب.', 'Name and ID number are optional but recommended: they are saved to the account when the invitation is accepted, and the person can also sign in with the ID number and the same password. Students are added from the students page.'),
+  ('cancelInvite', 'إلغاء الدعوة', 'Cancel invitation'),
+  ('cancelConfirm', 'إلغاء دعوة {email}؟ الرابط يتوقف عن العمل فورًا.', 'Cancel the invitation for {email}? The link stops working right away.'),
+  ('inviteExpired', 'انتهت صلاحيتها', 'Expired'),
   ('contactHint', 'يُفضّل مع رمز الدولة، مثل \u200e+962791234567', 'Preferably with the country code, e.g. +962791234567'),
 ))}

@@ -26,6 +26,9 @@ class JoinScreen extends StatefulWidget {
 
 class _JoinScreenState extends State<JoinScreen> {
   final _password = TextEditingController();
+  final _confirm = TextEditingController();
+  final _name = TextEditingController();
+  late final _emailField = TextEditingController();
   Future<Map<String, dynamic>?>? _future;
   bool _haveAccount = false;
   bool _busy = false;
@@ -40,6 +43,9 @@ class _JoinScreenState extends State<JoinScreen> {
   @override
   void dispose() {
     _password.dispose();
+    _confirm.dispose();
+    _name.dispose();
+    _emailField.dispose();
     super.dispose();
   }
 
@@ -49,7 +55,15 @@ class _JoinScreenState extends State<JoinScreen> {
     final rows = await AppSupabase.client.rpc('get_invitation', params: {'invite_token': token}) as List;
     if (rows.isEmpty) return null;
     final inv = rows.first as Map<String, dynamic>;
-    return inv['valid'] == true ? inv : null;
+    if (inv['valid'] != true) return null;
+    _emailField.text = '${inv['email']}';
+    return inv;
+  }
+
+  /// The official name the admin put on the invitation (0099), if any.
+  String? _invitedName(Map<String, dynamic> inv) {
+    final n = (inv['full_name'] as String?)?.trim();
+    return (n == null || n.isEmpty) ? null : n;
   }
 
   Future<void> _accept(Map<String, dynamic> inv, {required bool signedIn}) async {
@@ -62,15 +76,22 @@ class _JoinScreenState extends State<JoinScreen> {
       if (!signedIn) {
         final email = inv['email'] as String;
         final password = _password.text;
-        if (password.length < 8) throw StateError(tr(context).mem.password8);
         if (_haveAccount) {
+          // an existing account's own password, whatever its length (older ones may be shorter)
+          if (password.isEmpty) throw StateError(tr(context).mem.required);
           await client.auth.signInWithPassword(email: email, password: password);
         } else {
-          // with "Confirm email" on, the link in the email accepts the invitation (web /confirm)
+          // the official name from the invitation wins; otherwise the invitee's own
+          final fullName = _invitedName(inv) ?? _name.text.trim();
+          if (fullName.isEmpty) throw StateError(tr(context).auth.nameRequired);
+          if (password.length < 8) throw StateError(tr(context).mem.password8);
+          if (password != _confirm.text) throw StateError(tr(context).auth.passwordsDiffer);
+          // with "Confirm email" on, the link in the email accepts the invitation (web /confirm);
+          // full_name becomes the profile's name
           final res = await client.auth.signUp(
             email: email,
             password: password,
-            data: {'pending_invite': widget.token},
+            data: {'pending_invite': widget.token, 'full_name': fullName},
             emailRedirectTo: 'https://bustan-alquran.com/confirm',
           );
           // an email that already has an account: Supabase answers as if it signed up, but makes
@@ -151,8 +172,26 @@ class _JoinScreenState extends State<JoinScreen> {
               const SizedBox(height: 12),
               LoadingButton(label: tr(context).auth.confirmJoin, loading: _busy, onPressed: () => _accept(inv, signedIn: true)),
             ] else ...[
+              if (!_haveAccount) ...[
+                // the name the admin entered is shown as is; otherwise the invitee writes theirs
+                if (_invitedName(inv) != null)
+                  TextFormField(
+                    initialValue: _invitedName(inv),
+                    readOnly: true,
+                    decoration: InputDecoration(labelText: tr(context).stu.fullName),
+                  )
+                else
+                  TextField(
+                    controller: _name,
+                    maxLength: 120,
+                    textCapitalization: TextCapitalization.words,
+                    autofillHints: const [AutofillHints.name],
+                    decoration: InputDecoration(labelText: tr(context).stu.fullName, counterText: ''),
+                  ),
+                const SizedBox(height: 12),
+              ],
               TextField(
-                controller: TextEditingController(text: '${inv['email']}'),
+                controller: _emailField,
                 readOnly: true,
                 textDirection: TextDirection.ltr,
                 decoration: InputDecoration(labelText: tr(context).auth.inviteEmail),
@@ -164,6 +203,14 @@ class _JoinScreenState extends State<JoinScreen> {
                 decoration: InputDecoration(labelText: _haveAccount ? tr(context).auth.yourPassword : tr(context).auth.createPassword),
               ),
               const SizedBox(height: 12),
+              if (!_haveAccount) ...[
+                TextField(
+                  controller: _confirm,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: tr(context).auth.confirmPassword),
+                ),
+                const SizedBox(height: 12),
+              ],
               LoadingButton(
                 label: _haveAccount ? tr(context).auth.signInJoin : tr(context).auth.createJoin,
                 loading: _busy,

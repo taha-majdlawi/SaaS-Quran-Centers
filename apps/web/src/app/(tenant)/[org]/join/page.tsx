@@ -124,6 +124,15 @@ export default async function JoinPage({
     <AuthCard title={title} subtitle={fmt(t.join.asRoleCreate, { role: roleLabel })} error={error}>
       <form action={signUpAndAcceptInvitation} className="flex flex-col gap-3">
         <input type="hidden" name="token" value={token} />
+        {/* the official name the admin entered is shown as is; otherwise the invitee writes theirs */}
+        <label className={authLabelClass}>
+          {t.join.fullName}
+          {invitation.full_name ? (
+            <input value={invitation.full_name} readOnly className={`mt-1 ${authInputClass} bg-gray-50`} />
+          ) : (
+            <input name="fullName" required maxLength={120} autoComplete="name" className={`mt-1 ${authInputClass}`} />
+          )}
+        </label>
         {emailField}
         <label className={authLabelClass}>
           {t.common.password}

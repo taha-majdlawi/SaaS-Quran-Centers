@@ -59,4 +59,7 @@ T = {'thisCenter': 'ce centre',
  'googleHint': 'Pour les enseignants et l’équipe',
  'googleNotStaff': 'Ce compte Google ({email}) n’est enseignant ni administrateur d’aucun centre. Demandez à l’administrateur d’ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.',
  'googleFailed': 'Connexion avec Google impossible. Réessayez.',
- 'noCentersHint': 'Demandez à l’administrateur du centre de vous inviter, ou connectez-vous avec un autre compte'}
+ 'noCentersHint': 'Demandez à l’administrateur du centre de vous inviter, ou connectez-vous avec un autre compte',
+ 'confirmPassword': 'Confirmer le mot de passe',
+ 'passwordsDiffer': 'Les mots de passe ne correspondent pas',
+ 'nameRequired': 'Saisissez votre nom complet'}

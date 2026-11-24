@@ -14,12 +14,16 @@ const back = (token: string, extra = '') => `/join?token=${encodeURIComponent(to
 const err = (token: string, message: string, mode?: 'signin'): never =>
   back(token, `${mode ? `&mode=${mode}` : ''}&error=${encodeURIComponent(message)}`);
 
-/** The invited email, from the invitation itself - never from the form. */
-async function invitedEmail(token: string): Promise<string | null> {
+/** The invitation itself (email, and the name the admin entered) - never from the form. */
+async function invitation(token: string): Promise<{ email: string; fullName: string | null } | null> {
   const supabase = await createClient();
   const { data } = await supabase.rpc('get_invitation', { invite_token: token });
-  const inv = (data as { email: string | null; valid: boolean }[] | null)?.[0];
-  return inv?.valid && inv.email ? inv.email : null;
+  const inv = (data as { email: string | null; valid: boolean; full_name: string | null }[] | null)?.[0];
+  return inv?.valid && inv.email ? { email: inv.email, fullName: inv.full_name?.trim() || null } : null;
+}
+
+async function invitedEmail(token: string): Promise<string | null> {
+  return (await invitation(token))?.email ?? null;
 }
 
 /** Invitee has no account yet - create one with their own password, then accept. */
@@ -28,13 +32,20 @@ export async function signUpAndAcceptInvitation(formData: FormData) {
   const password = String(formData.get('password') ?? '');
   const confirm = String(formData.get('confirm') ?? '');
   const { t } = await getI18n();
-  const email = await invitedEmail(token);
-  if (!email) redirect(back(token));
+  const inv = await invitation(token);
+  if (!inv) redirect(back(token));
+  const email = inv.email;
+  // the official name the admin entered wins; otherwise the invitee's own
+  const fullName = inv.fullName ?? String(formData.get('fullName') ?? '').trim().slice(0, 120);
+  if (!fullName) redirect(err(token, t.join.nameRequired));
+  // the form asks for 8, but only the browser checked it
+  if (password.length < 8) redirect(err(token, t.reset.errorShort));
   if (password !== confirm) redirect(err(token, t.join.passwordsDiffer));
 
   const supabase = await createClient();
-  // with "Confirm email" on, /confirm accepts the invitation from what waits here
-  const pending: PendingSignup = { pending_invite: token };
+  // with "Confirm email" on, /confirm accepts the invitation from what waits here; the name
+  // becomes the profile's (handle_new_auth_user reads full_name)
+  const pending: PendingSignup & { full_name: string } = { pending_invite: token, full_name: fullName };
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,

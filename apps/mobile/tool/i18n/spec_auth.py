@@ -60,4 +60,7 @@ SPEC = {'auth': ('Sign in, join, onboarding and the center picker.', (
   ('googleNotStaff', 'حساب Google هذا ({email}) غير مسجّل كمعلم أو مدير في أي مركز. اطلب من مدير المركز إضافة بريدك، أو ادخل برقمك وكلمة السر.', 'This Google account ({email}) is not a teacher or admin of any center. Ask the center admin to add your email, or sign in with your number and password.'),
   ('googleFailed', 'تعذّر الدخول بحساب Google، حاول مرة أخرى.', 'Could not sign in with Google. Try again.'),
   ('noCentersHint', 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر', 'Ask the center admin to invite you, or sign in with another account'),
+  ('confirmPassword', 'تأكيد كلمة السر', 'Confirm password'),
+  ('passwordsDiffer', 'كلمتا السر غير متطابقتين', 'The passwords don’t match'),
+  ('nameRequired', 'اكتب اسمك الكامل', 'Enter your full name'),
 ))}

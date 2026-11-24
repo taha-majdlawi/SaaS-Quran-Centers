@@ -35,4 +35,12 @@ T = {'copyHint': 'Copiez le lien et envoyez-le à la personne (WhatsApp / e-mail
  'whatsappOptional': 'Numéro WhatsApp (facultatif)',
  'inviteSent': 'L’invitation a été envoyée à {email}. Le lien est aussi ci-dessous si vous devez le copier.',
  'inviteNotSent': 'L’invitation pour {email} a été créée. Copiez le lien ci-dessous et envoyez-le (l’envoi par e-mail n’est pas encore activé).',
- 'resend': 'Nouveau lien et renvoi'}
+ 'resend': 'Nouveau lien et renvoi',
+ 'inviteName': 'Nom officiel',
+ 'inviteDetailsHint': 'Le nom et le numéro d’identité sont facultatifs mais conseillés : ils sont enregistrés dans le compte à l’acceptation de l’invitation, et la personne peut aussi se connecter avec son numéro d’identité et le même mot de passe.',
+ 'fullName': 'Nom',
+ 'cancelInvite': 'Annuler l’invitation',
+ 'cancelConfirm': 'Annuler l’invitation pour {email} ? Le lien cesse de fonctionner immédiatement.',
+ 'expired': 'Expirée',
+ 'studentsHint': 'Les élèves s’ajoutent depuis la page des élèves (avec un cercle et un numéro).',
+ 'nameShared': 'Ce compte appartient aussi à un autre centre : son nom se modifie là-bas ou par la personne elle-même.'}

@@ -190,6 +190,7 @@ export const tr: Dictionary = {
     submit: 'Sıfırlama bağlantısı gönder',
     errorEmpty: 'Kimliğinizi veya e-postanızı girin',
     errorNoEmail: 'Hesabınız e-postayla değil numarayla giriş yapıyor, bu yüzden bağlantı gönderilemez. Şifrenizi değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
+    sentByNumber: 'Bu, e-postası olan bir hesabın kimlik numarasıysa, şifre sıfırlama bağlantısı o e-postaya gönderildi. Hesabınız yalnızca numarayla (e-postasız) giriş yapıyorsa, değiştirmek için öğretmeninize veya merkez yöneticisine başvurun.',
   },
 
   reset: {
@@ -241,6 +242,8 @@ export const tr: Dictionary = {
     signingIn: "Giriş yapılıyor ve katılınıyor...",
     confirmPassword: "Şifreyi onayla",
     passwordHint: "En az 8 karakter",
+    fullName: "Ad soyad",
+    nameRequired: "Adınızı ve soyadınızı yazın",
     passwordsDiffer: "İki şifre eşleşmiyor",
     errorWrongPassword: "Bu e-posta için şifre yanlış.",
     errorOtherEmail: "Bu davet {invited} adresine gönderildi — başka bir hesapla kabul edilemez.",

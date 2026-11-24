@@ -3,7 +3,7 @@
 import { redirect } from '@/lib/platform/redirect';
 import { destinationFor, safeNext } from '@/lib/auth/next';
 import { createClient } from '@/lib/supabase/server';
-import { isEmail, toLoginEmail } from '@/lib/accounts/login-id';
+import { isEmail, legacyLoginEmail, toLoginEmail } from '@/lib/accounts/login-id';
 import { signInWithNationalId } from '@/lib/auth/national-id';
 import { getI18n } from '@/lib/i18n/server';
 
@@ -31,6 +31,11 @@ export async function signInToTenant(formData: FormData) {
     email: toLoginEmail(orgSlug, identifier),
     password,
   });
+  // a number typed with Arabic digits, for an account made with them before they became Latin
+  const legacy = legacyLoginEmail(orgSlug, identifier);
+  if ((signInError || !signInData.user) && legacy) {
+    ({ data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: legacy, password }));
+  }
   // not the number at the center / the email: maybe the national ID (0095), with the same password
   if ((signInError || !signInData.user) && !isEmail(identifier)) {
     const byId = await signInWithNationalId(supabase, orgSlug, identifier, password);

@@ -54,8 +54,16 @@ class AccountsApi {
   }
 
   /// Creates (or renews) an invitation and emails its link when the platform can; true when sent.
-  Future<bool> invite({required String orgId, required String email, required String role}) async {
-    final data = await _post({'action': 'invite', 'orgId': orgId, 'email': email, 'role': role});
+  /// [fullName] and [nationalId] are optional; accepting the invitation saves them to the account (0099).
+  Future<bool> invite({required String orgId, required String email, required String role, String? fullName, String? nationalId}) async {
+    final data = await _post({
+      'action': 'invite',
+      'orgId': orgId,
+      'email': email,
+      'role': role,
+      if (fullName != null && fullName.isNotEmpty) 'fullName': fullName,
+      if (nationalId != null && nationalId.isNotEmpty) 'nationalId': nationalId,
+    });
     return data['sent'] == true;
   }
 
