@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { hasRealEmail } from '@/lib/accounts/login-id';
 
 /**
  * A national ID as stored (0095): Latin letters and digits, upper case, 4-20 long. Arabic-Indic
@@ -45,6 +46,17 @@ async function emailsFor(slug: string, id: string): Promise<string[]> {
     if (data.user?.email) emails.push(data.user.email);
   }
   return emails;
+}
+
+/**
+ * For "forgot password": the real addresses (never a number's made-up one) of the accounts whose
+ * national ID in this center is `identifier` - a teacher who signs in with the ID still gets the
+ * link at the email the account has. Never shown: the caller only sends the link there.
+ */
+export async function resetEmailsForNationalId(slug: string, identifier: string): Promise<string[]> {
+  const id = normalizeNationalId(identifier);
+  if (!id) return [];
+  return (await emailsFor(slug, id)).filter(hasRealEmail);
 }
 
 /**

@@ -839,6 +839,14 @@ export const staffEn: typeof staffAr = {
     inviteSent: 'The invitation was emailed to {email}. The link is also below if you need to copy it.',
     inviteNotSent: 'The invitation for {email} was created. Copy the link below and send it (sending by email isn’t on yet).',
     resend: 'New link & resend',
+    inviteName: 'Official name',
+    inviteDetailsHint: 'Name and ID number are optional but recommended: they are saved to the account when the invitation is accepted, and the person can then also sign in with the ID number and the same password.',
+    fullName: 'Name',
+    cancelInvite: 'Cancel invitation',
+    cancelConfirm: 'Cancel the invitation for {email}? The link stops working right away.',
+    expired: 'Expired',
+    studentsHint: 'Students are added from the students page (with a circle and a number).',
+    nameShared: 'This account also belongs to another center, so its name is changed there or by the person.',
   },
   /** The staff member's own account page (/account): email and password. */
   myAccount: {

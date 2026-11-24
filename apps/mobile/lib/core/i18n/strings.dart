@@ -235,7 +235,7 @@ class SAttn {
 
 /// Sign in, join, onboarding and the center picker.
 class SAuth {
-  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.emailHasAccount, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.wrongAccount, required this.signOutContinue, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint});
+  const SAuth({required this.thisCenter, required this.noCenter, required this.badLogin, required this.notMember, required this.serverDown, required this.codeFirst, required this.openFailed, required this.signInTitle, required this.step1, required this.centerCode, required this.enterCode, required this.noCenterShort, required this.codeHint, required this.step2, required this.loginId, required this.enterId, required this.password, required this.enterPassword, required this.forgot, required this.signInTo, required this.signIn, required this.whoHint, required this.confirmEmail, required this.emailHasAccount, required this.joinFailed, required this.joinTitle, required this.invalidInvite, required this.invalidBody, required this.inviteFrom, required this.asRole, required this.signedInAs, required this.confirmJoin, required this.wrongAccount, required this.signOutContinue, required this.inviteEmail, required this.yourPassword, required this.createPassword, required this.signInJoin, required this.createJoin, required this.noAccount, required this.haveAccount, required this.ob1, required this.ob1Body, required this.ob2, required this.ob2Body, required this.ob3, required this.ob3Body, required this.openSignup, required this.skip, required this.signInBtn, required this.next, required this.registerCenter, required this.pickCenter, required this.noCenters, required this.numberReset, required this.google, required this.googleHint, required this.googleNotStaff, required this.googleFailed, required this.noCentersHint, required this.confirmPassword, required this.passwordsDiffer, required this.nameRequired});
   final String thisCenter;
   final String noCenter;
   final String badLogin;
@@ -296,6 +296,9 @@ class SAuth {
   final String googleNotStaff;
   final String googleFailed;
   final String noCentersHint;
+  final String confirmPassword;
+  final String passwordsDiffer;
+  final String nameRequired;
 }
 
 /// Badges (staff).
@@ -845,7 +848,7 @@ class SLive {
 
 /// Members, teachers and permissions (admin).
 class SMem {
-  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteSent, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.contactHint});
+  const SMem({required this.modules, required this.status, required this.password8, required this.passwordChanged, required this.accountSaved, required this.removeTitle, required this.removeBody, required this.editTitle, required this.selfNote, required this.role, required this.statusLabel, required this.modulesTitle, required this.viewOnly, required this.viewOnlyHint, required this.changePassword, required this.newPassword, required this.teacherCreated, required this.newTeacher, required this.teacherHint, required this.required, required this.loginId, required this.min8, required this.createAccount, required this.inviteCreated, required this.inviteSent, required this.inviteError, required this.inviteTitle, required this.email, required this.inviteBtn, required this.pendingInvites, required this.contactTitle, required this.inviteName, required this.inviteDetailsHint, required this.cancelInvite, required this.cancelConfirm, required this.inviteExpired, required this.contactHint});
   final Map<String, String> modules;
   final Map<String, String> status;
   final String password8;
@@ -877,6 +880,11 @@ class SMem {
   final String inviteBtn;
   final String pendingInvites;
   final String contactTitle;
+  final String inviteName;
+  final String inviteDetailsHint;
+  final String cancelInvite;
+  final String cancelConfirm;
+  final String inviteExpired;
   final String contactHint;
 }
 
@@ -2212,6 +2220,9 @@ class S {
       googleNotStaff: 'حساب Google هذا ({email}) غير مسجّل كمعلم أو مدير في أي مركز. اطلب من مدير المركز إضافة بريدك، أو ادخل برقمك وكلمة السر.',
       googleFailed: 'تعذّر الدخول بحساب Google، حاول مرة أخرى.',
       noCentersHint: 'اطلب من مدير المركز دعوتك، أو سجّل الدخول بحساب آخر',
+      confirmPassword: 'تأكيد كلمة السر',
+      passwordsDiffer: 'كلمتا السر غير متطابقتين',
+      nameRequired: 'اكتب اسمك الكامل',
     ),
     badgesStaff: SBadgesStaff(
       rules: {'manual': 'يدوية (يمنحها المشرف)', 'points_threshold': 'الوصول إلى عدد نقاط', 'recitations_count': 'عدد التسميعات', 'grade_count': 'عدد التسميعات بتقدير معيّن', 'streak_days': 'أيام متتالية بتسميع', 'weekly_attendance': 'نسبة الحضور الأسبوعية', 'juz_complete': 'إتمام جزء كامل في السرد', 'serd_passed_count': 'عدد السرد الناجح'},
@@ -2757,6 +2768,11 @@ class S {
       inviteBtn: 'إنشاء دعوة',
       pendingInvites: 'دعوات لسه ما انضمّت',
       contactTitle: 'التواصل',
+      inviteName: 'الاسم الرسمي',
+      inviteDetailsHint: 'الاسم ورقم الهوية اختياريان، لكن يُنصح بهما: يُحفظان في حسابه عند قبول الدعوة، ويقدر يدخل برقم الهوية بنفس كلمة السر. الطلاب يُضافون من صفحة الطلاب.',
+      cancelInvite: 'إلغاء الدعوة',
+      cancelConfirm: 'إلغاء دعوة {email}؟ الرابط يتوقف عن العمل فورًا.',
+      inviteExpired: 'انتهت صلاحيتها',
       contactHint: 'يُفضّل مع رمز الدولة، مثل ‎+962791234567',
     ),
     mistakes: SMistakes(
@@ -3972,6 +3988,9 @@ class S {
       googleNotStaff: 'This Google account ({email}) is not a teacher or admin of any center. Ask the center admin to add your email, or sign in with your number and password.',
       googleFailed: 'Could not sign in with Google. Try again.',
       noCentersHint: 'Ask the center admin to invite you, or sign in with another account',
+      confirmPassword: 'Confirm password',
+      passwordsDiffer: 'The passwords don’t match',
+      nameRequired: 'Enter your full name',
     ),
     badgesStaff: SBadgesStaff(
       rules: {'manual': 'Manual (given by the supervisor)', 'points_threshold': 'Reaching a points total', 'recitations_count': 'Number of recitations', 'grade_count': 'Recitations with a given grade', 'streak_days': 'Days in a row with a recitation', 'weekly_attendance': 'Weekly attendance rate', 'juz_complete': 'Completing a whole juz in serd', 'serd_passed_count': 'Number of passed serd'},
@@ -4517,6 +4536,11 @@ class S {
       inviteBtn: 'Create invitation',
       pendingInvites: 'Invitations not accepted yet',
       contactTitle: 'Contact',
+      inviteName: 'Official name',
+      inviteDetailsHint: 'Name and ID number are optional but recommended: they are saved to the account when the invitation is accepted, and the person can also sign in with the ID number and the same password. Students are added from the students page.',
+      cancelInvite: 'Cancel invitation',
+      cancelConfirm: 'Cancel the invitation for {email}? The link stops working right away.',
+      inviteExpired: 'Expired',
       contactHint: 'Preferably with the country code, e.g. +962791234567',
     ),
     mistakes: SMistakes(
@@ -5732,6 +5756,9 @@ class S {
       googleNotStaff: 'Bu Google hesabı ({email}) hiçbir merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
       googleFailed: 'Google ile giriş yapılamadı. Tekrar deneyin.',
       noCentersHint: 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın',
+      confirmPassword: 'Şifreyi onayla',
+      passwordsDiffer: 'Şifreler eşleşmiyor',
+      nameRequired: 'Adınızı ve soyadınızı yazın',
     ),
     badgesStaff: SBadgesStaff(
       rules: {'manual': 'Elle (yönetici verir)', 'points_threshold': 'Bir puan toplamına ulaşma', 'recitations_count': 'Dinletme sayısı', 'grade_count': 'Belirli bir notla dinletmeler', 'streak_days': 'Art arda dinletmeli günler', 'weekly_attendance': 'Haftalık devam oranı', 'juz_complete': 'Serdde tam bir cüzü tamamlama', 'serd_passed_count': 'Başarılı serd sayısı'},
@@ -6277,6 +6304,11 @@ class S {
       inviteBtn: 'Davet oluştur',
       pendingInvites: 'Henüz kabul edilmemiş davetler',
       contactTitle: 'İletişim',
+      inviteName: 'Resmî ad',
+      inviteDetailsHint: 'Ad ve kimlik numarası isteğe bağlıdır ama önerilir: davet kabul edildiğinde hesaba kaydedilir ve kişi aynı şifreyle kimlik numarasıyla da giriş yapabilir. Öğrenciler öğrenciler sayfasından eklenir.',
+      cancelInvite: 'Daveti iptal et',
+      cancelConfirm: '{email} için davet iptal edilsin mi? Bağlantı hemen çalışmaz olur.',
+      inviteExpired: 'Süresi doldu',
       contactHint: 'Tercihen ülke koduyla, ör. +962791234567',
     ),
     mistakes: SMistakes(
@@ -7492,6 +7524,9 @@ class S {
       googleNotStaff: 'Ce compte Google ({email}) n’est enseignant ni administrateur d’aucun centre. Demandez à l’administrateur d’ajouter votre e-mail, ou connectez-vous avec votre numéro et votre mot de passe.',
       googleFailed: 'Connexion avec Google impossible. Réessayez.',
       noCentersHint: 'Demandez à l’administrateur du centre de vous inviter, ou connectez-vous avec un autre compte',
+      confirmPassword: 'Confirmer le mot de passe',
+      passwordsDiffer: 'Les mots de passe ne correspondent pas',
+      nameRequired: 'Saisissez votre nom complet',
     ),
     badgesStaff: SBadgesStaff(
       rules: {'manual': 'Manuel (attribué par l’administrateur)', 'points_threshold': 'Atteindre un total de points', 'recitations_count': 'Nombre de récitations', 'grade_count': 'Récitations avec une mention donnée', 'streak_days': 'Jours d’affilée avec une récitation', 'weekly_attendance': 'Taux de présence hebdomadaire', 'juz_complete': 'Achever un juz entier en serd', 'serd_passed_count': 'Nombre de serd réussis'},
@@ -8037,6 +8072,11 @@ class S {
       inviteBtn: 'Créer l’invitation',
       pendingInvites: 'Invitations pas encore acceptées',
       contactTitle: 'Contact',
+      inviteName: 'Nom officiel',
+      inviteDetailsHint: 'Le nom et le numéro d’identité sont facultatifs mais conseillés : ils sont enregistrés dans le compte à l’acceptation de l’invitation, et la personne peut aussi se connecter avec son numéro d’identité et le même mot de passe. Les élèves s’ajoutent depuis la page des élèves.',
+      cancelInvite: 'Annuler l’invitation',
+      cancelConfirm: 'Annuler l’invitation pour {email} ? Le lien cesse de fonctionner immédiatement.',
+      inviteExpired: 'Expirée',
       contactHint: 'De préférence avec l’indicatif du pays, ex. +962791234567',
     ),
     mistakes: SMistakes(

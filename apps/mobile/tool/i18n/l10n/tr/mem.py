@@ -44,4 +44,9 @@ T = {'modules': {'students': 'Öğrenciler',
  'inviteBtn': 'Davet oluştur',
  'pendingInvites': 'Henüz kabul edilmemiş davetler',
  'contactTitle': 'İletişim',
- 'contactHint': 'Tercihen ülke koduyla, ör. +962791234567'}
+ 'contactHint': 'Tercihen ülke koduyla, ör. +962791234567',
+ 'inviteName': 'Resmî ad',
+ 'inviteDetailsHint': 'Ad ve kimlik numarası isteğe bağlıdır ama önerilir: davet kabul edildiğinde hesaba kaydedilir ve kişi aynı şifreyle kimlik numarasıyla da giriş yapabilir. Öğrenciler öğrenciler sayfasından eklenir.',
+ 'cancelInvite': 'Daveti iptal et',
+ 'cancelConfirm': '{email} için davet iptal edilsin mi? Bağlantı hemen çalışmaz olur.',
+ 'inviteExpired': 'Süresi doldu'}

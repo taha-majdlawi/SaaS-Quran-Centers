@@ -58,4 +58,7 @@ T = {'thisCenter': 'bu merkez',
  'googleHint': 'Öğretmenler ve yöneticiler için',
  'googleNotStaff': 'Bu Google hesabı ({email}) hiçbir merkezde öğretmen veya yönetici değil. Merkez yöneticisinden e-postanızı eklemesini isteyin veya numaranız ve şifrenizle giriş yapın.',
  'googleFailed': 'Google ile giriş yapılamadı. Tekrar deneyin.',
- 'noCentersHint': 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın'}
+ 'noCentersHint': 'Merkez yöneticisinden sizi davet etmesini isteyin veya başka bir hesapla giriş yapın',
+ 'confirmPassword': 'Şifreyi onayla',
+ 'passwordsDiffer': 'Şifreler eşleşmiyor',
+ 'nameRequired': 'Adınızı ve soyadınızı yazın'}

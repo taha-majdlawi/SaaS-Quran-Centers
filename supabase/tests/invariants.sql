@@ -399,6 +399,32 @@ begin
     if sqlerrm <> 'invite-check-undo' then v_fail := v_fail || ('invitation check could not run: ' || sqlerrm); end if;
   end;
 
+  -- ===== 0099: the name and national ID on an invitation reach the account that accepts it; a
+  --       "student" invitation and one for an active member are refused. Tried, then undone.
+  declare v_tok uuid; v_new uuid := gen_random_uuid(); v_em text; v_name text; v_nid text;
+  begin
+    v_em := 'invitee-test-' || v_new || '@example.test';
+    insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+      values (v_new, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', v_em, now(), '{}', '{}', now(), now());
+    perform set_config('request.jwt.claims', json_build_object('sub', v_adm, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    select token into v_tok from public.create_invitation(v_org, v_em, 'teacher', 'Invited Teacher', 'INV0099TEST');
+    begin perform public.create_invitation(v_org, 'student-' || v_new || '@example.test', 'student'); v_fail := v_fail || text 'a student was invited by email'; exception when others then null; end;
+    begin perform public.create_invitation(v_org, (select lower(email) from auth.users where id = v_adm), 'teacher'); v_fail := v_fail || text 'an active member was invited again'; exception when others then null; end;
+    reset role;
+    perform set_config('request.jwt.claims', json_build_object('sub', v_new, 'role', 'authenticated')::text, true);
+    set local role authenticated;
+    perform public.accept_invitation(v_tok);
+    reset role;
+    select full_name into v_name from public.profiles where id = v_new;
+    select national_id into v_nid from public.organization_members where organization_id = v_org and user_id = v_new;
+    if v_name is distinct from 'Invited Teacher' then v_fail := v_fail || ('invited name not saved: ' || coalesce(v_name, 'null')); end if;
+    if v_nid is distinct from 'INV0099TEST' then v_fail := v_fail || ('invited national id not saved: ' || coalesce(v_nid, 'null')); end if;
+    raise exception 'invite-details-undo';
+  exception when others then
+    if sqlerrm <> 'invite-details-undo' then v_fail := v_fail || ('invitation details check could not run: ' || sqlerrm); end if;
+  end;
+
   -- ===== 0098: a center never loses its last admin (the members page let an admin demote or delete
   --       themselves); this month's points include attendance / bonus / penalty. Tried, then undone.
   declare v_mp integer; v_mp2 integer; v_reason2 uuid;

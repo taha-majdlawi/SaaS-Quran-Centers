@@ -35,4 +35,12 @@ T = {'copyHint': 'Bağlantıyı kopyalayıp kişiye gönderin (WhatsApp / e-post
  'whatsappOptional': 'WhatsApp numarası (isteğe bağlı)',
  'inviteSent': 'Davet {email} adresine gönderildi. Kopyalamanız gerekirse bağlantı aşağıda da var.',
  'inviteNotSent': '{email} için davet oluşturuldu. Aşağıdaki bağlantıyı kopyalayıp gönderin (e-postayla gönderim henüz açık değil).',
- 'resend': 'Yeni bağlantı ve yeniden gönder'}
+ 'resend': 'Yeni bağlantı ve yeniden gönder',
+ 'inviteName': 'Resmî ad',
+ 'inviteDetailsHint': 'Ad ve kimlik numarası isteğe bağlıdır ama önerilir: davet kabul edildiğinde hesaba kaydedilir ve kişi aynı şifreyle kimlik numarasıyla da giriş yapabilir.',
+ 'fullName': 'Ad',
+ 'cancelInvite': 'Daveti iptal et',
+ 'cancelConfirm': '{email} için davet iptal edilsin mi? Bağlantı hemen çalışmaz olur.',
+ 'expired': 'Süresi doldu',
+ 'studentsHint': 'Öğrenciler öğrenciler sayfasından (halka ve numarayla) eklenir.',
+ 'nameShared': 'Bu hesap başka bir merkeze de ait; adı orada veya kişinin kendisi tarafından değiştirilir.'}

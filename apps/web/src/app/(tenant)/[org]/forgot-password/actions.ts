@@ -1,12 +1,16 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { toLoginEmail, LOGIN_DOMAIN } from '@/lib/accounts/login-id';
+import { isEmail } from '@/lib/accounts/login-id';
+import { resetEmailsForNationalId } from '@/lib/auth/national-id';
+import { productUrl } from '@/lib/auth/signup';
 import { getI18n } from '@/lib/i18n/server';
 
 export interface ForgotPasswordState {
   error?: string;
   sent?: boolean;
+  /** a number was typed (not an email): the answer covers both an ID with an email and a number-only account */
+  byNumber?: boolean;
 }
 
 // Returns state instead of redirect()-ing back to this same route: a
@@ -32,19 +36,21 @@ export async function requestPasswordReset(
     return { error: t.forgot.errorEmpty };
   }
 
-  const email = toLoginEmail(orgSlug, identifier);
+  const supabase = await createClient();
+  const redirectTo = productUrl('/reset-password', orgSlug);
 
-  // Numbers-only accounts sign in with a virtual address that receives no
-  // real mail - there is nothing to send a reset link to. Their only path
-  // back in is a center admin resetting the password from member management.
-  if (email.endsWith(`.${LOGIN_DOMAIN}`)) {
-    return { error: t.forgot.errorNoEmail };
+  if (!isEmail(identifier)) {
+    // A number: a student's number has a made-up address that receives no mail (only an admin
+    // can reset it), but it may be a national ID (0095) of an account that has a real email - a
+    // teacher who signs in with their ID. The link goes there. One answer for both cases, so it
+    // never tells whether an ID belongs to someone here.
+    for (const email of (await resetEmailsForNationalId(orgSlug, identifier)).slice(0, 3)) {
+      await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    }
+    return { sent: true, byNumber: true };
   }
 
-  const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://${orgSlug}.bustan-alquran.com/reset-password`,
-  });
+  await supabase.auth.resetPasswordForEmail(identifier.toLowerCase(), { redirectTo });
 
   // Same message whether or not the address is registered, so this can't be
   // used to check which emails exist in the system.

@@ -49,7 +49,11 @@ export async function POST(request: Request) {
           auth: { persistSession: false, autoRefreshToken: false },
           global: { headers: { Authorization: `Bearer ${token}` } },
         });
-        const r = await inviteMember(asUser, { orgId: String(body.orgId ?? ''), email: String(body.email ?? ''), role: String(body.role ?? '') });
+        const r = await inviteMember(asUser, { orgId: String(body.orgId ?? ''), email: String(body.email ?? ''),
+          role: String(body.role ?? ''),
+          fullName: typeof body.fullName === 'string' ? body.fullName : null,
+          nationalId: typeof body.nationalId === 'string' ? body.nationalId : null,
+        });
         if (r.error) return NextResponse.json({ error: r.error }, { status: 400 });
         return NextResponse.json({ token: r.token, sent: r.sent });
       }

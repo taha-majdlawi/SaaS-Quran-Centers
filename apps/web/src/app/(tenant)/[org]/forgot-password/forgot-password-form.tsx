@@ -14,7 +14,7 @@ export function ForgotPasswordForm({ orgSlug, t }: { orgSlug: string; t: Diction
   if (state.sent) {
     return (
       <p className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">
-        {t.sent}
+        {state.byNumber ? t.sentByNumber : t.sent}
       </p>
     );
   }

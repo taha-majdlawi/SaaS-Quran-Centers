@@ -837,6 +837,14 @@ export const staffAr = {
     inviteSent: 'أرسلنا الدعوة إلى {email}. الرابط ظاهر بالأسفل أيضًا إن احتجت نسخه.',
     inviteNotSent: 'أنشأنا الدعوة لـ{email}. انسخ الرابط بالأسفل وابعثه له (الإرسال بالبريد غير مفعّل بعد).',
     resend: 'رابط جديد وإعادة إرسال',
+    inviteName: 'الاسم الرسمي',
+    inviteDetailsHint: 'الاسم ورقم الهوية اختياريان، لكن يُنصح بهما: يُحفظان في حسابه عند قبول الدعوة، ويقدر يدخل برقم الهوية بنفس كلمة السر.',
+    fullName: 'الاسم',
+    cancelInvite: 'إلغاء الدعوة',
+    cancelConfirm: 'إلغاء دعوة {email}؟ الرابط يتوقف عن العمل فورًا.',
+    expired: 'انتهت صلاحيتها',
+    studentsHint: 'الطلاب يُضافون من صفحة الطلاب (بحلقة ورقم).',
+    nameShared: 'الحساب مرتبط بمركز آخر، فاسمه يُعدَّل من هناك أو من حسابه.',
   },
   /** The staff member's own account page (/account): email and password. */
   myAccount: {

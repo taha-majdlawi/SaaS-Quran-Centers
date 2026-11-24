@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
 import '../../core/widgets/app_drawer.dart';
+import '../../core/utils/national_id.dart';
 import 'members_repository.dart';
 import '../../core/i18n/i18n.dart';
 
@@ -27,6 +28,8 @@ class _MembersListScreenState extends State<MembersListScreen> {
   List<PendingInvitation> _invitations = [];
 
   final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _nationalIdController = TextEditingController();
   String _query = '';
   String _inviteRole = 'teacher';
   bool _inviting = false;
@@ -50,19 +53,36 @@ class _MembersListScreenState extends State<MembersListScreen> {
   @override
   void dispose() {
     _emailController.dispose();
+    _nameController.dispose();
+    _nationalIdController.dispose();
     super.dispose();
   }
 
   Future<void> _invite() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) return;
+    // optional; when typed it must be a valid ID (accepting the invitation saves it - 0099)
+    final rawId = _nationalIdController.text.trim();
+    final nationalId = normalizeNationalId(rawId);
+    if (rawId.isNotEmpty && nationalId == null) {
+      setState(() { _message = tr(context).stu.nationalIdInvalid; _isError = true; });
+      return;
+    }
     setState(() {
       _inviting = true;
       _message = null;
     });
     try {
-      final sent = await _repository.createInvitation(organizationId: _loadedForOrgId!, email: email, role: _inviteRole);
+      final sent = await _repository.createInvitation(
+        organizationId: _loadedForOrgId!,
+        email: email,
+        role: _inviteRole,
+        fullName: _nameController.text.trim(),
+        nationalId: nationalId,
+      );
       _emailController.clear();
+      _nameController.clear();
+      _nationalIdController.clear();
       if (mounted) {
         setState(() { _message = sent ? fmt(tr(context).mem.inviteSent, {'email': email}) : tr(context).mem.inviteCreated; _isError = false; });
         _reload(_loadedForOrgId!);
@@ -71,6 +91,27 @@ class _MembersListScreenState extends State<MembersListScreen> {
       if (mounted) setState(() { _message = friendlyError(e, tr(context).mem.inviteError); _isError = true; });
     } finally {
       if (mounted) setState(() => _inviting = false);
+    }
+  }
+
+  Future<void> _cancel(PendingInvitation inv) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(ctx).mem.cancelInvite),
+        content: Text(fmt(tr(ctx).mem.cancelConfirm, {'email': inv.email})),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr(ctx).common.cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr(ctx).mem.cancelInvite, style: const TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await _repository.cancelInvitation(_loadedForOrgId!, inv.id);
+      if (mounted) setState(() => _reload(_loadedForOrgId!));
+    } catch (e) {
+      if (mounted) setState(() { _message = friendlyError(e, tr(context).mem.inviteError); _isError = true; });
     }
   }
 
@@ -149,19 +190,37 @@ class _MembersListScreenState extends State<MembersListScreen> {
                     Text(tr(context).mem.inviteTitle, style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 12),
                     TextField(
+                      controller: _nameController,
+                      maxLength: 120,
+                      decoration: InputDecoration(labelText: tr(context).mem.inviteName, counterText: ''),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
+                      textDirection: TextDirection.ltr,
                       decoration: InputDecoration(labelText: tr(context).mem.email),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _nationalIdController,
+                      textDirection: TextDirection.ltr,
+                      maxLength: 24,
+                      decoration: InputDecoration(labelText: tr(context).stu.nationalId, counterText: ''),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _inviteRole,
                       decoration: InputDecoration(labelText: tr(context).mem.role),
+                      // no "student": a student needs a student record, made from the students page
                       items: kMemberRoleLabels.entries
+                          .where((e) => e.key != 'student')
                           .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                           .toList(),
                       onChanged: (v) => setState(() => _inviteRole = v ?? _inviteRole),
                     ),
+                    const SizedBox(height: 8),
+                    Text(tr(context).mem.inviteDetailsHint, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: _inviting ? null : _invite,
@@ -173,7 +232,24 @@ class _MembersListScreenState extends State<MembersListScreen> {
                       const SizedBox(height: 16),
                       Text(tr(context).mem.pendingInvites, style: Theme.of(context).textTheme.titleSmall),
                       const SizedBox(height: 8),
-                      ..._invitations.map((i) => Text('${i.email} — ${kMemberRoleLabels[i.role] ?? i.role}')),
+                      ..._invitations.map((i) => Card(
+                            margin: const EdgeInsets.only(bottom: 6),
+                            child: ListTile(
+                              dense: true,
+                              title: Text(i.fullName?.isNotEmpty == true ? i.fullName! : i.email),
+                              subtitle: Text([
+                                if (i.fullName?.isNotEmpty == true) i.email,
+                                kMemberRoleLabels[i.role] ?? i.role,
+                                if (i.nationalId != null) i.nationalId!,
+                                if (i.expired) tr(context).mem.inviteExpired,
+                              ].join(' · ')),
+                              trailing: IconButton(
+                                tooltip: tr(context).mem.cancelInvite,
+                                icon: const Icon(Icons.close_rounded, color: Colors.red),
+                                onPressed: () => _cancel(i),
+                              ),
+                            ),
+                          )),
                     ],
                   ],
                   ),

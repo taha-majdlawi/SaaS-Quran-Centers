@@ -12,6 +12,30 @@ const _loginDomain = 'id.bustan-alquran.com';
 String toLoginEmail(String centerSlug, String identifier) {
   final id = identifier.trim().toLowerCase();
   if (id.contains('@')) return id;
+  return '${latinDigits(id)}@${centerSlug.trim().toLowerCase()}.$_loginDomain';
+}
+
+/// Arabic-Indic (٠-٩) and Persian (۰-۹) digits - an Arabic keyboard's - become 0-9, so "١٢٣" is
+/// the account made as "123" (web: latinDigits in login-id.ts).
+String latinDigits(String value) {
+  final buf = StringBuffer();
+  for (final r in value.runes) {
+    if (r >= 0x0660 && r <= 0x0669) {
+      buf.write(r - 0x0660);
+    } else if (r >= 0x06F0 && r <= 0x06F9) {
+      buf.write(r - 0x06F0);
+    } else {
+      buf.writeCharCode(r);
+    }
+  }
+  return buf.toString();
+}
+
+/// The address the identifier gave before digits were made Latin, when it differs (an account
+/// made then with Arabic digits in its number still signs in); null otherwise.
+String? legacyLoginEmail(String centerSlug, String identifier) {
+  final id = identifier.trim().toLowerCase();
+  if (id.contains('@') || latinDigits(id) == id) return null;
   return '$id@${centerSlug.trim().toLowerCase()}.$_loginDomain';
 }
 
@@ -81,9 +105,20 @@ class LoginRepository {
     try {
       await _client.auth.signInWithPassword(email: toLoginEmail(center.slug, identifier), password: password);
     } on AuthException {
+      // a number typed in Arabic digits, for an account made with them before they became Latin
+      final legacy = legacyLoginEmail(center.slug, identifier);
+      var signedIn = false;
+      if (legacy != null) {
+        try {
+          await _client.auth.signInWithPassword(email: legacy, password: password);
+          signedIn = true;
+        } on AuthException {
+          signedIn = false;
+        }
+      }
       // not the number at the center / the email: maybe the national ID (0095) - only the server
       // may look up whose it is, so it signs in there and hands back the session
-      if (identifier.contains('@') || !await _signInWithNationalId(center.slug, identifier, password)) {
+      if (!signedIn && (identifier.contains('@') || !await _signInWithNationalId(center.slug, identifier, password))) {
         throw const WrongCredentialsException();
       }
     }
