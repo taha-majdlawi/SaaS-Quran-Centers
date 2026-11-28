@@ -146,7 +146,11 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
                           itemBuilder: (context, index) {
                             if (index == 0) return countLine;
                             final t = tiles[index - 1];
-                            return GardenCard(
+                            // the first rows sprout in one after another; later ones come in as they scroll up
+                            return GrowIn(
+                              delay: GrowIn.stagger(index - 1),
+                              rise: 10,
+                              child: GardenCard(
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               onTap: t.path == null ? null : () => _open(t.path!),
                               child: Row(children: [
@@ -162,6 +166,7 @@ class _EntityListScreenState<T> extends State<EntityListScreen<T>> {
                                 ),
                                 if (t.trailing != null) t.trailing! else if (t.path != null) Icon(forwardChevron(context), color: Colors.grey.shade400),
                               ]),
+                            ),
                             );
                           },
                         ),

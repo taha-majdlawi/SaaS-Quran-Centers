@@ -4,6 +4,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../i18n/i18n.dart';
 import '../offline/sync_service.dart' show isNetworkError;
+import 'motion.dart';
+
+// every screen that uses these widgets also gets the garden's motion (GrowIn, Sway, celebrateWithLeaves...)
+export 'motion.dart';
 
 /// Loading / error-with-retry / data states for any Future, so no screen
 /// spins forever when a request fails.
@@ -23,7 +27,7 @@ class AsyncBody<T> extends StatelessWidget {
           return ErrorState(onRetry: onRetry);
         }
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: SproutLoader());
         }
         return builder(context, snapshot.data as T);
       },
@@ -84,14 +88,17 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
+            // a seedling waiting to grow: the bubble opens up, the icon sways in a breeze
+            GrowIn(
+              child: Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Sway(child: Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary)),
               ),
-              child: Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(height: 16),
             Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
@@ -116,7 +123,11 @@ class MessageBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isError ? Colors.red : Colors.green;
-    return Container(
+    return GrowIn(
+      key: ValueKey(message),
+      rise: 8,
+      duration: const Duration(milliseconds: 320),
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
@@ -132,6 +143,7 @@ class MessageBanner extends StatelessWidget {
           Expanded(child: Text(message, style: TextStyle(color: color.shade800))),
         ],
       ),
+    ),
     );
   }
 }

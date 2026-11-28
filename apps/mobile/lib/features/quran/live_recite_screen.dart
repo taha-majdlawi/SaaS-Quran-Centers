@@ -423,7 +423,10 @@ class _LiveReciteScreenState extends State<LiveReciteScreen> {
         note: _note.text.trim().isEmpty ? null : _note.text.trim(),
       );
       await audio?.file.delete().catchError((_) => audio.file);
-      if (mounted) setState(() => _phase = _Phase.sent);
+      if (mounted) {
+        setState(() => _phase = _Phase.sent);
+        celebrateWithLeaves(context);
+      }
     } catch (e, st) {
       ErrorReporter.instance.report(e, st, context: 'live recite: send');
       if (mounted) {

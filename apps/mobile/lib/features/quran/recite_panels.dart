@@ -283,7 +283,10 @@ class _RecitePanelState extends State<RecitePanel> {
     try {
       await _api.submit(saved.id, _note.text.trim().isEmpty ? null : _note.text.trim());
       _saved = null; // sent: it is the teacher's now, never discarded from here
-      if (mounted) setState(() => _phase = _Phase.sent);
+      if (mounted) {
+        setState(() => _phase = _Phase.sent);
+        celebrateWithLeaves(context);
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -533,6 +536,7 @@ class _TestPanelState extends State<TestPanel> {
         _ok = true;
         _msg = fmt(t.saved, {'name': name, 'points': r['points_awarded'] ?? 0});
       });
+      if (mounted) celebrateWithLeaves(context);
     } catch (e) {
       setState(() {
         _ok = false;

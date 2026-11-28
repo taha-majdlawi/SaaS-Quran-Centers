@@ -160,7 +160,12 @@ class _EventFormScreenState extends State<EventFormScreen> {
     if (ok != true) return;
     try {
       await _repository.deleteEntry(_orgId, widget.entryId!);
-      if (mounted) context.go('/calendar');
+      if (mounted) {
+        // back to the list, keeping what is under it: leave the form, then the entry that no longer exists
+        final router = GoRouter.of(context);
+        if (router.canPop()) router.pop();
+        if (router.canPop()) router.pop();
+      }
     } catch (e) {
       if (mounted) setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     }
