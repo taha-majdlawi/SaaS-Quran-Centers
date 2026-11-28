@@ -35,4 +35,12 @@ SPEC = {'members': ('Members, roles and invitations.', (
   ('inviteSent', 'أرسلنا الدعوة إلى {email}. الرابط ظاهر بالأسفل أيضًا إن احتجت نسخه.', 'The invitation was emailed to {email}. The link is also below if you need to copy it.'),
   ('inviteNotSent', 'أنشأنا الدعوة لـ{email}. انسخ الرابط بالأسفل وابعثه له (الإرسال بالبريد غير مفعّل بعد).', 'The invitation for {email} was created. Copy the link below and send it (sending by email isn’t on yet).'),
   ('resend', 'رابط جديد وإعادة إرسال', 'New link & resend'),
+  ('inviteName', 'الاسم الرسمي', 'Official name'),
+  ('inviteDetailsHint', 'الاسم ورقم الهوية اختياريان، لكن يُنصح بهما: يُحفظان في حسابه عند قبول الدعوة، ويقدر يدخل برقم الهوية بنفس كلمة السر.', 'Name and ID number are optional but recommended: they are saved to the account when the invitation is accepted, and the person can then also sign in with the ID number and the same password.'),
+  ('fullName', 'الاسم', 'Name'),
+  ('cancelInvite', 'إلغاء الدعوة', 'Cancel invitation'),
+  ('cancelConfirm', 'إلغاء دعوة {email}؟ الرابط يتوقف عن العمل فورًا.', 'Cancel the invitation for {email}? The link stops working right away.'),
+  ('expired', 'انتهت صلاحيتها', 'Expired'),
+  ('studentsHint', 'الطلاب يُضافون من صفحة الطلاب (بحلقة ورقم).', 'Students are added from the students page (with a circle and a number).'),
+  ('nameShared', 'الحساب مرتبط بمركز آخر، فاسمه يُعدَّل من هناك أو من حسابه.', 'This account also belongs to another center, so its name is changed there or by the person.'),
 ))}

@@ -1,7 +1,9 @@
 import { getOrgContext } from '@/lib/tenant/get-org-context';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/submit-button';
-import { createInvitation } from './actions';
+import { ConfirmSubmitButton } from '@/components/confirm-submit-button';
+import { productUrl } from '@/lib/auth/signup';
+import { createInvitation, cancelInvitation } from './actions';
 import { getI18n } from '@/lib/i18n/server';
 import { fmt } from '@/lib/i18n/config';
 
@@ -23,6 +25,8 @@ interface InvitationRow {
   token: string;
   expires_at: string;
   accepted_at: string | null;
+  full_name: string | null;
+  national_id: string | null;
 }
 
 export default async function MembersPage({
@@ -102,7 +106,7 @@ export default async function MembersPage({
                   {m.role === 'teacher' || m.role === 'admin' ? (
                     <a href={`/teachers/${m.id}` as never} className="font-medium text-brand hover:underline">{m.full_name ?? m.email ?? '—'}</a>
                   ) : (
-                    m.full_name ?? '—'
+                    m.full_name ?? m.email ?? '—'
                   )}
                   {viewers.has(m.user_id) && <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{S.members.viewOnly}</span>}
                 </td>
@@ -128,6 +132,10 @@ export default async function MembersPage({
           <form action={createInvitation} className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4">
             <input type="hidden" name="orgId" value={org.id} />
             <label className="text-sm">
+              {S.members.inviteName}
+              <input name="fullName" maxLength={120} autoComplete="off" className="mt-1 block rounded border px-3 py-2 text-sm" />
+            </label>
+            <label className="text-sm">
               {S.members.email}
               <input
                 type="email"
@@ -138,9 +146,14 @@ export default async function MembersPage({
               />
             </label>
             <label className="text-sm">
+              {S.students.nationalId}
+              <input name="nationalId" maxLength={24} autoComplete="off" dir="ltr" className="mt-1 block rounded border px-3 py-2 text-sm" />
+            </label>
+            <label className="text-sm">
               {S.members.role}
               <select name="role" className="mt-1 block rounded border px-3 py-2 text-sm">
-                {['teacher', 'admin', 'guardian', 'student'].map((r) => (
+                {/* no "student": a student needs a student record, made from the students page */}
+                {['teacher', 'admin', 'guardian'].map((r) => (
                   <option key={r} value={r}>
                     {T.shell.roles[r]}
                   </option>
@@ -153,33 +166,57 @@ export default async function MembersPage({
             >
               {S.members.createInvite}
             </SubmitButton>
+            <p className="basis-full text-xs text-gray-400">
+              {S.members.inviteDetailsHint} {S.members.studentsHint}
+            </p>
           </form>
 
           {pendingInvitations.length > 0 && (
             <div className="mt-4">
               <h3 className="mb-2 text-sm font-semibold text-gray-600">{S.members.pending}</h3>
               <ul className="flex flex-col gap-2">
-                {pendingInvitations.map((inv) => (
+                {pendingInvitations.map((inv) => {
+                  const expired = new Date(inv.expires_at).getTime() < Date.now();
+                  return (
                   <li key={inv.id} className="rounded border bg-white p-3 text-sm">
-                    <div className="mb-1 flex items-center justify-between">
+                    <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                       <span>
+                        {inv.full_name && <span className="font-medium">{inv.full_name} · </span>}
                         {inv.email} — {T.shell.roles[inv.role] ?? inv.role}
+                        {inv.national_id && <span className="ms-2 text-xs text-gray-400" dir="ltr">{inv.national_id}</span>}
+                        {expired && <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{S.members.expired}</span>}
                       </span>
-                      {/* a new link (the old one stops working), emailed again when possible */}
-                      <form action={createInvitation}>
-                        <input type="hidden" name="orgId" value={org.id} />
-                        <input type="hidden" name="email" value={inv.email} />
-                        <input type="hidden" name="role" value={inv.role} />
-                        <SubmitButton className="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" pendingText={S.common.saving}>
-                          {S.members.resend}
-                        </SubmitButton>
-                      </form>
+                      <div className="flex gap-2">
+                        {/* a new link (the old one stops working), emailed again when possible */}
+                        <form action={createInvitation}>
+                          <input type="hidden" name="orgId" value={org.id} />
+                          <input type="hidden" name="email" value={inv.email} />
+                          <input type="hidden" name="role" value={inv.role} />
+                          <SubmitButton className="rounded border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50" pendingText={S.common.saving}>
+                            {S.members.resend}
+                          </SubmitButton>
+                        </form>
+                        <form action={cancelInvitation}>
+                          <input type="hidden" name="orgId" value={org.id} />
+                          <input type="hidden" name="invitationId" value={inv.id} />
+                          <ConfirmSubmitButton
+                            confirmMessage={fmt(S.members.cancelConfirm, { email: inv.email })}
+                            pendingText={S.common.deleting}
+                            className="rounded border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                          >
+                            {S.members.cancelInvite}
+                          </ConfirmSubmitButton>
+                        </form>
+                      </div>
                     </div>
-                    <p className="break-all text-xs text-gray-400" dir="ltr">
-                      {`https://${org.slug}.bustan-alquran.com/join?token=${inv.token}`}
-                    </p>
+                    {!expired && (
+                      <p className="break-all text-xs text-gray-400" dir="ltr">
+                        {productUrl(`/join?token=${inv.token}`, org.slug)}
+                      </p>
+                    )}
                   </li>
-                ))}
+                  );
+                })}
               </ul>
               <p className="mt-2 text-xs text-gray-400">
                 {S.members.copyHint}

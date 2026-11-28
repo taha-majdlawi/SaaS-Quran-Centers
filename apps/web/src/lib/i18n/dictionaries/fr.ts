@@ -190,6 +190,7 @@ export const fr: Dictionary = {
     submit: 'Envoyer le lien de réinitialisation',
     errorEmpty: 'Saisissez votre identifiant ou votre e-mail',
     errorNoEmail: 'Votre compte se connecte avec un numéro, pas un e-mail : aucun lien ne peut être envoyé. Pour changer votre mot de passe, contactez votre enseignant ou le responsable du centre.',
+    sentByNumber: 'S’il s’agit du numéro d’identité d’un compte doté d’un e-mail, un lien de réinitialisation a été envoyé à cet e-mail. Si votre compte se connecte avec un numéro seulement (sans e-mail), contactez votre enseignant ou le responsable du centre pour le changer.',
   },
 
   reset: {
@@ -241,6 +242,8 @@ export const fr: Dictionary = {
     signingIn: "Connexion et inscription...",
     confirmPassword: "Confirmer le mot de passe",
     passwordHint: "Au moins 8 caractères",
+    fullName: "Nom complet",
+    nameRequired: "Saisissez votre nom complet",
     passwordsDiffer: "Les deux mots de passe ne correspondent pas",
     errorWrongPassword: "Mot de passe incorrect pour cet e-mail.",
     errorOtherEmail: "Cette invitation a été envoyée à {invited} — elle ne peut pas être acceptée avec un autre compte.",

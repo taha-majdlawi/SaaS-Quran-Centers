@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { emailConfigured, sendEmail } from '@/lib/email/send';
 import { invitationEmail } from '@/lib/email/invitation';
 import { productUrl } from '@/lib/auth/signup';
+import { normalizeNationalId } from '@/lib/auth/national-id';
 
 const ROLE_AR: Record<string, string> = { admin: 'مدير', teacher: 'معلم', guardian: 'ولي أمر', student: 'طالب' };
 
@@ -12,10 +13,17 @@ const ROLE_AR: Record<string, string> = { admin: 'مدير', teacher: 'معلم'
  */
 export async function inviteMember(
   supabase: SupabaseClient,
-  input: { orgId: string; email: string; role: string },
+  input: { orgId: string; email: string; role: string; fullName?: string | null; nationalId?: string | null },
 ): Promise<{ token: string | null; sent: boolean; error?: string }> {
   const email = input.email.trim().toLowerCase();
-  const { data, error } = await supabase.rpc('create_invitation', { org_id: input.orgId, invite_email: email, invite_role: input.role });
+  // the official name and the national ID (both optional): written to the account when the invitation is accepted
+  const { data, error } = await supabase.rpc('create_invitation', {
+    org_id: input.orgId,
+    invite_email: email,
+    invite_role: input.role,
+    invite_name: input.fullName?.trim() || null,
+    invite_national_id: normalizeNationalId(input.nationalId),
+  });
   if (error) return { token: null, sent: false, error: error.message };
   const token = (data as { token: string }[] | null)?.[0]?.token ?? null;
   if (!token || !emailConfigured()) return { token, sent: false };

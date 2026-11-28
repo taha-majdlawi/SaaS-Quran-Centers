@@ -48,6 +48,11 @@ export default async function EditMemberPage({
   const isSelf = member.user_id === user?.id;
   const { data: flags } = await supabase.rpc('list_account_flags', { p_org: org.id });
   const flag = ((flags ?? []) as { user_id: string; note: string | null }[]).find((f) => f.user_id === member.user_id);
+  // a staff member's national ID (0095) - a student's lives on their student record instead
+  const staff = member.role === 'teacher' || member.role === 'admin';
+  const { data: nationalId } = staff
+    ? await supabase.rpc('member_national_id', { p_org: org.id, p_member: member.id })
+    : { data: null };
 
   return (
     <div className="max-w-md">
@@ -65,6 +70,19 @@ export default async function EditMemberPage({
         <>
           <form action={updateMember} className="flex flex-col gap-3 rounded-lg border bg-white p-6">
             <input type="hidden" name="id" value={member.id} />
+            <input type="hidden" name="orgId" value={org.id} />
+            <input type="hidden" name="initialName" value={member.full_name ?? ''} />
+            <label className="text-sm font-medium text-gray-700">
+              {S.members.fullName}
+              <input name="fullName" required maxLength={120} defaultValue={member.full_name ?? ''} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+            </label>
+            {staff && (
+              <label className="text-sm font-medium text-gray-700">
+                {S.students.nationalId}
+                <input name="nationalId" defaultValue={nationalId ?? ''} autoComplete="off" dir="ltr" maxLength={24} className="mt-1 w-full rounded border px-3 py-2 text-sm" />
+                <span className="mt-1 block text-xs font-normal text-gray-400">{S.students.nationalIdHint}</span>
+              </label>
+            )}
             <label className="text-sm font-medium text-gray-700">
               {S.members.role}
               <select name="role" defaultValue={member.role} className="mt-1 w-full rounded border px-3 py-2 text-sm">

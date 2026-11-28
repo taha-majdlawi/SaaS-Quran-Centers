@@ -190,6 +190,7 @@ export const en: Dictionary = {
     submit: 'Send reset link',
     errorEmpty: 'Enter your ID or email',
     errorNoEmail: 'Your account signs in with a number, not an email, so no link can be sent. To change your password, contact your teacher or the center supervisor.',
+    sentByNumber: 'If this is the ID number of an account with an email, a password reset link has been sent to that email. If your account signs in with a number only (no email), contact your teacher or the center supervisor to change it.',
   },
 
   reset: {
@@ -241,6 +242,8 @@ export const en: Dictionary = {
     signingIn: "Signing in and joining...",
     confirmPassword: "Confirm password",
     passwordHint: "At least 8 characters",
+    fullName: "Full name",
+    nameRequired: "Enter your full name",
     passwordsDiffer: "The two passwords don’t match",
     errorWrongPassword: "Wrong password for this email.",
     errorOtherEmail: "This invitation was sent to {invited} — it can’t be accepted with another account.",

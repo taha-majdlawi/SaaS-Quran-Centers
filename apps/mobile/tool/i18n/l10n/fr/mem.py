@@ -44,4 +44,9 @@ T = {'modules': {'students': 'Élèves',
  'inviteBtn': 'Créer l’invitation',
  'pendingInvites': 'Invitations pas encore acceptées',
  'contactTitle': 'Contact',
- 'contactHint': 'De préférence avec l’indicatif du pays, ex. +962791234567'}
+ 'contactHint': 'De préférence avec l’indicatif du pays, ex. +962791234567',
+ 'inviteName': 'Nom officiel',
+ 'inviteDetailsHint': 'Le nom et le numéro d’identité sont facultatifs mais conseillés : ils sont enregistrés dans le compte à l’acceptation de l’invitation, et la personne peut aussi se connecter avec son numéro d’identité et le même mot de passe. Les élèves s’ajoutent depuis la page des élèves.',
+ 'cancelInvite': 'Annuler l’invitation',
+ 'cancelConfirm': 'Annuler l’invitation pour {email} ? Le lien cesse de fonctionner immédiatement.',
+ 'inviteExpired': 'Expirée'}

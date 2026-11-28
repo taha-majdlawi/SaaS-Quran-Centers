@@ -28,10 +28,24 @@ class MemberRow {
 }
 
 class PendingInvitation {
-  const PendingInvitation({required this.email, required this.role, required this.token});
+  const PendingInvitation({
+    required this.id,
+    required this.email,
+    required this.role,
+    required this.token,
+    this.fullName,
+    this.nationalId,
+    this.expiresAt,
+  });
+  final String id;
   final String email;
   final String role;
   final String token;
+  final String? fullName;
+  final String? nationalId;
+  final DateTime? expiresAt;
+
+  bool get expired => expiresAt != null && expiresAt!.isBefore(DateTime.now());
 }
 
 /// Mirrors apps/web's members/actions.ts - invitation creation goes through
@@ -64,15 +78,30 @@ class MembersRepository {
     final rows = (await SyncService.instance.raw('mem.fetchPendingInvitations:$organizationId', () => _client.rpc('list_org_invitations', params: {'org_id': organizationId})));
     return (rows as List)
         .where((r) => r['accepted_at'] == null)
-        .map((r) => PendingInvitation(email: r['email'] as String, role: r['role'] as String, token: r['token'] as String))
+        .map((r) => PendingInvitation(
+              id: r['id'] as String,
+              email: r['email'] as String,
+              role: r['role'] as String,
+              token: r['token'] as String,
+              fullName: r['full_name'] as String?,
+              nationalId: r['national_id'] as String?,
+              expiresAt: DateTime.tryParse('${r['expires_at'] ?? ''}'),
+            ))
         .toList();
   }
 
   /// Through the web (it also emails the link); straight to the database if the web can't be
   /// reached - the invitation is made either way, then the admin shares the link. True when emailed.
-  Future<bool> createInvitation({required String organizationId, required String email, required String role}) async {
+  /// [fullName] and [nationalId] (normalised) are optional: accepting saves them to the account (0099).
+  Future<bool> createInvitation({
+    required String organizationId,
+    required String email,
+    required String role,
+    String? fullName,
+    String? nationalId,
+  }) async {
     try {
-      return await AccountsApi().invite(orgId: organizationId, email: email, role: role);
+      return await AccountsApi().invite(orgId: organizationId, email: email, role: role, fullName: fullName, nationalId: nationalId);
     } on AccountsApiException catch (e) {
       if (e.message != currentStrings.auth.serverDown) rethrow;
     }
@@ -80,9 +109,15 @@ class MembersRepository {
       'org_id': organizationId,
       'invite_email': email,
       'invite_role': role,
+      'invite_name': (fullName == null || fullName.isEmpty) ? null : fullName,
+      'invite_national_id': (nationalId == null || nationalId.isEmpty) ? null : nationalId,
     });
     return false;
   }
+
+  /// Withdraws an invitation not accepted yet - its link stops working (0099).
+  Future<void> cancelInvitation(String organizationId, String invitationId) =>
+      _client.rpc('cancel_invitation', params: {'p_org': organizationId, 'p_invitation': invitationId});
 
   Future<void> updateMember({
     required String id,

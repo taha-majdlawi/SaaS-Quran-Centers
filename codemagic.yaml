@@ -65,7 +65,7 @@ workflows:
       #   - firebase_ios
       vars:
         # App Store Connect -> the app -> App Information -> Apple ID (a number)
-        APP_STORE_APPLE_ID: "0000000000"
+        APP_STORE_APPLE_ID: "6833879505"
     scripts:
       - name: Signing profiles into the Xcode project
         script: xcode-project use-profiles
