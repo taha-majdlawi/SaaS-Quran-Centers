@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_client.dart';
 import '../../core/tenant/tenant_controller.dart';
@@ -67,8 +66,8 @@ class _SerdSettingsScreenState extends State<SerdSettingsScreen> {
           _future = _load();
         });
       }
-    } on PostgrestException catch (e) {
-      if (mounted) setState(() { _message = e.message; _isError = true; });
+    } catch (e) {
+      if (mounted) setState(() { _message = friendlyError(e, currentStrings.common.actionFailed); _isError = true; });
     }
   }
 

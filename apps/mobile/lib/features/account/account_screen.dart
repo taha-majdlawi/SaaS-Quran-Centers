@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/i18n/i18n.dart';
@@ -145,6 +146,19 @@ class _AccountScreenState extends State<AccountScreen> {
           SectionTitle(a.google),
           Text(google ? a.googleLinked : a.googleHint, style: const TextStyle(color: Colors.black54)),
         ],
+        // Teachers and admins can ask for their own account and data to be deleted from here
+        // (Apple 5.1.1(v) / Google Play: deletion reachable inside the app); the request goes to the
+        // center admin, same as a student's or a guardian's.
+        SectionTitle(tr(context).priv.title),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const Icon(Icons.privacy_tip_rounded),
+            title: Text(tr(context).priv.confirmTitle),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => context.push('/my/privacy'),
+          ),
+        ),
       ]),
     );
   }

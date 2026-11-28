@@ -527,8 +527,8 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
           }
         });
       }
-    } on PostgrestException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     }
   }
 
