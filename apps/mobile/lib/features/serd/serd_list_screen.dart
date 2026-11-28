@@ -78,10 +78,11 @@ class _SerdListScreenState extends State<SerdListScreen> {
 
   void _reload() => setState(() => _future = _load(_loadedForOrgId!));
 
-  Future<void> _run(Future<void> Function() action, String done) async {
+  Future<void> _run(Future<void> Function() action, String done, {bool celebrate = false}) async {
     try {
       await action();
       if (mounted) {
+        if (celebrate) celebrateWithLeaves(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
         _reload();
       }
@@ -118,7 +119,7 @@ class _SerdListScreenState extends State<SerdListScreen> {
       );
       if (studentId == null) return;
     }
-    await _run(() => _repository.review(row.id, 'approve', studentId: studentId), currentStrings.serd.approved);
+    await _run(() => _repository.review(row.id, 'approve', studentId: studentId), currentStrings.serd.approved, celebrate: true);
   }
 
   Future<void> _reject(SerdRow row) async {

@@ -125,6 +125,7 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
     try {
       await _api.review(r.id, approve: approve, grade: grade, type: type, note: note.text.trim().isEmpty ? null : note.text.trim());
       if (!mounted) return;
+      if (approve) celebrateWithLeaves(context);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(approve ? t.statusApproved : t.statusRejected)));
       _reload();
     } catch (e) {

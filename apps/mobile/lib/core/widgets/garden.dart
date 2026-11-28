@@ -8,13 +8,15 @@ import 'package:provider/provider.dart';
 import '../i18n/i18n.dart';
 import '../offline/sync_service.dart';
 import '../theme/app_theme.dart';
+import 'motion.dart';
 
 // The "garden" design language shared by the home screens, the hub and the
 // lists: one hero header in the center's colour, soft white cards on a warm
 // page, round icon bubbles and a small connection pill that is always in sight.
 
-/// A soft white card (shadow instead of a hard border).
-class GardenCard extends StatelessWidget {
+/// A soft white card (shadow instead of a hard border); one that opens something sinks
+/// a touch under the finger.
+class GardenCard extends StatefulWidget {
   const GardenCard({super.key, required this.child, this.padding = const EdgeInsets.all(16), this.onTap, this.color, this.margin});
 
   final Widget child;
@@ -24,11 +26,18 @@ class GardenCard extends StatelessWidget {
   final Color? color;
 
   @override
+  State<GardenCard> createState() => _GardenCardState();
+}
+
+class _GardenCardState extends State<GardenCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: margin,
+    final card = Container(
+      margin: widget.margin,
       decoration: BoxDecoration(
-        color: color ?? Colors.white,
+        color: widget.color ?? Colors.white,
         borderRadius: BorderRadius.circular(kCardRadius),
         boxShadow: kSoftShadow,
       ),
@@ -36,11 +45,14 @@ class GardenCard extends StatelessWidget {
         type: MaterialType.transparency,
         child: InkWell(
           borderRadius: BorderRadius.circular(kCardRadius),
-          onTap: onTap,
-          child: Padding(padding: padding, child: child),
+          onTap: widget.onTap,
+          onHighlightChanged: widget.onTap == null ? null : (v) => setState(() => _pressed = v),
+          child: Padding(padding: widget.padding, child: widget.child),
         ),
       ),
     );
+    if (widget.onTap == null) return card;
+    return AnimatedScale(scale: _pressed ? 0.975 : 1, duration: const Duration(milliseconds: 140), curve: Curves.easeOut, child: card);
   }
 }
 
@@ -203,7 +215,7 @@ class GardenHeader extends StatelessWidget {
           ),
         ),
         child: Stack(children: [
-          const Positioned.fill(child: CustomPaint(painter: _LeavesPainter())),
+          const Positioned.fill(child: _DriftingLeaves()),
           Padding(
             padding: EdgeInsets.fromLTRB(18, top + 10, 18, 20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -262,7 +274,7 @@ class _GlassStat extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           if (stat.icon != null) ...[Icon(stat.icon, size: 15, color: Colors.white.withValues(alpha: 0.85)), const SizedBox(width: 4)],
-          Flexible(child: Text(stat.value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w800))),
+          Flexible(child: CountUp(stat.value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w800))),
         ]),
         const SizedBox(height: 2),
         Text(stat.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 11.5)),
@@ -271,12 +283,46 @@ class _GlassStat extends StatelessWidget {
   }
 }
 
+/// The header's leaves, rocking slowly as if in a breeze (still for reduced motion).
+class _DriftingLeaves extends StatefulWidget {
+  const _DriftingLeaves();
+
+  @override
+  State<_DriftingLeaves> createState() => _DriftingLeavesState();
+}
+
+class _DriftingLeavesState extends State<_DriftingLeaves> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 7), value: 0.5);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (motionOff(context)) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(child: CustomPaint(painter: _LeavesPainter(_c)));
+}
+
 /// Soft leaves and circles behind the header (drawn, so any brand colour works).
 class _LeavesPainter extends CustomPainter {
-  const _LeavesPainter();
+  _LeavesPainter(this.breeze) : super(repaint: breeze);
+
+  final Animation<double> breeze;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final b = Curves.easeInOutSine.transform(breeze.value) * 2 - 1; // -1..1
     final soft = Paint()..color = Colors.white.withValues(alpha: 0.07);
     canvas.drawCircle(Offset(size.width * 0.92, size.height * 0.08), size.width * 0.32, soft);
     canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.95), size.width * 0.22, soft);
@@ -293,13 +339,14 @@ class _LeavesPainter extends CustomPainter {
       canvas.restore();
     }
 
-    drawLeaf(Offset(size.width * 0.70, size.height * 0.30), 70, -0.6);
-    drawLeaf(Offset(size.width * 0.80, size.height * 0.52), 54, 0.4);
-    drawLeaf(Offset(size.width * 0.18, size.height * 0.18), 40, math.pi * 0.85);
+    // each leaf rocks a little around its stem, out of step with the others
+    drawLeaf(Offset(size.width * 0.70, size.height * 0.30), 70, -0.6 + b * 0.07);
+    drawLeaf(Offset(size.width * 0.80, size.height * 0.52), 54, 0.4 - b * 0.09);
+    drawLeaf(Offset(size.width * 0.18, size.height * 0.18), 40, math.pi * 0.85 + b * 0.11);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _LeavesPainter oldDelegate) => false;
 }
 
 /// A titled block on a page, with an optional "see all" action.
@@ -314,7 +361,9 @@ class GardenSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return GrowIn(
+      delay: const Duration(milliseconds: 80),
+      child: Padding(
       padding: const EdgeInsets.only(top: 22),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
@@ -333,6 +382,7 @@ class GardenSection extends StatelessWidget {
         const SizedBox(height: 8),
         child,
       ]),
+    ),
     );
   }
 }
@@ -382,7 +432,8 @@ class GardenGrid extends StatelessWidget {
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: 0.98,
-        children: children,
+        // the tiles sprout one after another
+        children: [for (var i = 0; i < children.length; i++) GrowIn(delay: GrowIn.stagger(i, stepMs: 35, max: 12), child: children[i])],
       );
     });
   }
@@ -406,12 +457,18 @@ class GardenRing extends StatelessWidget {
       height: size,
       child: Stack(alignment: Alignment.center, children: [
         SizedBox.expand(
-          child: CircularProgressIndicator(
-            value: value.clamp(0, 1).toDouble(),
-            strokeWidth: stroke,
-            strokeCap: StrokeCap.round,
-            color: c,
-            backgroundColor: c.withValues(alpha: 0.12),
+          // grows from empty to its value (and on to a new one)
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: value.clamp(0, 1).toDouble()),
+            duration: motionOff(context) ? Duration.zero : const Duration(milliseconds: 900),
+            curve: Curves.easeOutCubic,
+            builder: (context, v, _) => CircularProgressIndicator(
+              value: v,
+              strokeWidth: stroke,
+              strokeCap: StrokeCap.round,
+              color: c,
+              backgroundColor: c.withValues(alpha: 0.12),
+            ),
           ),
         ),
         center,

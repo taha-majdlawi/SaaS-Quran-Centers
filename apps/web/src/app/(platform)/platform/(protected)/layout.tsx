@@ -101,7 +101,7 @@ export default async function PlatformProtectedLayout({ children }: { children: 
           </SubmitButton>
         </form>
       </aside>
-      <main className="min-w-0 flex-1 p-4 sm:p-8">
+      <main className="garden-main min-w-0 flex-1 p-4 sm:p-8">
         {mfaUnavailable && (
           <p className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
             التحقق بخطوتين غير مفعّل بعد: Supabase رفض إعداده. فعّل TOTP من لوحة Supabase (Authentication ← Multi-Factor)، ثم{' '}

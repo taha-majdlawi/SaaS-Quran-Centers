@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { GrowingTree } from '@/components/growing-tree';
+import { GardenMotion } from '@/components/garden-motion';
 import { MonitoringOrg } from '@/components/error-reporter';
 import { notFound, redirect } from 'next/navigation';
 import { getOrgContext } from '@/lib/tenant/get-org-context';
@@ -143,13 +144,14 @@ export default async function TenantProtectedLayout({
             </form>
           </div>
         </header>
-        <main>
+        <main className="garden-main">
           {portalOff ? (
             <p className="mx-auto mt-10 max-w-md rounded-lg border bg-white p-6 text-center text-sm text-gray-600">{t.staff.common.featureOff}</p>
           ) : (
             children
           )}
         </main>
+        <GardenMotion />
         {!org.disabledModules.includes('garden_tree') && <GrowingTree corner />}
       </div>
     </div>
