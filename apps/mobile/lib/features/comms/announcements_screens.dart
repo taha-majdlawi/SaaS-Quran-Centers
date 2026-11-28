@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/i18n/i18n.dart';
 
@@ -167,8 +166,8 @@ class _AnnouncementFormScreenState extends State<AnnouncementFormScreen> {
         expiresOn: widget.announcement?.expiresOn,
       );
       if (mounted) context.pop();
-    } on PostgrestException catch (e) {
-      setState(() => _error = e.message);
+    } catch (e) {
+      setState(() => _error = friendlyError(e, currentStrings.common.actionFailed));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
