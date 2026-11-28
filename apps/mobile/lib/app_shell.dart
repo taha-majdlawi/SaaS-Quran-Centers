@@ -54,7 +54,13 @@ class AppShell extends StatelessWidget {
             ),
         };
 
-    return Scaffold(
+    // Back on any other tab returns to the home tab first; only from home does it leave the app.
+    return PopScope(
+      canPop: shell.currentIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) shell.goBranch(0);
+      },
+      child: Scaffold(
       body: shell,
       bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(boxShadow: [BoxShadow(color: Color(0x141B2A22), blurRadius: 16, offset: Offset(0, -4))]),
@@ -68,6 +74,7 @@ class AppShell extends StatelessWidget {
           },
         ),
       ),
+    ),
     );
   }
 }

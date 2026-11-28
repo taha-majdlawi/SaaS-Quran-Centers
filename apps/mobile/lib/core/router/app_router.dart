@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import '../widgets/fading_branches.dart';
 import '../../features/account/account_screen.dart';
 import '../../features/settings/center_features_screen.dart';
 import '../../features/quran/live_recite_screen.dart';
@@ -75,6 +76,14 @@ import '../tenant/organization.dart';
 import '../../app_shell.dart';
 import '../../features/more/more_screen.dart';
 
+Page<void> _fadePage(GoRouterState state, Widget child) => CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 240),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (context, animation, secondary, child) => FadeTransition(opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut), child: child),
+    );
+
 /// Deliberately flat for this first pass: every signed-in member (whatever
 /// their role) lands in the same /dashboard, /students, ... routes, same as
 /// apps/web where role differences are handled INSIDE each page rather than
@@ -136,13 +145,16 @@ GoRouter buildAppRouter({required AuthController auth, required TenantController
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/onboarding', builder: (context, state) => OnboardingScreen(gate: onboarding)),
-      GoRoute(path: '/select-organization', builder: (context, state) => const OrgPickerScreen()),
+      // the entry screens (intro, sign-in, centre picker) change by fading, not by sliding like a pushed page
+      GoRoute(path: '/splash', pageBuilder: (context, state) => _fadePage(state, const SplashScreen())),
+      GoRoute(path: '/login', pageBuilder: (context, state) => _fadePage(state, const LoginScreen())),
+      GoRoute(path: '/onboarding', pageBuilder: (context, state) => _fadePage(state, OnboardingScreen(gate: onboarding))),
+      GoRoute(path: '/select-organization', pageBuilder: (context, state) => _fadePage(state, const OrgPickerScreen())),
       // the staff tabs (bottom bar); every other screen opens on top of them
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, shell) => AppShell(shell: shell),
+        // switching tabs fades the new one in instead of cutting to it
+        navigatorContainerBuilder: (context, shell, children) => FadingBranches(currentIndex: shell.currentIndex, children: children),
         branches: [
           StatefulShellBranch(routes: [GoRoute(path: '/dashboard', builder: (context, state) => const DashboardScreen())]),
           StatefulShellBranch(routes: [GoRoute(path: '/students', builder: (context, state) => const StudentsListScreen())]),

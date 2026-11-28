@@ -180,3 +180,60 @@ html:not([dir]) {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Moving between pages. The site's links are plain links (the center's pages sit
+ * behind a subdomain rewrite), so every page change loads a document. Browsers
+ * that can (Chrome / Edge / Safari) cross-fade the old page into the new one
+ * instead of flashing white; the header and the menu column keep still while only
+ * the page content fades. Others just load as before.
+ * ------------------------------------------------------------------------ */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.18s;
+  animation-timing-function: ease-out;
+}
+.vt-header {
+  view-transition-name: app-header;
+}
+.vt-sidebar {
+  view-transition-name: app-sidebar;
+}
+::view-transition-group(app-header),
+::view-transition-group(app-sidebar) {
+  animation-duration: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
+
+/* the phone menu slides in from its edge over a fading shade */
+.drawer-scrim {
+  animation: fade-in 0.2s ease-out both;
+}
+.drawer-panel {
+  animation: drawer-in 0.24s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+[dir='rtl'] .drawer-panel {
+  animation-name: drawer-in-rtl;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes drawer-in-rtl {
+  from {
+    transform: translateX(100%);
+  }
+}

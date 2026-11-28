@@ -127,7 +127,7 @@ export function StaffNav({ sections, menuLabel }: { sections: NavSectionView[]; 
   return (
     <>
       {/* wide screens: a column that stays while the page scrolls */}
-      <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 overflow-y-auto border-e bg-white px-3 py-5 lg:block print:hidden">{list}</aside>
+      <aside className="vt-sidebar sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 overflow-y-auto border-e bg-white px-3 py-5 lg:block print:hidden">{list}</aside>
 
       {/* phones / tablets: a menu button, and the same list as a drawer */}
       <button
@@ -140,8 +140,8 @@ export function StaffNav({ sections, menuLabel }: { sections: NavSectionView[]; 
       </button>
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label={menuLabel}>
-          <button type="button" aria-label="×" className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 start-0 w-72 max-w-[85vw] overflow-y-auto bg-white px-3 py-4 shadow-xl">
+          <button type="button" aria-label="×" className="drawer-scrim absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
+          <aside className="drawer-panel absolute inset-y-0 start-0 w-72 max-w-[85vw] overflow-y-auto bg-white px-3 py-4 shadow-xl">
             <div className="mb-3 flex justify-end">
               <button type="button" onClick={() => setOpen(false)} className="rounded-lg p-2 text-gray-500 hover:bg-gray-100" aria-label="×">
                 <X size={18} aria-hidden />
